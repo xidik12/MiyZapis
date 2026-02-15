@@ -79,22 +79,20 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         telegramWebApp.initData
       );
 
+      // Sync token to authToken key for apiService compatibility
+      const token = telegramAuthService.getToken();
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+
       setUser(authResponse.user);
       setIsAuthenticated(true);
-      
-      // Show success feedback
-      await telegramWebApp.showAlert('Successfully authenticated!');
       telegramWebApp.hapticFeedback.notificationSuccess();
-      
+
     } catch (err) {
-      console.error('Telegram authentication failed:', err);
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-      telegramWebApp.hapticFeedback.notificationError();
-      
-      // Try to register if user doesn't exist
-      if (err instanceof Error && err.message.includes('not found')) {
-        await handleUserRegistration();
-      }
+      console.error('Telegram auto-auth: user not found or auth failed, showing login page');
+      // Silently fail — user will see the login page with Google/Telegram options
+      // No auto-registration popup; let the user choose how to sign in
     } finally {
       setIsLoading(false);
     }

@@ -117,8 +117,43 @@ export const LoginPage: React.FC = () => {
 
       if (data.success && data.data) {
         const { tokens, user } = data.data;
-        localStorage.setItem('authToken', tokens?.accessToken || tokens?.token || '');
-        dispatch(setCredentials({ user, token: tokens?.accessToken || tokens?.token }));
+        const authToken = tokens?.accessToken || tokens?.token || '';
+        localStorage.setItem('authToken', authToken);
+        // Also store in booking_app_token for TelegramProvider compatibility
+        localStorage.setItem('booking_app_token', authToken);
+        dispatch(setCredentials({ user, token: authToken }));
+
+        // Auto-link Telegram account if user is inside Telegram
+        if (telegramUser && authToken) {
+          try {
+            const linkRes = await fetch(`${API_BASE_URL}/users/telegram/link`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                telegramId: telegramUser.id.toString(),
+                firstName: telegramUser.first_name || user.firstName,
+                lastName: telegramUser.last_name || user.lastName || '',
+                username: telegramUser.username || '',
+                authDate: initDataUnsafe?.auth_date || Math.floor(Date.now() / 1000),
+                hash: initDataUnsafe?.hash || 'mini-app-link',
+              }),
+            });
+            const linkData = await linkRes.json();
+            if (linkData.success) {
+              console.log('Telegram account linked to Google account');
+            } else {
+              // 409 = already linked to another account, which is fine
+              console.log('Telegram link result:', linkData.error || 'already linked');
+            }
+          } catch (linkErr) {
+            // Non-critical — account works without linking, just won't auto-login next time
+            console.warn('Failed to link Telegram account:', linkErr);
+          }
+        }
+
         dispatch(addToast({
           type: 'success',
           title: 'Welcome!',
@@ -139,7 +174,7 @@ export const LoginPage: React.FC = () => {
     } finally {
       setGoogleLoading(false);
     }
-  }, [dispatch, hapticFeedback]);
+  }, [dispatch, hapticFeedback, telegramUser, initDataUnsafe]);
 
   const handleAutoLogin = async () => {
     try {
@@ -148,13 +183,21 @@ export const LoginPage: React.FC = () => {
         initDataUnsafe,
         user: telegramUser
       };
-      await dispatch(telegramAuthAsync(telegramData)).unwrap();
+      const result = await dispatch(telegramAuthAsync(telegramData)).unwrap();
+      // Sync token to both localStorage keys
+      const token = (result as any)?.token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('booking_app_token', token);
+      }
       dispatch(addToast({
         type: 'success',
         title: 'Welcome back!',
         message: 'You have been signed in successfully.'
       }));
+      hapticFeedback.notificationSuccess();
     } catch (err) {
+      // Telegram auth failed — user not registered yet, show registration form
       setShowRegistrationForm(true);
       hapticFeedback.notificationWarning();
     }
@@ -179,7 +222,13 @@ export const LoginPage: React.FC = () => {
         telegramId: telegramUser?.id.toString()
       };
 
-      await dispatch(registerAsync(userData)).unwrap();
+      const result = await dispatch(registerAsync(userData)).unwrap();
+      // Sync token to both localStorage keys
+      const token = (result as any)?.token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('booking_app_token', token);
+      }
       dispatch(addToast({
         type: 'success',
         title: 'Registration Complete!',
