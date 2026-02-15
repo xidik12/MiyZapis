@@ -193,13 +193,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {activeTab === 'provider' 
-                      ? (booking.customer 
-                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                    {activeTab === 'provider'
+                      ? (booking.customer
+                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
                           : (booking.customerName || 'Unknown Customer')
                         )
                       : (booking.specialist
-                          ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
+                          ? `${(booking.specialist as any).firstName || (booking.specialist as any).user?.firstName || ''} ${(booking.specialist as any).lastName || (booking.specialist as any).user?.lastName || ''}`.trim() || 'Unknown Specialist'
                           : 'Unknown Specialist'
                         )
                     }
@@ -210,8 +210,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                     )
                   ) : (
-                    booking.specialist?.user?.loyaltyPoints != null && (
-                      <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
+                    ((booking.specialist as any)?.loyaltyPoints ?? (booking.specialist as any)?.user?.loyaltyPoints) != null && (
+                      <TierBadge points={(booking.specialist as any)?.loyaltyPoints ?? (booking.specialist as any)?.user?.loyaltyPoints ?? 0} size="sm" />
                     )
                   )}
                 </div>
@@ -221,7 +221,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <p className="font-medium text-gray-900 dark:text-white">
                   {activeTab === 'provider'
                     ? (booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable'))
-                    : (booking.specialist?.user?.phoneNumber || booking.specialist?.user?.email || t('bookingDetails.contactNotAvailable'))
+                    : ((booking.specialist as any)?.phoneNumber || (booking.specialist as any)?.email || (booking.specialist as any)?.user?.phoneNumber || (booking.specialist as any)?.user?.email || t('bookingDetails.contactNotAvailable'))
                   }
                 </p>
               </div>
@@ -295,15 +295,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Contact Information - Only show for confirmed bookings where specialist info is available */}
-          {booking.status === 'CONFIRMED' && booking.specialist?.location && activeTab === 'customer' && (
+          {(() => {
+            const specProfile = (booking.service as any)?.specialist;
+            const specLocation = specProfile || booking.specialist?.location;
+            if (booking.status !== 'CONFIRMED' || !specLocation || activeTab !== 'customer') return null;
+            return (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
                 <MapPinIcon className="w-5 h-5 mr-2" />
                 {t('bookings.contactInformation')}
               </h4>
               <div className="space-y-3 text-sm">
-                {/* Precise Address */}
-                {booking.specialist.location.preciseAddress && (
+                {(specLocation.preciseAddress || specLocation.address) && (
                   <div className="flex items-start space-x-3">
                     <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -311,14 +314,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.address')}:
                       </span>
                       <p className="text-blue-800 dark:text-blue-200 break-words">
-                        {booking.specialist.location.preciseAddress}
+                        {specLocation.preciseAddress || specLocation.address}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Business Phone */}
-                {booking.specialist.location.businessPhone && (
+                {specLocation.businessPhone && (
                   <div className="flex items-start space-x-3">
                     <PhoneIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -326,17 +328,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.phone')}:
                       </span>
                       <a
-                        href={`tel:${booking.specialist.location.businessPhone}`}
+                        href={`tel:${specLocation.businessPhone}`}
                         className="text-blue-800 dark:text-blue-200 hover:underline ml-1"
                       >
-                        {booking.specialist.location.businessPhone}
+                        {specLocation.businessPhone}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {/* WhatsApp Number */}
-                {booking.specialist.location.whatsappNumber && (
+                {specLocation.whatsappNumber && (
                   <div className="flex items-start space-x-3">
                     <ChatBubbleLeftRightIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -344,19 +345,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.whatsapp')}:
                       </span>
                       <a
-                        href={`https://wa.me/${booking.specialist.location.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                        href={`https://wa.me/${specLocation.whatsappNumber.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-700 dark:text-green-300 hover:underline ml-1"
                       >
-                        {booking.specialist.location.whatsappNumber}
+                        {specLocation.whatsappNumber}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {/* Location Notes */}
-                {booking.specialist.location.locationNotes && (
+                {specLocation.locationNotes && (
                   <div className="flex items-start space-x-3">
                     <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -364,55 +364,53 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.locationNotes')}:
                       </span>
                       <p className="text-blue-800 dark:text-blue-200 break-words">
-                        {booking.specialist.location.locationNotes}
+                        {specLocation.locationNotes}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Parking Information */}
-                {booking.specialist.location.parkingInfo && (
+                {specLocation.parkingInfo && (
                   <div className="flex items-start space-x-3">
                     <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
-                      🚗
+                      P
                     </div>
                     <div>
                       <span className="font-medium text-blue-900 dark:text-blue-100">
                         {t('bookings.parking')}:
                       </span>
                       <p className="text-blue-800 dark:text-blue-200 break-words">
-                        {booking.specialist.location.parkingInfo}
+                        {specLocation.parkingInfo}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Access Instructions */}
-                {booking.specialist.location.accessInstructions && (
+                {specLocation.accessInstructions && (
                   <div className="flex items-start space-x-3">
                     <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
-                      🔑
+                      K
                     </div>
                     <div>
                       <span className="font-medium text-blue-900 dark:text-blue-100">
                         {t('bookings.accessInstructions')}:
                       </span>
                       <p className="text-blue-800 dark:text-blue-200 break-words">
-                        {booking.specialist.location.accessInstructions}
+                        {specLocation.accessInstructions}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Privacy Notice */}
                 <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-700">
                   <p className="text-xs text-blue-700 dark:text-blue-300 italic">
-                    ℹ️ {t('bookings.contactInfoNote')}
+                    {t('bookings.contactInfoNote')}
                   </p>
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Status Management and Quick Message - Only show for provider view */}
           {activeTab === 'provider' && (
@@ -673,11 +671,37 @@ const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
 };
 
+// Helper to get specialist profile data (may be nested in service or at booking level)
+const getSpecialistProfile = (booking: Booking) => {
+  // The API returns booking.specialist as a User object, not a Specialist profile.
+  // The actual specialist profile data lives in booking.service?.specialist
+  const profile = (booking.service as any)?.specialist;
+  const user = booking.specialist as any;
+  return {
+    id: profile?.id || user?.id || '',
+    firstName: user?.firstName || profile?.user?.firstName || '',
+    lastName: user?.lastName || profile?.user?.lastName || '',
+    businessName: profile?.businessName || user?.businessName || '',
+    avatar: user?.avatar || profile?.user?.avatar || '',
+    location: profile ? {
+      address: profile.address,
+      city: profile.city,
+      preciseAddress: profile.preciseAddress,
+      businessPhone: profile.businessPhone,
+      whatsappNumber: profile.whatsappNumber,
+      locationNotes: profile.locationNotes,
+      parkingInfo: profile.parkingInfo,
+      accessInstructions: profile.accessInstructions,
+    } : undefined,
+  };
+};
+
 // Helper function to map Booking to BookingData for Kanban
 const mapBookingToBookingData = (booking: Booking): BookingData => {
   const rawDate = booking.scheduledAt || (booking as any).date;
   const scheduledDate = rawDate ? new Date(rawDate) : null;
   const isValidDate = scheduledDate && !isNaN(scheduledDate.getTime());
+  const spec = getSpecialistProfile(booking);
 
   return {
     id: booking.id,
@@ -692,11 +716,11 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
       phoneNumber: booking.customer.phoneNumber
     } : undefined,
     specialist: booking.specialist ? {
-      id: booking.specialist.id,
-      firstName: booking.specialist.user?.firstName || '',
-      lastName: booking.specialist.user?.lastName || '',
-      businessName: booking.specialist.businessName,
-      avatar: booking.specialist.user?.avatar
+      id: spec.id,
+      firstName: spec.firstName,
+      lastName: spec.lastName,
+      businessName: spec.businessName,
+      avatar: spec.avatar
     } : undefined,
     service: {
       id: booking.service?.id || booking.serviceId,
@@ -704,9 +728,9 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
       duration: booking.duration,
       price: booking.service?.price
     },
-    location: booking.specialist?.location ? {
-      address: booking.specialist.location.address,
-      city: booking.specialist.location.city
+    location: spec.location?.address ? {
+      address: spec.location.address,
+      city: spec.location.city
     } : undefined,
     totalPrice: booking.totalAmount,
     paymentStatus: booking.depositPaid ? 'paid' : 'pending'
@@ -1440,7 +1464,7 @@ const SpecialistBookings: React.FC = () => {
                                   : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
                                 )
                                 : (booking.specialist
-                                ? `${booking.specialist.user?.firstName?.[0] || ''}${booking.specialist.user?.lastName?.[0] || ''}`
+                                ? `${((booking.specialist as any).firstName || (booking.specialist as any).user?.firstName || '')?.[0] || ''}${((booking.specialist as any).lastName || (booking.specialist as any).user?.lastName || '')?.[0] || ''}`
                                   : 'US'
                                 )
                               }
@@ -1456,7 +1480,7 @@ const SpecialistBookings: React.FC = () => {
                                   : (booking.customerName || 'Unknown Customer')
                                 )
                                 : (booking.specialist
-                                  ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
+                                  ? `${(booking.specialist as any).firstName || (booking.specialist as any).user?.firstName || ''} ${(booking.specialist as any).lastName || (booking.specialist as any).user?.lastName || ''}`.trim()
                                   : 'Unknown Specialist'
                                 )
                               }
@@ -1705,9 +1729,9 @@ const SpecialistBookings: React.FC = () => {
           specialistName:
             selectedBooking?.specialist
               ? `${
-                  (selectedBooking.specialist as any).user?.firstName || ''
+                  (selectedBooking.specialist as any).firstName || (selectedBooking.specialist as any).user?.firstName || ''
                 } ${
-                  (selectedBooking.specialist as any).user?.lastName || ''
+                  (selectedBooking.specialist as any).lastName || (selectedBooking.specialist as any).user?.lastName || ''
                 }`.trim()
               : undefined
         }}

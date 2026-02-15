@@ -139,7 +139,7 @@ const bookingSlice = createSlice({
       })
       .addCase(fetchBookings.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.bookings = action.payload.bookings;
+        state.bookings = Array.isArray(action.payload?.bookings) ? action.payload.bookings : [];
         state.error = null;
       })
       .addCase(fetchBookings.rejected, (state, action) => {

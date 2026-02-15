@@ -60,8 +60,8 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
 }) => {
   const otherParty = userRole === 'customer' ? booking.specialist : booking.customer;
   const displayName = userRole === 'customer'
-    ? booking.specialist?.businessName || `${booking.specialist?.firstName} ${booking.specialist?.lastName}`
-    : `${booking.customer?.firstName} ${booking.customer?.lastName}`;
+    ? booking.specialist?.businessName || `${booking.specialist?.firstName || ''} ${booking.specialist?.lastName || ''}`.trim()
+    : `${booking.customer?.firstName || ''} ${booking.customer?.lastName || ''}`.trim();
   const hasAvatar = otherParty?.avatar;
 
   const statusColors = {
@@ -100,13 +100,13 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
           ) : (
             <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-sm leading-none">
-                {displayName?.charAt(0).toUpperCase() || '?'}
+                {(displayName && displayName.trim()) ? displayName.trim().charAt(0).toUpperCase() : '?'}
               </span>
             </div>
           )}
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate leading-tight">
-              {displayName}
+              {displayName || 'Unknown'}
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate leading-tight mt-0.5">
               {booking.service?.name || 'Service'}
@@ -129,9 +129,13 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
           <CalendarIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
           <span className="font-medium leading-none">
-            {booking.scheduledDate && booking.scheduledDate !== 'N/A'
-              ? format(new Date(booking.scheduledDate), 'MMM d, yyyy')
-              : 'No date'}
+            {(() => {
+              if (!booking.scheduledDate || booking.scheduledDate === 'N/A') return 'No date';
+              try {
+                const d = new Date(booking.scheduledDate);
+                return isNaN(d.getTime()) ? 'No date' : format(d, 'MMM d, yyyy');
+              } catch { return 'No date'; }
+            })()}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
