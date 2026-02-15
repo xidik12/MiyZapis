@@ -852,9 +852,12 @@ const CustomerBookings: React.FC = () => {
             <div className="space-y-4">
               {waitlistEntries.map((entry) => {
                 const preferredDate = new Date(entry.preferredDate);
-                const specialistName = entry.specialist?.user
-                  ? `${entry.specialist.user.firstName} ${entry.specialist.user.lastName}`
-                  : t('waitlist.unknownSpecialist') || 'Specialist';
+                const specUser = entry.specialist as any;
+                const specialistName = specUser?.firstName
+                  ? `${specUser.firstName} ${specUser.lastName || ''}`.trim()
+                  : specUser?.user
+                    ? `${specUser.user.firstName} ${specUser.user.lastName || ''}`.trim()
+                    : t('waitlist.unknownSpecialist') || 'Specialist';
                 const isNotified = entry.status === 'NOTIFIED';
 
                 return (
@@ -879,9 +882,12 @@ const CustomerBookings: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-                            {entry.specialist?.user
-                              ? `${entry.specialist.user.firstName?.[0] || ''}${entry.specialist.user.lastName?.[0] || ''}`
-                              : 'S'}
+                            {(() => {
+                              const su = entry.specialist as any;
+                              const fn = su?.firstName || su?.user?.firstName || '';
+                              const ln = su?.lastName || su?.user?.lastName || '';
+                              return fn || ln ? `${fn[0] || ''}${ln[0] || ''}` : 'S';
+                            })()}
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium text-gray-900 dark:text-white text-sm truncate">

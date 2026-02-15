@@ -78,7 +78,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
     : booking.specialistName || 'Unknown Specialist';
 
-  const specialistAvatar = booking.specialist?.profileImage || booking.specialist?.user?.avatar;
+  const specialistAvatar = booking.specialist?.profileImage || (booking.specialist as any)?.avatar || (booking.specialist as any)?.user?.avatar;
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
@@ -232,7 +232,15 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           )}
 
           {/* Contact Information (for confirmed bookings) */}
-          {booking.status === 'CONFIRMED' && booking.specialist?.location && (
+          {booking.status === 'CONFIRMED' && (() => {
+            const specProfile = (booking.service as any)?.specialist;
+            const specLoc = specProfile ? {
+              preciseAddress: specProfile.preciseAddress || specProfile.address,
+              businessPhone: specProfile.businessPhone,
+              whatsappNumber: specProfile.whatsappNumber,
+            } : (booking.specialist as any)?.location;
+            if (!specLoc) return null;
+            return (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 sm:p-4">
               <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2 sm:mb-3 text-sm sm:text-base flex items-center">
                 <MapPinIcon className="w-4 h-4 mr-2" />
@@ -240,7 +248,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </h3>
               <div className="space-y-2 text-xs sm:text-sm">
                 {/* Contact information sections */}
-                {booking.specialist.location.preciseAddress && (
+                {specLoc.preciseAddress && (
                   <div className="flex items-start space-x-2">
                     <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -248,13 +256,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.address')}:
                       </span>
                       <p className="text-blue-800 dark:text-blue-200 break-words">
-                        {booking.specialist.location.preciseAddress}
+                        {specLoc.preciseAddress}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {booking.specialist.location.businessPhone && (
+                {specLoc.businessPhone && (
                   <div className="flex items-start space-x-2">
                     <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -262,16 +270,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.phone')}:
                       </span>
                       <a
-                        href={`tel:${booking.specialist.location.businessPhone}`}
+                        href={`tel:${specLoc.businessPhone}`}
                         className="text-blue-800 dark:text-blue-200 hover:underline ml-1"
                       >
-                        {booking.specialist.location.businessPhone}
+                        {specLoc.businessPhone}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {booking.specialist.location.whatsappNumber && (
+                {specLoc.whatsappNumber && (
                   <div className="flex items-start space-x-2">
                     <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -279,12 +287,12 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         {t('bookings.whatsapp')}:
                       </span>
                       <a
-                        href={`https://wa.me/${booking.specialist.location.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                        href={`https://wa.me/${specLoc.whatsappNumber.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-700 dark:text-green-300 hover:underline ml-1"
                       >
-                        {booking.specialist.location.whatsappNumber}
+                        {specLoc.whatsappNumber}
                       </a>
                     </div>
                   </div>
@@ -297,7 +305,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Payment Info */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 sm:p-4">
@@ -415,7 +424,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
             {/* Message Specialist Button - Always show */}
             <Link
-              to={`/customer/messages?specialist=${booking.specialist?.userId || booking.specialist?.user?.id || booking.specialistId}`}
+              to={`/customer/messages?specialist=${booking.specialist?.userId || (booking.specialist as any)?.id || booking.specialistId}`}
               onClick={onClose}
               className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors border border-primary-200 dark:border-primary-800 whitespace-nowrap justify-center flex items-center"
             >

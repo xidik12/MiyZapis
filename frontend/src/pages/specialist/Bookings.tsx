@@ -1490,8 +1490,8 @@ const SpecialistBookings: React.FC = () => {
                                 <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                               )
                             ) : (
-                              booking.specialist?.user?.loyaltyPoints != null && (
-                                <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
+                              (booking.specialist as any)?.loyaltyPoints != null && (
+                                <TierBadge points={(booking.specialist as any).loyaltyPoints} size="sm" />
                               )
                             )}
                           </div>
