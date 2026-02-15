@@ -134,9 +134,8 @@ dump.rdb
 Dockerfile.local
 docker-compose.override.yml
 
-# Prisma
-prisma/migrations/
-!prisma/migrations/.keep
+# Prisma - migrations MUST be tracked in version control
+# prisma/migrations/ — DO NOT ignore
 
 # Test files
 test-results/

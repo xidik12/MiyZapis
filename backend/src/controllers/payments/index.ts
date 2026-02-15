@@ -1725,8 +1725,19 @@ export class PaymentController {
   // Handle PayPal webhook
   static async handlePayPalWebhook(req: Request, res: Response): Promise<void> {
     try {
+      const { config } = await import('@/config');
+      const paypalWebhookId = config.paypal.webhookId;
+
+      // SECURITY: Webhook secret must be configured — refuse to process without it
+      if (!paypalWebhookId) {
+        logger.error('[PayPal] PAYPAL_WEBHOOK_ID env var is not set — cannot verify webhook signatures');
+        res.status(500).json({
+          error: 'Payment webhook configuration error'
+        });
+        return;
+      }
+
       const signature = req.headers['paypal-transmission-sig'] as string;
-      const webhookId = req.headers['paypal-webhook-id'] as string;
       // Use the raw body preserved by webhookRawBodyParser middleware
       const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
@@ -1734,36 +1745,37 @@ export class PaymentController {
         eventType: req.body.event_type,
         resourceType: req.body.resource_type,
         hasSignature: !!signature,
-        hasWebhookId: !!webhookId,
         headers: Object.keys(req.headers),
         hasRawBody: !!(req as any).rawBody
       });
 
-      // For development/testing: Allow webhooks without signature verification
-      // In production, you should always verify webhooks
-      if (signature && webhookId) {
-        // Verify webhook signature
-        const isValid = await paypalService.verifyWebhookSignature(
-          req.headers as Record<string, string>,
-          rawBody,
-          webhookId
-        );
-
-        if (!isValid) {
-          logger.warn('[PayPal] Invalid webhook signature', {
-            eventType: req.body.event_type,
-            webhookId,
-          });
-          res.status(401).json({
-            error: 'Invalid webhook signature'
-          });
-          return;
-        }
-      } else {
-        logger.warn('[PayPal] Webhook received without signature - processing anyway for testing', {
-          hasSignature: !!signature,
-          hasWebhookId: !!webhookId,
+      // SECURITY: Signature is MANDATORY — never process a webhook without verifying it
+      if (!signature) {
+        logger.warn('[PayPal] Webhook received without signature — rejecting', {
+          eventType: req.body.event_type,
+          ip: req.ip,
         });
+        res.status(401).json({
+          error: 'Missing webhook signature'
+        });
+        return;
+      }
+
+      // Verify webhook signature
+      const isValid = await paypalService.verifyWebhookSignature(
+        req.headers as Record<string, string>,
+        rawBody,
+        paypalWebhookId
+      );
+
+      if (!isValid) {
+        logger.warn('[PayPal] Invalid webhook signature', {
+          eventType: req.body.event_type,
+        });
+        res.status(401).json({
+          error: 'Invalid webhook signature'
+        });
+        return;
       }
 
       const event = req.body;
@@ -2100,16 +2112,28 @@ export class PaymentController {
   // Handle WayForPay webhook
   static async handleWayForPayWebhook(req: Request, res: Response): Promise<void> {
     try {
+      // SECURITY: WayForPay must be configured with merchant secret for signature verification
+      const { WayForPayService } = await import('@/services/payment/wayforpay.service');
+      if (!WayForPayService.isConfigured()) {
+        logger.error('[WayForPay] Service not configured — merchant secret is missing, cannot verify webhook signatures');
+        res.status(500).json({
+          error: 'Payment webhook configuration error'
+        });
+        return;
+      }
+
       const webhookData = req.body;
 
+      // SECURITY: Signature is MANDATORY — never process a webhook without it
       if (!webhookData || !webhookData.merchantAccount || !webhookData.orderReference || !webhookData.merchantSignature) {
-        logger.warn('[WayForPay] Webhook received with missing required fields', {
+        logger.warn('[WayForPay] Webhook received with missing required fields — rejecting', {
           hasMerchantAccount: !!webhookData?.merchantAccount,
           hasOrderReference: !!webhookData?.orderReference,
           hasSignature: !!webhookData?.merchantSignature,
+          ip: req.ip,
         });
-        res.status(400).json({
-          error: 'Missing required webhook fields'
+        res.status(401).json({
+          error: 'Missing required webhook fields including signature'
         });
         return;
       }
@@ -2120,7 +2144,7 @@ export class PaymentController {
         transactionStatus: webhookData.transactionStatus
       });
 
-      // Process the webhook
+      // Process the webhook (includes signature verification)
       const result = await wayforpayService.processWebhook(webhookData);
 
       if (!result.isValid) {
@@ -2372,14 +2396,25 @@ export class PaymentController {
   // Handle Coinbase Commerce webhook
   static async handleCoinbaseWebhook(req: Request, res: Response): Promise<void> {
     try {
+      // SECURITY: Coinbase Commerce must be configured with webhook secret for signature verification
+      const { CoinbaseCommerceService } = await import('@/services/payment/coinbase.service');
+      if (!CoinbaseCommerceService.isConfigured()) {
+        logger.error('[Coinbase] Service not configured — webhook secret is missing, cannot verify webhook signatures');
+        res.status(500).json({ error: 'Payment webhook configuration error' });
+        return;
+      }
+
       const signature = req.headers['x-cc-webhook-signature'] as string;
       // Use the raw body preserved by rawBodySaver middleware
       // This is critical for signature verification - we need the EXACT bytes Coinbase sent
       const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
+      // SECURITY: Signature is MANDATORY — never process a webhook without verifying it
       if (!signature) {
-        logger.warn('[Coinbase] Webhook received without signature header');
-        res.status(400).json({ error: 'Missing webhook signature' });
+        logger.warn('[Coinbase] Webhook received without signature header — rejecting', {
+          ip: req.ip,
+        });
+        res.status(401).json({ error: 'Missing webhook signature' });
         return;
       }
 

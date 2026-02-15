@@ -84,11 +84,11 @@ router.use('/employees', employeeRoutes);
 // Expense tracking routes
 router.use('/expenses', expenseRoutes);
 
-// Admin setup routes (for initial setup only)
-router.use('/setup', setupAdminRoutes);
-
-// Debug routes (for testing only)
-router.use('/debug', debugAdminRoutes);
-router.use('/debug/email', debugEmailRoutes);
+// Admin setup routes (for initial setup only - DISABLED in production)
+if (process.env.NODE_ENV !== 'production') {
+  router.use('/setup', setupAdminRoutes);
+  router.use('/debug', debugAdminRoutes);
+  router.use('/debug/email', debugEmailRoutes);
+}
 
 export default router;

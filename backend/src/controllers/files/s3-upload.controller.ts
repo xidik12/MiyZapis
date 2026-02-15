@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
 import { initializeS3Service, getS3Service } from '@/services/s3.service';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/config/database';
+import { logger } from '@/utils/logger';
 import path from 'path';
 import fs from 'fs/promises';
 
-const prisma = new PrismaClient();
 const enableLocalMirror = process.env.ENABLE_LOCAL_MIRROR === 'true';
 const localMirrorBaseDir =
   process.env.RAILWAY_VOLUME_MOUNT_PATH ||
@@ -46,16 +46,16 @@ const writeLocalMirror = async (buffer: Buffer, key: string): Promise<void> => {
   const resolvedPath = path.resolve(localMirrorBaseDir, safeKey);
 
   if (!resolvedPath.startsWith(resolvedBase)) {
-    console.warn('⚠️ Local mirror path rejected:', { key, resolvedPath });
+    logger.warn('Local mirror path rejected', { key, resolvedPath });
     return;
   }
 
   try {
     await fs.mkdir(path.dirname(resolvedPath), { recursive: true, mode: 0o755 });
     await fs.writeFile(resolvedPath, buffer, { mode: 0o644 });
-    console.log('🧷 Local mirror saved:', resolvedPath);
+    logger.info('Local mirror saved', { path: resolvedPath });
   } catch (error) {
-    console.warn('⚠️ Local mirror write failed:', error instanceof Error ? error.message : String(error));
+    logger.warn('Local mirror write failed', { error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -83,7 +83,7 @@ export const uploadMiddleware = upload.array('files', 10);
  */
 export const uploadFiles = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('🚀 S3 Upload request:', {
+    logger.info('S3 Upload request', {
       userId: req.user?.id,
       purpose: req.query.purpose,
       filesCount: Array.isArray(req.files) ? req.files.length : 0
@@ -108,22 +108,11 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
     try {
       s3Service = initS3();
     } catch (error) {
-      console.error('❌ S3 initialization failed:', error);
-      res.status(500).json({ 
-        success: false, 
+      logger.error('S3 initialization failed', { error });
+      res.status(500).json({
+        success: false,
         error: 'Cloud storage not available',
         details: error instanceof Error ? error.message : 'Unknown error'
-      });
-      return;
-    }
-
-    // Test S3 connection
-    const isS3Connected = await s3Service.testConnection();
-    if (!isS3Connected) {
-      console.error('❌ S3 connection test failed');
-      res.status(500).json({ 
-        success: false, 
-        error: 'Cloud storage connection failed' 
       });
       return;
     }
@@ -136,7 +125,7 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
       const file = files[i];
       
       try {
-        console.log(`📁 Processing file ${i + 1}/${files.length}:`, {
+        logger.info(`Processing file ${i + 1}/${files.length}`, {
           originalName: file.originalname,
           mimeType: file.mimetype,
           size: file.size
@@ -200,17 +189,17 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
           cloudProvider: 'S3'
         });
 
-        console.log(`✅ File ${i + 1} uploaded successfully:`, s3Result.url);
+        logger.info(`File ${i + 1} uploaded successfully`, { url: s3Result.url });
 
       } catch (fileError) {
-        console.error(`❌ Failed to upload file ${file.originalname}:`, fileError);
+        logger.error(`Failed to upload file ${file.originalname}`, { error: fileError });
         errors.push(`File ${file.originalname}: ${fileError instanceof Error ? fileError.message : 'Upload failed'}`);
       }
     }
 
     // Send response
     if (uploadResults.length > 0) {
-      console.log(`📤 Upload completed: ${uploadResults.length} files successful, ${errors.length} errors`);
+      logger.info(`Upload completed: ${uploadResults.length} files successful, ${errors.length} errors`);
       
       res.status(uploadResults.length === files.length ? 200 : 207).json({
         success: true,
@@ -219,7 +208,7 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
         errors: errors.length > 0 ? errors : undefined
       });
     } else {
-      console.error('❌ All file uploads failed');
+      logger.error('All file uploads failed');
       res.status(400).json({
         success: false,
         error: 'All file uploads failed',
@@ -228,14 +217,12 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
     }
 
   } catch (error) {
-    console.error('💥 S3 upload controller error:', error);
+    logger.error('S3 upload controller error', { error });
     res.status(500).json({
       success: false,
       error: 'File upload failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
-  } finally {
-    await prisma.$disconnect();
   }
 };
 
@@ -243,7 +230,7 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
  * Test endpoint for presigned upload
  */
 export const testPresignedEndpoint = async (req: Request, res: Response): Promise<void> => {
-  console.log('✅ Test presigned endpoint hit!', {
+  logger.info('Test presigned endpoint hit', {
     userId: req.user?.id,
     timestamp: new Date().toISOString()
   });
@@ -260,7 +247,7 @@ export const testPresignedEndpoint = async (req: Request, res: Response): Promis
  * Generate presigned URL for direct S3 upload
  */
 export const getPresignedUploadUrl = async (req: Request, res: Response): Promise<void> => {
-  console.log('🔗 [PRESIGNED URL] Request received!', {
+  logger.info('[PRESIGNED URL] Request received', {
     timestamp: new Date().toISOString(),
     userId: req.user?.id,
     body: req.body,
@@ -272,13 +259,13 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
 
   try {
     if (!req.user?.id) {
-      console.error('❌ [PRESIGNED URL] No user ID');
+      logger.error('[PRESIGNED URL] No user ID');
       res.status(401).json({ success: false, error: 'Authentication required' });
       return;
     }
 
     const { filename, contentType, type, folder } = req.body;
-    console.log('📋 [PRESIGNED URL] Parsed request:', { filename, contentType, type, folder });
+    logger.info('[PRESIGNED URL] Parsed request', { filename, contentType, type, folder });
 
     if (!filename || !contentType) {
       res.status(400).json({ 
@@ -293,10 +280,10 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
     try {
       s3Service = initS3();
     } catch (error) {
-      console.error('❌ S3 initialization failed:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Cloud storage not available' 
+      logger.error('S3 initialization failed', { error });
+      res.status(500).json({
+        success: false,
+        error: 'Cloud storage not available'
       });
       return;
     }
@@ -309,7 +296,7 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
       uploadOptions
     );
 
-    console.log('✅ Presigned URL generated:', {
+    logger.info('Presigned URL generated', {
       key: presignedResult.key,
       fileUrl: presignedResult.fileUrl
     });
@@ -320,7 +307,7 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
     });
 
   } catch (error) {
-    console.error('❌ Presigned URL generation failed:', error);
+    logger.error('Presigned URL generation failed', { error });
     res.status(500).json({
       success: false,
       error: 'Failed to generate presigned URL',
@@ -334,7 +321,7 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
  */
 export const confirmUpload = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('✅ Confirm upload request:', {
+    logger.info('Confirm upload request', {
       userId: req.user?.id,
       body: req.body
     });
@@ -378,7 +365,7 @@ export const confirmUpload = async (req: Request, res: Response): Promise<void> 
       data: fileData
     });
 
-    console.log('✅ File record created:', fileRecord.id);
+    logger.info('File record created', { fileId: fileRecord.id });
 
     res.json({
       success: true,
@@ -398,14 +385,12 @@ export const confirmUpload = async (req: Request, res: Response): Promise<void> 
     });
 
   } catch (error) {
-    console.error('❌ Confirm upload failed:', error);
+    logger.error('Confirm upload failed', { error });
     res.status(500).json({
       success: false,
       error: 'Failed to confirm upload',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
-  } finally {
-    await prisma.$disconnect();
   }
 };
 
@@ -414,7 +399,7 @@ export const confirmUpload = async (req: Request, res: Response): Promise<void> 
  */
 export const deleteFile = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('🗑️ Delete file request:', {
+    logger.info('Delete file request', {
       userId: req.user?.id,
       fileId: req.params.id
     });
@@ -447,9 +432,9 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
       try {
         const s3Service = initS3();
         await s3Service.deleteFile(fileRecord.path); // path contains S3 key
-        console.log('✅ File deleted from S3:', fileRecord.path);
+        logger.info('File deleted from S3', { path: fileRecord.path });
       } catch (s3Error) {
-        console.error('⚠️ S3 deletion failed (continuing with database deletion):', s3Error);
+        logger.error('S3 deletion failed (continuing with database deletion)', { error: s3Error });
       }
     }
 
@@ -458,7 +443,7 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
       where: { id: fileId }
     });
 
-    console.log('✅ File record deleted from database:', fileId);
+    logger.info('File record deleted from database', { fileId });
 
     res.json({
       success: true,
@@ -466,14 +451,12 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
     });
 
   } catch (error) {
-    console.error('❌ File deletion failed:', error);
+    logger.error('File deletion failed', { error });
     res.status(500).json({
       success: false,
       error: 'File deletion failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
-  } finally {
-    await prisma.$disconnect();
   }
 };
 

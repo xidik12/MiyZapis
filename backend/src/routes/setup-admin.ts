@@ -13,7 +13,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
 
     // Require special setup key for security
     const setupKey = req.headers['x-setup-key'];
-    if (setupKey !== process.env.ADMIN_SETUP_KEY && setupKey !== 'railway-admin-setup-2025') {
+    if (!process.env.ADMIN_SETUP_KEY || setupKey !== process.env.ADMIN_SETUP_KEY) {
       return res.status(403).json({ error: 'Invalid setup key' });
     }
 
@@ -22,7 +22,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
       email: process.env.ADMIN_EMAIL || 'admin@miyzapis.com',
       firstName: process.env.ADMIN_FIRST_NAME || 'System',
       lastName: process.env.ADMIN_LAST_NAME || 'Administrator',
-      password: process.env.ADMIN_PASSWORD || 'Admin123!@#Railway'
+      password: process.env.ADMIN_PASSWORD || ''
     };
 
     console.log('🚀 Starting admin setup via HTTP endpoint...');

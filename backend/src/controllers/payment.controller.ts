@@ -894,15 +894,22 @@ export class PaymentController {
     let chargeId: string | undefined;
 
     try {
+      // SECURITY: Coinbase Commerce must be configured with webhook secret for signature verification
+      if (!CoinbaseCommerceService.isConfigured()) {
+        logger.error('Coinbase Commerce not configured — webhook secret is missing, cannot verify webhook signatures');
+        res.status(500).json({ error: 'Payment webhook configuration error' });
+        return;
+      }
+
       const signature = req.headers['x-cc-webhook-signature'] as string;
 
+      // SECURITY: Signature is MANDATORY — never process a webhook without verifying it
       if (!signature) {
-        logger.warn('Coinbase webhook received without signature', {
-          headers: req.headers,
+        logger.warn('Coinbase webhook received without signature — rejecting', {
           userAgent: req.headers['user-agent'],
           ip: req.ip,
         });
-        res.status(400).json({ error: 'Missing webhook signature' });
+        res.status(401).json({ error: 'Missing webhook signature' });
         return;
       }
 
@@ -1346,10 +1353,24 @@ export class PaymentController {
         headers: req.headers,
       });
 
-      // Check if WayForPay is configured
+      // SECURITY: WayForPay must be configured with merchant secret for signature verification
       if (!WayForPayService.isConfigured()) {
-        res.status(503).json({
-          error: 'WayForPay payment method is not available',
+        logger.error('[WayForPay] Service not configured — merchant secret is missing, cannot verify webhook signatures');
+        res.status(500).json({
+          error: 'Payment webhook configuration error',
+        });
+        return;
+      }
+
+      // SECURITY: Signature is MANDATORY — never process a webhook without it
+      if (!req.body || !req.body.merchantSignature) {
+        logger.warn('[WayForPay] Webhook received without signature — rejecting', {
+          hasBody: !!req.body,
+          hasSignature: !!req.body?.merchantSignature,
+          ip: req.ip,
+        });
+        res.status(401).json({
+          error: 'Missing webhook signature',
         });
         return;
       }
@@ -1357,7 +1378,11 @@ export class PaymentController {
       const result = await wayforpayService.processWebhook(req.body);
 
       if (!result.isValid) {
-        res.status(400).json({
+        logger.warn('[WayForPay] Invalid webhook signature — rejecting', {
+          orderReference: req.body.orderReference,
+          ip: req.ip,
+        });
+        res.status(401).json({
           error: 'Invalid webhook signature',
         });
         return;

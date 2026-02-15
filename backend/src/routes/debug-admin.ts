@@ -15,7 +15,7 @@ router.get('/check-admin/:email', async (req: Request, res: Response) => {
 
     // Require special debug key for security
     const debugKey = req.headers['x-debug-key'];
-    if (debugKey !== 'debug-admin-check-2025') {
+    if (!process.env.DEBUG_KEY || debugKey !== process.env.DEBUG_KEY) {
       return res.status(403).json({ error: 'Invalid debug key' });
     }
 
@@ -30,7 +30,7 @@ router.get('/check-admin/:email', async (req: Request, res: Response) => {
         isActive: true,
         isEmailVerified: true,
         createdAt: true,
-        password: true // We'll just check if it exists, not return it
+        password: false
       }
     });
 

@@ -127,7 +127,7 @@ api.interceptors.request.use(
       console.log(`Data:`, config.data ? JSON.stringify(config.data, null, 2) : 'No data');
       console.log(`Params:`, config.params ? JSON.stringify(config.params, null, 2) : 'No params');
       console.log(`Timestamp: ${new Date().toISOString()}`);
-      console.log(`Auth Token:`, token ? `${token.substring(0, 20)}...` : 'No token');
+      console.log(`Auth Token:`, token ? '[PRESENT]' : '[ABSENT]');
       console.groupEnd();
     }
     
@@ -536,18 +536,6 @@ export const runFullDiagnostics = async () => {
   console.groupEnd();
 };
 
-// Make debug functions available globally for easy access
-if (environment.DEBUG) {
-  (window as any).debugApiConnection = debugApiConnection;
-  (window as any).debugAuthStatus = debugAuthStatus;
-  (window as any).debugBrowserInfo = debugBrowserInfo;
-  (window as any).runFullDiagnostics = runFullDiagnostics;
-
-  console.log('🔧 Debug functions available:');
-  console.log('- debugApiConnection()');
-  console.log('- debugAuthStatus()');
-  console.log('- debugBrowserInfo()');
-  console.log('- runFullDiagnostics()');
-}
+// Debug functions are available as named exports only — never on window
 
 export default apiClient;

@@ -4,12 +4,12 @@ import { z } from 'zod';
 // Load environment variables
 dotenv.config();
 
-// Early logging to track configuration loading
+// Configuration loading (no secrets logged)
 console.log('📋 Loading configuration...', {
   nodeEnv: process.env.NODE_ENV || 'undefined',
   port: process.env.PORT || 'undefined',
-  databaseUrl: process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 20)}...` : 'undefined',
-  redisUrl: process.env.REDIS_URL ? 'provided' : 'not provided',
+  databaseUrl: process.env.DATABASE_URL ? '[SET]' : '[MISSING]',
+  redisUrl: process.env.REDIS_URL ? '[SET]' : '[NOT SET]',
   timestamp: new Date().toISOString()
 });
 
@@ -65,7 +65,7 @@ const envSchema = z.object({
   SMTP_SECURE: z.string().transform(val => val === 'true').default('false'),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  EMAIL_FROM: z.string().default('noreply@miyzapis.com'),
+  EMAIL_FROM: z.string().default('noreply@panhaha.com'),
 
   // AWS S3 (optional for development)
   AWS_REGION: z.string().default('us-east-1'),
@@ -86,7 +86,7 @@ const envSchema = z.object({
 
   // Security
   BCRYPT_ROUNDS: z.string().transform(Number).default('12'),
-  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').default('miyzapis-default-session-secret-change-in-production-32chars'),
+  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters'),
   CORS_ORIGIN: z
     .string()
     .default('http://localhost:3000,https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app'),
