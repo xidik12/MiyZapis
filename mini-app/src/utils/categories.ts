@@ -218,4 +218,9 @@ export const homeStrings: Record<string, Record<Locale, string>> = {
   specReviews: { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   specClients: { en: 'Clients', uk: 'Клієнти', ru: 'Клиенты' },
   specSettings: { en: 'Settings', uk: 'Налашт.', ru: 'Настр.' },
+  // Welcome banner
+  welcomeTitle: { en: 'Welcome to MiyZapis', uk: 'Ласкаво просимо до МійЗапис', ru: 'Добро пожаловать в MiyZapis' },
+  welcomeSubtitle: { en: 'Book appointments with top specialists near you', uk: 'Записуйтесь до найкращих спеціалістів поруч', ru: 'Запишитесь к лучшим специалистам рядом' },
+  signIn: { en: 'Sign In / Register', uk: 'Увійти / Реєстрація', ru: 'Войти / Регистрация' },
+  welcomeHint: { en: 'Sign in to book, track, and manage appointments', uk: 'Увійдіть, щоб записуватись та керувати записами', ru: 'Войдите, чтобы записываться и управлять записями' },
 };

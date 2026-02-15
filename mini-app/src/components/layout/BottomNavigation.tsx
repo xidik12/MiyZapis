@@ -110,12 +110,14 @@ const specialistNavItems: NavItem[] = [
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, hapticFeedback } = useTelegram();
+  const { isAuthenticated: tgAuth, hapticFeedback } = useTelegram();
 
+  const authState = useSelector((state: RootState) => state.auth?.isAuthenticated);
   const userRole = useSelector((state: RootState) => state.auth?.user?.role);
   const messageUnread = useSelector((state: RootState) => state.messages?.unreadCount ?? 0);
   const notifUnread = useSelector((state: RootState) => state.notifications?.unreadCount ?? 0);
 
+  const isAuthenticated = tgAuth || authState;
   const navItems = userRole === 'specialist' ? specialistNavItems : customerNavItems;
 
   const getBadgeCount = (key?: 'messages' | 'notifications') => {
@@ -138,10 +140,8 @@ export const BottomNavigation: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
-  const visibleNavItems = navItems.filter(item => {
-    if (item.requiresAuth && !isAuthenticated) return false;
-    return true;
-  });
+  // Always show all nav items — redirect to auth when tapped if not authenticated
+  const visibleNavItems = navItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-bg-secondary/80 backdrop-blur-xl border-t border-white/5 flex justify-around items-center h-14 z-50 safe-bottom">

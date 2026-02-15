@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Mail, Phone, User, AlertCircle } from 'lucide-react';
+import { Mail, Phone, User, AlertCircle, Calendar, Star, Shield, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -9,20 +9,24 @@ import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
-import { telegramAuthAsync, registerAsync, clearError } from '@/store/slices/authSlice';
+import { telegramAuthAsync, registerAsync, clearError, setCredentials } from '@/store/slices/authSlice';
 import { addToast } from '@/store/slices/uiSlice';
+
+// @ts-ignore - Vite env types
+const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+// @ts-ignore
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    user: telegramUser,
-    hapticFeedback,
-    initData,
-    initDataUnsafe
-  } = useTelegram();
+  const { hapticFeedback, initData, webApp } = useTelegram();
 
-  const { user, isAuthenticated, isLoading, error } = useSelector(
+  // Raw Telegram user from WebApp SDK (has first_name, last_name, photo_url, username)
+  const telegramUser = webApp?.initDataUnsafe?.user || null;
+  const initDataUnsafe = webApp?.initDataUnsafe || null;
+
+  const { isAuthenticated, isLoading, error } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -33,6 +37,8 @@ export const LoginPage: React.FC = () => {
     phone: ''
   });
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,6 +56,91 @@ export const LoginPage: React.FC = () => {
     }
   }, [telegramUser]);
 
+  // Initialize Google Sign-In
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const initGoogle = () => {
+      if (!(window as any).google?.accounts?.id) return;
+
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      if (googleButtonRef.current) {
+        (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+          type: 'standard',
+          theme: 'filled_blue',
+          size: 'large',
+          width: googleButtonRef.current.offsetWidth,
+          text: 'signin_with',
+          shape: 'pill',
+          logo_alignment: 'left',
+        });
+      }
+    };
+
+    // Check if script already loaded
+    if ((window as any).google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    // Load the GSI script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup - don't remove script as other components may use it
+    };
+  }, [GOOGLE_CLIENT_ID]);
+
+  const handleGoogleResponse = useCallback(async (response: any) => {
+    if (!response?.credential) return;
+    setGoogleLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        const { tokens, user } = data.data;
+        localStorage.setItem('authToken', tokens?.accessToken || tokens?.token || '');
+        dispatch(setCredentials({ user, token: tokens?.accessToken || tokens?.token }));
+        dispatch(addToast({
+          type: 'success',
+          title: 'Welcome!',
+          message: `Signed in as ${user.firstName}`
+        }));
+        hapticFeedback.notificationSuccess();
+      } else {
+        throw new Error(data.error || 'Google sign-in failed');
+      }
+    } catch (err) {
+      console.error('Google auth error:', err);
+      dispatch(addToast({
+        type: 'error',
+        title: 'Sign-in Failed',
+        message: err instanceof Error ? err.message : 'Google sign-in failed'
+      }));
+      hapticFeedback.notificationError();
+    } finally {
+      setGoogleLoading(false);
+    }
+  }, [dispatch, hapticFeedback]);
+
   const handleAutoLogin = async () => {
     try {
       const telegramData = {
@@ -64,7 +155,6 @@ export const LoginPage: React.FC = () => {
         message: 'You have been signed in successfully.'
       }));
     } catch (err) {
-      // If auto-login fails, show registration form
       setShowRegistrationForm(true);
       hapticFeedback.notificationWarning();
     }
@@ -85,7 +175,7 @@ export const LoginPage: React.FC = () => {
       const userData = {
         ...registrationData,
         email: registrationData.email || `${telegramUser?.id}@telegram.local`,
-        password: 'temp_telegram_password', // Will be handled by backend
+        password: 'temp_telegram_password',
         telegramId: telegramUser?.id.toString()
       };
 
@@ -102,21 +192,20 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setRegistrationData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setRegistrationData(prev => ({ ...prev, [field]: value }));
     if (error) dispatch(clearError());
   };
 
-  if (isLoading) {
+  if (isLoading || googleLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary">
         <Header title="Signing In..." />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-            <p className="text-text-secondary">Authenticating with Telegram...</p>
+            <p className="text-text-secondary">
+              {googleLoading ? 'Signing in with Google...' : 'Authenticating with Telegram...'}
+            </p>
           </div>
         </div>
       </div>
@@ -126,146 +215,169 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary text-text-primary">
       <Header
-        title="Welcome"
-        subtitle="Sign in to continue"
+        title="Welcome to MiyZapis"
+        subtitle="Your booking platform"
       />
 
-      <div className="flex-1 px-4 py-6 page-stagger">
-        {/* Telegram User Info */}
-        {telegramUser && (
-          <Card className="mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              {telegramUser.photo_url ? (
-                <img
-                  src={telegramUser.photo_url}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-accent-primary flex items-center justify-center">
-                  <User size={24} className="text-white" />
-                </div>
-              )}
-              <div>
-                <h3 className="font-semibold text-text-primary">
-                  {telegramUser.first_name} {telegramUser.last_name}
-                </h3>
-                {telegramUser.username && (
-                  <p className="text-text-secondary">@{telegramUser.username}</p>
-                )}
-              </div>
-            </div>
+      <div className="flex-1 px-4 py-6 page-stagger overflow-y-auto">
+        {/* Hero Section */}
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#3b97f2] to-[#1d4ed8] flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Calendar size={36} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-text-primary mb-2">MiyZapis</h1>
+          <p className="text-text-secondary text-sm max-w-[280px] mx-auto">
+            Book appointments with top specialists. Manage your schedule effortlessly.
+          </p>
+        </div>
 
-            {!showRegistrationForm ? (
-              <div>
-                <p className="text-text-secondary mb-4">
-                  Continue with your Telegram account to access all booking features.
-                </p>
-                <Button
-                  fullWidth
-                  onClick={handleAutoLogin}
-                  disabled={isLoading}
-                >
+        {/* How it works */}
+        <Card className="mb-6">
+          <h3 className="font-semibold text-text-primary mb-3 text-sm">How it works</h3>
+          <div className="space-y-3">
+            {[
+              { icon: <User size={16} />, title: 'Create Account', desc: 'Sign in with Google or Telegram' },
+              { icon: <Star size={16} />, title: 'Find Specialists', desc: 'Browse and pick the best match' },
+              { icon: <Calendar size={16} />, title: 'Book & Go', desc: 'Choose a time and confirm' },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent-primary/15 flex items-center justify-center text-accent-primary flex-shrink-0">
+                  {step.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary">{step.title}</p>
+                  <p className="text-xs text-text-secondary">{step.desc}</p>
+                </div>
+                {i < 2 && <ChevronRight size={14} className="text-text-muted flex-shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Sign-In Options */}
+        <div className="space-y-3 mb-6">
+          {/* Telegram Sign-In */}
+          {telegramUser && (
+            <Card className="mb-0">
+              <div className="flex items-center gap-3 mb-3">
+                {telegramUser.photo_url ? (
+                  <img src={telegramUser.photo_url} alt="Profile" className="w-12 h-12 rounded-full" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-accent-primary flex items-center justify-center">
+                    <User size={20} className="text-white" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-semibold text-text-primary text-sm">
+                    {telegramUser.first_name} {telegramUser.last_name}
+                  </h3>
+                  {telegramUser.username && (
+                    <p className="text-xs text-text-secondary">@{telegramUser.username}</p>
+                  )}
+                </div>
+              </div>
+
+              {!showRegistrationForm ? (
+                <Button fullWidth onClick={handleAutoLogin} disabled={isLoading}>
                   Continue with Telegram
                 </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-text-secondary">
-                  Complete your profile to get started:
-                </p>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-text-secondary text-sm">Complete your profile:</p>
+                  <Input
+                    label="First Name"
+                    value={registrationData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    icon={<User size={16} />}
+                    placeholder="First name"
+                    required
+                  />
+                  <Input
+                    label="Last Name"
+                    value={registrationData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    icon={<User size={16} />}
+                    placeholder="Last name"
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={registrationData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    icon={<Mail size={16} />}
+                    placeholder="your@email.com"
+                  />
+                  <Input
+                    label="Phone"
+                    type="tel"
+                    value={registrationData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    icon={<Phone size={16} />}
+                    placeholder="+380..."
+                  />
+                  <Button
+                    fullWidth
+                    onClick={handleRegistration}
+                    disabled={!registrationData.firstName.trim() || isLoading}
+                    loading={isLoading}
+                  >
+                    Complete Registration
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
 
-                <Input
-                  label="First Name"
-                  value={registrationData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  icon={<User size={18} />}
-                  placeholder="Enter your first name"
-                  required
-                />
+          {/* Divider */}
+          {telegramUser && GOOGLE_CLIENT_ID && (
+            <div className="flex items-center gap-3 my-2">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-xs text-text-muted">or</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+          )}
 
-                <Input
-                  label="Last Name (Optional)"
-                  value={registrationData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  icon={<User size={18} />}
-                  placeholder="Enter your last name"
-                />
-
-                <Input
-                  label="Email (Optional)"
-                  type="email"
-                  value={registrationData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  icon={<Mail size={18} />}
-                  placeholder="Enter your email"
-                />
-
-                <Input
-                  label="Phone (Optional)"
-                  type="tel"
-                  value={registrationData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  icon={<Phone size={18} />}
-                  placeholder="Enter your phone number"
-                />
-
-                <Button
-                  fullWidth
-                  onClick={handleRegistration}
-                  disabled={!registrationData.firstName.trim() || isLoading}
-                  loading={isLoading}
-                >
-                  Complete Registration
-                </Button>
-              </div>
-            )}
-          </Card>
-        )}
+          {/* Google Sign-In */}
+          {GOOGLE_CLIENT_ID && (
+            <div className="w-full">
+              <div ref={googleButtonRef} className="w-full flex justify-center" />
+            </div>
+          )}
+        </div>
 
         {/* Error Display */}
         {error && (
-          <Card className="mb-6 bg-accent-red/15 border-accent-red/30">
+          <Card className="mb-4 bg-accent-red/15 border-accent-red/30">
             <div className="flex items-center gap-3">
-              <AlertCircle size={20} className="text-accent-red flex-shrink-0" />
+              <AlertCircle size={18} className="text-accent-red flex-shrink-0" />
               <div>
-                <h4 className="font-medium text-accent-red">Authentication Error</h4>
-                <p className="text-sm text-accent-red/80 mt-1">{error}</p>
+                <h4 className="font-medium text-accent-red text-sm">Error</h4>
+                <p className="text-xs text-accent-red/80 mt-0.5">{error}</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => dispatch(clearError())}
-              className="mt-3 text-accent-red"
+              className="mt-2 text-accent-red"
             >
-              Try Again
+              Dismiss
             </Button>
           </Card>
         )}
 
-        {/* Info Section */}
-        <Card className="bg-accent-primary/10 border-accent-primary/20">
-          <div className="text-center">
-            <h3 className="font-semibold text-accent-primary mb-2">
-              Why sign in?
-            </h3>
-            <ul className="text-sm text-accent-primary/80 space-y-1">
-              <li>Book and manage appointments</li>
-              <li>Save favorite specialists</li>
-              <li>Track booking history</li>
-              <li>Get personalized recommendations</li>
-              <li>Earn loyalty points</li>
-            </ul>
-          </div>
-        </Card>
+        {/* Security note */}
+        <div className="flex items-center gap-2 justify-center text-text-muted mb-4">
+          <Shield size={14} />
+          <span className="text-[11px]">Secure sign-in. Your data is protected.</span>
+        </div>
 
         {/* Browse without account */}
-        <div className="mt-6 text-center">
+        <div className="text-center">
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="text-text-secondary"
+            className="text-text-secondary text-sm"
           >
             Browse without account
           </Button>
