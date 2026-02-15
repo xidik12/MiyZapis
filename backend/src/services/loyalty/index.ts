@@ -970,11 +970,72 @@ export class LoyaltyService {
 
   static async getLoyaltyStats(userId: string) {
     const userStats = await this.getUserLoyaltyStats(userId);
-    
+
     if (!userStats) {
       return null;
     }
-    
+
+    const totalPoints = userStats.totalPoints;
+
+    // Fetch loyalty tiers from DB, creating defaults if none exist
+    let tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    if (!tiers || tiers.length === 0) {
+      await this.createDefaultTiers();
+      tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    }
+
+    // Determine current tier (highest tier the user qualifies for)
+    const currentTierRec = [...tiers].reverse().find(t => totalPoints >= t.minPoints) || null;
+    // Determine next tier (lowest tier the user has not yet reached)
+    const nextTierRec = tiers.find(t => totalPoints < t.minPoints) || null;
+    const pointsToNextTier = nextTierRec ? Math.max(0, nextTierRec.minPoints - totalPoints) : 0;
+
+    // Helper to map a DB tier record to the frontend-expected shape
+    const mapTier = (t: typeof currentTierRec) => t && ({
+      id: t.id,
+      name: t.name,
+      slug: t.name.toLowerCase(),
+      minPoints: t.minPoints,
+      maxPoints: t.maxPoints || undefined,
+      benefits: (() => { try { return JSON.parse(t.benefits); } catch { return []; } })(),
+      discountPercentage: undefined as number | undefined,
+      prioritySupport: false,
+      exclusiveOffers: false,
+      createdAt: t.createdAt
+    });
+
+    // Calculate monthly and yearly earned points via aggregate queries
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    const [monthlyAgg, yearlyAgg, totalSpentAgg] = await Promise.all([
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: {
+          userId,
+          createdAt: { gte: monthStart },
+          type: 'EARN'
+        }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: {
+          userId,
+          createdAt: { gte: yearStart },
+          type: 'EARN'
+        }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, type: 'REDEEMED' }
+      })
+    ]);
+
+    const monthlyPoints = monthlyAgg._sum.points || 0;
+    const yearlyPoints = yearlyAgg._sum.points || 0;
+    const totalSpentPoints = Math.abs(totalSpentAgg._sum.points || 0);
+
     // Transform the user stats to match frontend expectations
     return {
       totalPoints: userStats.totalPoints,
@@ -982,12 +1043,12 @@ export class LoyaltyService {
       totalBadges: userStats.badges.length,
       totalReferrals: userStats.successfulReferrals,
       totalServices: userStats.totalBookings, // Map totalBookings to totalServices
-      currentTier: null, // TODO: Implement tier lookup
-      nextTier: null, // TODO: Implement next tier lookup
-      pointsToNextTier: 0, // TODO: Calculate points needed for next tier
-      monthlyPoints: 0, // TODO: Calculate monthly points
-      yearlyPoints: 0, // TODO: Calculate yearly points
-      totalSpentPoints: 0 // TODO: Calculate spent points from redemption transactions
+      currentTier: mapTier(currentTierRec) || null,
+      nextTier: mapTier(nextTierRec) || null,
+      pointsToNextTier,
+      monthlyPoints,
+      yearlyPoints,
+      totalSpentPoints
     };
   }
   

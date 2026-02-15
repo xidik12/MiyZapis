@@ -70,7 +70,7 @@ model User {
   loyaltyTransactions  LoyaltyTransaction[]
   
   // Enhanced Loyalty Relations
-  loyaltyTier          LoyaltyTier? @relation("UserLoyaltyTier", fields: [loyaltyTierId], references: [id])
+  loyaltyTier          LoyaltyTier? @relation("UserLoyaltyTier", fields: [loyaltyTierId], references: [id], onDelete: SetNull)
   loyaltyTierId        String?
   badges               UserBadge[]
   referralsGiven       LoyaltyReferral[] @relation("ReferrerRelation")
@@ -111,6 +111,8 @@ model User {
   @@index([telegramId])
   @@index([userType, isActive])
   @@index([lastLoginAt])
+  @@index([createdAt])
+  @@index([loyaltyTierId])
 
   @@map("users")
 }
@@ -193,6 +195,8 @@ model Specialist {
   @@index([rating])
   @@index([specialties])
   @@index([isVerified])
+  @@index([createdAt])
+  @@index([country, city])
 
   @@map("specialists")
 }
@@ -353,7 +357,7 @@ model Service {
 
   // Relations
   specialist       Specialist        @relation(fields: [specialistId], references: [id], onDelete: Cascade)
-  categoryModel    Category?         @relation(fields: [categoryId], references: [id])
+  categoryModel    Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   bookings         Booking[]
   favorites        FavoriteService[] @relation("ServiceFavorites")
   employeeServices EmployeeService[]
@@ -431,14 +435,20 @@ model Booking {
   @@index([customerId, status])
   @@index([specialistId, status])
   @@index([scheduledAt])
+  @@index([createdAt])
+  @@index([customerId, scheduledAt])
+  @@index([specialistId, scheduledAt])
+  @@index([serviceId])
+  @@index([employeeId])
+  @@index([depositStatus])
   @@index([groupSessionId]) // For efficiently querying all bookings in a group session
 
   // Relations
-  customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
-  specialist    User        @relation("SpecialistBookings", fields: [specialistId], references: [id])
-  service       Service     @relation(fields: [serviceId], references: [id])
-  employee      Employee?   @relation("EmployeeBookings", fields: [employeeId], references: [id])
-  promoCode     PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  customer      User        @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  specialist    User        @relation("SpecialistBookings", fields: [specialistId], references: [id], onDelete: Cascade)
+  service       Service     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  employee      Employee?   @relation("EmployeeBookings", fields: [employeeId], references: [id], onDelete: SetNull)
+  promoCode     PromoCode?  @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
   payments      Payment[]
   review        Review?
   notifications Notification[]
@@ -481,8 +491,15 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user    User     @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // Indexes for performance
+  @@index([userId, status])
+  @@index([bookingId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([stripePaymentIntentId])
 
   @@map("payments")
 }
@@ -507,9 +524,16 @@ model Review {
   updatedAt DateTime @updatedAt
 
   // Relations
-  booking    Booking    @relation(fields: [bookingId], references: [id])
-  customer   User       @relation(fields: [customerId], references: [id])
-  specialist Specialist @relation("SpecialistReviews", fields: [specialistId], references: [id])
+  booking    Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer   User       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  specialist Specialist @relation("SpecialistReviews", fields: [specialistId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([customerId])
+  @@index([specialistId])
+  @@index([rating])
+  @@index([createdAt])
+  @@index([specialistId, rating])
 
   @@map("reviews")
 }
@@ -533,7 +557,13 @@ model LoyaltyTransaction {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([userId])
+  @@index([userId, type])
+  @@index([createdAt])
+  @@index([type])
 
   @@map("loyalty_transactions")
 }
@@ -566,8 +596,15 @@ model Notification {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user    User     @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // Indexes for performance
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([bookingId])
+  @@index([type])
+  @@index([createdAt])
 
   @@map("notifications")
 }
@@ -596,6 +633,11 @@ model AvailabilityBlock {
   // Relations
   specialist Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
 
+  // Indexes for performance
+  @@index([specialistId])
+  @@index([specialistId, startDateTime, endDateTime])
+  @@index([isAvailable])
+
   @@map("availability_blocks")
 }
 
@@ -620,6 +662,11 @@ model RefreshToken {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Indexes for performance
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isRevoked])
+
   @@map("refresh_tokens")
 }
 
@@ -640,6 +687,11 @@ model EmailVerificationToken {
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([type])
 
   @@map("email_verification_tokens")
 }
@@ -697,6 +749,12 @@ model AuditLog {
   // Timestamps
   createdAt DateTime @default(now())
 
+  // Indexes for performance
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+
   @@map("audit_logs")
 }
 
@@ -714,7 +772,7 @@ model Category {
   
   // Hierarchy
   parentId    String?
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryHierarchy")
   
   // Settings
@@ -727,6 +785,11 @@ model Category {
   
   // Relations
   services    Service[]
+
+  // Indexes for performance
+  @@index([parentId])
+  @@index([isActive])
+  @@index([sortOrder])
 
   @@map("categories")
 }
@@ -758,8 +821,15 @@ model Message {
   
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver     User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender       User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+  @@index([createdAt])
 
   @@map("messages")
 }
@@ -790,12 +860,20 @@ model Conversation {
   updatedAt     DateTime @updatedAt
   
   // Relations
-  customer      User @relation("CustomerConversations", fields: [customerId], references: [id])
-  specialist    User @relation("SpecialistConversations", fields: [specialistId], references: [id])
-  booking       Booking? @relation(fields: [bookingId], references: [id])
+  customer      User @relation("CustomerConversations", fields: [customerId], references: [id], onDelete: Cascade)
+  specialist    User @relation("SpecialistConversations", fields: [specialistId], references: [id], onDelete: Cascade)
+  booking       Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   messages      Message[]
 
   @@unique([customerId, specialistId, bookingId])
+
+  // Indexes for performance
+  @@index([customerId])
+  @@index([specialistId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([lastMessageAt])
+
   @@map("conversations")
 }
 
@@ -836,7 +914,13 @@ model File {
   deletedAt   DateTime?
   
   // Relations
-  uploader    User @relation(fields: [uploadedBy], references: [id])
+  uploader    User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([uploadedBy])
+  @@index([purpose])
+  @@index([entityType, entityId])
+  @@index([createdAt])
 
   @@map("files")
 }
@@ -921,6 +1005,9 @@ model PromoCode {
   // Relations
   bookings      Booking[]
 
+  // Indexes for performance
+  @@index([isActive, validFrom, validUntil])
+
   @@map("promo_codes")
 }
 
@@ -940,10 +1027,14 @@ model FAQ {
   // Settings
   isActive    Boolean @default(true)
   sortOrder   Int @default(0)
-  
+
   // Metadata
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Indexes for performance
+  @@index([category])
+  @@index([isActive, sortOrder])
 
   @@map("faqs")
 }
@@ -970,8 +1061,15 @@ model Report {
   updatedAt   DateTime @updatedAt
   
   // Relations
-  reporter    User @relation("ReportsMade", fields: [reporterId], references: [id])
-  reported    User @relation("ReportsReceived", fields: [reportedId], references: [id])
+  reporter    User @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported    User @relation("ReportsReceived", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([status])
+  @@index([entityType, entityId])
+  @@index([createdAt])
 
   @@map("reports")
 }
@@ -1325,7 +1423,7 @@ model PointsRedemption {
   
   // Relations
   user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   
   @@index([userId])
   @@index([bookingId])
@@ -1472,12 +1570,14 @@ model CryptoPayment {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  user            User @relation(fields: [userId], references: [id])
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
   @@index([userId, status])
   @@index([coinbaseChargeId])
   @@index([status, expiresAt])
+  @@index([bookingId])
+  @@index([createdAt])
   @@map("crypto_payments")
 }
 
@@ -1509,12 +1609,13 @@ model WalletTransaction {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  user            User @relation(fields: [userId], references: [id])
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
   @@index([userId, type])
   @@index([userId, createdAt])
   @@index([status])
+  @@index([bookingId])
   @@map("wallet_transactions")
 }
 
@@ -1558,7 +1659,7 @@ model SpecialistSubscription {
   updatedAt             DateTime @updatedAt
 
   // Relations
-  specialist            User @relation(fields: [specialistId], references: [id])
+  specialist            User @relation(fields: [specialistId], references: [id], onDelete: Cascade)
 
   @@index([specialistId, status])
   @@index([planType, status])
@@ -1716,7 +1817,7 @@ model UserSubscription {
 
   // Relations
   user              User @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
-  plan              SubscriptionPlan @relation(fields: [planId], references: [id])
+  plan              SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
 
   @@index([userId, status])
   @@index([status, endDate])
@@ -1928,13 +2029,15 @@ model PlatformTransaction {
   updatedAt         DateTime @updatedAt
 
   // Relations
-  customer          User @relation("CustomerPlatformTransactions", fields: [userId], references: [id])
-  specialist        User @relation("SpecialistPlatformTransactions", fields: [specialistId], references: [id])
+  customer          User @relation("CustomerPlatformTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  specialist        User @relation("SpecialistPlatformTransactions", fields: [specialistId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
   @@index([specialistId, type])
   @@index([status, settledAt])
   @@index([sourceType, sourceId])
+  @@index([bookingId])
+  @@index([createdAt])
   @@map("platform_transactions")
 }
 
@@ -2102,13 +2205,15 @@ model EmployeeBooking {
   updatedAt DateTime @updatedAt
 
   // Relations
-  employee       Employee @relation(fields: [employeeId], references: [id])
-  service        BusinessService @relation(fields: [serviceId], references: [id])
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  service        BusinessService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
 
   // Indexes
   @@index([businessId, status])
   @@index([employeeId, scheduledAt])
   @@index([status, scheduledAt])
+  @@index([serviceId])
+  @@index([createdAt])
   @@map("employee_bookings")
 }
 
