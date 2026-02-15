@@ -458,9 +458,9 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start Telegram bots in development mode
+      // Start Telegram bots
       if (config.env === 'development') {
-        // Start basic bot
+        // Start basic bot in development only
         if (bot) {
           bot.launch().then(() => {
             logger.info('🤖 Basic Telegram bot started in polling mode');
@@ -468,18 +468,34 @@ const startServer = async () => {
             logger.warn('Failed to start basic Telegram bot:', error.message);
           });
         }
-        
-        // Initialize and start enhanced bot
-        try {
-          enhancedTelegramBot.initialize();
+      }
+
+      // Initialize and start enhanced bot in all environments
+      try {
+        enhancedTelegramBot.initialize();
+        if (config.telegram.webhookUrl) {
+          // Production with webhook: set webhook, don't poll
+          enhancedTelegramBot.setWebhook().then(() => {
+            logger.info('🚀 Enhanced Telegram bot ready (webhook mode)');
+          }).catch((error) => {
+            logger.warn('Failed to set enhanced Telegram bot webhook:', error.message);
+            // Fallback to polling if webhook fails
+            enhancedTelegramBot.launch().then(() => {
+              logger.info('🚀 Enhanced Telegram bot started in polling mode (webhook fallback)');
+            }).catch((err) => {
+              logger.warn('Failed to start enhanced Telegram bot polling fallback:', err.message);
+            });
+          });
+        } else {
+          // No webhook configured: use polling
           enhancedTelegramBot.launch().then(() => {
             logger.info('🚀 Enhanced Telegram bot started in polling mode');
           }).catch((error) => {
             logger.warn('Failed to start enhanced Telegram bot:', error.message);
           });
-        } catch (error) {
-          logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
         }
+      } catch (error) {
+        logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
       }
 
       // Start background workers (stateless, safe to run once per instance)
