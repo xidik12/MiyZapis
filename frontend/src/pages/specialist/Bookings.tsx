@@ -273,7 +273,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.time')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || 'N/A')}</p>
               </div>
             </div>
             {booking.meetingLink && (

@@ -177,27 +177,49 @@ export const LoginPage: React.FC = () => {
   }, [dispatch, hapticFeedback, telegramUser, initDataUnsafe]);
 
   const handleAutoLogin = async () => {
+    if (!telegramUser || !initData) {
+      setShowRegistrationForm(true);
+      return;
+    }
+
     try {
-      const telegramData = {
-        initData,
-        initDataUnsafe,
-        user: telegramUser
-      };
-      const result = await dispatch(telegramAuthAsync(telegramData)).unwrap();
-      // Sync token to both localStorage keys
-      const token = (result as any)?.token;
-      if (token) {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('booking_app_token', token);
+      // Parse auth_date and hash from initData
+      const params = new URLSearchParams(initData);
+      const authDate = parseInt(params.get('auth_date') || '0', 10);
+      const hash = params.get('hash') || '';
+
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telegramId: telegramUser.id.toString(),
+          firstName: telegramUser.first_name || 'User',
+          lastName: telegramUser.last_name || '',
+          username: telegramUser.username || '',
+          authDate,
+          hash,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        const { tokens, user, token } = data.data;
+        const authToken = tokens?.accessToken || tokens?.token || token || '';
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('booking_app_token', authToken);
+        dispatch(setCredentials({ user, token: authToken }));
+        dispatch(addToast({
+          type: 'success',
+          title: 'Welcome!',
+          message: `Signed in as ${user.firstName}`
+        }));
+        hapticFeedback.notificationSuccess();
+      } else {
+        throw new Error(data.error || 'Telegram auth failed');
       }
-      dispatch(addToast({
-        type: 'success',
-        title: 'Welcome back!',
-        message: 'You have been signed in successfully.'
-      }));
-      hapticFeedback.notificationSuccess();
     } catch (err) {
-      // Telegram auth failed — user not registered yet, show registration form
+      console.error('Telegram auto-login failed:', err);
       setShowRegistrationForm(true);
       hapticFeedback.notificationWarning();
     }
@@ -215,27 +237,45 @@ export const LoginPage: React.FC = () => {
     }
 
     try {
-      const userData = {
-        ...registrationData,
-        email: registrationData.email || `${telegramUser?.id}@telegram.local`,
-        password: 'temp_telegram_password',
-        telegramId: telegramUser?.id.toString()
-      };
+      // Use /auth-enhanced/register with Telegram data
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: registrationData.firstName,
+          lastName: registrationData.lastName || '',
+          email: registrationData.email || `telegram_${telegramUser?.id || 'unknown'}@miyzapis.com`,
+          password: `tg_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          phone: registrationData.phone || '',
+          telegramId: telegramUser?.id?.toString() || '',
+          userType: 'customer',
+        }),
+      });
 
-      const result = await dispatch(registerAsync(userData)).unwrap();
-      // Sync token to both localStorage keys
-      const token = (result as any)?.token;
-      if (token) {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('booking_app_token', token);
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        const { tokens, user, token } = data.data;
+        const authToken = tokens?.accessToken || tokens?.token || token || '';
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('booking_app_token', authToken);
+        dispatch(setCredentials({ user, token: authToken }));
+        dispatch(addToast({
+          type: 'success',
+          title: 'Registration Complete!',
+          message: 'Your account has been created successfully.'
+        }));
+        hapticFeedback.notificationSuccess();
+      } else {
+        throw new Error(data.error || data.message || 'Registration failed');
       }
-      dispatch(addToast({
-        type: 'success',
-        title: 'Registration Complete!',
-        message: 'Your account has been created successfully.'
-      }));
-      hapticFeedback.notificationSuccess();
     } catch (err) {
+      console.error('Registration failed:', err);
+      dispatch(addToast({
+        type: 'error',
+        title: 'Registration Failed',
+        message: err instanceof Error ? err.message : 'Please try again.'
+      }));
       hapticFeedback.notificationError();
     }
   };

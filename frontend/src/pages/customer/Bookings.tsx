@@ -115,8 +115,8 @@ const CustomerBookings: React.FC = () => {
 
       switch (sortBy) {
         case 'date':
-          aVal = new Date(a.scheduledAt);
-          bVal = new Date(b.scheduledAt);
+          aVal = a.scheduledAt ? new Date(a.scheduledAt).getTime() : 0;
+          bVal = b.scheduledAt ? new Date(b.scheduledAt).getTime() : 0;
           break;
         case 'amount':
           aVal = a.totalAmount;
@@ -538,7 +538,8 @@ const CustomerBookings: React.FC = () => {
             {/* Mobile Card View */}
             <div className="lg:hidden space-y-4">
               {paginatedBookings.map((booking) => {
-                const scheduledDate = new Date(booking.scheduledAt);
+                const scheduledDate = booking.scheduledAt ? new Date(booking.scheduledAt) : null;
+                const isValidDate = scheduledDate && !isNaN(scheduledDate.getTime());
                 const specialistName = booking.specialist?.firstName && booking.specialist?.lastName
                   ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
                   : booking.specialistName || 'Unknown Specialist';
@@ -588,9 +589,9 @@ const CustomerBookings: React.FC = () => {
                     {/* Date and time */}
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-4">
                       <CalendarIcon className="w-4 h-4 mr-1" />
-                      <span>{scheduledDate.toLocaleDateString()}</span>
+                      <span>{isValidDate ? scheduledDate.toLocaleDateString() : (booking.date || 'No date')}</span>
                       <ClockIcon className="w-4 h-4 ml-3 mr-1" />
-                      <span>{scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{isValidDate ? scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (booking.time || '')}</span>
                     </div>
 
                     {/* Actions */}
@@ -647,7 +648,8 @@ const CustomerBookings: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {paginatedBookings.map((booking) => {
-                      const scheduledDate = new Date(booking.scheduledAt);
+                      const scheduledDate = booking.scheduledAt ? new Date(booking.scheduledAt) : null;
+                      const isValidDate = scheduledDate && !isNaN(scheduledDate.getTime());
                       const specialistName = booking.specialist?.firstName && booking.specialist?.lastName
                         ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
                         : booking.specialistName || 'Unknown Specialist';
@@ -684,10 +686,10 @@ const CustomerBookings: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900 dark:text-white">
-                              {scheduledDate.toLocaleDateString()}
+                              {isValidDate ? scheduledDate.toLocaleDateString() : (booking.date || 'No date')}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isValidDate ? scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (booking.time || '')}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
