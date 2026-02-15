@@ -107,9 +107,9 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.11",
+    "@types/jest": "^29.5.14",
     "@types/qrcode": "^1.5.5",
-    "@types/supertest": "^6.0.2",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
@@ -120,7 +120,7 @@
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
     "supertest": "^6.3.4",
-    "ts-jest": "^29.1.1",
+    "ts-jest": "^29.4.6",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.7.0",
     "typescript": "^5.9.2"

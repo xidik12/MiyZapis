@@ -1024,13 +1024,13 @@ const SpecialistProfile: React.FC = () => {
                               }}
                               className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                             >
-                              <option value="" className="text-gray-900 dark:text-gray-100">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
-                              <option value="uk" className="text-gray-900 dark:text-gray-100">Українська</option>
+                              <option value="" className="text-gray-900 dark:text-gray-100">{t('profile.addLanguage') || 'Add Language'}</option>
+                              <option value="km" className="text-gray-900 dark:text-gray-100">ខ្មែរ</option>
                               <option value="en" className="text-gray-900 dark:text-gray-100">English</option>
-                              <option value="ru" className="text-gray-900 dark:text-gray-100">Русский</option>
-                              <option value="de" className="text-gray-900 dark:text-gray-100">Deutsch</option>
+                              <option value="zh" className="text-gray-900 dark:text-gray-100">中文</option>
+                              <option value="ja" className="text-gray-900 dark:text-gray-100">日本語</option>
+                              <option value="ko" className="text-gray-900 dark:text-gray-100">한국어</option>
                               <option value="fr" className="text-gray-900 dark:text-gray-100">Français</option>
-                              <option value="es" className="text-gray-900 dark:text-gray-100">Español</option>
                             </select>
                           </div>
                         )}
@@ -1041,7 +1041,7 @@ const SpecialistProfile: React.FC = () => {
                             key={index}
                             className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium dark:bg-primary-900/30 dark:text-primary-300 flex items-center gap-2"
                           >
-                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang === 'de' ? 'Deutsch' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang}
+                            {lang === 'km' ? 'ខ្មែរ' : lang === 'en' ? 'English' : lang === 'zh' ? '中文' : lang === 'ja' ? '日本語' : lang === 'ko' ? '한국어' : lang === 'fr' ? 'Français' : lang}
                             {isEditing && (
                               <button
                                 onClick={() => {

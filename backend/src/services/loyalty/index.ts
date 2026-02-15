@@ -240,18 +240,16 @@ export class LoyaltyService {
       }
       
       // Calculate points based on USD-equivalent spend (1 USD = 10 points)
-      // Conversion uses simple heuristics aligned with frontend context (UAH:USD ~ 41, EUR:UAH ~ 40)
+      // Cambodia uses USD and KHR. Conversion: 1 USD ~ 4,100 KHR
       const currency = booking.service?.currency || 'USD';
       const amount = booking.totalAmount;
-      const uahPerUsd = 41; // 1 USD = 41 UAH
-      const uahPerEur = 40; // 1 EUR = 40 UAH
+      const khrPerUsd = 4100; // 1 USD = 4,100 KHR
       let usdAmount = amount;
-      if (currency === 'UAH') {
-        usdAmount = amount / uahPerUsd;
+      if (currency === 'KHR') {
+        usdAmount = amount / khrPerUsd;
       } else if (currency === 'EUR') {
-        // Convert EUR -> UAH -> USD
-        const amountUAH = amount * uahPerEur;
-        usdAmount = amountUAH / uahPerUsd;
+        // EUR to USD approximate conversion
+        usdAmount = amount * 1.08;
       } // USD stays as is
 
       const basePoints = Math.floor(usdAmount * LOYALTY_CONFIG.POINTS_PER_DOLLAR);

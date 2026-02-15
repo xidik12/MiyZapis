@@ -22,7 +22,7 @@ class SessionManager {
     return session;
   }
 
-  async createSession(userId: number, language: Language = 'en'): Promise<BotSession> {
+  async createSession(userId: number, language: Language = 'km'): Promise<BotSession> {
     const session: BotSession = {
       userId,
       language,
@@ -103,7 +103,7 @@ class SessionManager {
   // Helper methods for common session operations
   async getUserLanguage(userId: number): Promise<Language> {
     const session = await this.getSession(userId);
-    return session?.language || 'en';
+    return session?.language || 'km';
   }
 
   async setUserLanguage(userId: number, language: Language): Promise<void> {

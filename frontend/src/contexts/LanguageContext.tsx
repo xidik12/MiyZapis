@@ -251,9 +251,9 @@ const createTranslations = (): Translations => {
   ensure('addresses.region', 'Region/State', 'ខេត្ត/តំបន់');
   ensure('addresses.regionPlaceholder', 'Enter region', 'បញ្ចូលខេត្ត/តំបន់');
   ensure('addresses.country', 'Country', 'ប្រទេស');
-  ensure('addresses.country.ukraine', 'Ukraine', 'អ៊ុយក្រែន');
-  ensure('addresses.country.poland', 'Poland', 'ប៉ូឡូញ');
-  ensure('addresses.country.germany', 'Germany', 'អាល្លឺម៉ង់');
+  ensure('addresses.country.cambodia', 'Cambodia', 'កម្ពុជា');
+  ensure('addresses.country.thailand', 'Thailand', 'ថៃ');
+  ensure('addresses.country.vietnam', 'Vietnam', 'វៀតណាម');
   ensure('addresses.addAction', 'Add Address', 'បន្ថែមអាសយដ្ឋាន');
   ensure('common.home', 'Home', 'ផ្ទះ');
   ensure('common.work', 'Work', 'ការងារ');

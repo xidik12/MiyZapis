@@ -32,7 +32,7 @@ export class TelegramBotService {
   // Localization strings
   private messages = {
     en: {
-      welcome: '🎉 Welcome to MiyZapis!\n\nYour personal booking assistant for finding and booking services across Ukraine.',
+      welcome: '🎉 Welcome to Panhaha!\n\nYour personal booking assistant for finding and booking services in Cambodia.',
       chooseLang: 'Please choose your preferred language:',
       langSet: 'Language set to English 🇺🇸',
       mainMenu: '📋 Main Menu\n\nChoose an option:',
@@ -400,13 +400,12 @@ export class TelegramBotService {
 
   private async showLanguageSelection(ctx: BotContext) {
     await ctx.reply(
-      'Please choose your preferred language / Будь ласка, оберіть мову / Пожалуйста, выберите язык:',
+      'Please choose your preferred language / សូមជ្រើសរើសភាសា:',
       {
         reply_markup: {
           inline_keyboard: [
-            [{ text: '🇺🇸 English', callback_data: 'lang_en' }],
-            [{ text: '🇺🇦 Українська', callback_data: 'lang_uk' }],
-            [{ text: '🇷🇺 Русский', callback_data: 'lang_ru' }]
+            [{ text: '🇰🇭 ភាសាខ្មែរ', callback_data: 'lang_km' }],
+            [{ text: '🇬🇧 English', callback_data: 'lang_en' }]
           ]
         }
       }

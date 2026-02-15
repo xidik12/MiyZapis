@@ -23,7 +23,7 @@ export class CommandHandler {
       let isNewUser = false;
 
       if (!session) {
-        session = await sessionManager.createSession(userId, languageCode as any || 'en');
+        session = await sessionManager.createSession(userId, languageCode as any || 'km');
         isNewUser = true;
 
         // Register user with API backend

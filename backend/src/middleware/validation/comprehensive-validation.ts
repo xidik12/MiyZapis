@@ -39,8 +39,8 @@ export const validationChains = {
         .withMessage('Language must be en, uk, or ru'),
       body('currency')
         .optional()
-        .isIn(['USD', 'UAH', 'EUR'])
-        .withMessage('Currency must be USD, UAH, or EUR'),
+        .isIn(['USD', 'KHR', 'EUR'])
+        .withMessage('Currency must be USD, KHR, or EUR'),
       body('telegramId')
         .optional()
         .isString()
@@ -85,8 +85,8 @@ export const validationChains = {
         .withMessage('Language must be en, uk, or ru'),
       body('currency')
         .optional()
-        .isIn(['USD', 'UAH', 'EUR'])
-        .withMessage('Currency must be USD, UAH, or EUR'),
+        .isIn(['USD', 'KHR', 'EUR'])
+        .withMessage('Currency must be USD, KHR, or EUR'),
       body('timezone')
         .optional()
         .isString()
@@ -202,8 +202,8 @@ export const validationChains = {
         .withMessage('Base price must be between 0.01 and 100000'),
       body('currency')
         .optional()
-        .isIn(['USD', 'UAH', 'EUR'])
-        .withMessage('Currency must be USD, UAH, or EUR'),
+        .isIn(['USD', 'KHR', 'EUR'])
+        .withMessage('Currency must be USD, KHR, or EUR'),
       body('duration')
         .isInt({ min: 15, max: 480 })
         .withMessage('Duration must be between 15 and 480 minutes'),
@@ -332,11 +332,11 @@ export const validationChains = {
         .isFloat({ min: 0.01, max: 100000 })
         .withMessage('Amount must be between 0.01 and 100000'),
       body('currency')
-        .isIn(['USD', 'UAH', 'EUR'])
-        .withMessage('Currency must be USD, UAH, or EUR'),
+        .isIn(['USD', 'KHR', 'EUR'])
+        .withMessage('Currency must be USD, KHR, or EUR'),
       body('paymentMethodType')
         .optional()
-        .isIn(['card', 'liqpay', 'monobank', 'privatbank', 'wayforpay'])
+        .isIn(['card', 'aba_bank', 'khqr', 'bank_transfer'])
         .withMessage('Invalid payment method type')
     ],
 
@@ -624,8 +624,8 @@ export const sanitizers = {
 
   // Normalize currency amounts
   normalizeCurrency: (amount: number, currency: string): number => {
-    // Convert to cents/kopecks for precise calculations
-    const multiplier = currency === 'UAH' ? 100 : 100;
+    // Convert to cents for precise calculations
+    const multiplier = currency === 'KHR' ? 1 : 100;
     return Math.round(amount * multiplier) / multiplier;
   }
 };

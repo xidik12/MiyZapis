@@ -16,7 +16,7 @@ export async function sessionMiddleware(ctx: BotContext, next: () => Promise<voi
     
     if (!session) {
       const languageCode = ctx.from?.language_code;
-      session = await sessionManager.createSession(userId, languageCode as any || 'en');
+      session = await sessionManager.createSession(userId, languageCode as any || 'km');
       logger.info(`Created new session for user ${userId}`);
     } else {
       // Update last activity
@@ -103,7 +103,7 @@ export async function languageMiddleware(ctx: BotContext, next: () => Promise<vo
     const sessionLanguage = await sessionManager.getUserLanguage(userId);
     
     // Update session language if user's Telegram language changed
-    if (userLanguage && userLanguage !== sessionLanguage && ['en', 'uk', 'ru'].includes(userLanguage)) {
+    if (userLanguage && userLanguage !== sessionLanguage && ['en', 'uk', 'ru', 'km'].includes(userLanguage)) {
       await sessionManager.setUserLanguage(userId, userLanguage as any);
       logger.info(`Updated language for user ${userId} to ${userLanguage}`);
     }

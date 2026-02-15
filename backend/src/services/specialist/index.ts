@@ -818,9 +818,9 @@ export class SpecialistService {
       const totalRevenue = bookings
         .filter(b => revenueGeneratingStatuses.includes(b.status))
         .reduce((sum, b) => {
-          // Convert booking amount to UAH base currency before summing
-          const serviceCurrency = b.service?.currency || 'UAH';
-          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          // Convert booking amount to USD base currency before summing
+          const serviceCurrency = b.service?.currency || 'USD';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'USD');
           return sum + convertedAmount;
         }, 0);
 

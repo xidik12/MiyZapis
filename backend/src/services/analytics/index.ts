@@ -420,21 +420,21 @@ export class AnalyticsService {
         earnings,
         summary: {
           totalEarnings: completedBookings.reduce((sum, booking) => {
-            // Convert booking amount to UAH base currency before summing
-            const serviceCurrency = booking.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+            // Convert booking amount to USD base currency before summing
+            const serviceCurrency = booking.service?.currency || 'USD';
+            const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'USD');
             return sum + convertedAmount;
           }, 0),
-          averageEarningsPerBooking: completedBookings.length > 0 
+          averageEarningsPerBooking: completedBookings.length > 0
             ? completedBookings.reduce((sum, booking) => {
-                // Convert booking amount to UAH base currency before summing
-                const serviceCurrency = booking.service?.currency || 'UAH';
-                const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+                // Convert booking amount to USD base currency before summing
+                const serviceCurrency = booking.service?.currency || 'USD';
+                const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'USD');
                 return sum + convertedAmount;
-              }, 0) / completedBookings.length 
+              }, 0) / completedBookings.length
             : 0,
           totalCompletedBookings: completedBookings.length,
-          currency: 'UAH' // All aggregated amounts are in UAH base currency
+          currency: 'USD' // All aggregated amounts are in USD base currency
         }
       };
     } catch (error) {

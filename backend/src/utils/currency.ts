@@ -5,23 +5,18 @@ interface CurrencyRates {
 }
 
 // Exchange rates (in production, these should come from a real API like exchangerate-api.com)
+// Cambodia primarily uses USD and KHR (Cambodian Riel)
 const CURRENCY_RATES: CurrencyRates = {
-  'USD_UAH': 37,
-  'EUR_UAH': 40,
-  'UAH_USD': 0.027,
-  'UAH_EUR': 0.025,
+  'USD_KHR': 4100,
+  'KHR_USD': 0.000244,
   'USD_EUR': 0.93,
   'EUR_USD': 1.08,
-  'UAH_PLN': 0.10,
-  'PLN_UAH': 10.0,
-  'USD_PLN': 3.9,
-  'PLN_USD': 0.26,
-  'EUR_PLN': 4.2,
-  'PLN_EUR': 0.24,
+  'EUR_KHR': 4428,
+  'KHR_EUR': 0.000226,
 };
 
 // Supported currencies
-export const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'UAH', 'PLN'] as const;
+export const SUPPORTED_CURRENCIES = ['USD', 'KHR', 'EUR'] as const;
 export type SupportedCurrency = typeof SUPPORTED_CURRENCIES[number];
 
 export function isSupportedCurrency(currency: string): currency is SupportedCurrency {
@@ -49,7 +44,7 @@ export function convertCurrency(
   }
 
   const convertedAmount = amount * rate;
-  
+
   // Round to 2 decimal places
   return Math.round(convertedAmount * 100) / 100;
 }
@@ -77,7 +72,7 @@ export function convertPrice(
   }
 
   const convertedAmount = convertCurrency(originalAmount, originalCurrency, targetCurrency);
-  
+
   return {
     amount: convertedAmount,
     currency: targetCurrency,
@@ -92,9 +87,8 @@ export function convertPrice(
 export function formatPrice(price: PriceInfo, showOriginal: boolean = false): string {
   const symbols: { [key: string]: string } = {
     'USD': '$',
-    'EUR': '€',
-    'UAH': '₴',
-    'PLN': 'zł',
+    'EUR': '\u20AC',
+    'KHR': '\u17DB',
   };
 
   const symbol = symbols[price.currency] || price.currency;
@@ -123,11 +117,10 @@ export function formatPrice(price: PriceInfo, showOriginal: boolean = false): st
 export function getCurrencySymbol(currency: string): string {
   const symbols: { [key: string]: string } = {
     'USD': '$',
-    'EUR': '€',
-    'UAH': '₴',
-    'PLN': 'zł',
+    'EUR': '\u20AC',
+    'KHR': '\u17DB',
   };
-  
+
   return symbols[currency] || currency;
 }
 
@@ -135,8 +128,8 @@ export function getCurrencySymbol(currency: string): string {
  * Validate currency code
  */
 export function isValidCurrency(currency: string): boolean {
-  return typeof currency === 'string' && 
-         currency.length === 3 && 
+  return typeof currency === 'string' &&
+         currency.length === 3 &&
          isSupportedCurrency(currency);
 }
 

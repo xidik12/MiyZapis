@@ -15,7 +15,7 @@ export interface BotSession {
   currentFlow?: string;
   currentStep?: string;
   data?: Record<string, any>;
-  language: 'uk' | 'ru' | 'en';
+  language: 'uk' | 'ru' | 'en' | 'km';
   lastActivity: Date;
 }
 
@@ -122,12 +122,13 @@ export interface BotError extends Error {
 }
 
 // Language support
-export type Language = 'uk' | 'ru' | 'en';
+export type Language = 'uk' | 'ru' | 'en' | 'km';
 
 export interface LocalizedText {
   uk: string;
   ru: string;
   en: string;
+  km: string;
 }
 
 // API Integration types

@@ -385,7 +385,7 @@ export class CallbackHandler {
     const userId = ctx.from?.id!;
     const newLanguage = params[0] as any;
     
-    if (['en', 'uk', 'ru'].includes(newLanguage)) {
+    if (['en', 'uk', 'ru', 'km'].includes(newLanguage)) {
       await sessionManager.setUserLanguage(userId, newLanguage);
       
       const confirmMessage = getMessage('settings.language_changed', newLanguage);

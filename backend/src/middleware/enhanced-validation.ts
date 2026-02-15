@@ -7,11 +7,11 @@ import { detectPlatform } from '@/config/api-configuration';
 const commonSchemas = {
   id: z.string().cuid(),
   email: z.string().email().max(255),
-  phone: z.string().regex(/^\+380\d{9}$/, 'Invalid Ukrainian phone number'),
+  phone: z.string().regex(/^\+855\d{8,9}$/, 'Invalid Cambodian phone number'),
   password: z.string().min(8).max(128),
   name: z.string().min(1).max(100).trim(),
-  currency: z.enum(['UAH', 'USD', 'EUR']),
-  language: z.enum(['uk', 'ru', 'en']),
+  currency: z.enum(['USD', 'KHR', 'EUR']),
+  language: z.enum(['km', 'en']),
   userType: z.enum(['CUSTOMER', 'SPECIALIST', 'ADMIN']),
   coordinates: z.object({
     latitude: z.number().min(-90).max(90),
@@ -183,7 +183,7 @@ export const paymentSchemas = {
     bookingId: commonSchemas.id,
     amount: z.number().positive().max(999999),
     currency: commonSchemas.currency,
-    paymentMethod: z.enum(['card', 'liqpay', 'fondy', 'wayforpay', 'telegram']),
+    paymentMethod: z.enum(['card', 'aba_bank', 'khqr', 'bank_transfer', 'telegram']),
     savePaymentMethod: z.boolean().default(false)
   }),
   

@@ -161,10 +161,7 @@ export class KeyboardBuilder {
 
   static languageSelection(): InlineKeyboard {
     return [
-      [
-        { text: '🇺🇦 Українська', callback_data: 'lang_uk' },
-        { text: '🇷🇺 Русский', callback_data: 'lang_ru' }
-      ],
+      [{ text: '🇰🇭 ភាសាខ្មែរ', callback_data: 'lang_km' }],
       [{ text: '🇬🇧 English', callback_data: 'lang_en' }]
     ];
   }
