@@ -26,15 +26,18 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
   const handleAuth = useCallback(async (user: any) => {
     setIsLoading(true);
     try {
-      const telegramData = {
+      // Only include optional fields if they have values — Telegram
+      // computes the hash only over fields that are present.
+      // Sending empty strings breaks the hash verification.
+      const telegramData: Record<string, any> = {
         telegramId: user.id.toString(),
         firstName: user.first_name,
-        lastName: user.last_name || '',
-        ...(user.username && { username: user.username }),
-        ...(user.photo_url && { photoUrl: user.photo_url }),
         authDate: user.auth_date,
         hash: user.hash,
       };
+      if (user.last_name) telegramData.lastName = user.last_name;
+      if (user.username) telegramData.username = user.username;
+      if (user.photo_url) telegramData.photoUrl = user.photo_url;
 
       await dispatch(telegramLogin(telegramData)).unwrap();
       onSuccess?.();
@@ -46,7 +49,7 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
     }
   }, [dispatch, onSuccess, onError]);
 
-  // Try to load the official widget in a hidden container
+  // Load the official Telegram Login Widget
   useEffect(() => {
     if (!botUsername || botUsername === 'your_bot_username' || scriptLoaded.current) return;
 
