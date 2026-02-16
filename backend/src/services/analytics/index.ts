@@ -176,7 +176,7 @@ export class AnalyticsService {
         summary: {
           total: bookings.length,
           byStatus: this.groupByStatus(bookings),
-          totalRevenue: bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0)
+          totalRevenue: bookings.reduce((sum, booking) => sum + Number(booking.totalAmount || 0), 0)
         }
       };
     } catch (error) {
@@ -222,8 +222,8 @@ export class AnalyticsService {
         data: grouped,
         byCategory,
         summary: {
-          totalRevenue: bookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
-          averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, booking) => sum + booking.totalAmount, 0) / bookings.length : 0,
+          totalRevenue: bookings.reduce((sum, booking) => sum + Number(booking.totalAmount), 0),
+          averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, booking) => sum + Number(booking.totalAmount), 0) / bookings.length : 0,
           totalBookings: bookings.length
         }
       };
@@ -357,7 +357,7 @@ export class AnalyticsService {
           };
         }
         acc[serviceId].bookings.push(booking);
-        acc[serviceId].revenue += booking.totalAmount;
+        acc[serviceId].revenue += Number(booking.totalAmount);
         if (booking.review) {
           acc[serviceId].reviewCount++;
           acc[serviceId].averageRating += booking.review.rating;
@@ -422,14 +422,14 @@ export class AnalyticsService {
           totalEarnings: completedBookings.reduce((sum, booking) => {
             // Convert booking amount to UAH base currency before summing
             const serviceCurrency = booking.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+            const convertedAmount = convertCurrency(Number(booking.totalAmount), serviceCurrency, 'UAH');
             return sum + convertedAmount;
           }, 0),
           averageEarningsPerBooking: completedBookings.length > 0 
             ? completedBookings.reduce((sum, booking) => {
                 // Convert booking amount to UAH base currency before summing
                 const serviceCurrency = booking.service?.currency || 'UAH';
-                const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+                const convertedAmount = convertCurrency(Number(booking.totalAmount), serviceCurrency, 'UAH');
                 return sum + convertedAmount;
               }, 0) / completedBookings.length 
             : 0,
@@ -481,7 +481,7 @@ export class AnalyticsService {
           };
         }
         acc[customerId].bookingCount++;
-        acc[customerId].totalSpent += booking.totalAmount;
+        acc[customerId].totalSpent += Number(booking.totalAmount);
         if (booking.createdAt < acc[customerId].firstBooking) {
           acc[customerId].firstBooking = booking.createdAt;
         }
@@ -699,7 +699,7 @@ export class AnalyticsService {
       const serviceAnalytics = services.map(service => {
         const bookings = service.bookings;
         const completedBookings = bookings.filter(b => (revenueGeneratingStatuses as readonly string[]).includes(b.status));
-        const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+        const totalRevenue = completedBookings.reduce((sum, b) => sum + Number(b.totalAmount), 0);
         const ratings = bookings
           .filter(b => b.review)
           .map(b => b.review!.rating);
@@ -798,7 +798,7 @@ export class AnalyticsService {
       const cancellationRate = totalBookings > 0 ? (cancelledBookings.length / totalBookings) * 100 : 0;
       
       // Revenue metrics
-      const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+      const totalRevenue = completedBookings.reduce((sum, b) => sum + Number(b.totalAmount), 0);
       const averageBookingValue = completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0;
       
       // Customer satisfaction
@@ -831,7 +831,7 @@ export class AnalyticsService {
         period: group.period,
         bookings: group.count,
         completedBookings: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).length,
-        revenue: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).reduce((sum, b) => sum + b.totalAmount, 0),
+        revenue: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).reduce((sum, b) => sum + Number(b.totalAmount), 0),
         averageRating: group.items.filter(b => b.review).length > 0 ?
           group.items.filter(b => b.review).reduce((sum, b) => sum + b.review!.rating, 0) / group.items.filter(b => b.review).length : 0
       }));
@@ -917,7 +917,7 @@ export class AnalyticsService {
     const grouped = this.groupDataByPeriod(data, period, dateField);
     return grouped.map(group => ({
       period: group.period,
-      revenue: group.items.reduce((sum, item) => sum + item.totalAmount, 0),
+      revenue: group.items.reduce((sum, item) => sum + Number(item.totalAmount), 0),
       count: group.count
     }));
   }
@@ -937,7 +937,7 @@ export class AnalyticsService {
       if (!acc[category]) {
         acc[category] = { revenue: 0, count: 0 };
       }
-      acc[category].revenue += booking.totalAmount;
+      acc[category].revenue += Number(booking.totalAmount);
       acc[category].count++;
       return acc;
     }, {} as Record<string, { revenue: number; count: number }>);

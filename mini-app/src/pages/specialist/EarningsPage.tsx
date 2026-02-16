@@ -105,13 +105,13 @@ export const EarningsPage: React.FC = () => {
         }
       }
 
-      // Process trends (monthly breakdown) — backend wraps as { trends: { ... } }
+      // Process trends (monthly breakdown) — backend wraps as { trends: { trends: [...] } }
       if (trendsRes.status === 'fulfilled' && trendsRes.value) {
         const raw = trendsRes.value as any;
         const trends = raw?.trends || raw;
         const entries = Array.isArray(trends)
           ? trends
-          : trends?.months || trends?.data || trends?.entries || [];
+          : trends?.trends || trends?.months || trends?.data || trends?.entries || [];
         if (Array.isArray(entries)) {
           setMonthlyBreakdown(
             entries.map((item: any) => ({

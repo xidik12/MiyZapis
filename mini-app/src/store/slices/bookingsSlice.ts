@@ -93,6 +93,7 @@ const initialState: BookingsState = {
 // Backend returns Prisma Decimal fields as strings — convert to numbers
 const normalizeBookingAmounts = (booking: any) => ({
   ...booking,
+  status: typeof booking.status === 'string' ? booking.status.toLowerCase() : booking.status,
   totalAmount: Number(booking.totalAmount) || 0,
   amount: Number(booking.amount) || Number(booking.totalAmount) || 0,
   depositAmount: Number(booking.depositAmount) || 0,
@@ -113,6 +114,7 @@ export const fetchBookingsAsync = createAsyncThunk(
     status?: string;
     startDate?: string;
     endDate?: string;
+    userType?: 'customer' | 'specialist';
   }) => {
     const response: any = await apiService.getBookings(params);
     // API returns { bookings: [...], total, page, totalPages }

@@ -159,6 +159,7 @@ class ApiService {
     status?: string;
     startDate?: string;
     endDate?: string;
+    userType?: 'customer' | 'specialist';
   }): Promise<PaginatedResponse<any>> {
     return this.get('/bookings', params);
   }
@@ -229,7 +230,7 @@ class ApiService {
 
   // Wallet endpoints
   async getWalletBalance() {
-    return this.get('/wallet/balance');
+    return this.get('/payments/wallet/balance');
   }
 
   async getWalletTransactions(params?: {
@@ -237,7 +238,7 @@ class ApiService {
     limit?: number;
     type?: string;
   }): Promise<PaginatedResponse<any>> {
-    return this.get('/wallet/transactions', params);
+    return this.get('/payments/wallet/transactions', params);
   }
 
   // Favorites endpoints
@@ -246,27 +247,27 @@ class ApiService {
     limit?: number;
     type?: 'specialist' | 'service';
   }): Promise<PaginatedResponse<any>> {
-    return this.get('/favorites', params);
+    return this.get('/favorites/all', params);
   }
 
   async addFavorite(data: { targetId: string; type: 'specialist' | 'service' }) {
-    return this.post('/favorites', data);
+    return this.post(`/favorites/${data.type}s/${data.targetId}`);
   }
 
-  async removeFavorite(id: string) {
-    return this.delete(`/favorites/${id}`);
+  async removeFavorite(id: string, type: 'specialist' | 'service' = 'specialist') {
+    return this.delete(`/favorites/${type}s/${id}`);
   }
 
   // Loyalty endpoints
   async getLoyaltyStatus() {
-    return this.get('/loyalty/status');
+    return this.get('/loyalty/stats');
   }
 
   async getLoyaltyHistory(params?: {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<any>> {
-    return this.get('/loyalty/history', params);
+    return this.get('/loyalty/transactions', params);
   }
 
   async redeemReward(rewardId: string) {
@@ -274,7 +275,7 @@ class ApiService {
   }
 
   async getLoyaltyRewards(): Promise<any[]> {
-    return this.get('/loyalty/rewards');
+    return this.get('/loyalty/discounts');
   }
 
   // Community endpoints
@@ -511,13 +512,7 @@ class ApiService {
   }
 
   // ==================== Specialist Clients ====================
-  async getSpecialistClients(params?: { page?: number; limit?: number; search?: string }) {
-    return this.get('/specialists/me/clients', params);
-  }
-
-  async addClientNote(clientId: string, note: string) {
-    return this.post(`/specialists/me/clients/${clientId}/notes`, { note });
-  }
+  // Clients are derived from bookings — no dedicated endpoint exists
 
   // ==================== Payment Methods ====================
   async addPaymentMethod(data: { type: string; token?: string }) {

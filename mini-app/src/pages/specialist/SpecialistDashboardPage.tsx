@@ -33,7 +33,7 @@ export const SpecialistDashboardPage: React.FC = () => {
   const { bookings, isLoading, error } = useSelector((state: RootState) => state.bookings);
 
   useEffect(() => {
-    dispatch(fetchBookingsAsync());
+    dispatch(fetchBookingsAsync({ userType: 'specialist' }));
   }, [dispatch]);
 
   const s = (key: string) => t(specialistDashboardStrings, key, locale);
@@ -140,7 +140,7 @@ export const SpecialistDashboardPage: React.FC = () => {
         <div className="text-center">
           <p className="text-accent-red mb-2">{c('error')}</p>
           <p className="text-sm text-text-muted mb-4">{error}</p>
-          <Button onClick={() => dispatch(fetchBookingsAsync())}>
+          <Button onClick={() => dispatch(fetchBookingsAsync({ userType: 'specialist' }))}>
             {c('retry') || 'Retry'}
           </Button>
         </div>

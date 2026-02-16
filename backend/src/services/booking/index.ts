@@ -1566,7 +1566,7 @@ export class BookingService {
         cancelledBookings: bookings.filter(b => b.status === 'CANCELLED').length,
         totalRevenue: bookings
           .filter(b => b.status === 'COMPLETED')
-          .reduce((sum, b) => sum + b.totalAmount, 0),
+          .reduce((sum, b) => sum + Number(b.totalAmount), 0),
         averageBookingValue: 0,
       };
 

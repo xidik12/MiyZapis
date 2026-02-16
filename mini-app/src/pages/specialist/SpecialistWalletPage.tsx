@@ -60,8 +60,9 @@ export const SpecialistWalletPage: React.FC = () => {
 
       if (walletData.status === 'fulfilled') {
         const raw = walletData.value as any;
-        // Backend may wrap as { wallet: {...} } or { balance: {...} }
-        const w = raw?.wallet || raw?.balance || raw;
+        // API returns flat: { balance: "0", currency: "USD", userId: "..." }
+        // Use raw?.wallet if nested, otherwise use raw directly (skip raw?.balance which picks up the literal string)
+        const w = raw?.wallet || (typeof raw?.balance === 'object' ? raw.balance : raw);
         setWallet({
           balance: Number(w?.balance) || Number(w?.availableBalance) || 0,
           pendingBalance: Number(w?.pendingBalance) || Number(w?.pending) || 0,

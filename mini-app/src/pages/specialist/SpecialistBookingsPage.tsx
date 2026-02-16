@@ -44,7 +44,7 @@ export const SpecialistBookingsPage: React.FC = () => {
   const c = useCallback((key: string) => t(commonStrings, key, locale), [locale]);
 
   useEffect(() => {
-    dispatch(fetchBookingsAsync());
+    dispatch(fetchBookingsAsync({ userType: 'specialist' }));
   }, [dispatch]);
 
   // Stats
@@ -97,7 +97,7 @@ export const SpecialistBookingsPage: React.FC = () => {
         message: s('accepted'),
       }));
       hapticFeedback.notificationSuccess();
-      dispatch(fetchBookingsAsync());
+      dispatch(fetchBookingsAsync({ userType: 'specialist' }));
     } catch {
       dispatch(addToast({
         type: 'error',
@@ -132,7 +132,7 @@ export const SpecialistBookingsPage: React.FC = () => {
       setShowRejectSheet(false);
       setRejectingBookingId(null);
       setRejectReason('');
-      dispatch(fetchBookingsAsync());
+      dispatch(fetchBookingsAsync({ userType: 'specialist' }));
     } catch {
       dispatch(addToast({
         type: 'error',
@@ -197,7 +197,7 @@ export const SpecialistBookingsPage: React.FC = () => {
             <AlertCircle size={48} className="mx-auto mb-3 text-accent-red" />
             <p className="text-accent-red mb-2">{c('error')}</p>
             <p className="text-sm text-text-muted mb-4">{error}</p>
-            <Button onClick={() => dispatch(fetchBookingsAsync())}>
+            <Button onClick={() => dispatch(fetchBookingsAsync({ userType: 'specialist' }))}>
               {c('retry')}
             </Button>
           </div>

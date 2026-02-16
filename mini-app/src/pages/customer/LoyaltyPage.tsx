@@ -75,11 +75,21 @@ export const LoyaltyPage: React.FC = () => {
         apiService.getLoyaltyRewards(),
       ]);
 
-      if (statusData.status === 'fulfilled') setStatus(statusData.value as any);
-      else setStatus({ points: 0, tier: 'BRONZE', nextTier: 'SILVER', pointsToNextTier: 500 });
+      if (statusData.status === 'fulfilled') {
+        const raw = statusData.value as any;
+        setStatus(raw?.stats || raw);
+      } else {
+        setStatus({ points: 0, tier: 'BRONZE', nextTier: 'SILVER', pointsToNextTier: 500 });
+      }
 
-      if (historyData.status === 'fulfilled') setHistory((historyData.value as any).items || []);
-      if (rewardsData.status === 'fulfilled') setRewards(rewardsData.value as any || []);
+      if (historyData.status === 'fulfilled') {
+        const raw = historyData.value as any;
+        setHistory(raw?.transactions || raw?.items || (Array.isArray(raw) ? raw : []));
+      }
+      if (rewardsData.status === 'fulfilled') {
+        const raw = rewardsData.value as any;
+        setRewards(raw?.discounts || raw?.rewards || (Array.isArray(raw) ? raw : []));
+      }
     } finally {
       setLoading(false);
     }

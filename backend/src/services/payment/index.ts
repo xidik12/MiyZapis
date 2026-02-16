@@ -548,7 +548,7 @@ export class PaymentService {
         if (topService) {
           const currentService = serviceMap.get(serviceName)!;
           serviceMap.set(serviceName, {
-            earnings: currentService.earnings + (topService._sum.amount || 0),
+            earnings: currentService.earnings + Number(topService._sum.amount || 0),
             bookingCount: currentService.bookingCount + 1
           });
         }
@@ -657,7 +657,7 @@ export class PaymentService {
         
         const currentTrend = trendsMap.get(dateKey)!;
         trendsMap.set(dateKey, {
-          earnings: currentTrend.earnings + payment.amount,
+          earnings: currentTrend.earnings + Number(payment.amount),
           bookingCount: currentTrend.bookingCount + 1
         });
       });
@@ -841,14 +841,14 @@ export class PaymentService {
         }
         const currentService = serviceMap.get(serviceName)!;
         serviceMap.set(serviceName, {
-          revenue: currentService.revenue + payment.amount,
+          revenue: currentService.revenue + Number(payment.amount),
           bookingCount: currentService.bookingCount + 1
         });
 
         if (!categoryMap.has(category)) {
           categoryMap.set(category, 0);
         }
-        categoryMap.set(category, (categoryMap.get(category) || 0) + payment.amount);
+        categoryMap.set(category, (categoryMap.get(category) || 0) + Number(payment.amount));
       });
 
       const topServices = Array.from(serviceMap.entries()).map(([serviceName, data]) => ({
@@ -880,7 +880,7 @@ export class PaymentService {
         const currentHour = hourlyData.get(hour)!;
         hourlyData.set(hour, {
           bookingCount: currentHour.bookingCount + 1,
-          revenue: currentHour.revenue + booking.totalAmount
+          revenue: currentHour.revenue + Number(booking.totalAmount)
         });
 
         if (!dailyData.has(day)) {
@@ -889,7 +889,7 @@ export class PaymentService {
         const currentDay = dailyData.get(day)!;
         dailyData.set(day, {
           bookingCount: currentDay.bookingCount + 1,
-          revenue: currentDay.revenue + booking.totalAmount
+          revenue: currentDay.revenue + Number(booking.totalAmount)
         });
       });
 
@@ -1122,7 +1122,7 @@ export class PaymentService {
         }
 
         const trend = trendsMap.get(dateKey);
-        trend.earnings += payment.amount;
+        trend.earnings += Number(payment.amount);
         trend.bookingIds.add(payment.booking.id);
       });
 

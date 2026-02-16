@@ -4,53 +4,41 @@ import {
   User,
   Calendar,
   DollarSign,
-  FileText,
-  Send,
   Users,
+  Clock,
+  TrendingUp,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store';
-import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { clientsStrings, commonStrings } from '@/utils/translations';
+import { format, parseISO, differenceInDays } from 'date-fns';
 
-interface ClientNote {
-  id: string;
-  note: string;
-  createdAt: string;
-}
-
-interface Client {
+interface DerivedClient {
   id: string;
   firstName: string;
   lastName: string;
   avatar?: string;
   bookingsCount: number;
-  lastVisit?: string;
   totalSpent: number;
-  notes?: ClientNote[];
+  lastVisitDate: string;
+  isActive: boolean;
+  bookings: any[];
 }
 
 export const ClientsPage: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback } = useTelegram();
   const locale = useLocale();
 
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<DerivedClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [showNoteSheet, setShowNoteSheet] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [submittingNote, setSubmittingNote] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<DerivedClient | null>(null);
 
   const s = (key: string) => t(clientsStrings, key, locale);
   const c = (key: string) => t(commonStrings, key, locale);
@@ -58,9 +46,54 @@ export const ClientsPage: React.FC = () => {
   const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
-      const data = (await apiService.getSpecialistClients({ limit: 200 })) as any;
-      const items = data?.items || data || [];
-      setClients(items);
+      const data = (await apiService.getBookings({ userType: 'specialist', limit: 1000 })) as any;
+      const bookings = data?.bookings || data?.items || (Array.isArray(data) ? data : []);
+
+      // Group bookings by customerId to derive unique clients
+      const clientMap = new Map<string, DerivedClient>();
+
+      bookings.forEach((booking: any) => {
+        const customerId = booking.customerId || booking.customer?.id;
+        if (!customerId) return;
+
+        if (!clientMap.has(customerId)) {
+          clientMap.set(customerId, {
+            id: customerId,
+            firstName: booking.customer?.firstName || booking.customerName?.split(' ')[0] || '',
+            lastName: booking.customer?.lastName || booking.customerName?.split(' ').slice(1).join(' ') || '',
+            avatar: booking.customer?.avatar,
+            bookingsCount: 0,
+            totalSpent: 0,
+            lastVisitDate: booking.scheduledAt || booking.createdAt,
+            isActive: false,
+            bookings: [],
+          });
+        }
+
+        const client = clientMap.get(customerId)!;
+        client.bookingsCount++;
+        client.totalSpent += Number(booking.totalAmount) || 0;
+        client.bookings.push(booking);
+
+        const bookingDate = booking.scheduledAt || booking.createdAt;
+        if (bookingDate > client.lastVisitDate) {
+          client.lastVisitDate = bookingDate;
+        }
+      });
+
+      // Calculate isActive (last visit within 30 days)
+      const now = new Date();
+      clientMap.forEach((client) => {
+        client.isActive = differenceInDays(now, parseISO(client.lastVisitDate)) <= 30;
+        // Sort bookings by date desc
+        client.bookings.sort((a: any, b: any) =>
+          new Date(b.scheduledAt || b.createdAt).getTime() - new Date(a.scheduledAt || a.createdAt).getTime()
+        );
+      });
+
+      // Sort clients by bookings count desc
+      const sorted = Array.from(clientMap.values()).sort((a, b) => b.bookingsCount - a.bookingsCount);
+      setClients(sorted);
     } catch {
       setClients([]);
     } finally {
@@ -82,81 +115,36 @@ export const ClientsPage: React.FC = () => {
     );
   }, [clients, searchQuery]);
 
+  const stats = useMemo(() => {
+    const total = clients.length;
+    const active = clients.filter((c) => c.isActive).length;
+    const avgBookings = total > 0 ? Math.round(clients.reduce((sum, c) => sum + c.bookingsCount, 0) / total * 10) / 10 : 0;
+    const repeat = clients.filter((c) => c.bookingsCount > 1).length;
+    const repeatRate = total > 0 ? Math.round((repeat / total) * 100) : 0;
+    return { total, active, avgBookings, repeatRate };
+  }, [clients]);
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '---';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(
-      locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US',
-      { month: 'short', day: 'numeric', year: 'numeric' }
-    );
+    try {
+      return format(parseISO(dateStr), 'MMM d, yyyy');
+    } catch {
+      return '---';
+    }
   };
 
-  const handleSelectClient = (client: Client) => {
+  const handleSelectClient = (client: DerivedClient) => {
     hapticFeedback.impactLight();
     setSelectedClient(client);
   };
 
-  const handleOpenNoteSheet = () => {
-    hapticFeedback.impactLight();
-    setNoteText('');
-    setShowNoteSheet(true);
-  };
-
-  const handleSaveNote = async () => {
-    if (!selectedClient || !noteText.trim()) return;
-
-    try {
-      setSubmittingNote(true);
-      await apiService.addClientNote(selectedClient.id, noteText.trim());
-      hapticFeedback.notificationSuccess();
-      dispatch(
-        addToast({
-          type: 'success',
-          title: c('success'),
-          message: s('noteSaved'),
-        })
-      );
-
-      // Update local state
-      const newNote: ClientNote = {
-        id: Date.now().toString(),
-        note: noteText.trim(),
-        createdAt: new Date().toISOString(),
-      };
-
-      setClients((prev) =>
-        prev.map((client) =>
-          client.id === selectedClient.id
-            ? {
-                ...client,
-                notes: [...(client.notes || []), newNote],
-              }
-            : client
-        )
-      );
-
-      setSelectedClient((prev) =>
-        prev
-          ? {
-              ...prev,
-              notes: [...(prev.notes || []), newNote],
-            }
-          : null
-      );
-
-      setShowNoteSheet(false);
-      setNoteText('');
-    } catch {
-      hapticFeedback.notificationError();
-      dispatch(
-        addToast({
-          type: 'error',
-          title: c('error'),
-          message: c('error'),
-        })
-      );
-    } finally {
-      setSubmittingNote(false);
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed': return 'bg-blue-500/15 text-blue-400';
+      case 'confirmed': return 'bg-accent-green/15 text-accent-green';
+      case 'pending': return 'bg-accent-yellow/15 text-accent-yellow';
+      case 'cancelled': return 'bg-accent-red/15 text-accent-red';
+      default: return 'bg-bg-hover text-text-secondary';
     }
   };
 
@@ -174,13 +162,30 @@ export const ClientsPage: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         <div className="px-4 pt-4 space-y-4">
-          {/* Total Clients Badge */}
+          {/* Stats Bar */}
           {clients.length > 0 && (
-            <div className="flex items-center justify-center gap-2">
-              <div className="px-4 py-1.5 bg-accent-primary/10 rounded-full">
-                <span className="text-sm font-medium text-accent-primary">
-                  {s('totalClients')}: {clients.length}
-                </span>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
+                <div className="text-lg font-bold text-text-primary">{stats.total}</div>
+                <div className="text-[10px] text-text-secondary">{s('totalClients')}</div>
+              </div>
+              <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
+                <div className="text-lg font-bold text-accent-green">{stats.active}</div>
+                <div className="text-[10px] text-text-secondary">
+                  {locale === 'uk' ? 'Активні' : locale === 'ru' ? 'Активные' : 'Active'}
+                </div>
+              </div>
+              <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
+                <div className="text-lg font-bold text-accent-primary">{stats.avgBookings}</div>
+                <div className="text-[10px] text-text-secondary">
+                  {locale === 'uk' ? 'Сер. записів' : locale === 'ru' ? 'Ср. записей' : 'Avg Book'}
+                </div>
+              </div>
+              <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
+                <div className="text-lg font-bold text-accent-yellow">{stats.repeatRate}%</div>
+                <div className="text-[10px] text-text-secondary">
+                  {locale === 'uk' ? 'Повторні' : locale === 'ru' ? 'Повторные' : 'Repeat'}
+                </div>
               </div>
             </div>
           )}
@@ -218,11 +223,7 @@ export const ClientsPage: React.FC = () => {
                     {/* Avatar */}
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                       {client.avatar ? (
-                        <img
-                          src={client.avatar}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={client.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-accent-primary/10">
                           <User size={20} className="text-accent-primary" />
@@ -232,9 +233,16 @@ export const ClientsPage: React.FC = () => {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-text-primary truncate">
-                        {client.firstName} {client.lastName}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-text-primary truncate">
+                          {client.firstName} {client.lastName}
+                        </h4>
+                        {client.isActive && (
+                          <span className="px-1.5 py-0.5 bg-accent-green/15 text-accent-green text-[10px] rounded-full font-medium flex-shrink-0">
+                            {locale === 'uk' ? 'Активний' : locale === 'ru' ? 'Активный' : 'Active'}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-3 mt-1">
                         <div className="flex items-center gap-1">
                           <Calendar size={12} className="text-text-muted" />
@@ -249,11 +257,9 @@ export const ClientsPage: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      {client.lastVisit && (
-                        <div className="text-xs text-text-muted mt-0.5">
-                          {s('lastVisit')}: {formatDate(client.lastVisit)}
-                        </div>
-                      )}
+                      <div className="text-xs text-text-muted mt-0.5">
+                        {s('lastVisit')}: {formatDate(client.lastVisitDate)}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -265,7 +271,7 @@ export const ClientsPage: React.FC = () => {
 
       {/* Client Details Sheet */}
       <Sheet
-        isOpen={!!selectedClient && !showNoteSheet}
+        isOpen={!!selectedClient}
         onClose={() => setSelectedClient(null)}
         title={s('clientDetails')}
       >
@@ -275,11 +281,7 @@ export const ClientsPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                 {selectedClient.avatar ? (
-                  <img
-                    src={selectedClient.avatar}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={selectedClient.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-accent-primary/10">
                     <User size={28} className="text-accent-primary" />
@@ -290,63 +292,63 @@ export const ClientsPage: React.FC = () => {
                 <h3 className="text-lg font-semibold text-text-primary">
                   {selectedClient.firstName} {selectedClient.lastName}
                 </h3>
+                {selectedClient.isActive && (
+                  <span className="px-2 py-0.5 bg-accent-green/15 text-accent-green text-xs rounded-full font-medium">
+                    {locale === 'uk' ? 'Активний клієнт' : locale === 'ru' ? 'Активный клиент' : 'Active client'}
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
-                <div className="text-lg font-bold text-text-primary">
-                  {selectedClient.bookingsCount}
-                </div>
-                <div className="text-xs text-text-secondary">
-                  {s('totalVisits')}
-                </div>
+                <div className="text-lg font-bold text-text-primary">{selectedClient.bookingsCount}</div>
+                <div className="text-xs text-text-secondary">{s('totalVisits')}</div>
               </div>
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
                 <div className="text-lg font-bold text-accent-green">
                   {selectedClient.totalSpent.toLocaleString()}
                 </div>
-                <div className="text-xs text-text-secondary">
-                  {s('totalSpent')}
-                </div>
+                <div className="text-xs text-text-secondary">{s('totalSpent')}</div>
               </div>
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
                 <div className="text-sm font-bold text-text-primary leading-tight">
-                  {formatDate(selectedClient.lastVisit)}
+                  {formatDate(selectedClient.lastVisitDate)}
                 </div>
-                <div className="text-xs text-text-secondary">
-                  {s('lastVisit')}
-                </div>
+                <div className="text-xs text-text-secondary">{s('lastVisit')}</div>
               </div>
             </div>
 
-            {/* Notes */}
+            {/* Booking History */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
-                  <FileText size={14} className="text-text-muted" />
-                  {s('notes')}
-                </h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleOpenNoteSheet}
-                >
-                  {s('addNote')}
-                </Button>
-              </div>
+              <h4 className="text-sm font-semibold text-text-primary flex items-center gap-1.5 mb-2">
+                <Clock size={14} className="text-text-muted" />
+                {locale === 'uk' ? 'Історія записів' : locale === 'ru' ? 'История записей' : 'Booking History'}
+              </h4>
 
-              {selectedClient.notes && selectedClient.notes.length > 0 ? (
-                <div className="space-y-2">
-                  {selectedClient.notes.map((note) => (
+              {selectedClient.bookings.length > 0 ? (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {selectedClient.bookings.map((booking: any) => (
                     <div
-                      key={note.id}
+                      key={booking.id}
                       className="p-3 bg-bg-secondary/50 rounded-xl border border-white/5"
                     >
-                      <p className="text-sm text-text-primary">{note.note}</p>
-                      <div className="text-xs text-text-muted mt-1.5">
-                        {formatDate(note.createdAt)}
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {booking.service?.name || booking.serviceName || 'Service'}
+                        </p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
+                          {(booking.status || '').toLowerCase()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-text-muted">
+                          {formatDate(booking.scheduledAt || booking.createdAt)}
+                        </span>
+                        <span className="text-xs font-medium text-accent-primary">
+                          {Number(booking.totalAmount || 0).toLocaleString()} UAH
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -354,71 +356,13 @@ export const ClientsPage: React.FC = () => {
               ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-text-muted">
-                    {locale === 'uk'
-                      ? 'Нотаток поки немає'
-                      : locale === 'ru'
-                      ? 'Заметок пока нет'
-                      : 'No notes yet'}
+                    {locale === 'uk' ? 'Записів немає' : locale === 'ru' ? 'Записей нет' : 'No bookings'}
                   </p>
                 </div>
               )}
             </div>
-
-            {/* Add Note Button (bottom) */}
-            <Button
-              onClick={handleOpenNoteSheet}
-              fullWidth
-              className="mt-2"
-            >
-              <FileText size={16} className="mr-2" />
-              {s('addNote')}
-            </Button>
           </div>
         )}
-      </Sheet>
-
-      {/* Add Note Sheet */}
-      <Sheet
-        isOpen={showNoteSheet}
-        onClose={() => setShowNoteSheet(false)}
-        title={s('addNote')}
-      >
-        <div className="space-y-4">
-          {/* Note Textarea */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              {s('notes')}
-            </label>
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              rows={4}
-              className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder={s('notePlaceholder')}
-              autoFocus
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setShowNoteSheet(false)}
-              className="flex-1"
-            >
-              {c('cancel')}
-            </Button>
-            <Button
-              onClick={handleSaveNote}
-              className="flex-1"
-              disabled={submittingNote || !noteText.trim()}
-              loading={submittingNote}
-            >
-              <Send size={16} className="mr-1.5" />
-              {s('saveNote')}
-            </Button>
-          </div>
-        </div>
       </Sheet>
     </div>
   );
