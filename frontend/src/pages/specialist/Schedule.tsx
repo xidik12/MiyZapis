@@ -9,7 +9,6 @@ import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
-import { WeekView } from '@/components/calendar/WeekView';
 import { MonthView } from '@/components/calendar/MonthView';
 import { fetchBookings } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
@@ -302,7 +301,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
-  const [viewMode, setViewMode] = useState<'card' | 'week' | 'month'>('week');
+  const [viewMode, setViewMode] = useState<'card' | 'month'>('card');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetailModal, setShowBookingDetailModal] = useState(false);
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
@@ -752,16 +751,16 @@ const SpecialistSchedule: React.FC = () => {
           {/* View Toggle */}
           <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
             <button
-              onClick={() => setViewMode('week')}
+              onClick={() => setViewMode('card')}
               className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === 'week'
+                viewMode === 'card'
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Week View"
+              title="Card View"
             >
-              <CalendarIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Week</span>
+              <ListBulletsIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Cards</span>
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -774,18 +773,6 @@ const SpecialistSchedule: React.FC = () => {
             >
               <CalendarDaysIcon className="w-4 h-4" />
               <span className="text-sm font-medium hidden sm:inline">Month</span>
-            </button>
-            <button
-              onClick={() => setViewMode('card')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === 'card'
-                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-              }`}
-              title="Card View"
-            >
-              <ListBulletsIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Cards</span>
             </button>
           </div>
 
@@ -979,35 +966,7 @@ const SpecialistSchedule: React.FC = () => {
       </div>
 
       {/* Calendar Views */}
-      {viewMode === 'week' ? (
-        <WeekView
-          currentDate={currentWeekStart}
-          timeBlocks={availabilityBlocks.map(block => ({
-            id: block.id,
-            startDateTime: block.startDateTime,
-            endDateTime: block.endDateTime,
-            isAvailable: block.isAvailable,
-            reason: block.reason,
-            isRecurring: block.isRecurring,
-          }))}
-          bookings={filteredBookings}
-          onBlockClick={(block) => {
-            const originalBlock = availabilityBlocks.find(b => b.id === block.id);
-            if (originalBlock) {
-              openEditModal(originalBlock);
-            }
-          }}
-          onBookingClick={handleBookingClick}
-          onBookingReschedule={handleBookingReschedule}
-          onTimeSlotClick={(date, time) => {
-            handleCellClick(date, parseInt(time.split(':')[0]));
-          }}
-          onBookingRightClick={(booking, e) => {
-            e.preventDefault();
-            setContextMenu({ isOpen: true, x: e.clientX, y: e.clientY, booking });
-          }}
-        />
-      ) : viewMode === 'month' ? (
+      {viewMode === 'month' ? (
         <MonthView
           currentDate={currentWeekStart}
           bookings={filteredBookings}

@@ -22,6 +22,11 @@ const TelegramLinkWidget: React.FC<TelegramLinkWidgetProps> = ({ onSuccess, onEr
       setLinkData({ code: result.code, deepLink: result.deepLink });
     } catch (err: any) {
       const msg = err.message || 'Failed to generate link code';
+      // If already linked, treat as success — refresh profile to show connected status
+      if (msg.includes('already linked')) {
+        onSuccess?.();
+        return;
+      }
       setError(msg);
       onError?.(msg);
     } finally {
