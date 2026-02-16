@@ -92,10 +92,11 @@ const SpecialistDashboard: React.FC = () => {
         setLoading(true);
         
         // Load data from multiple sources with retry logic - prioritize bookings API for accuracy
-        const [analyticsData, upcomingBookingsData, completedBookingsData] = await Promise.allSettled([
+        const [analyticsData, upcomingBookingsData, completedBookingsData, profileData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'specialist'), 2, 1000),
-          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000)
+          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
+          retryRequest(() => specialistService.getProfile(), 2, 1000)
         ]);
 
         if (analyticsData.status === 'rejected') {
@@ -155,28 +156,85 @@ const SpecialistDashboard: React.FC = () => {
               }
             }
             
-            // Calculate response time from actual booking data
+            // Calculate response time counting only business working hours
+            // Extract specialist working hours from profile
+            let workingHoursMap: Record<string, { start: string; end: string; isWorking: boolean }> | null = null;
+            if (profileData.status === 'fulfilled' && profileData.value) {
+              const prof = profileData.value as any;
+              const wh = prof?.availability?.workingHours || prof?.workingHours;
+              if (wh && typeof wh === 'object') {
+                workingHoursMap = wh;
+              }
+            }
+
+            // Helper: calculate minutes elapsed only during business hours
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const calcBusinessMinutes = (start: Date, end: Date): number => {
+              if (!workingHoursMap) {
+                // Fallback: no working hours set, count raw elapsed time
+                return (end.getTime() - start.getTime()) / (1000 * 60);
+              }
+
+              let minutes = 0;
+              const cursor = new Date(start);
+
+              // Cap at 30 days to avoid infinite loops on bad data
+              const maxEnd = new Date(start);
+              maxEnd.setDate(maxEnd.getDate() + 30);
+              const safeEnd = end < maxEnd ? end : maxEnd;
+
+              while (cursor < safeEnd) {
+                const dayName = dayNames[cursor.getDay()];
+                const daySchedule = workingHoursMap![dayName];
+
+                if (daySchedule && daySchedule.isWorking) {
+                  const [startH, startM] = daySchedule.start.split(':').map(Number);
+                  const [endH, endM] = daySchedule.end.split(':').map(Number);
+
+                  const workStart = new Date(cursor);
+                  workStart.setHours(startH, startM, 0, 0);
+                  const workEnd = new Date(cursor);
+                  workEnd.setHours(endH, endM, 0, 0);
+
+                  // Overlap between [cursor..safeEnd] and [workStart..workEnd]
+                  const overlapStart = cursor > workStart ? cursor : workStart;
+                  const overlapEnd = safeEnd < workEnd ? safeEnd : workEnd;
+
+                  if (overlapStart < overlapEnd) {
+                    minutes += (overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60);
+                  }
+                }
+
+                // Move cursor to start of next day
+                cursor.setDate(cursor.getDate() + 1);
+                cursor.setHours(0, 0, 0, 0);
+              }
+
+              return minutes;
+            };
+
             let totalResponseTimeMinutes = 0;
             let responsiveBookings = 0;
-            
+
             completedBookings.forEach(booking => {
               if (booking.createdAt && booking.updatedAt) {
                 try {
                   const created = new Date(booking.createdAt);
                   const responded = new Date(booking.updatedAt);
-                  const responseTimeMs = responded.getTime() - created.getTime();
-                  
-                  // Only count positive response times (responded after created)
-                  if (responseTimeMs > 0) {
-                    totalResponseTimeMinutes += responseTimeMs / (1000 * 60); // Convert to minutes
-                    responsiveBookings++;
+
+                  if (responded > created) {
+                    const bizMinutes = calcBusinessMinutes(created, responded);
+                    if (bizMinutes > 0) {
+                      totalResponseTimeMinutes += bizMinutes;
+                      responsiveBookings++;
+                    }
                   }
                 } catch (e) {
                   console.warn('Invalid booking dates:', booking);
                 }
               }
             });
-            
+
             if (responsiveBookings > 0) {
               stats.responseTime = Math.round(totalResponseTimeMinutes / responsiveBookings);
             }
@@ -211,9 +269,7 @@ const SpecialistDashboard: React.FC = () => {
           if (overview.averageRating > 0) {
             stats.rating = overview.averageRating;
           }
-          if (overview.responseTime > 0) {
-            stats.responseTime = overview.responseTime;
-          }
+          // Skip analytics responseTime — we already calculated it using business hours only
           if (overview.totalBookings > stats.totalBookings) {
             stats.totalBookings = overview.totalBookings;
           }
@@ -221,7 +277,7 @@ const SpecialistDashboard: React.FC = () => {
 
         // Enhance with real review stats (average rating, review count)
         try {
-          const profile = await specialistService.getProfile();
+          const profile = profileData.status === 'fulfilled' ? profileData.value : null;
           const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
           if (specialistId) {
             const reviewStats = await reviewsService.getSpecialistReviewStats(specialistId);
