@@ -90,6 +90,34 @@ export const fetchMessageUnreadCountAsync = createAsyncThunk(
   }
 );
 
+// Normalize backend conversation (customer/specialist/messages[]) to mini-app format (participants/lastMessage)
+const normalizeConversation = (conv: any): Conversation => {
+  // Already in the expected format
+  if (conv.participants && Array.isArray(conv.participants)) {
+    return conv;
+  }
+
+  // Backend format: { customer, specialist, messages[], ... }
+  const participants: Conversation['participants'] = [];
+  if (conv.customer) {
+    participants.push({ ...conv.customer, role: 'customer' });
+  }
+  if (conv.specialist) {
+    participants.push({ ...conv.specialist, role: 'specialist' });
+  }
+
+  const lastMessage = conv.lastMessage || conv.messages?.[0] || undefined;
+
+  return {
+    id: conv.id,
+    participants,
+    lastMessage,
+    unreadCount: conv.unreadCount ?? 0,
+    createdAt: conv.createdAt,
+    updatedAt: conv.updatedAt || conv.lastMessageAt || conv.createdAt,
+  };
+};
+
 const messagesSlice = createSlice({
   name: 'messages',
   initialState,
@@ -120,7 +148,8 @@ const messagesSlice = createSlice({
     builder.addCase(fetchConversationsAsync.fulfilled, (state, action: any) => {
       state.isLoading = false;
       const p = action.payload;
-      state.conversations = p.items || p.conversations || (Array.isArray(p) ? p : []);
+      const raw = p.items || p.conversations || (Array.isArray(p) ? p : []);
+      state.conversations = raw.map(normalizeConversation);
       state.unreadCount = state.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
     });
     builder.addCase(fetchConversationsAsync.rejected, (state, action) => {
@@ -133,7 +162,8 @@ const messagesSlice = createSlice({
     });
     builder.addCase(fetchConversationAsync.fulfilled, (state, action: any) => {
       state.isLoadingMessages = false;
-      state.activeConversation = action.payload.conversation || action.payload;
+      const rawConv = action.payload.conversation || action.payload;
+      state.activeConversation = normalizeConversation(rawConv);
       state.messages = action.payload.messages || [];
     });
     builder.addCase(fetchConversationAsync.rejected, (state, action) => {

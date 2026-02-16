@@ -131,6 +131,39 @@ export const cancelBookingAsync = createAsyncThunk(
   }
 );
 
+// Normalize backend booking to mini-app Booking interface
+const normalizeBooking = (b: any): Booking => {
+  const specialist = b.specialist || {};
+  const customer = b.customer || {};
+  const service = b.service || {};
+  return {
+    ...b,
+    startTime: b.startTime || b.scheduledAt || b.createdAt,
+    endTime: b.endTime || b.scheduledAt || b.createdAt,
+    totalAmount: b.totalAmount ?? b.amount ?? 0,
+    service: {
+      id: service.id || b.serviceId || '',
+      name: service.name || b.serviceName || 'Service',
+      price: service.basePrice ?? service.price ?? 0,
+      duration: service.duration ?? 0,
+    },
+    specialist: {
+      id: specialist.id || b.specialistId || '',
+      name: specialist.name || (specialist.firstName ? `${specialist.firstName} ${specialist.lastName || ''}`.trim() : ''),
+      avatar: specialist.avatar,
+      phone: specialist.phoneNumber || specialist.phone || '',
+      email: specialist.email || '',
+    },
+    customer: {
+      id: customer.id || b.customerId || '',
+      firstName: customer.firstName || '',
+      lastName: customer.lastName || '',
+      phone: customer.phoneNumber || customer.phone,
+      email: customer.email || '',
+    },
+  };
+};
+
 const bookingsSlice = createSlice({
   name: 'bookings',
   initialState,
@@ -166,8 +199,9 @@ const bookingsSlice = createSlice({
     });
     builder.addCase(fetchBookingsAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      const p = action.payload;
-      state.bookings = p.items || p.bookings || (Array.isArray(p) ? p : []);
+      const p = action.payload as any;
+      const raw = p.items || p.bookings || (Array.isArray(p) ? p : []);
+      state.bookings = raw.map(normalizeBooking);
       if (p.pagination) {
         state.pagination = p.pagination;
       } else if (p.totalPages !== undefined) {
