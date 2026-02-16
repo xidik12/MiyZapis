@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Mail, Phone, User, AlertCircle, Calendar, Star, Shield, ChevronRight } from 'lucide-react';
+import { Mail, Phone, User, AlertCircle, Calendar, Star, Shield, ChevronRight, Lock, Eye, EyeOff } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -22,7 +22,7 @@ export const LoginPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, initData, webApp } = useTelegram();
 
-  // Raw Telegram user from WebApp SDK (has first_name, last_name, photo_url, username)
+  // Raw Telegram user from WebApp SDK
   const telegramUser = webApp?.initDataUnsafe?.user || null;
   const initDataUnsafe = webApp?.initDataUnsafe || null;
 
@@ -37,6 +37,10 @@ export const LoginPage: React.FC = () => {
     phone: ''
   });
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [emailLoginData, setEmailLoginData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
@@ -83,13 +87,11 @@ export const LoginPage: React.FC = () => {
       }
     };
 
-    // Check if script already loaded
     if ((window as any).google?.accounts?.id) {
       initGoogle();
       return;
     }
 
-    // Load the GSI script
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
@@ -97,9 +99,7 @@ export const LoginPage: React.FC = () => {
     script.onload = initGoogle;
     document.head.appendChild(script);
 
-    return () => {
-      // Cleanup - don't remove script as other components may use it
-    };
+    return () => {};
   }, [GOOGLE_CLIENT_ID]);
 
   const handleGoogleResponse = useCallback(async (response: any) => {
@@ -119,14 +119,13 @@ export const LoginPage: React.FC = () => {
         const { tokens, user } = data.data;
         const authToken = tokens?.accessToken || tokens?.token || '';
         localStorage.setItem('authToken', authToken);
-        // Also store in booking_app_token for TelegramProvider compatibility
         localStorage.setItem('booking_app_token', authToken);
         dispatch(setCredentials({ user, token: authToken }));
 
-        // Auto-link Telegram account if user is inside Telegram
+        // Auto-link Telegram if inside Telegram
         if (telegramUser && authToken) {
           try {
-            const linkRes = await fetch(`${API_BASE_URL}/users/telegram/link`, {
+            await fetch(`${API_BASE_URL}/users/telegram/link`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -141,41 +140,24 @@ export const LoginPage: React.FC = () => {
                 hash: initDataUnsafe?.hash || 'mini-app-link',
               }),
             });
-            const linkData = await linkRes.json();
-            if (linkData.success) {
-              console.log('Telegram account linked to Google account');
-            } else {
-              // 409 = already linked to another account, which is fine
-              console.log('Telegram link result:', linkData.error || 'already linked');
-            }
-          } catch (linkErr) {
-            // Non-critical — account works without linking, just won't auto-login next time
-            console.warn('Failed to link Telegram account:', linkErr);
-          }
+          } catch {}
         }
 
-        dispatch(addToast({
-          type: 'success',
-          title: 'Welcome!',
-          message: `Signed in as ${user.firstName}`
-        }));
+        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || 'Google sign-in failed');
       }
     } catch (err) {
       console.error('Google auth error:', err);
-      dispatch(addToast({
-        type: 'error',
-        title: 'Sign-in Failed',
-        message: err instanceof Error ? err.message : 'Google sign-in failed'
-      }));
+      dispatch(addToast({ type: 'error', title: 'Sign-in Failed', message: err instanceof Error ? err.message : 'Google sign-in failed' }));
       hapticFeedback.notificationError();
     } finally {
       setGoogleLoading(false);
     }
   }, [dispatch, hapticFeedback, telegramUser, initDataUnsafe]);
 
+  // Telegram auto-login
   const handleAutoLogin = async () => {
     if (!telegramUser || !initData) {
       setShowRegistrationForm(true);
@@ -183,7 +165,6 @@ export const LoginPage: React.FC = () => {
     }
 
     try {
-      // Send raw initData to the WebApp-specific endpoint for proper validation
       const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram/webapp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,11 +179,7 @@ export const LoginPage: React.FC = () => {
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
         dispatch(setCredentials({ user, token: authToken }));
-        dispatch(addToast({
-          type: 'success',
-          title: 'Welcome!',
-          message: `Signed in as ${user.firstName}`
-        }));
+        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || data.message || 'Telegram auth failed');
@@ -214,19 +191,77 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  // Email/password login
+  const handleEmailLogin = async () => {
+    if (!emailLoginData.email || !emailLoginData.password) {
+      dispatch(addToast({ type: 'error', title: 'Required', message: 'Email and password are required' }));
+      return;
+    }
+
+    setEmailLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailLoginData.email,
+          password: emailLoginData.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        const { tokens, user, token } = data.data;
+        const authToken = tokens?.accessToken || tokens?.token || token || '';
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('booking_app_token', authToken);
+        dispatch(setCredentials({ user, token: authToken }));
+
+        // Auto-link Telegram if inside Telegram
+        if (telegramUser && authToken) {
+          try {
+            await fetch(`${API_BASE_URL}/users/telegram/link`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                telegramId: telegramUser.id.toString(),
+                firstName: telegramUser.first_name || user.firstName,
+                lastName: telegramUser.last_name || '',
+                username: telegramUser.username || '',
+                authDate: initDataUnsafe?.auth_date || Math.floor(Date.now() / 1000),
+                hash: initDataUnsafe?.hash || 'mini-app-link',
+              }),
+            });
+          } catch {}
+        }
+
+        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
+        hapticFeedback.notificationSuccess();
+      } else {
+        throw new Error(data.error || data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Email login error:', err);
+      dispatch(addToast({ type: 'error', title: 'Login Failed', message: err instanceof Error ? err.message : 'Invalid email or password' }));
+      hapticFeedback.notificationError();
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  // Registration
   const handleRegistration = async () => {
     if (!registrationData.firstName.trim()) {
       hapticFeedback.notificationError();
-      dispatch(addToast({
-        type: 'error',
-        title: 'Required Field',
-        message: 'First name is required.'
-      }));
+      dispatch(addToast({ type: 'error', title: 'Required Field', message: 'First name is required.' }));
       return;
     }
 
     try {
-      // Use /auth-enhanced/register with Telegram data
       const res = await fetch(`${API_BASE_URL}/auth-enhanced/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,22 +284,14 @@ export const LoginPage: React.FC = () => {
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
         dispatch(setCredentials({ user, token: authToken }));
-        dispatch(addToast({
-          type: 'success',
-          title: 'Registration Complete!',
-          message: 'Your account has been created successfully.'
-        }));
+        dispatch(addToast({ type: 'success', title: 'Registration Complete!', message: 'Your account has been created successfully.' }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || data.message || 'Registration failed');
       }
     } catch (err) {
       console.error('Registration failed:', err);
-      dispatch(addToast({
-        type: 'error',
-        title: 'Registration Failed',
-        message: err instanceof Error ? err.message : 'Please try again.'
-      }));
+      dispatch(addToast({ type: 'error', title: 'Registration Failed', message: err instanceof Error ? err.message : 'Please try again.' }));
       hapticFeedback.notificationError();
     }
   };
@@ -274,7 +301,7 @@ export const LoginPage: React.FC = () => {
     if (error) dispatch(clearError());
   };
 
-  if (isLoading || googleLoading) {
+  if (isLoading || googleLoading || emailLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary">
         <Header title="Signing In..." />
@@ -282,7 +309,7 @@ export const LoginPage: React.FC = () => {
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
             <p className="text-text-secondary">
-              {googleLoading ? 'Signing in with Google...' : 'Authenticating with Telegram...'}
+              {googleLoading ? 'Signing in with Google...' : emailLoading ? 'Signing in...' : 'Authenticating with Telegram...'}
             </p>
           </div>
         </div>
@@ -292,13 +319,10 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary text-text-primary">
-      <Header
-        title="Welcome to MiyZapis"
-        subtitle="Your booking platform"
-      />
+      <Header title="Welcome to MiyZapis" subtitle="Your booking platform" />
 
       <div className="flex-1 px-4 py-6 page-stagger overflow-y-auto">
-        {/* Hero Section */}
+        {/* Hero */}
         <div className="text-center mb-6">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#3b97f2] to-[#1d4ed8] flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Calendar size={36} className="text-white" />
@@ -309,32 +333,10 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* How it works */}
-        <Card className="mb-6">
-          <h3 className="font-semibold text-text-primary mb-3 text-sm">How it works</h3>
-          <div className="space-y-3">
-            {[
-              { icon: <User size={16} />, title: 'Create Account', desc: 'Sign in with Google or Telegram' },
-              { icon: <Star size={16} />, title: 'Find Specialists', desc: 'Browse and pick the best match' },
-              { icon: <Calendar size={16} />, title: 'Book & Go', desc: 'Choose a time and confirm' },
-            ].map((step, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-accent-primary/15 flex items-center justify-center text-accent-primary flex-shrink-0">
-                  {step.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary">{step.title}</p>
-                  <p className="text-xs text-text-secondary">{step.desc}</p>
-                </div>
-                {i < 2 && <ChevronRight size={14} className="text-text-muted flex-shrink-0" />}
-              </div>
-            ))}
-          </div>
-        </Card>
-
         {/* Sign-In Options */}
         <div className="space-y-3 mb-6">
-          {/* Telegram Sign-In */}
+
+          {/* 1. Telegram Sign-In (shown when inside Telegram) */}
           {telegramUser && (
             <Card className="mb-0">
               <div className="flex items-center gap-3 mb-3">
@@ -362,43 +364,11 @@ export const LoginPage: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   <p className="text-text-secondary text-sm">Complete your profile:</p>
-                  <Input
-                    label="First Name"
-                    value={registrationData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    icon={<User size={16} />}
-                    placeholder="First name"
-                    required
-                  />
-                  <Input
-                    label="Last Name"
-                    value={registrationData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    icon={<User size={16} />}
-                    placeholder="Last name"
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={registrationData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    icon={<Mail size={16} />}
-                    placeholder="your@email.com"
-                  />
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    value={registrationData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    icon={<Phone size={16} />}
-                    placeholder="+380..."
-                  />
-                  <Button
-                    fullWidth
-                    onClick={handleRegistration}
-                    disabled={!registrationData.firstName.trim() || isLoading}
-                    loading={isLoading}
-                  >
+                  <Input label="First Name" value={registrationData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} icon={<User size={16} />} placeholder="First name" required />
+                  <Input label="Last Name" value={registrationData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} icon={<User size={16} />} placeholder="Last name" />
+                  <Input label="Email" type="email" value={registrationData.email} onChange={(e) => handleInputChange('email', e.target.value)} icon={<Mail size={16} />} placeholder="your@email.com" />
+                  <Input label="Phone" type="tel" value={registrationData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} icon={<Phone size={16} />} placeholder="+380..." />
+                  <Button fullWidth onClick={handleRegistration} disabled={!registrationData.firstName.trim() || isLoading} loading={isLoading}>
                     Complete Registration
                   </Button>
                 </div>
@@ -407,19 +377,73 @@ export const LoginPage: React.FC = () => {
           )}
 
           {/* Divider */}
-          {!telegramUser && GOOGLE_CLIENT_ID && (
+          {telegramUser && (
             <div className="flex items-center gap-3 my-2">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-text-muted">or</span>
+              <span className="text-xs text-text-muted">or sign in with</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
           )}
 
-          {/* Google Sign-In — hidden inside Telegram (popups not supported) */}
-          {!telegramUser && GOOGLE_CLIENT_ID && (
+          {/* 2. Google Sign-In */}
+          {GOOGLE_CLIENT_ID && (
             <div className="w-full">
               <div ref={googleButtonRef} className="w-full flex justify-center" />
             </div>
+          )}
+
+          {/* 3. Email/Password Login */}
+          {!showEmailLogin ? (
+            <button
+              onClick={() => setShowEmailLogin(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/10 hover:bg-white/15 text-text-primary font-medium rounded-xl transition-colors text-sm border border-white/10"
+            >
+              <Mail size={18} />
+              Sign in with Email
+            </button>
+          ) : (
+            <Card>
+              <div className="space-y-3">
+                <Input
+                  label="Email"
+                  type="email"
+                  value={emailLoginData.email}
+                  onChange={(e) => setEmailLoginData(prev => ({ ...prev, email: e.target.value }))}
+                  icon={<Mail size={16} />}
+                  placeholder="your@email.com"
+                />
+                <div className="relative">
+                  <Input
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={emailLoginData.password}
+                    onChange={(e) => setEmailLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    icon={<Lock size={16} />}
+                    placeholder="Your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-[34px] text-text-muted hover:text-text-primary"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <Button
+                  fullWidth
+                  onClick={handleEmailLogin}
+                  disabled={!emailLoginData.email || !emailLoginData.password}
+                >
+                  Sign In
+                </Button>
+                <button
+                  onClick={() => setShowEmailLogin(false)}
+                  className="w-full text-center text-xs text-text-muted hover:text-text-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </Card>
           )}
         </div>
 
@@ -433,12 +457,7 @@ export const LoginPage: React.FC = () => {
                 <p className="text-xs text-accent-red/80 mt-0.5">{error}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => dispatch(clearError())}
-              className="mt-2 text-accent-red"
-            >
+            <Button variant="ghost" size="sm" onClick={() => dispatch(clearError())} className="mt-2 text-accent-red">
               Dismiss
             </Button>
           </Card>
@@ -452,11 +471,7 @@ export const LoginPage: React.FC = () => {
 
         {/* Browse without account */}
         <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="text-text-secondary text-sm"
-          >
+          <Button variant="ghost" onClick={() => navigate('/')} className="text-text-secondary text-sm">
             Browse without account
           </Button>
         </div>
