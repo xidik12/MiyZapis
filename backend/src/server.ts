@@ -444,18 +444,25 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start enhanced Telegram bot only (basic bot disabled to avoid 409 conflict —
-      // both bots use the same token and Telegram only allows one polling connection)
-      try {
+      // Start enhanced Telegram bot with retry (basic bot disabled — same token conflict)
+      // Retry handles 409 during Railway zero-downtime deploys when old instance is still polling
+      const launchBot = async (retries = 5, delay = 5000) => {
         enhancedTelegramBot.initialize();
-        enhancedTelegramBot.launch().then(() => {
-          logger.info('🚀 Enhanced Telegram bot started in polling mode');
-        }).catch((error) => {
-          logger.warn('Failed to start enhanced Telegram bot:', error.message);
-        });
-      } catch (error) {
-        logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
-      }
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            await enhancedTelegramBot.launch();
+            logger.info('🚀 Enhanced Telegram bot started in polling mode');
+            return;
+          } catch (error: any) {
+            logger.warn(`Bot launch attempt ${attempt}/${retries} failed: ${error.message}`);
+            if (attempt < retries) {
+              await new Promise(r => setTimeout(r, delay));
+            }
+          }
+        }
+        logger.error('Enhanced Telegram bot failed to start after all retries');
+      };
+      launchBot().catch(err => logger.error('Bot launcher error:', err));
 
       // Start background workers (stateless, safe to run once per instance)
       try {
