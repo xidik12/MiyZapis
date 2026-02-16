@@ -95,9 +95,18 @@ const notificationsSlice = createSlice({
     });
     builder.addCase(fetchNotificationsAsync.fulfilled, (state, action: any) => {
       state.isLoading = false;
-      state.notifications = action.payload.items || action.payload || [];
-      if (action.payload.pagination) {
-        state.pagination = action.payload.pagination;
+      const p = action.payload;
+      state.notifications = p.items || p.notifications || (Array.isArray(p) ? p : []);
+      if (p.unreadCount !== undefined) {
+        state.unreadCount = p.unreadCount;
+      }
+      if (p.pagination) {
+        state.pagination = {
+          page: p.pagination.page || p.pagination.currentPage || 1,
+          limit: p.pagination.limit || p.pagination.itemsPerPage || 20,
+          total: p.pagination.total || p.pagination.totalItems || 0,
+          totalPages: p.pagination.totalPages || 0,
+        };
       }
     });
     builder.addCase(fetchNotificationsAsync.rejected, (state, action) => {

@@ -168,10 +168,10 @@ export const BookingsPage: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-text-primary">
-                        {booking.service.name}
+                        {booking.service?.name || 'Service'}
                       </h3>
                       <p className="text-sm text-text-secondary">
-                        {booking.specialist.name}
+                        {booking.specialist?.name || ''}
                       </p>
                     </div>
                     <span
@@ -201,7 +201,7 @@ export const BookingsPage: React.FC = () => {
                       {booking.totalAmount} UAH
                     </span>
                     <span className="text-sm text-text-muted">
-                      {booking.service.duration} {c('min')}
+                      {booking.service?.duration || 0} {c('min')}
                     </span>
                   </div>
 

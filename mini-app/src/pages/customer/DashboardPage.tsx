@@ -156,8 +156,8 @@ export const DashboardPage: React.FC = () => {
                 <Clock size={16} className="text-accent-primary" />
                 <span className="text-sm font-medium text-accent-primary">{s('nextAppointment')}</span>
               </div>
-              <p className="font-semibold text-text-primary">{nextBooking.service.name}</p>
-              <p className="text-sm text-text-secondary">{nextBooking.specialist.name}</p>
+              <p className="font-semibold text-text-primary">{nextBooking.service?.name || 'Service'}</p>
+              <p className="text-sm text-text-secondary">{nextBooking.specialist?.name || ''}</p>
               <p className="text-sm text-text-muted mt-1">
                 {format(parseISO(nextBooking.startTime), 'PPP')} {c('at')} {format(parseISO(nextBooking.startTime), 'p')}
               </p>
@@ -186,7 +186,7 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => { hapticFeedback.impactLight(); navigate(`/booking/${b.id}`); }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{b.service.name}</p>
+                      <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || 'Service'}</p>
                       <p className="text-xs text-text-muted">{format(parseISO(b.startTime), 'PPP')}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(b.status)}`}>

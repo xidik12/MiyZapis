@@ -119,7 +119,8 @@ const messagesSlice = createSlice({
     });
     builder.addCase(fetchConversationsAsync.fulfilled, (state, action: any) => {
       state.isLoading = false;
-      state.conversations = action.payload.items || action.payload || [];
+      const p = action.payload;
+      state.conversations = p.items || p.conversations || (Array.isArray(p) ? p : []);
       state.unreadCount = state.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
     });
     builder.addCase(fetchConversationsAsync.rejected, (state, action) => {

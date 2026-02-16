@@ -71,7 +71,16 @@ export const CommunityPage: React.FC = () => {
       if (searchQuery) params.search = searchQuery;
 
       const data = await apiService.getCommunityPosts(params) as any;
-      const items = data.items || data || [];
+      const rawItems = data.items || data.posts || (Array.isArray(data) ? data : []);
+      // Normalize field names from backend (likeCount → likesCount, etc.)
+      const items = rawItems.map((p: any) => ({
+        ...p,
+        likesCount: p.likesCount ?? p.likeCount ?? 0,
+        commentsCount: p.commentsCount ?? p.commentCount ?? 0,
+        viewsCount: p.viewsCount ?? p.viewCount ?? 0,
+        isLiked: p.isLiked ?? false,
+        author: p.author || { id: '', firstName: '?', lastName: '' },
+      }));
       if (append) {
         setPosts(prev => [...prev, ...items]);
       } else {

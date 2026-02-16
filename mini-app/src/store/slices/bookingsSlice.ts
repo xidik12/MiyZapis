@@ -166,8 +166,13 @@ const bookingsSlice = createSlice({
     });
     builder.addCase(fetchBookingsAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.bookings = action.payload.items;
-      state.pagination = action.payload.pagination;
+      const p = action.payload;
+      state.bookings = p.items || p.bookings || (Array.isArray(p) ? p : []);
+      if (p.pagination) {
+        state.pagination = p.pagination;
+      } else if (p.totalPages !== undefined) {
+        state.pagination = { page: p.page || 1, limit: p.limit || 10, total: p.total || 0, totalPages: p.totalPages || 0 };
+      }
     });
     builder.addCase(fetchBookingsAsync.rejected, (state, action) => {
       state.isLoading = false;

@@ -370,14 +370,14 @@ export const ProfilePage: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover">
                       <img
-                        src={booking.specialist.avatar || '/api/placeholder/48/48'}
-                        alt={booking.specialist.name}
+                        src={booking.specialist?.avatar || '/api/placeholder/48/48'}
+                        alt={booking.specialist?.name || ''}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-text-primary">{booking.service.name}</h3>
-                      <p className="text-sm text-text-secondary">{booking.specialist.name}</p>
+                      <h3 className="font-medium text-text-primary">{booking.service?.name || 'Service'}</h3>
+                      <p className="text-sm text-text-secondary">{booking.specialist?.name || ''}</p>
                       <p className="text-xs text-text-secondary">
                         {new Date(booking.startTime).toLocaleDateString()}
                       </p>
