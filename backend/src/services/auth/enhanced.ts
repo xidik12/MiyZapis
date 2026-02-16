@@ -825,16 +825,41 @@ export class EnhancedAuthService {
     isNewUser: boolean;
   }> {
     try {
-      // Verify Telegram auth data
+      // Verify Telegram auth data.
+      // The frontend sends camelCase field names (telegramId, firstName, authDate)
+      // but Telegram computes the hash over its original snake_case names
+      // (id, first_name, auth_date). We must map them back before verifying.
       const { hash, ...authData } = telegramData;
-      const secretKey = crypto.createHash('sha256').update(config.telegram.botToken!).digest();
-      const checkString = Object.keys(authData)
+
+      if (!config.telegram.botToken) {
+        throw new Error('TELEGRAM_BOT_TOKEN is not configured');
+      }
+
+      const secretKey = crypto.createHash('sha256').update(config.telegram.botToken).digest();
+
+      const fieldMap: Record<string, string> = {
+        telegramId: 'id',
+        firstName: 'first_name',
+        lastName: 'last_name',
+        photoUrl: 'photo_url',
+        authDate: 'auth_date',
+      };
+
+      const telegramFields: Record<string, string> = {};
+      for (const [key, value] of Object.entries(authData)) {
+        if (value !== undefined && value !== null && value !== '') {
+          const tgKey = fieldMap[key] || key;
+          telegramFields[tgKey] = String(value);
+        }
+      }
+
+      const checkString = Object.keys(telegramFields)
         .sort()
-        .map(key => `${key}=${authData[key as keyof typeof authData]}`)
+        .map(key => `${key}=${telegramFields[key]}`)
         .join('\n');
-      
+
       const hmac = crypto.createHmac('sha256', secretKey).update(checkString).digest('hex');
-      
+
       if (hmac !== hash) {
         throw new Error('INVALID_TELEGRAM_AUTH');
       }
