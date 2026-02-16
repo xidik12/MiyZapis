@@ -83,14 +83,14 @@ export const EarningsPage: React.FC = () => {
       if (earningsRes.status === 'fulfilled' && earningsRes.value) {
         const data = earningsRes.value as any;
         setEarnings({
-          totalEarnings: data.totalEarnings || 0,
-          thisMonth: data.thisMonth || 0,
-          lastMonth: data.lastMonth || 0,
-          thisWeek: data.thisWeek || 0,
-          pendingPayouts: data.pendingPayouts || 0,
-          completedBookings: data.completedBookings || 0,
-          avgPerBooking: data.avgPerBooking || 0,
-          growthPercent: data.growthPercent || 0,
+          totalEarnings: Number(data.totalEarnings) || 0,
+          thisMonth: Number(data.thisMonth) || 0,
+          lastMonth: Number(data.lastMonth) || 0,
+          thisWeek: Number(data.thisWeek) || 0,
+          pendingPayouts: Number(data.pendingPayouts) || 0,
+          completedBookings: Number(data.completedBookings) || 0,
+          avgPerBooking: Number(data.avgPerBooking) || 0,
+          growthPercent: Number(data.growthPercent) || 0,
         });
       }
 
@@ -110,7 +110,7 @@ export const EarningsPage: React.FC = () => {
             trends.map((item: any) => ({
               month: item.month || '',
               label: item.label || item.month || '',
-              amount: item.amount || item.revenue || 0,
+              amount: Number(item.amount) || Number(item.revenue) || 0,
             }))
           );
         } else if (trends.months && Array.isArray(trends.months)) {
@@ -118,7 +118,7 @@ export const EarningsPage: React.FC = () => {
             trends.months.map((item: any) => ({
               month: item.month || '',
               label: item.label || item.month || '',
-              amount: item.amount || item.revenue || 0,
+              amount: Number(item.amount) || Number(item.revenue) || 0,
             }))
           );
         }

@@ -90,6 +90,20 @@ const initialState: BookingsState = {
   filters: {},
 };
 
+// Backend returns Prisma Decimal fields as strings — convert to numbers
+const normalizeBookingAmounts = (booking: any) => ({
+  ...booking,
+  totalAmount: Number(booking.totalAmount) || 0,
+  amount: Number(booking.amount) || Number(booking.totalAmount) || 0,
+  depositAmount: Number(booking.depositAmount) || 0,
+  remainingAmount: Number(booking.remainingAmount) || 0,
+  service: booking.service ? {
+    ...booking.service,
+    basePrice: Number(booking.service.basePrice) || Number(booking.service.price) || 0,
+    price: Number(booking.service.price) || Number(booking.service.basePrice) || 0,
+  } : booking.service,
+});
+
 // Async thunks
 export const fetchBookingsAsync = createAsyncThunk(
   'bookings/fetchBookings',
@@ -100,14 +114,28 @@ export const fetchBookingsAsync = createAsyncThunk(
     startDate?: string;
     endDate?: string;
   }) => {
-    return await apiService.getBookings(params);
+    const response: any = await apiService.getBookings(params);
+    // API returns { bookings: [...], total, page, totalPages }
+    if (response?.bookings) {
+      return {
+        bookings: response.bookings.map(normalizeBookingAmounts),
+        total: response.total,
+        page: response.page,
+        totalPages: response.totalPages,
+      };
+    }
+    if (Array.isArray(response)) {
+      return { bookings: response.map(normalizeBookingAmounts), total: response.length, page: 1, totalPages: 1 };
+    }
+    return response;
   }
 );
 
 export const fetchBookingAsync = createAsyncThunk(
   'bookings/fetchBooking',
   async (id: string) => {
-    return await apiService.getBooking(id);
+    const raw: any = await apiService.getBooking(id);
+    return normalizeBookingAmounts(raw);
   }
 );
 

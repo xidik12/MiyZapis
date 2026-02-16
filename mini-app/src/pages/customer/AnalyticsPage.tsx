@@ -47,7 +47,8 @@ export const AnalyticsPage: React.FC = () => {
       });
 
       // Calculate analytics from bookings data
-      const bookings = bookingsResponse.items || [];
+      const raw: any = bookingsResponse;
+      const bookings = raw.bookings || raw.items || (Array.isArray(raw) ? raw : []);
 
       if (bookings.length === 0) {
         setAnalytics({
@@ -68,7 +69,7 @@ export const AnalyticsPage: React.FC = () => {
       // Calculate total bookings and spending
       const totalBookings = bookings.length;
       const completedBookings = bookings.filter((b: any) => b.status === 'completed');
-      const totalSpent = completedBookings.reduce((sum: number, b: any) => sum + (b.totalPrice || 0), 0);
+      const totalSpent = completedBookings.reduce((sum: number, b: any) => sum + (Number(b.totalAmount) || 0), 0);
 
       // Calculate completion rate
       const completionRate = totalBookings > 0
@@ -97,7 +98,7 @@ export const AnalyticsPage: React.FC = () => {
 
         const monthSpending = monthBookings
           .filter((b: any) => b.status === 'completed')
-          .reduce((sum: number, b: any) => sum + (b.totalPrice || 0), 0);
+          .reduce((sum: number, b: any) => sum + (Number(b.totalAmount) || 0), 0);
 
         return {
           label: format(month, 'MMM'),
@@ -114,7 +115,7 @@ export const AnalyticsPage: React.FC = () => {
         const existing = categoryMap.get(categoryName) || { bookings: 0, spent: 0 };
         categoryMap.set(categoryName, {
           bookings: existing.bookings + 1,
-          spent: existing.spent + (booking.totalPrice || 0),
+          spent: existing.spent + (Number(booking.totalAmount) || 0),
         });
       });
 

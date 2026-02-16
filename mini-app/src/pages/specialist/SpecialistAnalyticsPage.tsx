@@ -74,10 +74,10 @@ export const SpecialistAnalyticsPage: React.FC = () => {
       if (analyticsData.status === 'fulfilled') {
         const data = analyticsData.value as any;
         setKpi({
-          revenue: data.revenue || 0,
-          bookings: data.bookings || 0,
-          newClients: data.newClients || 0,
-          retentionRate: data.retentionRate || 0,
+          revenue: Number(data.revenue) || 0,
+          bookings: Number(data.bookings) || 0,
+          newClients: Number(data.newClients) || 0,
+          retentionRate: Number(data.retentionRate) || 0,
         });
         setPopularServices(data.popularServices || []);
       } else {

@@ -22,16 +22,16 @@ export function useLocale(): Locale {
 }
 
 function detectLocale(): Locale {
-  // 1. Telegram WebApp language code (most reliable inside Telegram)
-  const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
-  if (tgLang) {
-    return mapToLocale(tgLang);
-  }
-
-  // 2. localStorage override (for settings page)
+  // 1. User's explicit choice from settings (highest priority)
   const stored = localStorage.getItem('miyzapis_locale');
   if (stored) {
     return mapToLocale(stored);
+  }
+
+  // 2. Telegram WebApp language code
+  const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
+  if (tgLang) {
+    return mapToLocale(tgLang);
   }
 
   // 3. Browser language
