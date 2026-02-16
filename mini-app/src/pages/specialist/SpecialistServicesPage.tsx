@@ -28,9 +28,11 @@ interface SpecialistService {
   id: string;
   name: string;
   description: string;
-  category: { id: string; name: string };
+  category: string;
+  categoryId?: string;
   duration: number;
   price: number;
+  basePrice?: string;
   currency: string;
   isActive: boolean;
 }
@@ -72,8 +74,20 @@ export const SpecialistServicesPage: React.FC = () => {
         apiService.getServiceCategories(),
       ]);
 
-      if (servicesData.status === 'fulfilled') setServices(servicesData.value as any || []);
-      if (categoriesData.status === 'fulfilled') setCategories(categoriesData.value as any || []);
+      if (servicesData.status === 'fulfilled') {
+        const raw: any = servicesData.value;
+        const arr = Array.isArray(raw) ? raw : raw?.services || [];
+        setServices(arr.map((s: any) => ({
+          ...s,
+          price: Number(s.price) || Number(s.basePrice) || 0,
+          category: typeof s.category === 'string' ? s.category : s.category?.name || '',
+          categoryId: typeof s.category === 'object' ? s.category?.id : s.categoryId || '',
+        })));
+      }
+      if (categoriesData.status === 'fulfilled') {
+        const raw: any = categoriesData.value;
+        setCategories(Array.isArray(raw) ? raw : raw?.categories || []);
+      }
     } finally {
       setLoading(false);
     }
@@ -88,10 +102,10 @@ export const SpecialistServicesPage: React.FC = () => {
       setFormData({
         name: service.name,
         description: service.description,
-        categoryId: service.category.id,
+        categoryId: service.categoryId || '',
         duration: service.duration,
         price: service.price,
-        currency: service.currency,
+        currency: service.currency || 'UAH',
       });
     } else {
       setEditingService(null);
@@ -164,6 +178,7 @@ export const SpecialistServicesPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
+        showBackButton
         title={t(specialistServicesStrings, 'title', locale)}
         rightContent={
           <button
@@ -216,7 +231,7 @@ export const SpecialistServicesPage: React.FC = () => {
                           &#8372;{service.price}
                         </span>
                       </div>
-                      <span className="text-xs text-text-secondary">{service.category.name}</span>
+                      <span className="text-xs text-text-secondary">{service.category}</span>
                     </div>
                   </div>
                 </div>
