@@ -451,6 +451,8 @@ export const scheduleStrings: Record<string, Record<Locale, string>> = {
   vacation: { en: 'Vacation', uk: 'Відпустка', ru: 'Отпуск' },
   personal: { en: 'Personal', uk: 'Особисте', ru: 'Личное' },
   other: { en: 'Other', uk: 'Інше', ru: 'Другое' },
+  monthView: { en: 'Month', uk: 'Місяць', ru: 'Месяц' },
+  cardView: { en: 'Cards', uk: 'Картки', ru: 'Карточки' },
 };
 
 // Specialist earnings

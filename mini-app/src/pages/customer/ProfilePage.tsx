@@ -126,8 +126,22 @@ export const ProfilePage: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
+      <div className="flex flex-col min-h-screen bg-bg-primary">
+        <Header title={t(profileStrings, 'profile', locale)} />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-6 text-center max-w-sm w-full">
+            <User size={36} className="mx-auto mb-3 text-text-muted" />
+            <h2 className="text-lg font-semibold text-text-primary mb-2">
+              {locale === 'uk' ? 'Ви не увійшли' : locale === 'ru' ? 'Вы не вошли' : 'Not logged in'}
+            </h2>
+            <p className="text-sm text-text-secondary mb-4">
+              {locale === 'uk' ? 'Увійдіть, щоб бачити профіль' : locale === 'ru' ? 'Войдите, чтобы видеть профиль' : 'Sign in to view your profile'}
+            </p>
+            <Button onClick={() => navigate('/auth')}>
+              {t(profileStrings, 'signOut', locale) === 'Sign Out' ? 'Sign In' : locale === 'uk' ? 'Увійти' : 'Войти'}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

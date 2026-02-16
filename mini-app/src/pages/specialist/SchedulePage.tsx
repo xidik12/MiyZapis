@@ -21,6 +21,8 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { scheduleStrings, commonStrings } from '@/utils/translations';
+import { MiniMonthView } from '@/components/schedule/MiniMonthView';
+import { MiniCardView } from '@/components/schedule/MiniCardView';
 
 interface BreakTime {
   id: string;
@@ -67,6 +69,7 @@ export const SchedulePage: React.FC = () => {
   const [schedule, setSchedule] = useState<DaySchedule[]>(getDefaultSchedule());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<'month' | 'card'>('month');
 
   // Day edit sheet
   const [showDaySheet, setShowDaySheet] = useState(false);
@@ -267,74 +270,49 @@ export const SchedulePage: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto pb-20">
         <div className="p-4 space-y-4 page-stagger">
-          {/* Weekly Schedule Header */}
+          {/* Schedule Header + View Toggle */}
           <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
             <h3 className="font-semibold text-text-primary flex items-center gap-2 mb-1">
               <Calendar size={18} className="text-accent-primary" />
               {sc('weeklySchedule')}
             </h3>
-            <p className="text-sm text-text-secondary">
+            <p className="text-sm text-text-secondary mb-3">
               {locale === 'uk'
                 ? 'Налаштуйте робочий час для кожного дня'
                 : locale === 'ru'
                 ? 'Настройте рабочее время для каждого дня'
                 : 'Configure your working hours for each day'}
             </p>
+            <div className="flex bg-bg-secondary rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('month')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  viewMode === 'month'
+                    ? 'bg-accent-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {sc('monthView')}
+              </button>
+              <button
+                onClick={() => setViewMode('card')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  viewMode === 'card'
+                    ? 'bg-accent-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {sc('cardView')}
+              </button>
+            </div>
           </Card>
 
-          {/* Day Rows */}
-          <div className="space-y-2">
-            {schedule.map((day, index) => (
-              <Card
-                key={day.dayKey}
-                className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card"
-              >
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        day.isWorking
-                          ? 'bg-accent-primary/10'
-                          : 'bg-bg-secondary'
-                      }`}
-                    >
-                      {day.isWorking ? (
-                        <Clock size={18} className="text-accent-primary" />
-                      ) : (
-                        <CalendarOff size={18} className="text-text-muted" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-medium text-text-primary">
-                        {sc(day.dayKey)}
-                      </h4>
-                      {day.isWorking ? (
-                        <div className="flex items-center gap-1 text-sm text-text-secondary">
-                          <span>{day.startTime}</span>
-                          <span>-</span>
-                          <span>{day.endTime}</span>
-                          {day.breaks.length > 0 && (
-                            <span className="text-text-muted ml-1">
-                              ({day.breaks.length} {sc('breakTime').toLowerCase()})
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-text-muted">{sc('dayOff')}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleEditDay(index)}
-                    className="p-2.5 rounded-xl hover:bg-bg-hover transition-colors"
-                  >
-                    <Edit size={16} className="text-accent-primary" />
-                  </button>
-                </div>
-              </Card>
-            ))}
-          </div>
+          {/* Schedule Views */}
+          {viewMode === 'month' ? (
+            <MiniMonthView schedule={schedule} onDayClick={handleEditDay} locale={locale} />
+          ) : (
+            <MiniCardView schedule={schedule} onDayClick={handleEditDay} locale={locale} />
+          )}
 
           {/* Block Time Card */}
           <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">

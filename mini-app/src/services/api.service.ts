@@ -366,31 +366,31 @@ class ApiService {
 
   // ==================== Messages / Conversations ====================
   async getConversations() {
-    return this.get('/conversations');
+    return this.get('/messages/conversations');
   }
 
   async getConversation(id: string) {
-    return this.get(`/conversations/${id}`);
+    return this.get(`/messages/conversations/${id}`);
   }
 
   async createConversation(participantId: string) {
-    return this.post('/conversations', { participantId });
+    return this.post('/messages/conversations', { participantId });
   }
 
   async sendMessage(conversationId: string, content: string) {
-    return this.post(`/conversations/${conversationId}/messages`, { content });
+    return this.post(`/messages/conversations/${conversationId}/messages`, { content });
   }
 
   async markMessagesRead(conversationId: string) {
-    return this.put(`/conversations/${conversationId}/read`);
+    return this.put(`/messages/conversations/${conversationId}/read`);
   }
 
   async getMessageUnreadCount() {
-    return this.get('/conversations/unread-count');
+    return this.get('/messages/unread-count');
   }
 
   async deleteConversation(id: string) {
-    return this.delete(`/conversations/${id}`);
+    return this.delete(`/messages/conversations/${id}`);
   }
 
   // ==================== Specialist Bookings Management ====================

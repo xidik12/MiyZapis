@@ -6,6 +6,7 @@ import { WebSocketProvider } from '@/components/common/WebSocketProvider';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 // Pages
 import { HomePage } from '@/pages/shared/HomePage';
@@ -65,6 +66,7 @@ function App() {
       <TelegramProvider>
         <WebSocketProvider>
           <Router>
+            <ErrorBoundary>
             <Routes>
               {/* Auth routes */}
               <Route path="/auth" element={<AuthLayout />}>
@@ -361,6 +363,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>
+            </ErrorBoundary>
           </Router>
         </WebSocketProvider>
         <ToastContainer />

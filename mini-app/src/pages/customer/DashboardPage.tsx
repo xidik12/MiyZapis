@@ -21,7 +21,7 @@ export const DashboardPage: React.FC = () => {
   const { hapticFeedback } = useTelegram();
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const { bookings, isLoading } = useSelector((state: RootState) => state.bookings);
+  const { bookings, isLoading, error } = useSelector((state: RootState) => state.bookings);
 
   const [stats, setStats] = useState({ totalBookings: 0, totalSpent: 0, avgRating: 0, loyaltyPoints: 0 });
 
@@ -85,6 +85,22 @@ export const DashboardPage: React.FC = () => {
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-bg-card rounded-2xl border border-white/5 p-4 animate-pulse h-24" />
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-bg-primary">
+        <Header title={s('title')} />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-6 text-center max-w-sm w-full">
+            <Calendar size={36} className="mx-auto mb-3 text-accent-red" />
+            <h2 className="text-lg font-semibold text-text-primary mb-2">{c('error')}</h2>
+            <p className="text-sm text-text-secondary mb-4">{typeof error === 'string' ? error : c('retry')}</p>
+            <Button onClick={() => dispatch(fetchBookingsAsync())}>{c('retry')}</Button>
           </div>
         </div>
       </div>

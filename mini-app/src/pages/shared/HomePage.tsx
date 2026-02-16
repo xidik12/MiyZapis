@@ -181,7 +181,7 @@ export const HomePage: React.FC = () => {
                   { icon: <Award size={18} />, label: s('loyalty'), path: '/loyalty', color: 'text-purple-400' },
                   { icon: <Star size={18} />, label: s('reviews'), path: '/reviews', color: 'text-accent-yellow' },
                   { icon: <CreditCard size={18} />, label: s('payments'), path: '/payment-methods', color: 'text-sky-400' },
-                  { icon: <LayoutDashboard size={18} />, label: s('dashboard'), path: '/dashboard', color: 'text-indigo-400' },
+                  { icon: <LayoutDashboard size={18} />, label: s('dashboard'), path: userRole === 'specialist' ? '/specialist-dashboard' : '/dashboard', color: 'text-indigo-400' },
                 ].map(item => (
                   <button
                     key={item.path}
@@ -244,14 +244,12 @@ export const HomePage: React.FC = () => {
                 <h3 className="text-accent-yellow text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSpecialist')}</h3>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { icon: <LayoutDashboard size={18} />, label: s('specDashboard'), path: '/specialist-dashboard', color: 'text-accent-primary' },
                     { icon: <Calendar size={18} />, label: s('specBookings'), path: '/specialist-bookings', color: 'text-blue-400' },
                     { icon: <CalendarClock size={18} />, label: s('specSchedule'), path: '/specialist/schedule', color: 'text-orange-400' },
                     { icon: <DollarSign size={18} />, label: s('specEarnings'), path: '/specialist/earnings', color: 'text-accent-green' },
                     { icon: <BarChart3 size={18} />, label: s('specAnalytics'), path: '/specialist/analytics', color: 'text-purple-400' },
                     { icon: <Star size={18} />, label: s('specReviews'), path: '/specialist/reviews', color: 'text-accent-yellow' },
                     { icon: <UserCheck size={18} />, label: s('specClients'), path: '/specialist/clients', color: 'text-pink-400' },
-                    { icon: <Briefcase size={18} />, label: s('specSettings'), path: '/specialist/settings', color: 'text-gray-400' },
                   ].map(item => (
                     <button
                       key={item.path}
