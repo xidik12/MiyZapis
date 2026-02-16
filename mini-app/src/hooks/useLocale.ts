@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Locale } from '@/utils/categories';
 
 /**
@@ -73,8 +73,36 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 /**
+ * Get the user's saved currency preference, defaulting to UAH.
+ */
+export function getSavedCurrency(): string {
+  try {
+    return localStorage.getItem('miyzapis_currency') || 'UAH';
+  } catch {
+    return 'UAH';
+  }
+}
+
+/**
+ * Hook that returns the user's saved currency preference and a setter.
+ */
+export function useCurrency(): [string, (currency: string) => void] {
+  const [currency, setCurrencyState] = useState<string>(() => getSavedCurrency());
+
+  const setCurrency = useCallback((code: string) => {
+    const upper = code.toUpperCase();
+    try {
+      localStorage.setItem('miyzapis_currency', upper);
+    } catch { /* ignore */ }
+    setCurrencyState(upper);
+  }, []);
+
+  return [currency, setCurrency];
+}
+
+/**
  * Format a monetary amount with currency symbol.
- * Uses the currency from the data or defaults to UAH.
+ * Uses the currency from the data, or the user's saved preference, or defaults to UAH.
  */
 export function formatCurrency(
   amount: number | string,
@@ -82,7 +110,7 @@ export function formatCurrency(
   locale?: Locale
 ): string {
   const num = Number(amount) || 0;
-  const cur = (currency || 'UAH').toUpperCase();
+  const cur = (currency || getSavedCurrency()).toUpperCase();
   const symbol = CURRENCY_SYMBOLS[cur] || cur;
   const loc = locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US';
   return `${symbol}${num.toLocaleString(loc)}`;

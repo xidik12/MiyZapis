@@ -47,7 +47,7 @@ export const ReviewsPage: React.FC = () => {
     try {
       if (!append) setLoading(true);
       const data = await apiService.getReviews({ page: pageNum, limit: 10 }) as any;
-      const items = data.items || data || [];
+      const items = data.reviews || data.items || (Array.isArray(data) ? data : []);
       if (append) {
         setReviews(prev => [...prev, ...items]);
       } else {

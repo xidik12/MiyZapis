@@ -78,6 +78,10 @@ export const SchedulePage: React.FC = () => {
   const [editingDayIndex, setEditingDayIndex] = useState<number | null>(null);
   const [editingDay, setEditingDay] = useState<DaySchedule | null>(null);
 
+  // Day detail sheet (shows appointments for a specific date)
+  const [showDayDetailSheet, setShowDayDetailSheet] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   // Block time sheet
   const [showBlockSheet, setShowBlockSheet] = useState(false);
   const [timeBlock, setTimeBlock] = useState<TimeBlock>({
@@ -141,6 +145,13 @@ export const SchedulePage: React.FC = () => {
     setEditingDayIndex(index);
     setEditingDay({ ...schedule[index], breaks: [...schedule[index].breaks] });
     setShowDaySheet(true);
+  };
+
+  const handleMonthDayClick = (dayIndex: number, date: Date) => {
+    hapticFeedback.impactLight();
+    setSelectedDate(date);
+    setEditingDayIndex(dayIndex);
+    setShowDayDetailSheet(true);
   };
 
   const handleToggleWorking = () => {
@@ -366,9 +377,9 @@ export const SchedulePage: React.FC = () => {
 
           {/* Schedule Views */}
           {viewMode === 'month' ? (
-            <MiniMonthView schedule={schedule} onDayClick={handleEditDay} locale={locale} bookingDates={bookingDates} />
+            <MiniMonthView schedule={schedule} onDayClick={handleMonthDayClick} locale={locale} bookingDates={bookingDates} />
           ) : (
-            <MiniCardView schedule={schedule} onDayClick={handleEditDay} locale={locale} />
+            <MiniCardView schedule={schedule} onDayClick={handleEditDay} locale={locale} bookings={bookings} />
           )}
 
           {/* Block Time Card */}
@@ -458,6 +469,106 @@ export const SchedulePage: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {/* Day Detail Sheet (from month view click) */}
+      <Sheet
+        isOpen={showDayDetailSheet}
+        onClose={() => {
+          setShowDayDetailSheet(false);
+          setSelectedDate(null);
+        }}
+        title={selectedDate ? format(selectedDate, 'PPPP') : ''}
+      >
+        {selectedDate && editingDayIndex !== null && (() => {
+          const daySchedule = schedule[editingDayIndex];
+          const dateStr = format(selectedDate, 'yyyy-MM-dd');
+          const dayBookings = bookings.filter((b: any) => {
+            const bDate = b.scheduledAt || b.startTime || b.createdAt;
+            if (!bDate) return false;
+            try { return format(parseISO(bDate), 'yyyy-MM-dd') === dateStr; } catch { return false; }
+          });
+
+          return (
+            <div className="space-y-4">
+              {/* Working hours */}
+              <div className="p-3 bg-bg-secondary/50 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-text-primary">
+                    {daySchedule?.isWorking
+                      ? `${daySchedule.startTime} — ${daySchedule.endTime}`
+                      : (locale === 'uk' ? 'Вихідний' : locale === 'ru' ? 'Выходной' : 'Day Off')}
+                  </span>
+                  <span className={`w-2 h-2 rounded-full ${daySchedule?.isWorking ? 'bg-accent-green' : 'bg-text-muted'}`} />
+                </div>
+                {daySchedule?.breaks?.length > 0 && (
+                  <p className="text-xs text-text-muted mt-1">
+                    {daySchedule.breaks.map(b => `${b.startTime}-${b.endTime}`).join(', ')} ({locale === 'uk' ? 'перерва' : locale === 'ru' ? 'перерыв' : 'break'})
+                  </p>
+                )}
+              </div>
+
+              {/* Appointments for this date */}
+              <div>
+                <h4 className="text-sm font-semibold text-text-primary mb-2">
+                  {locale === 'uk' ? 'Записи' : locale === 'ru' ? 'Записи' : 'Appointments'} ({dayBookings.length})
+                </h4>
+                {dayBookings.length === 0 ? (
+                  <div className="text-center py-6">
+                    <Calendar size={28} className="mx-auto mb-2 text-text-muted" />
+                    <p className="text-sm text-text-secondary">
+                      {locale === 'uk' ? 'Немає записів на цей день' : locale === 'ru' ? 'Нет записей на этот день' : 'No appointments this day'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {dayBookings.map((booking: any) => {
+                      const bDate = booking.scheduledAt || booking.startTime;
+                      let timeStr = '';
+                      try { timeStr = bDate ? format(parseISO(bDate), 'HH:mm') : ''; } catch { /* skip */ }
+
+                      return (
+                        <div key={booking.id} className="flex items-center gap-3 p-3 bg-bg-secondary/50 rounded-xl border border-white/5">
+                          <div className="w-9 h-9 rounded-lg bg-accent-primary/10 flex items-center justify-center flex-shrink-0">
+                            <User size={14} className="text-accent-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-text-primary truncate">
+                              {booking.customer?.firstName || booking.customerName || ''}{' '}
+                              {booking.customer?.lastName || ''}
+                            </p>
+                            <p className="text-xs text-text-secondary truncate">
+                              {booking.service?.name || booking.serviceName || ''}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            {timeStr && <p className="text-xs font-medium text-text-primary">{timeStr}</p>}
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
+                              {(booking.status || '').toLowerCase()}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Edit Schedule button */}
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  setShowDayDetailSheet(false);
+                  handleEditDay(editingDayIndex);
+                }}
+              >
+                <Edit size={16} className="mr-2" />
+                {sc('editDay')}
+              </Button>
+            </div>
+          );
+        })()}
+      </Sheet>
 
       {/* Day Edit Sheet */}
       <Sheet

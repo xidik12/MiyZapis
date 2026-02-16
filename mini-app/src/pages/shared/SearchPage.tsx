@@ -29,6 +29,7 @@ import {
 } from '@/store/slices/servicesSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { searchStrings, commonStrings, serviceDetailStrings, specialistServicesStrings } from '@/utils/translations';
+import { getCategoryInfo } from '@/utils/categories';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -145,11 +146,20 @@ export const SearchPage: React.FC = () => {
         >
           <div className="flex gap-3">
             <div className="w-20 h-20 rounded-lg overflow-hidden bg-bg-hover flex-shrink-0">
-              <img
-                src={service.images?.[0] || '/api/placeholder/80/80'}
-                alt={service.name}
-                className="w-full h-full object-cover"
-              />
+              {service.images?.[0] ? (
+                <img
+                  src={service.images[0]}
+                  alt={service.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}
+                >
+                  <span className="text-2xl">{getCategoryInfo(service.category).icon}</span>
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-text-primary truncate">{service.name}</h3>
@@ -181,11 +191,20 @@ export const SearchPage: React.FC = () => {
         className="h-full"
       >
         <div className="aspect-square bg-bg-hover rounded-lg mb-3 overflow-hidden">
-          <img
-            src={service.images?.[0] || '/api/placeholder/200/200'}
-            alt={service.name}
-            className="w-full h-full object-cover"
-          />
+          {service.images?.[0] ? (
+            <img
+              src={service.images[0]}
+              alt={service.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}
+            >
+              <span className="text-4xl">{getCategoryInfo(service.category).icon}</span>
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <div>

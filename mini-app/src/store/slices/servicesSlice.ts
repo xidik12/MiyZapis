@@ -105,6 +105,13 @@ export const fetchServicesAsync = createAsyncThunk(
         items: response.services.map((s: any) => ({
           ...s,
           price: Number(s.price) || Number(s.basePrice) || 0,
+          images: (() => {
+            if (Array.isArray(s.images)) return s.images;
+            if (typeof s.images === 'string') {
+              try { return JSON.parse(s.images); } catch { return []; }
+            }
+            return [];
+          })(),
           specialist: normalizeServiceSpecialist(s.specialist),
         })),
         pagination: {
@@ -126,6 +133,13 @@ export const fetchServiceAsync = createAsyncThunk(
     return {
       ...raw,
       price: Number(raw.price) || Number(raw.basePrice) || 0,
+      images: (() => {
+        if (Array.isArray(raw.images)) return raw.images;
+        if (typeof raw.images === 'string') {
+          try { return JSON.parse(raw.images); } catch { return []; }
+        }
+        return [];
+      })(),
       specialist: normalizeServiceSpecialist(raw.specialist),
     };
   }

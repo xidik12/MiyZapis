@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Calendar, DollarSign, Star, Gift, Clock, Search, Heart, MessageCircle } from 'lucide-react';
+import {
+  Calendar, DollarSign, Star, Gift, Clock, Search, Heart, MessageCircle,
+  Bell, User, Settings, HelpCircle, Wallet, Users,
+} from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -198,22 +201,34 @@ export const DashboardPage: React.FC = () => {
             )}
           </Card>
 
-          {/* Quick Actions */}
+          {/* Feature Grid */}
           <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
             <h3 className="font-semibold text-text-primary mb-3">{s('quickActions')}</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Button className="h-11" onClick={() => { hapticFeedback.impactLight(); navigate('/search'); }}>
-                <Search size={16} className="mr-2" />{s('findService')}
-              </Button>
-              <Button variant="secondary" className="h-11" onClick={() => { hapticFeedback.impactLight(); navigate('/favorites'); }}>
-                <Heart size={16} className="mr-2" />{s('favorites')}
-              </Button>
-              <Button variant="secondary" className="h-11" onClick={() => { hapticFeedback.impactLight(); navigate('/messages'); }}>
-                <MessageCircle size={16} className="mr-2" />{s('messages')}
-              </Button>
-              <Button variant="secondary" className="h-11" onClick={() => { hapticFeedback.impactLight(); navigate('/loyalty'); }}>
-                <Gift size={16} className="mr-2" />{s('rewards')}
-              </Button>
+            <div className="grid grid-cols-4 gap-2">
+              {([
+                { icon: <Search size={20} />, label: locale === 'uk' ? 'Пошук' : locale === 'ru' ? 'Поиск' : 'Search', path: '/search', color: 'text-accent-primary' },
+                { icon: <Calendar size={20} />, label: locale === 'uk' ? 'Записи' : locale === 'ru' ? 'Записи' : 'Bookings', path: '/bookings', color: 'text-blue-400' },
+                { icon: <Heart size={20} />, label: s('favorites'), path: '/favorites', color: 'text-pink-400' },
+                { icon: <Wallet size={20} />, label: locale === 'uk' ? 'Оплати' : locale === 'ru' ? 'Платежи' : 'Payments', path: '/wallet', color: 'text-teal-400' },
+                { icon: <MessageCircle size={20} />, label: s('messages'), path: '/messages', color: 'text-blue-400' },
+                { icon: <Bell size={20} />, label: locale === 'uk' ? 'Сповіщ.' : locale === 'ru' ? 'Уведомл.' : 'Alerts', path: '/notifications', color: 'text-accent-red' },
+                { icon: <Star size={20} />, label: locale === 'uk' ? 'Відгуки' : locale === 'ru' ? 'Отзывы' : 'Reviews', path: '/reviews', color: 'text-accent-yellow' },
+                { icon: <Gift size={20} />, label: s('rewards'), path: '/loyalty', color: 'text-accent-purple' },
+                { icon: <Users size={20} />, label: locale === 'uk' ? 'Спільнота' : locale === 'ru' ? 'Сообщество' : 'Community', path: '/community', color: 'text-orange-400' },
+                { icon: <Gift size={20} />, label: locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals', path: '/referrals', color: 'text-teal-400' },
+                { icon: <User size={20} />, label: locale === 'uk' ? 'Профіль' : locale === 'ru' ? 'Профиль' : 'Profile', path: '/profile', color: 'text-accent-primary' },
+                { icon: <Settings size={20} />, label: locale === 'uk' ? 'Налашт.' : locale === 'ru' ? 'Настр.' : 'Settings', path: '/settings', color: 'text-text-secondary' },
+                { icon: <HelpCircle size={20} />, label: locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help', path: '/help', color: 'text-accent-yellow' },
+              ] as const).map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => { hapticFeedback.impactLight(); navigate(item.path); }}
+                  className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:bg-bg-hover/50 active:scale-95 transition-all"
+                >
+                  <span className={item.color}>{item.icon}</span>
+                  <span className="text-[10px] font-medium text-text-secondary text-center leading-tight">{item.label}</span>
+                </button>
+              ))}
             </div>
           </Card>
         </div>

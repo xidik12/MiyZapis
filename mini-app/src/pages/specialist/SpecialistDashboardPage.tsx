@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Calendar, DollarSign, Star, TrendingUp, Clock } from 'lucide-react';
+import {
+  Calendar, DollarSign, Star, TrendingUp, Clock,
+  Briefcase, BarChart3, Users, Wallet, MessageCircle,
+  Bell, Gift, User, Settings, HelpCircle, Heart,
+} from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
@@ -273,49 +277,53 @@ export const SpecialistDashboardPage: React.FC = () => {
           )}
         </Card>
 
-        {/* Quick Actions */}
+        {/* Feature Grid — Business */}
         <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
-          <h3 className="font-semibold text-text-primary mb-4">{s('quickActions')}</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              className="h-12"
-              onClick={() => {
-                hapticFeedback.impactLight();
-                navigate('/specialist/schedule');
-              }}
-            >
-              {s('schedule')}
-            </Button>
-            <Button
-              variant="secondary"
-              className="h-12"
-              onClick={() => {
-                hapticFeedback.impactLight();
-                navigate('/specialist/earnings');
-              }}
-            >
-              {s('earnings')}
-            </Button>
-            <Button
-              variant="secondary"
-              className="h-12"
-              onClick={() => {
-                hapticFeedback.impactLight();
-                navigate('/specialist/analytics');
-              }}
-            >
-              {s('analytics')}
-            </Button>
-            <Button
-              variant="secondary"
-              className="h-12"
-              onClick={() => {
-                hapticFeedback.impactLight();
-                navigate('/specialist/reviews');
-              }}
-            >
-              {c('reviews')}
-            </Button>
+          <h3 className="font-semibold text-text-primary mb-3">{s('quickActions')}</h3>
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { icon: <Briefcase size={20} />, label: locale === 'uk' ? 'Послуги' : locale === 'ru' ? 'Услуги' : 'Services', path: '/specialist-services', color: 'text-accent-primary' },
+              { icon: <Calendar size={20} />, label: s('schedule'), path: '/specialist/schedule', color: 'text-accent-green' },
+              { icon: <Calendar size={20} />, label: c('bookings') || 'Bookings', path: '/specialist-bookings', color: 'text-blue-400' },
+              { icon: <DollarSign size={20} />, label: s('earnings'), path: '/specialist/earnings', color: 'text-accent-green' },
+              { icon: <BarChart3 size={20} />, label: s('analytics'), path: '/specialist/analytics', color: 'text-accent-purple' },
+              { icon: <Users size={20} />, label: locale === 'uk' ? 'Клієнти' : locale === 'ru' ? 'Клиенты' : 'Clients', path: '/specialist/clients', color: 'text-orange-400' },
+              { icon: <Wallet size={20} />, label: locale === 'uk' ? 'Гаманець' : locale === 'ru' ? 'Кошелёк' : 'Wallet', path: '/specialist/wallet', color: 'text-teal-400' },
+              { icon: <Star size={20} />, label: c('reviews'), path: '/specialist/reviews', color: 'text-accent-yellow' },
+            ] as const).map((item) => (
+              <button
+                key={item.path}
+                onClick={() => { hapticFeedback.impactLight(); navigate(item.path); }}
+                className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:bg-bg-hover/50 active:scale-95 transition-all"
+              >
+                <span className={item.color}>{item.icon}</span>
+                <span className="text-[10px] font-medium text-text-secondary text-center leading-tight">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Feature Grid — Social & Account */}
+        <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { icon: <MessageCircle size={20} />, label: locale === 'uk' ? 'Чати' : locale === 'ru' ? 'Чаты' : 'Messages', path: '/messages', color: 'text-blue-400' },
+              { icon: <Bell size={20} />, label: locale === 'uk' ? 'Сповіщ.' : locale === 'ru' ? 'Уведомл.' : 'Alerts', path: '/notifications', color: 'text-accent-red' },
+              { icon: <Heart size={20} />, label: locale === 'uk' ? 'Спільнота' : locale === 'ru' ? 'Сообщество' : 'Community', path: '/community', color: 'text-pink-400' },
+              { icon: <Gift size={20} />, label: locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals', path: '/referrals', color: 'text-teal-400' },
+              { icon: <User size={20} />, label: locale === 'uk' ? 'Профіль' : locale === 'ru' ? 'Профиль' : 'Profile', path: '/profile', color: 'text-accent-primary' },
+              { icon: <Settings size={20} />, label: locale === 'uk' ? 'Налашт.' : locale === 'ru' ? 'Настр.' : 'Settings', path: '/settings', color: 'text-text-secondary' },
+              { icon: <HelpCircle size={20} />, label: locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help', path: '/help', color: 'text-accent-yellow' },
+            ] as const).map((item) => (
+              <button
+                key={item.path}
+                onClick={() => { hapticFeedback.impactLight(); navigate(item.path); }}
+                className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:bg-bg-hover/50 active:scale-95 transition-all"
+              >
+                <span className={item.color}>{item.icon}</span>
+                <span className="text-[10px] font-medium text-text-secondary text-center leading-tight">{item.label}</span>
+              </button>
+            ))}
           </div>
         </Card>
 

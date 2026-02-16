@@ -193,7 +193,13 @@ class ApiService {
     serviceId?: string;
     specialistId?: string;
   }): Promise<PaginatedResponse<any>> {
-    return this.get('/reviews', params);
+    if (params?.serviceId) {
+      return this.get(`/reviews/service/${params.serviceId}`, { page: params.page, limit: params.limit });
+    }
+    if (params?.specialistId) {
+      return this.get(`/reviews/specialist/${params.specialistId}`, { page: params.page, limit: params.limit });
+    }
+    return this.get('/reviews/my-reviews', params);
   }
 
   async createReview(reviewData: {

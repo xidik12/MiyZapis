@@ -93,8 +93,14 @@ const reviewsSlice = createSlice({
     });
     builder.addCase(fetchReviewsAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.reviews = action.payload.items;
-      state.pagination = action.payload.pagination;
+      const data = action.payload as any;
+      state.reviews = data.reviews || data.items || (Array.isArray(data) ? data : []);
+      state.pagination = data.pagination || {
+        page: 1,
+        limit: 10,
+        total: state.reviews.length,
+        totalPages: 1,
+      };
     });
     builder.addCase(fetchReviewsAsync.rejected, (state, action) => {
       state.isLoading = false;

@@ -25,7 +25,7 @@ interface DaySchedule {
 
 interface MiniMonthViewProps {
   schedule: DaySchedule[];
-  onDayClick: (dayIndex: number) => void;
+  onDayClick: (dayIndex: number, date: Date) => void;
   locale: string;
   bookingDates?: Set<string>; // Set of 'YYYY-MM-DD' strings
 }
@@ -107,7 +107,7 @@ export const MiniMonthView: React.FC<MiniMonthViewProps> = ({ schedule, onDayCli
           return (
             <button
               key={i}
-              onClick={() => onDayClick(scheduleDay)}
+              onClick={() => onDayClick(scheduleDay, d)}
               className={`relative flex flex-col items-center justify-center py-2 rounded-lg transition-all active:scale-95 ${
                 !inMonth
                   ? 'opacity-30'

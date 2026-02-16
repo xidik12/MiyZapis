@@ -17,6 +17,7 @@ import {
   User,
   Phone,
   Camera,
+  DollarSign,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -29,7 +30,7 @@ import { RootState, AppDispatch } from '@/store';
 import { updateProfileAsync, logout } from '@/store/slices/authSlice';
 import { addToast, setTheme } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, useCurrency } from '@/hooks/useLocale';
 import { settingsStrings, commonStrings, bookingFlowStrings, profileStrings } from '@/utils/translations';
 
 interface NotificationPrefs {
@@ -53,7 +54,9 @@ export const SettingsPage: React.FC = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
+  const [showCurrency, setShowCurrency] = useState(false);
   const [language, setLanguage] = useState(locale);
+  const [currency, setCurrency] = useCurrency();
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -207,6 +210,23 @@ export const SettingsPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-text-secondary">{language === 'uk' ? 'Українська' : language === 'ru' ? 'Русский' : 'English'}</span>
+                  <ChevronRight size={18} className="text-text-secondary" />
+                </div>
+              </div>
+            </Card>
+
+            <Card hover onClick={() => { setShowCurrency(true); hapticFeedback.impactLight(); }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-accent-green/15 rounded-lg flex items-center justify-center">
+                    <DollarSign size={18} className="text-accent-green" />
+                  </div>
+                  <span className="text-sm text-text-primary">
+                    {locale === 'uk' ? 'Валюта' : locale === 'ru' ? 'Валюта' : 'Currency'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-text-secondary">{currency}</span>
                   <ChevronRight size={18} className="text-text-secondary" />
                 </div>
               </div>
@@ -394,6 +414,46 @@ export const SettingsPage: React.FC = () => {
               <span className="text-xl">{lang.flag}</span>
               <span className="text-sm font-medium text-text-primary">{lang.label}</span>
               {language === lang.code && (
+                <span className="ml-auto text-accent-primary text-xs font-medium">{t(commonStrings, 'active', locale)}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </Sheet>
+
+      {/* Currency Sheet */}
+      <Sheet
+        isOpen={showCurrency}
+        onClose={() => setShowCurrency(false)}
+        title={locale === 'uk' ? 'Валюта' : locale === 'ru' ? 'Валюта' : 'Currency'}
+      >
+        <div className="space-y-2">
+          {[
+            { code: 'UAH', symbol: '₴', label: locale === 'uk' ? 'Гривня (₴)' : locale === 'ru' ? 'Гривна (₴)' : 'Ukrainian Hryvnia (₴)' },
+            { code: 'USD', symbol: '$', label: locale === 'uk' ? 'Долар ($)' : locale === 'ru' ? 'Доллар ($)' : 'US Dollar ($)' },
+            { code: 'EUR', symbol: '€', label: locale === 'uk' ? 'Євро (€)' : locale === 'ru' ? 'Евро (€)' : 'Euro (€)' },
+          ].map(cur => (
+            <button
+              key={cur.code}
+              onClick={() => {
+                setCurrency(cur.code);
+                hapticFeedback.selectionChanged();
+                setShowCurrency(false);
+                dispatch(addToast({
+                  type: 'success',
+                  title: locale === 'uk' ? 'Валюту змінено' : locale === 'ru' ? 'Валюта изменена' : 'Currency changed',
+                  message: cur.label,
+                }));
+              }}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                currency === cur.code
+                  ? 'bg-accent-primary/10 border border-accent-primary'
+                  : 'bg-bg-secondary hover:bg-bg-hover'
+              }`}
+            >
+              <span className="text-xl font-bold">{cur.symbol}</span>
+              <span className="text-sm font-medium text-text-primary">{cur.label}</span>
+              {currency === cur.code && (
                 <span className="ml-auto text-accent-primary text-xs font-medium">{t(commonStrings, 'active', locale)}</span>
               )}
             </button>

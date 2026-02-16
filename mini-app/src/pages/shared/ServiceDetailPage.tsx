@@ -27,6 +27,7 @@ import { fetchServiceAsync } from '@/store/slices/servicesSlice';
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { serviceDetailStrings, commonStrings } from '@/utils/translations';
+import { getCategoryInfo } from '@/utils/categories';
 
 export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -203,8 +204,11 @@ export const ServiceDetailPage: React.FC = () => {
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-text-secondary">{s('noImage')}</span>
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${getCategoryInfo(selectedService.category).color}33, ${getCategoryInfo(selectedService.category).color}11)` }}
+            >
+              <span className="text-6xl">{getCategoryInfo(selectedService.category).icon}</span>
             </div>
           )}
         </div>
@@ -286,7 +290,7 @@ export const ServiceDetailPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
                 <img
-                  src={selectedService.specialist?.avatar || '/api/placeholder/64/64'}
+                  src={selectedService.specialist?.avatar || ''}
                   alt={specialistName}
                   className="w-full h-full object-cover"
                 />
@@ -363,7 +367,7 @@ export const ServiceDetailPage: React.FC = () => {
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-bg-hover overflow-hidden">
                         <img
-                          src={review.customer.avatar || '/api/placeholder/32/32'}
+                          src={review.customer.avatar || ''}
                           alt={`${review.customer.firstName} ${review.customer.lastName}`}
                           className="w-full h-full object-cover"
                         />
@@ -420,7 +424,7 @@ export const ServiceDetailPage: React.FC = () => {
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden">
                   <img
-                    src={review.customer.avatar || '/api/placeholder/40/40'}
+                    src={review.customer.avatar || ''}
                     alt={`${review.customer.firstName} ${review.customer.lastName}`}
                     className="w-full h-full object-cover"
                   />

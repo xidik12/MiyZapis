@@ -1,5 +1,6 @@
 import React from 'react';
-import { Clock, CalendarOff } from 'lucide-react';
+import { Clock, CalendarOff, User } from 'lucide-react';
+import { format, parseISO, getDay } from 'date-fns';
 
 interface DaySchedule {
   dayOfWeek: number;
@@ -14,6 +15,7 @@ interface MiniCardViewProps {
   schedule: DaySchedule[];
   onDayClick: (dayIndex: number) => void;
   locale: string;
+  bookings?: any[];
 }
 
 const DAY_SHORT: Record<string, string[]> = {
@@ -27,12 +29,32 @@ const timeToMinutes = (t: string): number => {
   return h * 60 + m;
 };
 
-export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick, locale }) => {
+// Convert JS getDay() (0=Sun) to our dayOfWeek (0=Mon)
+const jsToScheduleDay = (jsDay: number): number => (jsDay === 0 ? 6 : jsDay - 1);
+
+export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick, locale, bookings = [] }) => {
   const dayLabels = DAY_SHORT[locale] || DAY_SHORT.en;
+
+  // Group bookings by weekday
+  const bookingsByDay: Record<number, any[]> = {};
+  bookings.forEach((b: any) => {
+    const dateStr = b.scheduledAt || b.startTime || b.createdAt;
+    if (!dateStr) return;
+    try {
+      const d = parseISO(dateStr);
+      const dayIdx = jsToScheduleDay(getDay(d));
+      if (!bookingsByDay[dayIdx]) bookingsByDay[dayIdx] = [];
+      bookingsByDay[dayIdx].push(b);
+    } catch {
+      // skip invalid
+    }
+  });
 
   return (
     <div className="space-y-2">
       {schedule.map((day, index) => {
+        const dayBookings = bookingsByDay[index] || [];
+
         if (!day.isWorking) {
           return (
             <button
@@ -81,7 +103,7 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
           <button
             key={day.dayKey}
             onClick={() => onDayClick(index)}
-            className="w-full bg-bg-card/80 backdrop-blur-xl rounded-xl border border-white/5 shadow-card p-3 active:scale-[0.98] transition-all"
+            className="w-full bg-bg-card/80 backdrop-blur-xl rounded-xl border border-white/5 shadow-card p-3 active:scale-[0.98] transition-all text-left"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -115,6 +137,26 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
                 );
               })}
             </div>
+
+            {/* Bookings count for this day */}
+            {dayBookings.length > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <User size={12} className="text-accent-primary" />
+                <span className="text-xs text-accent-primary font-medium">
+                  {dayBookings.length} {locale === 'uk' ? 'записів' : locale === 'ru' ? 'записей' : 'appointment'}{dayBookings.length !== 1 && locale === 'en' ? 's' : ''}
+                </span>
+                {dayBookings[0] && (
+                  <span className="text-xs text-text-muted truncate">
+                    — {dayBookings[0].customer?.firstName || dayBookings[0].customerName || ''}{' '}
+                    {(() => {
+                      const dateStr = dayBookings[0].scheduledAt || dayBookings[0].startTime;
+                      if (!dateStr) return '';
+                      try { return format(parseISO(dateStr), 'HH:mm'); } catch { return ''; }
+                    })()}
+                  </span>
+                )}
+              </div>
+            )}
           </button>
         );
       })}
