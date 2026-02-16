@@ -746,12 +746,16 @@ const SpecialistSettings: React.FC = () => {
                       {!user?.telegramId && (
                         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                           <TelegramLinkWidget
-                            onSuccess={() => {
+                            onSuccess={async () => {
                               toast.success(
                                 language === 'uk' ? 'Telegram підключено!' :
                                 language === 'ru' ? 'Telegram подключен!' :
                                 'Telegram linked!'
                               );
+                              try {
+                                const profile = await userService.getProfile();
+                                dispatch(updateUserProfile(profile));
+                              } catch {}
                             }}
                             onError={(error) => {
                               toast.error(error);

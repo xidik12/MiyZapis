@@ -58,7 +58,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
       const currentEnd = new Date(current.endDateTime).getTime();
       const nextStart = new Date(next.startDateTime).getTime();
 
-      if (nextStart === currentEnd && next.isAvailable === current.isAvailable) {
+      if (Math.abs(nextStart - currentEnd) < 60000 && next.isAvailable === current.isAvailable) {
         // Extend current block
         current = { ...current, endDateTime: next.endDateTime };
       } else {
