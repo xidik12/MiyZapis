@@ -399,7 +399,7 @@ export class BookingPaymentService {
 
     const paidCryptoAmount = booking.cryptoPayments
       .filter(p => p.status === 'PAID')
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount), 0);
 
     const paidAmount = booking.walletAmountUsed + paidCryptoAmount;
     const remainingAmount = Math.max(0, booking.depositAmount - paidAmount);

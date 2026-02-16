@@ -53,8 +53,8 @@ export const HelpSupportPage: React.FC = () => {
     try {
       setLoading(true);
       const [faqsData, categoriesData] = await Promise.allSettled([
-        apiService.getFAQs(),
-        apiService.getFAQCategories(),
+        apiService.getFAQs({ language: locale }),
+        apiService.getFAQCategories({ language: locale }),
       ]);
 
       if (faqsData.status === 'fulfilled') {
@@ -72,7 +72,7 @@ export const HelpSupportPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     fetchData();
@@ -83,20 +83,13 @@ export const HelpSupportPage: React.FC = () => {
     setActiveCategory(categoryId);
     setExpandedId(null);
 
-    if (categoryId === 'all') {
-      try {
-        const data = await apiService.getFAQs() as any;
-        setFaqs(data?.faqs || (Array.isArray(data) ? data : []));
-      } catch {
-        // Keep current FAQs
-      }
-    } else {
-      try {
-        const data = await apiService.getFAQs({ category: categoryId }) as any;
-        setFaqs(data?.faqs || (Array.isArray(data) ? data : []));
-      } catch {
-        // Keep current FAQs
-      }
+    try {
+      const params: { language: string; category?: string } = { language: locale };
+      if (categoryId !== 'all') params.category = categoryId;
+      const data = await apiService.getFAQs(params) as any;
+      setFaqs(data?.faqs || (Array.isArray(data) ? data : []));
+    } catch {
+      // Keep current FAQs
     }
   };
 

@@ -200,7 +200,7 @@ export class EnhancedAnalyticsService {
       // Calculate revenue
       const totalRevenue = bookingDetails
         .filter(b => b.status === 'COMPLETED')
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .reduce((sum, b) => sum + Number(b.totalAmount), 0);
 
       // Calculate average rating
       const averageRating = reviews.length > 0

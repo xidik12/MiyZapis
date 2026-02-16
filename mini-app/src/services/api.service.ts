@@ -528,12 +528,12 @@ class ApiService {
   }
 
   // ==================== Help & Support ====================
-  async getFAQs(params?: { category?: string }) {
+  async getFAQs(params?: { category?: string; language?: string }) {
     return this.get('/help/faqs', params);
   }
 
-  async getFAQCategories() {
-    return this.get('/help/faq-categories');
+  async getFAQCategories(params?: { language?: string }) {
+    return this.get('/help/faq-categories', params);
   }
 
   async searchFAQs(query: string) {
