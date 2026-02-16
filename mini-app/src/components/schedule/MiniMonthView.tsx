@@ -27,6 +27,7 @@ interface MiniMonthViewProps {
   schedule: DaySchedule[];
   onDayClick: (dayIndex: number) => void;
   locale: string;
+  bookingDates?: Set<string>; // Set of 'YYYY-MM-DD' strings
 }
 
 const WEEKDAY_LABELS: Record<string, string[]> = {
@@ -44,7 +45,7 @@ const MONTH_NAMES: Record<string, string[]> = {
 // Convert JS getDay() (0=Sun) to our dayOfWeek (0=Mon)
 const jsToScheduleDay = (jsDay: number): number => (jsDay === 0 ? 6 : jsDay - 1);
 
-export const MiniMonthView: React.FC<MiniMonthViewProps> = ({ schedule, onDayClick, locale }) => {
+export const MiniMonthView: React.FC<MiniMonthViewProps> = ({ schedule, onDayClick, locale, bookingDates }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const monthStart = startOfMonth(currentMonth);
@@ -100,6 +101,8 @@ export const MiniMonthView: React.FC<MiniMonthViewProps> = ({ schedule, onDayCli
           const scheduleDay = jsToScheduleDay(getDay(d));
           const daySchedule = schedule[scheduleDay];
           const isWorking = daySchedule?.isWorking ?? false;
+          const dateStr = format(d, 'yyyy-MM-dd');
+          const hasBooking = bookingDates?.has(dateStr) ?? false;
 
           return (
             <button
@@ -121,11 +124,16 @@ export const MiniMonthView: React.FC<MiniMonthViewProps> = ({ schedule, onDayCli
                 {format(d, 'd')}
               </span>
               {inMonth && (
-                <span
-                  className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
-                    isWorking ? 'bg-accent-green' : 'bg-text-muted/30'
-                  }`}
-                />
+                <div className="flex gap-0.5 mt-0.5">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isWorking ? 'bg-accent-green' : 'bg-text-muted/30'
+                    }`}
+                  />
+                  {hasBooking && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
+                  )}
+                </div>
               )}
             </button>
           );

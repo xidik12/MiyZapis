@@ -540,7 +540,7 @@ class ApiService {
     return this.get('/help/search', { query });
   }
 
-  async submitFeedback(data: { subject: string; message: string; category?: string }) {
+  async submitFeedback(data: { subject: string; message: string; category?: string; email?: string }) {
     return this.post('/help/feedback', data);
   }
 

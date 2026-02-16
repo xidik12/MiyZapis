@@ -57,8 +57,18 @@ export const HelpSupportPage: React.FC = () => {
         apiService.getFAQCategories(),
       ]);
 
-      if (faqsData.status === 'fulfilled') setFaqs(faqsData.value as any || []);
-      if (categoriesData.status === 'fulfilled') setCategories(categoriesData.value as any || []);
+      if (faqsData.status === 'fulfilled') {
+        const raw = faqsData.value as any;
+        setFaqs(raw?.faqs || (Array.isArray(raw) ? raw : []));
+      }
+      if (categoriesData.status === 'fulfilled') {
+        const raw = categoriesData.value as any;
+        const cats = raw?.categories || (Array.isArray(raw) ? raw : []);
+        setCategories(cats.map((c: any) => ({
+          id: c.id || c.category || '',
+          name: c.name || c.category || '',
+        })));
+      }
     } finally {
       setLoading(false);
     }
@@ -76,14 +86,14 @@ export const HelpSupportPage: React.FC = () => {
     if (categoryId === 'all') {
       try {
         const data = await apiService.getFAQs() as any;
-        setFaqs(Array.isArray(data) ? data : []);
+        setFaqs(data?.faqs || (Array.isArray(data) ? data : []));
       } catch {
         // Keep current FAQs
       }
     } else {
       try {
         const data = await apiService.getFAQs({ category: categoryId }) as any;
-        setFaqs(Array.isArray(data) ? data : []);
+        setFaqs(data?.faqs || (Array.isArray(data) ? data : []));
       } catch {
         // Keep current FAQs
       }
@@ -107,7 +117,9 @@ export const HelpSupportPage: React.FC = () => {
 
     try {
       setSubmitting(true);
-      await apiService.submitFeedback({ subject, message });
+      const userStr = localStorage.getItem('user');
+      const userEmail = userStr ? JSON.parse(userStr)?.email : '';
+      await apiService.submitFeedback({ subject, message, email: userEmail || 'user@miyzapis.app', category: 'general' });
       dispatch(addToast({
         type: 'success',
         title: t(commonStrings, 'success', locale),

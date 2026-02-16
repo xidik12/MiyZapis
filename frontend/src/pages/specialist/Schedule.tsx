@@ -671,19 +671,19 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using UTC date components (times are stored as-is in UTC)
+      // Compare using local date components consistently
       if (
-        blockStart.getUTCFullYear() !== date.getFullYear() ||
-        blockStart.getUTCMonth() !== date.getMonth() ||
-        blockStart.getUTCDate() !== date.getDate()
+        blockStart.getFullYear() !== date.getFullYear() ||
+        blockStart.getMonth() !== date.getMonth() ||
+        blockStart.getDate() !== date.getDate()
       ) {
         return false;
       }
 
-      // Check if the block overlaps with this hour (using UTC time)
-      const blockHour = blockStart.getUTCHours();
-      const blockEndHour = blockEnd.getUTCHours();
-      const blockEndMinute = blockEnd.getUTCMinutes();
+      // Check if the block overlaps with this hour (using local time)
+      const blockHour = blockStart.getHours();
+      const blockEndHour = blockEnd.getHours();
+      const blockEndMinute = blockEnd.getMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -701,10 +701,10 @@ const SpecialistSchedule: React.FC = () => {
       const bookingStart = new Date(booking.scheduledAt);
       if (Number.isNaN(bookingStart.getTime())) return false;
       return (
-        bookingStart.getUTCFullYear() === date.getFullYear() &&
-        bookingStart.getUTCMonth() === date.getMonth() &&
-        bookingStart.getUTCDate() === date.getDate() &&
-        bookingStart.getUTCHours() === hour
+        bookingStart.getFullYear() === date.getFullYear() &&
+        bookingStart.getMonth() === date.getMonth() &&
+        bookingStart.getDate() === date.getDate() &&
+        bookingStart.getHours() === hour
       );
     });
   };

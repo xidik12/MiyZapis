@@ -64,14 +64,33 @@ export const FavoritesPage: React.FC = () => {
   const fetchFavorites = useCallback(async (pageNum: number, append = false) => {
     try {
       if (!append) setLoading(true);
-      const data = await apiService.getFavorites({ page: pageNum, limit: 12, type: activeTab }) as any;
-      const items = data.items || data || [];
+      const data = await apiService.getFavorites({ page: pageNum, limit: 12 }) as any;
+
+      // Backend returns { specialists: [...], services: [...], pagination: { specialists: {...}, services: {...} } }
+      const rawItems = activeTab === 'specialist'
+        ? (data?.specialists || [])
+        : (data?.services || []);
+
+      // Map to FavoriteItem interface
+      const items: FavoriteItem[] = rawItems.map((item: any) => ({
+        id: item.id,
+        targetId: activeTab === 'specialist'
+          ? (item.specialistId || item.specialist?.id || item.id)
+          : (item.serviceId || item.service?.id || item.id),
+        type: activeTab,
+        specialist: item.specialist,
+        service: item.service,
+        createdAt: item.createdAt,
+      }));
+
       if (append) {
         setFavorites(prev => [...prev, ...items]);
       } else {
         setFavorites(items);
       }
-      setHasMore(pageNum < (data.pagination?.totalPages || 1));
+
+      const paginationData = data?.pagination?.[activeTab === 'specialist' ? 'specialists' : 'services'];
+      setHasMore(pageNum < (paginationData?.totalPages || 1));
     } catch {
       if (!append) setFavorites([]);
     } finally {
@@ -92,7 +111,8 @@ export const FavoritesPage: React.FC = () => {
     setFavorites(prev => prev.filter(f => f.id !== fav.id));
 
     try {
-      await apiService.removeFavorite(fav.id);
+      const targetId = fav.targetId || (fav.type === 'specialist' ? fav.specialist?.id : fav.service?.id) || fav.id;
+      await apiService.removeFavorite(targetId, fav.type);
       const successMsg = locale === 'uk' ? 'Видалено' : locale === 'ru' ? 'Удалено' : 'Removed';
       const msg = locale === 'uk' ? 'Видалено з обраного' : locale === 'ru' ? 'Удалено из избранного' : 'Removed from favorites';
       dispatch(addToast({ type: 'success', title: successMsg, message: msg }));

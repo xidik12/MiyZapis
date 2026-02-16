@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Clock,
   Edit,
@@ -8,7 +8,9 @@ import {
   Calendar,
   ToggleLeft,
   ToggleRight,
+  User,
 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -85,6 +87,9 @@ export const SchedulePage: React.FC = () => {
   });
   const [blockSaving, setBlockSaving] = useState(false);
 
+  // Bookings
+  const [bookings, setBookings] = useState<any[]>([]);
+
   const sc = useCallback((key: string) => t(scheduleStrings, key, locale), [locale]);
   const c = useCallback((key: string) => t(commonStrings, key, locale), [locale]);
 
@@ -92,21 +97,34 @@ export const SchedulePage: React.FC = () => {
   const fetchSchedule = useCallback(async () => {
     try {
       setLoading(true);
-      const profile = await apiService.getSpecialistProfile() as any;
-      const wh = profile?.workingHours || {};
+      const [profileRes, bookingsRes] = await Promise.allSettled([
+        apiService.getSpecialistProfile(),
+        apiService.getBookings({ userType: 'specialist', limit: 100 }),
+      ]);
 
-      const newSchedule = DAY_KEYS.map((key, index) => {
-        const day = wh[key] || {};
-        return {
-          dayOfWeek: index,
-          dayKey: key,
-          isWorking: day.isOpen ?? day.isWorking ?? false,
-          startTime: day.startTime || day.start || '09:00',
-          endTime: day.endTime || day.end || '18:00',
-          breaks: day.breaks || [],
-        };
-      });
-      setSchedule(newSchedule);
+      if (profileRes.status === 'fulfilled') {
+        const profile = profileRes.value as any;
+        const wh = profile?.workingHours || {};
+
+        const newSchedule = DAY_KEYS.map((key, index) => {
+          const day = wh[key] || {};
+          return {
+            dayOfWeek: index,
+            dayKey: key,
+            isWorking: day.isOpen ?? day.isWorking ?? false,
+            startTime: day.startTime || day.start || '09:00',
+            endTime: day.endTime || day.end || '18:00',
+            breaks: day.breaks || [],
+          };
+        });
+        setSchedule(newSchedule);
+      }
+
+      if (bookingsRes.status === 'fulfilled') {
+        const raw = bookingsRes.value as any;
+        const list = raw?.bookings || raw?.items || (Array.isArray(raw) ? raw : []);
+        setBookings(list);
+      }
     } catch {
       // Use default schedule if fetch fails
     } finally {
@@ -244,6 +262,54 @@ export const SchedulePage: React.FC = () => {
     }
   };
 
+  // Compute booking dates for calendar indicators
+  const bookingDates = useMemo(() => {
+    const dates = new Set<string>();
+    bookings.forEach((b: any) => {
+      const dateStr = b.scheduledAt || b.startTime || b.createdAt;
+      if (dateStr) {
+        try {
+          dates.add(format(parseISO(dateStr), 'yyyy-MM-dd'));
+        } catch {
+          // skip invalid dates
+        }
+      }
+    });
+    return dates;
+  }, [bookings]);
+
+  // Upcoming bookings (future or today, sorted by date)
+  const upcomingBookings = useMemo(() => {
+    const now = new Date();
+    const todayStr = format(now, 'yyyy-MM-dd');
+    return bookings
+      .filter((b: any) => {
+        const dateStr = b.scheduledAt || b.startTime || b.createdAt;
+        if (!dateStr) return false;
+        try {
+          return format(parseISO(dateStr), 'yyyy-MM-dd') >= todayStr;
+        } catch {
+          return false;
+        }
+      })
+      .sort((a: any, b: any) => {
+        const da = a.scheduledAt || a.startTime || a.createdAt || '';
+        const db = b.scheduledAt || b.startTime || b.createdAt || '';
+        return da.localeCompare(db);
+      })
+      .slice(0, 10);
+  }, [bookings]);
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'confirmed': return 'bg-accent-green/15 text-accent-green';
+      case 'pending': return 'bg-accent-yellow/15 text-accent-yellow';
+      case 'completed': return 'bg-blue-500/15 text-blue-400';
+      case 'cancelled': return 'bg-accent-red/15 text-accent-red';
+      default: return 'bg-bg-hover text-text-secondary';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary">
@@ -300,7 +366,7 @@ export const SchedulePage: React.FC = () => {
 
           {/* Schedule Views */}
           {viewMode === 'month' ? (
-            <MiniMonthView schedule={schedule} onDayClick={handleEditDay} locale={locale} />
+            <MiniMonthView schedule={schedule} onDayClick={handleEditDay} locale={locale} bookingDates={bookingDates} />
           ) : (
             <MiniCardView schedule={schedule} onDayClick={handleEditDay} locale={locale} />
           )}
@@ -328,6 +394,67 @@ export const SchedulePage: React.FC = () => {
               <Plus size={16} className="mr-1.5" />
               {sc('blockTime')}
             </Button>
+          </Card>
+
+          {/* Upcoming Bookings */}
+          <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2 mb-3">
+              <Clock size={18} className="text-accent-primary" />
+              {locale === 'uk' ? 'Найближчі записи' : locale === 'ru' ? 'Ближайшие записи' : 'Upcoming Bookings'}
+            </h3>
+
+            {upcomingBookings.length === 0 ? (
+              <div className="text-center py-6">
+                <Calendar size={32} className="mx-auto mb-2 text-text-muted" />
+                <p className="text-sm text-text-secondary">
+                  {locale === 'uk' ? 'Немає найближчих записів' : locale === 'ru' ? 'Нет ближайших записей' : 'No upcoming bookings'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {upcomingBookings.map((booking: any) => {
+                  const dateStr = booking.scheduledAt || booking.startTime || booking.createdAt;
+                  let formattedDate = '';
+                  let formattedTime = '';
+                  try {
+                    const d = parseISO(dateStr);
+                    formattedDate = format(d, 'MMM d');
+                    formattedTime = format(d, 'HH:mm');
+                  } catch {
+                    formattedDate = dateStr?.slice(0, 10) || '';
+                  }
+
+                  return (
+                    <div
+                      key={booking.id}
+                      className="flex items-center gap-3 p-3 bg-bg-secondary/50 rounded-xl border border-white/5"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-accent-primary/10 flex items-center justify-center flex-shrink-0">
+                        <User size={16} className="text-accent-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {booking.customer?.firstName || booking.customerName || ''}{' '}
+                          {booking.customer?.lastName || ''}
+                        </p>
+                        <p className="text-xs text-text-secondary truncate">
+                          {booking.service?.name || booking.serviceName || ''}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs font-medium text-text-primary">{formattedDate}</p>
+                        {formattedTime && (
+                          <p className="text-xs text-text-muted">{formattedTime}</p>
+                        )}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
+                          {(booking.status || '').toLowerCase()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </Card>
         </div>
       </div>
