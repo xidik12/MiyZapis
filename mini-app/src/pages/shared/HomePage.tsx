@@ -103,7 +103,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title={user ? `${s('hi')}, ${user.firstName}!` : s('welcome')}
+        title={user?.firstName ? `${s('hi')}, ${user.firstName}!` : s('welcome')}
         subtitle={s('findService')}
         rightContent={
           <div className="flex items-center gap-1">

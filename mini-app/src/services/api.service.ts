@@ -48,9 +48,14 @@ class ApiService {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          window.dispatchEvent(new CustomEvent('auth:logout'));
+          // Only clear auth for auth-critical endpoints (token validation)
+          // Don't clear for other endpoints that may return 401 for other reasons
+          const url = error.config?.url || '';
+          if (url.includes('/auth/me') || url.includes('/auth/refresh')) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.dispatchEvent(new CustomEvent('auth:logout'));
+          }
         }
         return Promise.reject(error);
       }

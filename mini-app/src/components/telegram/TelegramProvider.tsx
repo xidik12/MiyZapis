@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTelegramWebApp, UseTelegramWebAppReturn } from '@/hooks/useTelegramWebApp';
+import { setCredentials } from '@/store/slices/authSlice';
 import { User } from '@/types';
 
 // @ts-ignore
@@ -75,6 +77,7 @@ interface TelegramProviderProps {
 
 export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) => {
   const telegramWebApp = useTelegramWebApp();
+  const reduxDispatch = useDispatch();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +112,10 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         }
         setUser(authUser);
         setIsAuthenticated(true);
+        // Sync to Redux so LoginPage and other Redux-dependent components are aware
+        if (authToken) {
+          reduxDispatch(setCredentials({ user: authUser, token: authToken }));
+        }
         return true;
       }
       return false;
@@ -116,7 +123,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       console.error('Telegram auth request failed:', err);
       return false;
     }
-  }, [telegramWebApp.initData, telegramWebApp.webApp]);
+  }, [telegramWebApp.initData, telegramWebApp.webApp, reduxDispatch]);
 
   // Fetch current user profile using stored token
   const fetchCurrentUser = useCallback(async (token: string): Promise<boolean> => {
@@ -126,20 +133,23 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       });
       const data = await res.json();
       if (data.success && data.data) {
-        const userData = data.data;
+        // Backend /auth/me returns { data: { user: {...} } } — extract the user object
+        const userData = data.data.user || data.data;
         // Map backend userType to role for mini-app compatibility
         if (userData && !userData.role && userData.userType) {
           userData.role = userData.userType.toLowerCase();
         }
         setUser(userData);
         setIsAuthenticated(true);
+        // Sync to Redux
+        reduxDispatch(setCredentials({ user: userData, token }));
         return true;
       }
       return false;
     } catch {
       return false;
     }
-  }, []);
+  }, [reduxDispatch]);
 
   // Initialize authentication
   useEffect(() => {
@@ -213,6 +223,10 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
           }
           setUser(authUser);
           setIsAuthenticated(true);
+          // Sync to Redux
+          if (authToken) {
+            reduxDispatch(setCredentials({ user: authUser, token: authToken }));
+          }
           telegramWebApp.hapticFeedback.notificationSuccess();
         } else {
           throw new Error(data.error || data.message || 'Registration failed');
