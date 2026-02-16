@@ -2817,7 +2817,7 @@ const translations: Translations = {
   'contact.error': { en: 'Failed to send message. Please try again later.', uk: 'Не вдалося надіслати повідомлення. Спробуйте пізніше.', ru: 'Не удалось отправить сообщение. Попробуйте позже.' },
   'contact.info.title': { en: 'Other Ways to Reach Us', uk: 'Інші способи зв\'язку', ru: 'Другие способы связи' },
   'contact.info.email': { en: 'support@miyzapys.com', uk: 'support@miyzapys.com', ru: 'support@miyzapys.com' },
-  'contact.info.telegram': { en: '@MiyZapysBot', uk: '@MiyZapysBot', ru: '@MiyZapysBot' },
+  'contact.info.telegram': { en: '@MiyZapis_Bot', uk: '@MiyZapis_Bot', ru: '@MiyZapis_Bot' },
 
   // ========================================
   // MISSING KEYS — Onboarding (specialist)
