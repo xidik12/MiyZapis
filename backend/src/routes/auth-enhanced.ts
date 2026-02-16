@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { body, validationResult } from 'express-validator';
 import { EnhancedAuthService } from '@/services/auth/enhanced';
@@ -332,6 +333,126 @@ router.post('/telegram', validateTelegramAuth, async (req, res) => {
       errorCode = 'TELEGRAM_AUTH_EXPIRED';
       errorMessage = 'Telegram authentication data has expired';
     } else if (error.message === 'ACCOUNT_DEACTIVATED') {
+      errorCode = 'ACCOUNT_DEACTIVATED';
+      errorMessage = 'Your account has been deactivated';
+    }
+
+    res.status(400).json(createErrorResponse(errorCode, errorMessage, req.id));
+  }
+});
+
+// Telegram WebApp authentication (mini-app sends raw initData string)
+router.post('/telegram/webapp', async (req, res): Promise<void> => {
+  try {
+    const { initData } = req.body;
+
+    if (!initData || typeof initData !== 'string') {
+      res.status(400).json(
+        createErrorResponse('VALIDATION_ERROR', 'initData is required', req.id)
+      );
+      return;
+    }
+
+    if (!config.telegram.botToken) {
+      res.status(500).json(
+        createErrorResponse('CONFIG_ERROR', 'Telegram bot token not configured', req.id)
+      );
+      return;
+    }
+
+    // Validate WebApp initData using HMAC-SHA256 with "WebAppData" key
+    const params = new URLSearchParams(initData);
+    const hash = params.get('hash');
+    params.delete('hash');
+
+    if (!hash) {
+      res.status(400).json(
+        createErrorResponse('INVALID_TELEGRAM_AUTH', 'Hash parameter missing', req.id)
+      );
+      return;
+    }
+
+    const dataCheckArray: string[] = [];
+    for (const [key, value] of params.entries()) {
+      dataCheckArray.push(`${key}=${value}`);
+    }
+    dataCheckArray.sort();
+    const dataCheckString = dataCheckArray.join('\n');
+
+    const secretKey = crypto.createHmac('sha256', 'WebAppData')
+      .update(config.telegram.botToken)
+      .digest();
+
+    const calculatedHash = crypto.createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    if (calculatedHash !== hash) {
+      logger.warn('WebApp initData hash mismatch');
+      res.status(400).json(
+        createErrorResponse('INVALID_TELEGRAM_AUTH', 'Invalid Telegram authentication data', req.id)
+      );
+      return;
+    }
+
+    // Check auth date
+    const authDate = parseInt(params.get('auth_date') || '0');
+    if (Date.now() / 1000 - authDate > 86400) {
+      res.status(400).json(
+        createErrorResponse('TELEGRAM_AUTH_EXPIRED', 'Telegram authentication data has expired', req.id)
+      );
+      return;
+    }
+
+    // Extract user from initData
+    const userStr = params.get('user');
+    if (!userStr) {
+      res.status(400).json(
+        createErrorResponse('VALIDATION_ERROR', 'User data not found in initData', req.id)
+      );
+      return;
+    }
+
+    const telegramUser = JSON.parse(userStr);
+
+    // Delegate to existing authenticateWithTelegram, passing the hash so it passes verification
+    // We need to compute the Login Widget hash for the user data so the existing method accepts it
+    const telegramData = {
+      telegramId: telegramUser.id.toString(),
+      firstName: telegramUser.first_name || 'User',
+      lastName: telegramUser.last_name || '',
+      username: telegramUser.username || '',
+      authDate,
+      hash: '', // will be computed below
+    };
+
+    // Compute the Login Widget style hash so authenticateWithTelegram's verification passes
+    const loginSecretKey = crypto.createHash('sha256').update(config.telegram.botToken).digest();
+    const fieldMap: Record<string, string> = {
+      telegramId: 'id',
+      firstName: 'first_name',
+      lastName: 'last_name',
+      authDate: 'auth_date',
+    };
+    const telegramFields: Record<string, string> = {};
+    for (const [key, value] of Object.entries(telegramData)) {
+      if (key === 'hash' || value === undefined || value === null || value === '') continue;
+      const tgKey = fieldMap[key] || key;
+      telegramFields[tgKey] = String(value);
+    }
+    const loginCheckString = Object.keys(telegramFields).sort().map(k => `${k}=${telegramFields[k]}`).join('\n');
+    telegramData.hash = crypto.createHmac('sha256', loginSecretKey).update(loginCheckString).digest('hex');
+
+    const result = await EnhancedAuthService.authenticateWithTelegram(telegramData);
+
+    res.json(createSuccessResponse(result));
+  } catch (error: any) {
+    logger.error('Telegram WebApp authentication error:', error);
+
+    let errorCode = 'TELEGRAM_AUTH_FAILED';
+    let errorMessage = 'Telegram authentication failed';
+
+    if (error.message === 'ACCOUNT_DEACTIVATED') {
       errorCode = 'ACCOUNT_DEACTIVATED';
       errorMessage = 'Your account has been deactivated';
     }

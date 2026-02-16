@@ -183,22 +183,11 @@ export const LoginPage: React.FC = () => {
     }
 
     try {
-      // Parse auth_date and hash from initData
-      const params = new URLSearchParams(initData);
-      const authDate = parseInt(params.get('auth_date') || '0', 10);
-      const hash = params.get('hash') || '';
-
-      const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram`, {
+      // Send raw initData to the WebApp-specific endpoint for proper validation
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram/webapp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          telegramId: telegramUser.id.toString(),
-          firstName: telegramUser.first_name || 'User',
-          lastName: telegramUser.last_name || '',
-          username: telegramUser.username || '',
-          authDate,
-          hash,
-        }),
+        body: JSON.stringify({ initData }),
       });
 
       const data = await res.json();
@@ -216,7 +205,7 @@ export const LoginPage: React.FC = () => {
         }));
         hapticFeedback.notificationSuccess();
       } else {
-        throw new Error(data.error || 'Telegram auth failed');
+        throw new Error(data.error || data.message || 'Telegram auth failed');
       }
     } catch (err) {
       console.error('Telegram auto-login failed:', err);
