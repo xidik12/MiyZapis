@@ -1,36 +1,43 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiService } from '../../services/api.service';
 
+// Matches backend response from getUserBookings() exactly
 export interface Booking {
   id: string;
   serviceId: string;
   specialistId: string;
   customerId: string;
-  startTime: string;
-  endTime: string;
+  scheduledAt: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   totalAmount: number;
   notes?: string;
   cancellationReason?: string;
-  service: {
+  // Flattened fields from backend transform
+  customerName?: string;
+  serviceName?: string;
+  date?: string;
+  time?: string;
+  amount?: number;
+  service?: {
     id: string;
     name: string;
-    price: number;
+    basePrice: number;
     duration: number;
   };
-  specialist: {
-    id: string;
-    name: string;
-    avatar?: string;
-    phone: string;
-    email: string;
-  };
-  customer: {
+  specialist?: {
     id: string;
     firstName: string;
     lastName: string;
-    phone?: string;
-    email: string;
+    avatar?: string;
+    phoneNumber?: string;
+    email?: string;
+  };
+  customer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    email?: string;
   };
   payment?: {
     id: string;
@@ -131,39 +138,6 @@ export const cancelBookingAsync = createAsyncThunk(
   }
 );
 
-// Normalize backend booking to mini-app Booking interface
-const normalizeBooking = (b: any): Booking => {
-  const specialist = b.specialist || {};
-  const customer = b.customer || {};
-  const service = b.service || {};
-  return {
-    ...b,
-    startTime: b.startTime || b.scheduledAt || b.createdAt,
-    endTime: b.endTime || b.scheduledAt || b.createdAt,
-    totalAmount: b.totalAmount ?? b.amount ?? 0,
-    service: {
-      id: service.id || b.serviceId || '',
-      name: service.name || b.serviceName || 'Service',
-      price: service.basePrice ?? service.price ?? 0,
-      duration: service.duration ?? 0,
-    },
-    specialist: {
-      id: specialist.id || b.specialistId || '',
-      name: specialist.name || (specialist.firstName ? `${specialist.firstName} ${specialist.lastName || ''}`.trim() : ''),
-      avatar: specialist.avatar,
-      phone: specialist.phoneNumber || specialist.phone || '',
-      email: specialist.email || '',
-    },
-    customer: {
-      id: customer.id || b.customerId || '',
-      firstName: customer.firstName || '',
-      lastName: customer.lastName || '',
-      phone: customer.phoneNumber || customer.phone,
-      email: customer.email || '',
-    },
-  };
-};
-
 const bookingsSlice = createSlice({
   name: 'bookings',
   initialState,
@@ -201,7 +175,7 @@ const bookingsSlice = createSlice({
       state.isLoading = false;
       const p = action.payload as any;
       const raw = p.items || p.bookings || (Array.isArray(p) ? p : []);
-      state.bookings = raw.map(normalizeBooking);
+      state.bookings = raw;
       if (p.pagination) {
         state.pagination = p.pagination;
       } else if (p.totalPages !== undefined) {

@@ -25,6 +25,7 @@ import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { communityStrings, commonStrings } from '@/utils/translations';
 
+// Matches backend response from getPosts() exactly
 interface CommunityPost {
   id: string;
   title: string;
@@ -37,9 +38,9 @@ interface CommunityPost {
     lastName: string;
     avatar?: string;
   };
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
   isLiked: boolean;
   createdAt: string;
 }
@@ -72,12 +73,11 @@ export const CommunityPage: React.FC = () => {
 
       const data = await apiService.getCommunityPosts(params) as any;
       const rawItems = data.items || data.posts || (Array.isArray(data) ? data : []);
-      // Normalize field names from backend (likeCount → likesCount, etc.)
       const items = rawItems.map((p: any) => ({
         ...p,
-        likesCount: p.likesCount ?? p.likeCount ?? 0,
-        commentsCount: p.commentsCount ?? p.commentCount ?? 0,
-        viewsCount: p.viewsCount ?? p.viewCount ?? 0,
+        likeCount: p.likeCount ?? 0,
+        commentCount: p.commentCount ?? 0,
+        viewCount: p.viewCount ?? 0,
         isLiked: p.isLiked ?? false,
         author: p.author || { id: '', firstName: '?', lastName: '' },
       }));
@@ -113,7 +113,7 @@ export const CommunityPage: React.FC = () => {
     hapticFeedback.impactLight();
     setPosts(prev => prev.map(p =>
       p.id === post.id
-        ? { ...p, isLiked: !p.isLiked, likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1 }
+        ? { ...p, isLiked: !p.isLiked, likeCount: p.isLiked ? p.likeCount - 1 : p.likeCount + 1 }
         : p
     ));
 
@@ -126,7 +126,7 @@ export const CommunityPage: React.FC = () => {
     } catch {
       setPosts(prev => prev.map(p =>
         p.id === post.id
-          ? { ...p, isLiked: post.isLiked, likesCount: post.likesCount }
+          ? { ...p, isLiked: post.isLiked, likeCount: post.likeCount }
           : p
       ));
     }
@@ -291,15 +291,15 @@ export const CommunityPage: React.FC = () => {
                         size={16}
                         className={post.isLiked ? 'text-accent-red fill-accent-red' : 'text-text-secondary'}
                       />
-                      <span className="text-xs text-text-secondary">{post.likesCount}</span>
+                      <span className="text-xs text-text-secondary">{post.likeCount}</span>
                     </button>
                     <div className="flex items-center gap-1.5">
                       <MessageCircle size={16} className="text-text-secondary" />
-                      <span className="text-xs text-text-secondary">{post.commentsCount}</span>
+                      <span className="text-xs text-text-secondary">{post.commentCount}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Eye size={16} className="text-text-secondary" />
-                      <span className="text-xs text-text-secondary">{post.viewsCount}</span>
+                      <span className="text-xs text-text-secondary">{post.viewCount}</span>
                     </div>
                   </div>
                 </Card>

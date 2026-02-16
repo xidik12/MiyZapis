@@ -16,7 +16,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   formatTime,
 }) => {
   const getOtherParticipant = (conv: Conversation) => {
-    return conv.participants.find(p => p.id !== currentUserId) || conv.participants[0];
+    if (conv.customer?.id === currentUserId) return conv.specialist;
+    return conv.customer;
   };
 
   return (

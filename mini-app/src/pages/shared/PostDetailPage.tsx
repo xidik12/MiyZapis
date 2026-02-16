@@ -37,9 +37,9 @@ interface CommunityPost {
   type: string;
   image?: string;
   author: PostAuthor;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
   isLiked: boolean;
   createdAt: string;
 }
@@ -159,7 +159,7 @@ export const PostDetailPage: React.FC = () => {
     setPost(prev => prev ? {
       ...prev,
       isLiked: !prev.isLiked,
-      likesCount: prev.isLiked ? prev.likesCount - 1 : prev.likesCount + 1,
+      likesCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
     } : null);
 
     try {
@@ -173,7 +173,7 @@ export const PostDetailPage: React.FC = () => {
       setPost(prev => prev ? {
         ...prev,
         isLiked: post.isLiked,
-        likesCount: post.likesCount,
+        likesCount: post.likeCount,
       } : null);
     }
   };
@@ -202,7 +202,7 @@ export const PostDetailPage: React.FC = () => {
       fetchComments();
 
       // Update post comment count optimistically
-      setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null);
+      setPost(prev => prev ? { ...prev, commentsCount: prev.commentCount + 1 } : null);
     } catch {
       dispatch(addToast({ type: 'error', title: c('error'), message: s('commentFailed') }));
       hapticFeedback.notificationError();
@@ -218,7 +218,7 @@ export const PostDetailPage: React.FC = () => {
       await apiService.deleteComment(id, commentId);
       dispatch(addToast({ type: 'success', title: s('commentDeleted'), message: '' }));
       fetchComments();
-      setPost(prev => prev ? { ...prev, commentsCount: Math.max(0, prev.commentsCount - 1) } : null);
+      setPost(prev => prev ? { ...prev, commentsCount: Math.max(0, prev.commentCount - 1) } : null);
     } catch {
       dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
       hapticFeedback.notificationError();
@@ -381,16 +381,16 @@ export const PostDetailPage: React.FC = () => {
                   className={post.isLiked ? 'text-accent-red fill-accent-red' : 'text-text-secondary'}
                 />
                 <span className={`text-sm ${post.isLiked ? 'text-accent-red' : 'text-text-secondary'}`}>
-                  {post.likesCount}
+                  {post.likeCount}
                 </span>
               </button>
               <div className="flex items-center gap-1.5">
                 <MessageCircle size={18} className="text-text-secondary" />
-                <span className="text-sm text-text-secondary">{post.commentsCount}</span>
+                <span className="text-sm text-text-secondary">{post.commentCount}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Eye size={18} className="text-text-secondary" />
-                <span className="text-sm text-text-secondary">{post.viewsCount}</span>
+                <span className="text-sm text-text-secondary">{post.viewCount}</span>
               </div>
             </div>
           </Card>
@@ -399,7 +399,7 @@ export const PostDetailPage: React.FC = () => {
         {/* Comments Section */}
         <div className="px-4 pt-4">
           <h3 className="text-sm font-semibold text-text-primary mb-2">
-            {s('comments')} ({post.commentsCount})
+            {s('comments')} ({post.commentCount})
           </h3>
 
           {commentsLoading ? (

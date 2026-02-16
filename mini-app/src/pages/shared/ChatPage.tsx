@@ -64,7 +64,9 @@ export const ChatPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const otherParticipant = activeConversation?.participants.find(p => p.id !== user?.id);
+  const otherParticipant = activeConversation
+    ? (activeConversation.customer?.id === user?.id ? activeConversation.specialist : activeConversation.customer)
+    : undefined;
 
   const handleSend = (content: string) => {
     if (conversationId) {

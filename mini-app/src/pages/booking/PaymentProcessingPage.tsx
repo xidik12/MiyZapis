@@ -241,7 +241,7 @@ export const PaymentProcessingPage: React.FC = () => {
             </div>
             <h2 className="text-xl font-bold text-text-primary mb-2">{p('paymentSuccess')}</h2>
             <p className="text-text-secondary text-sm mb-6">
-              {booking.service.name} - {formatDate(booking.startTime)} {c('at')} {formatTime(booking.startTime)}
+              {booking.service.name} - {formatDate(booking.scheduledAt)} {c('at')} {formatTime(booking.scheduledAt)}
             </p>
 
             <Card className="mb-6 text-left">
@@ -252,7 +252,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{p('total')}</span>
-                  <span className="text-accent-primary text-sm font-bold">${booking.service.price}</span>
+                  <span className="text-accent-primary text-sm font-bold">${booking.service.basePrice}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{locale === 'uk' ? 'Метод' : locale === 'ru' ? 'Метод' : 'Method'}</span>
@@ -310,9 +310,7 @@ export const PaymentProcessingPage: React.FC = () => {
   }
 
   // Default: Select payment method
-  const specialistName = booking.specialist.name
-    || `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
-    || '';
+  const specialistName = [booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ') || '';
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
@@ -333,7 +331,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-text-primary">{booking.service.name}</p>
                   <p className="text-xs text-text-secondary">
-                    {formatDate(booking.startTime)} {c('at')} {formatTime(booking.startTime)}
+                    {formatDate(booking.scheduledAt)} {c('at')} {formatTime(booking.scheduledAt)}
                   </p>
                 </div>
               </div>
@@ -365,7 +363,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">{p('total')}</span>
                   <span className="text-xl font-bold text-accent-primary">
-                    ${booking.service.price}
+                    ${booking.service.basePrice}
                   </span>
                 </div>
               </div>
@@ -426,7 +424,7 @@ export const PaymentProcessingPage: React.FC = () => {
       {/* Fixed Bottom Pay Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 p-4 z-20">
         <Button onClick={handlePayment} size="lg" className="w-full">
-          {p('payNow')} - ${booking.service.price}
+          {p('payNow')} - ${booking.service.basePrice}
         </Button>
       </div>
     </div>

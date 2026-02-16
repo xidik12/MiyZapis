@@ -59,11 +59,11 @@ export const DashboardPage: React.FC = () => {
   }, [bookings]);
 
   const nextBooking = bookings
-    .filter(b => (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime) > new Date())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+    .filter(b => (b.status === 'confirmed' || b.status === 'pending') && new Date(b.scheduledAt) > new Date())
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
 
   const recentBookings = [...bookings]
-    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
     .slice(0, 3);
 
   const getStatusColor = (status: string) => {
@@ -156,10 +156,10 @@ export const DashboardPage: React.FC = () => {
                 <Clock size={16} className="text-accent-primary" />
                 <span className="text-sm font-medium text-accent-primary">{s('nextAppointment')}</span>
               </div>
-              <p className="font-semibold text-text-primary">{nextBooking.service?.name || 'Service'}</p>
-              <p className="text-sm text-text-secondary">{nextBooking.specialist?.name || ''}</p>
+              <p className="font-semibold text-text-primary">{nextBooking.service?.name || nextBooking.serviceName || 'Service'}</p>
+              <p className="text-sm text-text-secondary">{[nextBooking.specialist?.firstName, nextBooking.specialist?.lastName].filter(Boolean).join(' ') || ''}</p>
               <p className="text-sm text-text-muted mt-1">
-                {format(parseISO(nextBooking.startTime), 'PPP')} {c('at')} {format(parseISO(nextBooking.startTime), 'p')}
+                {format(parseISO(nextBooking.scheduledAt), 'PPP')} {c('at')} {format(parseISO(nextBooking.scheduledAt), 'p')}
               </p>
             </Card>
           )}
@@ -186,8 +186,8 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => { hapticFeedback.impactLight(); navigate(`/booking/${b.id}`); }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || 'Service'}</p>
-                      <p className="text-xs text-text-muted">{format(parseISO(b.startTime), 'PPP')}</p>
+                      <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || b.serviceName || 'Service'}</p>
+                      <p className="text-xs text-text-muted">{format(parseISO(b.scheduledAt), 'PPP')}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(b.status)}`}>
                       {c(b.status)}

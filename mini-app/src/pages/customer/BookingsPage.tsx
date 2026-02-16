@@ -35,10 +35,10 @@ export const BookingsPage: React.FC = () => {
 
   const now = new Date();
   const upcomingBookings = bookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'completed' && new Date(b.startTime) >= now
+    (b) => b.status !== 'cancelled' && b.status !== 'completed' && new Date(b.scheduledAt) >= now
   );
   const pastBookings = bookings.filter(
-    (b) => b.status === 'completed' || b.status === 'cancelled' || new Date(b.startTime) < now
+    (b) => b.status === 'completed' || b.status === 'cancelled' || new Date(b.scheduledAt) < now
   );
 
   const displayBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
@@ -168,10 +168,10 @@ export const BookingsPage: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-text-primary">
-                        {booking.service?.name || 'Service'}
+                        {booking.service?.name || booking.serviceName || 'Service'}
                       </h3>
                       <p className="text-sm text-text-secondary">
-                        {booking.specialist?.name || ''}
+                        {[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ') || ''}
                       </p>
                     </div>
                     <span
@@ -187,11 +187,11 @@ export const BookingsPage: React.FC = () => {
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-2 text-text-secondary">
                       <Calendar size={16} />
-                      <span>{format(parseISO(booking.startTime), 'PPP')}</span>
+                      <span>{format(parseISO(booking.scheduledAt), 'PPP')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-text-secondary">
                       <Clock size={16} />
-                      <span>{format(parseISO(booking.startTime), 'p')}</span>
+                      <span>{format(parseISO(booking.scheduledAt), 'p')}</span>
                     </div>
                   </div>
 
@@ -234,8 +234,8 @@ export const BookingsPage: React.FC = () => {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (booking.specialist?.phone) {
-                            window.open(`tel:${booking.specialist.phone}`);
+                          if (booking.specialist?.phoneNumber) {
+                            window.open(`tel:${booking.specialist.phoneNumber}`);
                           }
                         }}
                       >

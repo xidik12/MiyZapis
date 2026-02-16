@@ -53,7 +53,7 @@ export const SpecialistBookingsPage: React.FC = () => {
     const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
     const todayCount = bookings.filter(b => {
       try {
-        return isToday(parseISO(b.startTime));
+        return isToday(parseISO(b.scheduledAt));
       } catch {
         return false;
       }
@@ -67,7 +67,7 @@ export const SpecialistBookingsPage: React.FC = () => {
       ? bookings
       : bookings.filter(b => b.status === activeFilter);
     return [...filtered].sort(
-      (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      (a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
     );
   }, [bookings, activeFilter]);
 
@@ -288,11 +288,11 @@ export const SpecialistBookingsPage: React.FC = () => {
                     <div className="flex items-center flex-wrap gap-4 text-sm">
                       <div className="flex items-center gap-1.5 text-text-secondary">
                         <Calendar size={14} />
-                        <span>{format(parseISO(booking.startTime), 'PPP')}</span>
+                        <span>{format(parseISO(booking.scheduledAt), 'PPP')}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-text-secondary">
                         <Clock size={14} />
-                        <span>{format(parseISO(booking.startTime), 'p')}</span>
+                        <span>{format(parseISO(booking.scheduledAt), 'p')}</span>
                       </div>
                       <div className="flex items-center gap-1.5 ml-auto">
                         <DollarSign size={14} className="text-accent-primary" />

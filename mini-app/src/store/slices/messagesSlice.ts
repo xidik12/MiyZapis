@@ -6,20 +6,28 @@ export interface Message {
   conversationId: string;
   senderId: string;
   content: string;
-  isRead: boolean;
+  readAt?: string;
+  isRead?: boolean;
   createdAt: string;
 }
 
+// Matches backend response from getUserConversations() exactly
 export interface Conversation {
   id: string;
-  participants: {
+  customer?: {
     id: string;
     firstName: string;
     lastName: string;
     avatar?: string;
-    role: string;
-  }[];
+  };
+  specialist?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
   lastMessage?: Message;
+  messages?: Message[];
   unreadCount: number;
   createdAt: string;
   updatedAt: string;
@@ -90,34 +98,6 @@ export const fetchMessageUnreadCountAsync = createAsyncThunk(
   }
 );
 
-// Normalize backend conversation (customer/specialist/messages[]) to mini-app format (participants/lastMessage)
-const normalizeConversation = (conv: any): Conversation => {
-  // Already in the expected format
-  if (conv.participants && Array.isArray(conv.participants)) {
-    return conv;
-  }
-
-  // Backend format: { customer, specialist, messages[], ... }
-  const participants: Conversation['participants'] = [];
-  if (conv.customer) {
-    participants.push({ ...conv.customer, role: 'customer' });
-  }
-  if (conv.specialist) {
-    participants.push({ ...conv.specialist, role: 'specialist' });
-  }
-
-  const lastMessage = conv.lastMessage || conv.messages?.[0] || undefined;
-
-  return {
-    id: conv.id,
-    participants,
-    lastMessage,
-    unreadCount: conv.unreadCount ?? 0,
-    createdAt: conv.createdAt,
-    updatedAt: conv.updatedAt || conv.lastMessageAt || conv.createdAt,
-  };
-};
-
 const messagesSlice = createSlice({
   name: 'messages',
   initialState,
@@ -149,7 +129,7 @@ const messagesSlice = createSlice({
       state.isLoading = false;
       const p = action.payload;
       const raw = p.items || p.conversations || (Array.isArray(p) ? p : []);
-      state.conversations = raw.map(normalizeConversation);
+      state.conversations = raw;
       state.unreadCount = state.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
     });
     builder.addCase(fetchConversationsAsync.rejected, (state, action) => {
@@ -163,7 +143,7 @@ const messagesSlice = createSlice({
     builder.addCase(fetchConversationAsync.fulfilled, (state, action: any) => {
       state.isLoadingMessages = false;
       const rawConv = action.payload.conversation || action.payload;
-      state.activeConversation = normalizeConversation(rawConv);
+      state.activeConversation = rawConv;
       state.messages = action.payload.messages || [];
     });
     builder.addCase(fetchConversationAsync.rejected, (state, action) => {
@@ -201,7 +181,10 @@ const messagesSlice = createSlice({
         conv.unreadCount = 0;
       }
       state.messages.forEach(m => {
-        if (m.conversationId === convId) m.isRead = true;
+        if (m.conversationId === convId) {
+          m.isRead = true;
+          m.readAt = m.readAt || new Date().toISOString();
+        }
       });
     });
 

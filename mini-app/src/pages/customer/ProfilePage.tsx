@@ -371,15 +371,15 @@ export const ProfilePage: React.FC = () => {
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover">
                       <img
                         src={booking.specialist?.avatar || '/api/placeholder/48/48'}
-                        alt={booking.specialist?.name || ''}
+                        alt={[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ')}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-text-primary">{booking.service?.name || 'Service'}</h3>
-                      <p className="text-sm text-text-secondary">{booking.specialist?.name || ''}</p>
+                      <h3 className="font-medium text-text-primary">{booking.service?.name || booking.serviceName || 'Service'}</h3>
+                      <p className="text-sm text-text-secondary">{[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ') || ''}</p>
                       <p className="text-xs text-text-secondary">
-                        {new Date(booking.startTime).toLocaleDateString()}
+                        {new Date(booking.scheduledAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">

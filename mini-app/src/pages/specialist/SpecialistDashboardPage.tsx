@@ -48,7 +48,7 @@ export const SpecialistDashboardPage: React.FC = () => {
     const totalBookings = bookings.length;
     const completedBookings = bookings.filter(b => b.status === 'completed');
     const monthlyBookingsData = bookings.filter(b =>
-      isWithinInterval(parseISO(b.startTime), { start: monthStart, end: monthEnd })
+      isWithinInterval(parseISO(b.scheduledAt), { start: monthStart, end: monthEnd })
     );
 
     const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
@@ -80,7 +80,7 @@ export const SpecialistDashboardPage: React.FC = () => {
   // Get recent bookings (last 5, sorted by date)
   const recentBookings = useMemo(() => {
     return [...bookings]
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+      .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
       .slice(0, 5);
   }, [bookings]);
 
@@ -253,9 +253,9 @@ export const SpecialistDashboardPage: React.FC = () => {
                     <div className="text-sm text-text-secondary truncate">{booking.service.name}</div>
                     <div className="flex items-center gap-2 text-xs text-text-muted mt-1">
                       <Calendar size={12} />
-                      <span>{format(parseISO(booking.startTime), 'PPP')}</span>
+                      <span>{format(parseISO(booking.scheduledAt), 'PPP')}</span>
                       <Clock size={12} />
-                      <span>{format(parseISO(booking.startTime), 'p')}</span>
+                      <span>{format(parseISO(booking.scheduledAt), 'p')}</span>
                     </div>
                   </div>
 

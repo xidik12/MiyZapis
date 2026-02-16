@@ -91,7 +91,7 @@ export const AnalyticsPage: React.FC = () => {
         const monthEnd = endOfMonth(month);
 
         const monthBookings = bookings.filter((b: any) => {
-          const bookingDate = new Date(b.startTime);
+          const bookingDate = new Date(b.scheduledAt);
           return bookingDate >= monthStart && bookingDate <= monthEnd;
         });
 
