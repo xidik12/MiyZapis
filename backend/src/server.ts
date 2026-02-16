@@ -444,16 +444,8 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start Telegram bots (polling mode)
-      if (bot) {
-        bot.launch().then(() => {
-          logger.info('🤖 Basic Telegram bot started in polling mode');
-        }).catch((error) => {
-          logger.warn('Failed to start basic Telegram bot:', error.message);
-        });
-      }
-
-      // Initialize and start enhanced bot
+      // Start enhanced Telegram bot only (basic bot disabled to avoid 409 conflict —
+      // both bots use the same token and Telegram only allows one polling connection)
       try {
         enhancedTelegramBot.initialize();
         enhancedTelegramBot.launch().then(() => {
