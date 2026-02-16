@@ -165,12 +165,11 @@ const RegisterPage: React.FC = () => {
               disabled={isLoading}
             />
             
-            {/* Telegram Login temporarily disabled */}
-            {/* <TelegramLogin
+            <TelegramLogin
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
               disabled={isLoading}
-            /> */}
+            />
           </div>
 
           <div className="relative">

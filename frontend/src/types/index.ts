@@ -74,6 +74,7 @@ export interface TelegramAuthRequest {
   firstName: string;
   lastName?: string;
   username?: string;
+  photoUrl?: string;
   authDate: number;
   hash: string;
 }
