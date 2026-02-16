@@ -407,7 +407,7 @@ export const LoginPage: React.FC = () => {
           )}
 
           {/* Divider */}
-          {telegramUser && GOOGLE_CLIENT_ID && (
+          {!telegramUser && GOOGLE_CLIENT_ID && (
             <div className="flex items-center gap-3 my-2">
               <div className="flex-1 h-px bg-white/10" />
               <span className="text-xs text-text-muted">or</span>
@@ -415,8 +415,8 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Google Sign-In */}
-          {GOOGLE_CLIENT_ID && (
+          {/* Google Sign-In — hidden inside Telegram (popups not supported) */}
+          {!telegramUser && GOOGLE_CLIENT_ID && (
             <div className="w-full">
               <div ref={googleButtonRef} className="w-full flex justify-center" />
             </div>
