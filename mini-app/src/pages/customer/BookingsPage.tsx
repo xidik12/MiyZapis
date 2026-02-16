@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchBookingsAsync, cancelBookingAsync } from '@/store/slices/bookingsSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { bookingsStrings, commonStrings } from '@/utils/translations';
 import { format, parseISO } from 'date-fns';
 
@@ -198,7 +198,7 @@ export const BookingsPage: React.FC = () => {
                   {/* Price */}
                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
                     <span className="text-lg font-bold text-accent-primary">
-                      {booking.totalAmount} UAH
+                      {formatCurrency(booking.totalAmount, undefined, locale)}
                     </span>
                     <span className="text-sm text-text-muted">
                       {booking.service?.duration || 0} {c('min')}

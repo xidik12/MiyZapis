@@ -20,7 +20,7 @@ import { RootState, AppDispatch } from '@/store';
 import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistBookingsStrings, commonStrings } from '@/utils/translations';
 import { format, parseISO, isToday } from 'date-fns';
 
@@ -297,7 +297,7 @@ export const SpecialistBookingsPage: React.FC = () => {
                       <div className="flex items-center gap-1.5 ml-auto">
                         <DollarSign size={14} className="text-accent-primary" />
                         <span className="font-semibold text-accent-primary">
-                          {booking.totalAmount} UAH
+                          {formatCurrency(booking.totalAmount, undefined, locale)}
                         </span>
                       </div>
                     </div>

@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { referralsStrings, commonStrings } from '@/utils/translations';
 
 interface ReferralConfig {
@@ -57,21 +57,55 @@ export const ReferralsPage: React.FC = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [configData, analyticsData, referralsData] = await Promise.allSettled([
+      // Ensure user has a referral code
+      const [, configData, analyticsData, referralsData] = await Promise.allSettled([
+        apiService.createReferral().catch(() => {}),
         apiService.getReferralConfig(),
         apiService.getReferralAnalytics(),
         apiService.getMyReferrals(),
       ]);
 
-      if (configData.status === 'fulfilled') setConfig(configData.value as any);
-      else setConfig({ referralLink: 'https://t.me/MiyZapisBot?start=ref_demo', rewardAmount: 50, currency: 'UAH', description: '' });
+      if (configData.status === 'fulfilled') {
+        const raw = configData.value as any;
+        // Backend returns: { config: REFERRAL_CONFIG, userType, isSpecialist, availableTypes, limits }
+        const cfg = raw?.config || raw;
+        // Find or construct referral link from user's existing referrals or create endpoint
+        setConfig({
+          referralLink: raw?.referralLink || `https://t.me/MiyZapisBot?start=ref`,
+          rewardAmount: Number(cfg?.REFERRER_POINTS) || Number(cfg?.rewardAmount) || 50,
+          currency: cfg?.currency || 'UAH',
+          description: cfg?.description || '',
+        });
+      } else {
+        setConfig({ referralLink: 'https://t.me/MiyZapisBot?start=ref', rewardAmount: 50, currency: 'UAH', description: '' });
+      }
 
-      if (analyticsData.status === 'fulfilled') setAnalytics(analyticsData.value as any);
-      else setAnalytics({ totalReferred: 0, totalEarned: 0, pendingRewards: 0 });
+      if (analyticsData.status === 'fulfilled') {
+        const raw = analyticsData.value as any;
+        // Backend returns: { analytics: { overview: { totalReferrals, completedReferrals, ... }, ... } }
+        const overview = raw?.analytics?.overview || raw?.overview || raw;
+        setAnalytics({
+          totalReferred: Number(overview?.totalReferrals) || Number(overview?.totalReferred) || 0,
+          totalEarned: Number(overview?.totalPointsEarned) || Number(overview?.totalEarned) || 0,
+          pendingRewards: Number(overview?.pendingReferrals) || Number(overview?.pendingRewards) || 0,
+        });
+      } else {
+        setAnalytics({ totalReferred: 0, totalEarned: 0, pendingRewards: 0 });
+      }
 
       if (referralsData.status === 'fulfilled') {
-        const data = referralsData.value as any;
-        setReferrals(data?.items || data || []);
+        const raw = referralsData.value as any;
+        // Backend returns: { referrals: [...], pagination: {...} }
+        const list = raw?.referrals || raw?.items || (Array.isArray(raw) ? raw : []);
+        setReferrals(list.map((r: any) => ({
+          id: r.id,
+          referredUserName: r.referred?.name || r.referredUserName || r.referralCode || '',
+          status: (r.status || '').toLowerCase() === 'completed' ? 'reward_earned'
+            : (r.status || '').toLowerCase() === 'pending' ? 'registered'
+            : r.status || 'registered',
+          rewardAmount: Number(r.referrerRewardValue) || Number(r.rewardAmount) || Number(r.pointsAwarded) || 0,
+          createdAt: r.createdAt,
+        })));
       }
     } finally {
       setLoading(false);
@@ -279,7 +313,7 @@ export const ReferralsPage: React.FC = () => {
                     </span>
                     {referral.rewardAmount > 0 && referral.status === 'reward_earned' && (
                       <p className="text-xs font-semibold text-accent-green mt-1">
-                        +{referral.rewardAmount} UAH
+                        +{formatCurrency(referral.rewardAmount, config?.currency, locale)}
                       </p>
                     )}
                   </div>

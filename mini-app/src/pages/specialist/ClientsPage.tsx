@@ -15,7 +15,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { clientsStrings, commonStrings } from '@/utils/translations';
 import { format, parseISO, differenceInDays } from 'date-fns';
 
@@ -253,7 +253,7 @@ export const ClientsPage: React.FC = () => {
                         <div className="flex items-center gap-1">
                           <DollarSign size={12} className="text-text-muted" />
                           <span className="text-xs text-accent-green font-medium">
-                            {client.totalSpent.toLocaleString()} UAH
+                            {formatCurrency(client.totalSpent, undefined, locale)}
                           </span>
                         </div>
                       </div>
@@ -347,7 +347,7 @@ export const ClientsPage: React.FC = () => {
                           {formatDate(booking.scheduledAt || booking.createdAt)}
                         </span>
                         <span className="text-xs font-medium text-accent-primary">
-                          {Number(booking.totalAmount || 0).toLocaleString()} UAH
+                          {formatCurrency(Number(booking.totalAmount || 0), undefined, locale)}
                         </span>
                       </div>
                     </div>

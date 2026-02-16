@@ -58,3 +58,32 @@ export function t(
   if (!entry) return key;
   return entry[locale] || entry.en || key;
 }
+
+/**
+ * Currency symbols map
+ */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  UAH: '₴',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  RUB: '₽',
+  KZT: '₸',
+  UZS: 'сўм',
+};
+
+/**
+ * Format a monetary amount with currency symbol.
+ * Uses the currency from the data or defaults to UAH.
+ */
+export function formatCurrency(
+  amount: number | string,
+  currency?: string,
+  locale?: Locale
+): string {
+  const num = Number(amount) || 0;
+  const cur = (currency || 'UAH').toUpperCase();
+  const symbol = CURRENCY_SYMBOLS[cur] || cur;
+  const loc = locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US';
+  return `${symbol}${num.toLocaleString(loc)}`;
+}

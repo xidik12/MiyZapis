@@ -18,7 +18,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistAnalyticsStrings, commonStrings } from '@/utils/translations';
 
 type Period = '1m' | '3m' | '6m' | '1y';
@@ -176,7 +176,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-xl font-bold text-text-primary">
-                  {kpi.revenue.toLocaleString()} UAH
+                  {formatCurrency(kpi.revenue, undefined, locale)}
                 </div>
                 <div className="text-xs text-text-secondary mt-0.5">
                   {s('revenue')}
@@ -257,7 +257,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
                         />
                       </div>
                       <div className="w-20 text-xs font-medium text-text-secondary text-right">
-                        {item.amount.toLocaleString()} UAH
+                        {formatCurrency(item.amount, undefined, locale)}
                       </div>
                     </div>
                   );
@@ -296,7 +296,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-sm font-semibold text-accent-green whitespace-nowrap ml-3">
-                      {service.amount.toLocaleString()} UAH
+                      {formatCurrency(service.amount, undefined, locale)}
                     </div>
                   </div>
                 ))}

@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { earningsStrings, commonStrings } from '@/utils/translations';
 
 interface EarningsData {
@@ -240,7 +240,7 @@ export const EarningsPage: React.FC = () => {
           <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-6 text-center">
             <p className="text-sm text-text-secondary mb-1">{s('totalEarnings')}</p>
             <div className="text-4xl font-bold text-accent-primary mb-2">
-              {earnings.totalEarnings.toLocaleString()} UAH
+              {formatCurrency(earnings.totalEarnings, undefined, locale)}
             </div>
             {earnings.growthPercent !== 0 && (
               <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-accent-green/10">
@@ -270,7 +270,7 @@ export const EarningsPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
                 <div className="text-xl font-bold text-accent-primary">
-                  {earnings.thisMonth.toLocaleString()} UAH
+                  {formatCurrency(earnings.thisMonth, undefined, locale)}
                 </div>
                 <div className="text-xs text-text-secondary">{s('thisMonth')}</div>
               </div>
@@ -282,13 +282,13 @@ export const EarningsPage: React.FC = () => {
               </div>
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
                 <div className="text-xl font-bold text-text-primary">
-                  {earnings.avgPerBooking.toLocaleString()} UAH
+                  {formatCurrency(earnings.avgPerBooking, undefined, locale)}
                 </div>
                 <div className="text-xs text-text-secondary">{s('avgPerBooking')}</div>
               </div>
               <div className="text-center p-3 bg-bg-secondary/50 rounded-xl">
                 <div className="text-xl font-bold text-accent-yellow">
-                  {earnings.pendingPayouts.toLocaleString()} UAH
+                  {formatCurrency(earnings.pendingPayouts, undefined, locale)}
                 </div>
                 <div className="text-xs text-text-secondary">{s('pendingPayouts')}</div>
               </div>
@@ -308,7 +308,7 @@ export const EarningsPage: React.FC = () => {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-text-secondary font-medium">{entry.label}</span>
                       <span className="text-text-primary font-semibold">
-                        {entry.amount.toLocaleString()} UAH
+                        {formatCurrency(entry.amount, undefined, locale)}
                       </span>
                     </div>
                     <div className="w-full h-3 bg-bg-secondary rounded-full overflow-hidden">
@@ -356,7 +356,7 @@ export const EarningsPage: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-text-primary">
-                          {payout.amount.toLocaleString()} UAH
+                          {formatCurrency(payout.amount, undefined, locale)}
                         </div>
                         <div className="text-xs text-text-muted">
                           {payout.date}

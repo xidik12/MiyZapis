@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { customerDashboardStrings, commonStrings } from '@/utils/translations';
 import apiService from '@/services/api.service';
 import { format, parseISO } from 'date-fns';
@@ -130,7 +130,7 @@ export const DashboardPage: React.FC = () => {
             </Card>
             <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4 text-center">
               <DollarSign size={18} className="mx-auto mb-1.5 text-accent-green" />
-              <div className="text-xl font-bold text-text-primary">{stats.totalSpent} UAH</div>
+              <div className="text-xl font-bold text-text-primary">{formatCurrency(stats.totalSpent, undefined, locale)}</div>
               <div className="text-xs text-text-secondary">{s('totalSpent')}</div>
             </Card>
             <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4 text-center">

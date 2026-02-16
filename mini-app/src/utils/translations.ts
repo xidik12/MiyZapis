@@ -51,6 +51,12 @@ export const commonStrings: Record<string, Record<Locale, string>> = {
 
   // Other
   bookings: { en: 'bookings', uk: 'записів', ru: 'записей' },
+  justNow: { en: 'Just now', uk: 'Щойно', ru: 'Только что' },
+  yesterday: { en: 'Yesterday', uk: 'Вчора', ru: 'Вчера' },
+  loadMore: { en: 'Load more', uk: 'Завантажити ще', ru: 'Загрузить ещё' },
+  verified: { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
+  dayOff: { en: 'Day Off', uk: 'Вихідний', ru: 'Выходной' },
+  copied: { en: 'Copied!', uk: 'Скопійовано!', ru: 'Скопировано!' },
 };
 
 // Bookings page
@@ -241,6 +247,7 @@ export const walletStrings: Record<string, Record<Locale, string>> = {
   overview: { en: 'Overview', uk: 'Огляд', ru: 'Обзор' },
   transactions: { en: 'Transactions', uk: 'Транзакції', ru: 'Транзакции' },
   saved: { en: 'Saved', uk: 'Збережено', ru: 'Сохранено' },
+  payoutHistory: { en: 'Payout history will appear here', uk: 'Історія виплат з\'явиться тут', ru: 'История выплат появится здесь' },
 };
 
 // Loyalty page
@@ -453,6 +460,9 @@ export const scheduleStrings: Record<string, Record<Locale, string>> = {
   other: { en: 'Other', uk: 'Інше', ru: 'Другое' },
   monthView: { en: 'Month', uk: 'Місяць', ru: 'Месяц' },
   cardView: { en: 'Cards', uk: 'Картки', ru: 'Карточки' },
+  upcomingBookings: { en: 'Upcoming Bookings', uk: 'Найближчі записи', ru: 'Ближайшие записи' },
+  noUpcomingBookings: { en: 'No upcoming bookings', uk: 'Немає найближчих записів', ru: 'Нет ближайших записей' },
+  noBreaks: { en: 'No breaks added', uk: 'Немає перерв', ru: 'Нет перерывов' },
 };
 
 // Specialist earnings
@@ -584,6 +594,12 @@ export const clientsStrings: Record<string, Record<Locale, string>> = {
   bookings: { en: 'bookings', uk: 'записів', ru: 'записей' },
   notes: { en: 'Notes', uk: 'Нотатки', ru: 'Заметки' },
   clientDetails: { en: 'Client Details', uk: 'Деталі клієнта', ru: 'Детали клиента' },
+  activeClients: { en: 'Active', uk: 'Активні', ru: 'Активные' },
+  avgBookings: { en: 'Avg Book', uk: 'Сер. записів', ru: 'Ср. записей' },
+  repeatClients: { en: 'Repeat', uk: 'Повторні', ru: 'Повторные' },
+  activeClient: { en: 'Active client', uk: 'Активний клієнт', ru: 'Активный клиент' },
+  bookingHistory: { en: 'Booking History', uk: 'Історія записів', ru: 'История записей' },
+  noBookings: { en: 'No bookings', uk: 'Записів немає', ru: 'Записей нет' },
 };
 
 // Payment methods page
@@ -596,6 +612,10 @@ export const paymentMethodsStrings: Record<string, Record<Locale, string>> = {
   defaultMethod: { en: 'Default', uk: 'Основний', ru: 'Основной' },
   removeMethod: { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
   confirmRemove: { en: 'Remove this payment method?', uk: 'Видалити цей спосіб оплати?', ru: 'Удалить этот способ оплаты?' },
+  cash: { en: 'Cash', uk: 'Готівка', ru: 'Наличные' },
+  walletBalance: { en: 'Wallet Balance', uk: 'Баланс гаманця', ru: 'Баланс кошелька' },
+  bankCard: { en: 'Bank Card', uk: 'Банківська карта', ru: 'Банковская карта' },
+  cashOnVisit: { en: 'Cash on Visit', uk: 'Оплата при візиті', ru: 'Оплата при визите' },
 };
 
 // Help & Support page
@@ -614,6 +634,8 @@ export const helpSupportStrings: Record<string, Record<Locale, string>> = {
   bookingsHelp: { en: 'Bookings', uk: 'Записи', ru: 'Записи' },
   paymentsHelp: { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   accountHelp: { en: 'Account', uk: 'Акаунт', ru: 'Аккаунт' },
+  fillAllFields: { en: 'Please fill all fields', uk: 'Заповніть усі поля', ru: 'Заполните все поля' },
+  weWillRespond: { en: 'We will respond shortly', uk: 'Ми відповімо найближчим часом', ru: 'Мы ответим в ближайшее время' },
 };
 
 // Referrals page
@@ -665,6 +687,7 @@ export const specialistWalletStrings: Record<string, Record<Locale, string>> = {
   processing: { en: 'Processing', uk: 'В обробці', ru: 'В обработке' },
   paid: { en: 'Paid', uk: 'Сплачено', ru: 'Оплачено' },
   minPayout: { en: 'Minimum payout: 100 UAH', uk: 'Мінімальна виплата: 100 UAH', ru: 'Минимальная выплата: 100 UAH' },
+  noPayoutsDesc: { en: 'Your payout history will appear here', uk: 'Історія виплат з\'явиться тут', ru: 'История выплат появится здесь' },
 };
 
 // Onboarding wizard

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistDashboardStrings, commonStrings } from '@/utils/translations';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -173,7 +173,7 @@ export const SpecialistDashboardPage: React.FC = () => {
             <div className="flex items-center justify-center mb-2">
               <DollarSign className="text-accent-green" size={20} />
             </div>
-            <div className="text-2xl font-bold text-text-primary">{stats.totalRevenue} UAH</div>
+            <div className="text-2xl font-bold text-text-primary">{formatCurrency(stats.totalRevenue, undefined, locale)}</div>
             <div className="text-sm text-text-secondary">{s('totalRevenue')}</div>
           </Card>
 
@@ -208,7 +208,7 @@ export const SpecialistDashboardPage: React.FC = () => {
               <div className="text-sm text-text-secondary">{s('totalBookings')}</div>
             </div>
             <div className="text-center p-4 bg-bg-secondary/50 rounded-xl">
-              <div className="text-xl font-bold text-accent-green">{stats.monthlyRevenue} UAH</div>
+              <div className="text-xl font-bold text-accent-green">{formatCurrency(stats.monthlyRevenue, undefined, locale)}</div>
               <div className="text-sm text-text-secondary">{s('revenue')}</div>
             </div>
           </div>
@@ -261,7 +261,7 @@ export const SpecialistDashboardPage: React.FC = () => {
 
                   <div className="text-right ml-3">
                     <div className="font-semibold text-accent-primary whitespace-nowrap">
-                      {booking.totalAmount} UAH
+                      {formatCurrency(booking.totalAmount, undefined, locale)}
                     </div>
                     <div className={`text-xs px-2 py-1 rounded-full border mt-1 ${getStatusColor(booking.status)}`}>
                       {c(booking.status)}

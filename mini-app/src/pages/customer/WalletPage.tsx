@@ -21,7 +21,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { walletStrings, commonStrings, analyticsStrings } from '@/utils/translations';
 
 interface WalletData {
@@ -124,7 +124,7 @@ export const WalletPage: React.FC = () => {
 
   const formatAmount = (amount: number, type: string) => {
     const sign = type === 'DEBIT' ? '-' : '+';
-    return `${sign}₴${Math.abs(amount).toLocaleString('uk-UA')}`;
+    return `${sign}${formatCurrency(Math.abs(amount), wallet?.currency, locale)}`;
   };
 
   const formatDate = (dateStr: string) => {
@@ -174,16 +174,16 @@ export const WalletPage: React.FC = () => {
               </div>
             </div>
             <div className="text-3xl font-bold mb-4">
-              {balanceHidden ? '••••••' : `₴${(wallet?.balance || 0).toLocaleString('uk-UA')}`}
+              {balanceHidden ? '••••••' : formatCurrency(wallet?.balance || 0, wallet?.currency, locale)}
             </div>
             <div className="flex items-center gap-6 text-sm opacity-80">
               <div className="flex items-center gap-1">
                 <TrendingUp size={14} />
-                <span>+₴{(wallet?.totalCredits || 0).toLocaleString('uk-UA')}</span>
+                <span>+{formatCurrency(wallet?.totalCredits || 0, wallet?.currency, locale)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <ArrowUpRight size={14} />
-                <span>-₴{(wallet?.totalDebits || 0).toLocaleString('uk-UA')}</span>
+                <span>-{formatCurrency(wallet?.totalDebits || 0, wallet?.currency, locale)}</span>
               </div>
             </div>
           </div>
