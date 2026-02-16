@@ -301,7 +301,7 @@ class ApiService {
 
   // Specialist service management
   async getMyServices(): Promise<any[]> {
-    return this.get('/specialists/me/services');
+    return this.get('/specialists/services');
   }
 
   async createService(data: {
@@ -312,15 +312,15 @@ class ApiService {
     price: number;
     currency?: string;
   }) {
-    return this.post('/specialists/me/services', data);
+    return this.post('/specialists/services', data);
   }
 
   async updateService(id: string, data: any) {
-    return this.put(`/specialists/me/services/${id}`, data);
+    return this.put(`/specialists/services/${id}`, data);
   }
 
   async deleteService(id: string) {
-    return this.delete(`/specialists/me/services/${id}`);
+    return this.delete(`/specialists/services/${id}`);
   }
 
   // Notifications preferences
@@ -408,7 +408,7 @@ class ApiService {
 
   // ==================== Specialist Schedule / Availability ====================
   async getAvailabilityBlocks(params?: { startDate?: string; endDate?: string }) {
-    return this.get('/specialists/me/availability', params);
+    return this.get('/specialists/blocks', params);
   }
 
   async createAvailabilityBlock(data: {
@@ -417,36 +417,36 @@ class ApiService {
     endTime: string;
     isRecurring?: boolean;
   }) {
-    return this.post('/specialists/me/availability', data);
+    return this.post('/specialists/blocks', data);
   }
 
   async updateAvailabilityBlock(id: string, data: any) {
-    return this.put(`/specialists/me/availability/${id}`, data);
+    return this.put(`/specialists/blocks/${id}`, data);
   }
 
   async deleteAvailabilityBlock(id: string) {
-    return this.delete(`/specialists/me/availability/${id}`);
+    return this.delete(`/specialists/blocks/${id}`);
   }
 
   async generateAvailability(data: { startDate: string; endDate: string }) {
-    return this.post('/specialists/me/availability/generate', data);
+    return this.post('/specialists/availability/generate', data);
   }
 
   // ==================== Specialist Earnings ====================
   async getSpecialistEarnings(params?: { period?: string }) {
-    return this.get('/specialists/me/earnings', params);
+    return this.get('/payments/earnings/my', params);
   }
 
   async getEarningsOverview() {
-    return this.get('/specialists/me/earnings/overview');
+    return this.get('/payments/earnings/overview');
   }
 
   async getEarningsTrends(params?: { months?: number }) {
-    return this.get('/specialists/me/earnings/trends', params);
+    return this.get('/payments/earnings/trends', params);
   }
 
   async getEarningsAnalytics() {
-    return this.get('/specialists/me/earnings/analytics');
+    return this.get('/payments/earnings/analytics');
   }
 
   // ==================== Community Post Detail ====================
@@ -472,7 +472,7 @@ class ApiService {
 
   // ==================== Payment Processing ====================
   async getPaymentMethods() {
-    return this.get('/payments/methods');
+    return this.get('/payments/methods/my');
   }
 
   async getPaymentHistory(params?: { page?: number; limit?: number }) {
@@ -481,33 +481,33 @@ class ApiService {
 
   // ==================== Specialist Profile ====================
   async getSpecialistProfile() {
-    return this.get('/specialists/me');
+    return this.get('/specialists/profile');
   }
 
   async updateSpecialistProfile(data: any) {
-    return this.put('/specialists/me', data);
+    return this.put('/specialists/profile', data);
   }
 
   // ==================== Specialist Analytics ====================
   async getSpecialistAnalytics(params?: { period?: string }) {
-    return this.get('/specialists/me/analytics', params);
+    return this.get('/specialists/analytics', params);
   }
 
   async getAnalyticsEnhanced() {
-    return this.get('/specialists/me/analytics/enhanced');
+    return this.get('/analytics-enhanced/my-specialist');
   }
 
   async getRevenueData(params?: { months?: number }) {
-    return this.get('/specialists/me/analytics/revenue', params);
+    return this.get('/payments/earnings/revenue', params);
   }
 
   // ==================== Specialist Reviews ====================
   async getSpecialistReviews(params?: { page?: number; limit?: number }) {
-    return this.get('/specialists/me/reviews', params);
+    return this.get('/reviews/my-reviews', params);
   }
 
   async respondToReview(reviewId: string, response: string) {
-    return this.post(`/reviews/${reviewId}/respond`, { response });
+    return this.post(`/reviews/${reviewId}/response`, { response });
   }
 
   // ==================== Specialist Clients ====================
@@ -534,54 +534,54 @@ class ApiService {
 
   // ==================== Help & Support ====================
   async getFAQs(params?: { category?: string }) {
-    return this.get('/support/faqs', params);
+    return this.get('/help/faqs', params);
   }
 
   async getFAQCategories() {
-    return this.get('/support/faqs/categories');
+    return this.get('/help/faq-categories');
   }
 
   async searchFAQs(query: string) {
-    return this.get('/support/faqs/search', { query });
+    return this.get('/help/search', { query });
   }
 
   async submitFeedback(data: { subject: string; message: string; category?: string }) {
-    return this.post('/support/feedback', data);
+    return this.post('/help/feedback', data);
   }
 
   // ==================== Referrals ====================
   async getReferralConfig() {
-    return this.get('/referrals/config');
+    return this.get('/referral/config');
   }
 
   async createReferral() {
-    return this.post('/referrals');
+    return this.post('/referral/create');
   }
 
   async getMyReferrals(params?: { page?: number; limit?: number }) {
-    return this.get('/referrals', params);
+    return this.get('/referral/my-referrals', params);
   }
 
   async getReferralAnalytics() {
-    return this.get('/referrals/analytics');
+    return this.get('/referral/analytics');
   }
 
   // ==================== Specialist Wallet / Payouts ====================
   async getSpecialistWallet() {
-    return this.get('/specialists/me/wallet');
+    return this.get('/payments/wallet/balance');
   }
 
   async getSpecialistPayouts(params?: { page?: number; limit?: number }) {
-    return this.get('/specialists/me/payouts', params);
+    return this.get('/payments/wallet/transactions', params);
   }
 
   async requestPayout(data: { amount: number; method?: string }) {
-    return this.post('/specialists/me/payouts', data);
+    return this.post('/payments/wallet/balance', data);
   }
 
   // ==================== Onboarding ====================
   async completeOnboarding(data: any) {
-    return this.post('/specialists/me/onboarding', data);
+    return this.post('/specialists/profile', data);
   }
 
   // Health check
