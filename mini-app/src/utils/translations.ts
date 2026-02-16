@@ -698,3 +698,52 @@ export const onboardingStrings: Record<string, Record<Locale, string>> = {
   stepOf: { en: 'Step', uk: 'Крок', ru: 'Шаг' },
   of: { en: 'of', uk: 'з', ru: 'из' },
 };
+
+// Bottom navigation
+export const navStrings: Record<string, Record<Locale, string>> = {
+  home: { en: 'Home', uk: 'Головна', ru: 'Главная' },
+  search: { en: 'Search', uk: 'Пошук', ru: 'Поиск' },
+  bookings: { en: 'Bookings', uk: 'Записи', ru: 'Записи' },
+  messages: { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
+  profile: { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  dashboard: { en: 'Dashboard', uk: 'Панель', ru: 'Панель' },
+};
+
+// Login / Auth page
+export const loginStrings: Record<string, Record<Locale, string>> = {
+  signingIn: { en: 'Signing In...', uk: 'Вхід...', ru: 'Вход...' },
+  signingInGoogle: { en: 'Signing in with Google...', uk: 'Вхід через Google...', ru: 'Вход через Google...' },
+  signingInEmail: { en: 'Signing in...', uk: 'Вхід...', ru: 'Вход...' },
+  authTelegram: { en: 'Authenticating with Telegram...', uk: 'Авторизація через Telegram...', ru: 'Авторизация через Telegram...' },
+  welcome: { en: 'Welcome to MiyZapis', uk: 'Ласкаво просимо до MiyZapis', ru: 'Добро пожаловать в MiyZapis' },
+  yourPlatform: { en: 'Your booking platform', uk: 'Ваша платформа для записів', ru: 'Ваша платформа для записей' },
+  heroDesc: { en: 'Book appointments with top specialists. Manage your schedule effortlessly.', uk: 'Записуйтесь до найкращих спеціалістів. Керуйте розкладом легко.', ru: 'Записывайтесь к лучшим специалистам. Управляйте расписанием легко.' },
+  continueWith: { en: 'Continue with Telegram', uk: 'Продовжити через Telegram', ru: 'Продолжить через Telegram' },
+  completeProfile: { en: 'Complete your profile:', uk: 'Заповніть профіль:', ru: 'Заполните профиль:' },
+  firstName: { en: 'First Name', uk: 'Ім\'я', ru: 'Имя' },
+  lastName: { en: 'Last Name', uk: 'Прізвище', ru: 'Фамилия' },
+  email: { en: 'Email', uk: 'Ел. пошта', ru: 'Эл. почта' },
+  phone: { en: 'Phone', uk: 'Телефон', ru: 'Телефон' },
+  completeReg: { en: 'Complete Registration', uk: 'Завершити реєстрацію', ru: 'Завершить регистрацию' },
+  orSignIn: { en: 'or sign in with', uk: 'або увійдіть через', ru: 'или войдите через' },
+  signInEmail: { en: 'Sign in with Email', uk: 'Увійти через Email', ru: 'Войти через Email' },
+  password: { en: 'Password', uk: 'Пароль', ru: 'Пароль' },
+  signIn: { en: 'Sign In', uk: 'Увійти', ru: 'Войти' },
+  errorTitle: { en: 'Error', uk: 'Помилка', ru: 'Ошибка' },
+  dismiss: { en: 'Dismiss', uk: 'Закрити', ru: 'Закрыть' },
+  secureNote: { en: 'Secure sign-in. Your data is protected.', uk: 'Безпечний вхід. Ваші дані захищені.', ru: 'Безопасный вход. Ваши данные защищены.' },
+  browseWithout: { en: 'Browse without account', uk: 'Переглядати без акаунту', ru: 'Просматривать без аккаунта' },
+  required: { en: 'Required', uk: 'Обов\'язкове поле', ru: 'Обязательное поле' },
+  requiredField: { en: 'Required Field', uk: 'Обов\'язкове поле', ru: 'Обязательное поле' },
+  firstNameRequired: { en: 'First name is required.', uk: 'Ім\'я обов\'язкове.', ru: 'Имя обязательно.' },
+  emailPasswordRequired: { en: 'Email and password are required', uk: 'Потрібні email та пароль', ru: 'Требуются email и пароль' },
+  signInFailed: { en: 'Sign-in Failed', uk: 'Помилка входу', ru: 'Ошибка входа' },
+  loginFailed: { en: 'Login Failed', uk: 'Помилка входу', ru: 'Ошибка входа' },
+  invalidCredentials: { en: 'Invalid email or password', uk: 'Невірний email або пароль', ru: 'Неверный email или пароль' },
+  regComplete: { en: 'Registration Complete!', uk: 'Реєстрацію завершено!', ru: 'Регистрация завершена!' },
+  regSuccess: { en: 'Your account has been created successfully.', uk: 'Ваш акаунт успішно створено.', ru: 'Ваш аккаунт успешно создан.' },
+  regFailed: { en: 'Registration Failed', uk: 'Помилка реєстрації', ru: 'Ошибка регистрации' },
+  tryAgain: { en: 'Please try again.', uk: 'Спробуйте ще раз.', ru: 'Попробуйте ещё раз.' },
+  welcomeUser: { en: 'Welcome!', uk: 'Ласкаво просимо!', ru: 'Добро пожаловать!' },
+  signedInAs: { en: 'Signed in as', uk: 'Ви увійшли як', ru: 'Вы вошли как' },
+};

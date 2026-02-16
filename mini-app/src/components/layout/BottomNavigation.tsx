@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -11,10 +11,12 @@ import {
 } from 'lucide-react';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState } from '@/store';
+import { useLocale, t } from '@/hooks/useLocale';
+import { navStrings } from '@/utils/translations';
 
 interface NavItem {
   id: string;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   activeIcon: React.ReactNode;
   path: string;
@@ -25,21 +27,21 @@ interface NavItem {
 const customerNavItems: NavItem[] = [
   {
     id: 'home',
-    label: 'Home',
+    labelKey: 'home',
     icon: <Home size={20} strokeWidth={1.5} />,
     activeIcon: <Home size={22} strokeWidth={2} />,
     path: '/',
   },
   {
     id: 'search',
-    label: 'Search',
+    labelKey: 'search',
     icon: <Search size={20} strokeWidth={1.5} />,
     activeIcon: <Search size={22} strokeWidth={2} />,
     path: '/search',
   },
   {
     id: 'bookings',
-    label: 'Bookings',
+    labelKey: 'bookings',
     icon: <Calendar size={20} strokeWidth={1.5} />,
     activeIcon: <Calendar size={22} strokeWidth={2} />,
     path: '/bookings',
@@ -47,7 +49,7 @@ const customerNavItems: NavItem[] = [
   },
   {
     id: 'messages',
-    label: 'Messages',
+    labelKey: 'messages',
     icon: <MessageCircle size={20} strokeWidth={1.5} />,
     activeIcon: <MessageCircle size={22} strokeWidth={2} />,
     path: '/messages',
@@ -56,7 +58,7 @@ const customerNavItems: NavItem[] = [
   },
   {
     id: 'profile',
-    label: 'Profile',
+    labelKey: 'profile',
     icon: <User size={20} strokeWidth={1.5} />,
     activeIcon: <User size={22} strokeWidth={2} />,
     path: '/profile',
@@ -67,14 +69,14 @@ const customerNavItems: NavItem[] = [
 const specialistNavItems: NavItem[] = [
   {
     id: 'home',
-    label: 'Home',
+    labelKey: 'home',
     icon: <Home size={20} strokeWidth={1.5} />,
     activeIcon: <Home size={22} strokeWidth={2} />,
     path: '/',
   },
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     icon: <LayoutDashboard size={20} strokeWidth={1.5} />,
     activeIcon: <LayoutDashboard size={22} strokeWidth={2} />,
     path: '/specialist-dashboard',
@@ -82,7 +84,7 @@ const specialistNavItems: NavItem[] = [
   },
   {
     id: 'bookings',
-    label: 'Bookings',
+    labelKey: 'bookings',
     icon: <Calendar size={20} strokeWidth={1.5} />,
     activeIcon: <Calendar size={22} strokeWidth={2} />,
     path: '/specialist-bookings',
@@ -90,7 +92,7 @@ const specialistNavItems: NavItem[] = [
   },
   {
     id: 'messages',
-    label: 'Messages',
+    labelKey: 'messages',
     icon: <MessageCircle size={20} strokeWidth={1.5} />,
     activeIcon: <MessageCircle size={22} strokeWidth={2} />,
     path: '/messages',
@@ -99,7 +101,7 @@ const specialistNavItems: NavItem[] = [
   },
   {
     id: 'profile',
-    label: 'Profile',
+    labelKey: 'profile',
     icon: <User size={20} strokeWidth={1.5} />,
     activeIcon: <User size={22} strokeWidth={2} />,
     path: '/profile',
@@ -111,6 +113,7 @@ export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated: tgAuth, hapticFeedback } = useTelegram();
+  const locale = useLocale();
 
   const authState = useSelector((state: RootState) => state.auth?.isAuthenticated);
   const userRole = useSelector((state: RootState) => state.auth?.user?.role);
@@ -140,14 +143,12 @@ export const BottomNavigation: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Always show all nav items — redirect to auth when tapped if not authenticated
-  const visibleNavItems = navItems;
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-bg-secondary/80 backdrop-blur-xl border-t border-white/5 flex justify-around items-center h-14 z-50 safe-bottom">
-      {visibleNavItems.map((item) => {
+      {navItems.map((item) => {
         const active = isActive(item.path);
         const badge = getBadgeCount(item.badgeKey);
+        const label = t(navStrings, item.labelKey, locale);
         return (
           <button
             key={item.id}
@@ -167,7 +168,7 @@ export const BottomNavigation: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className="text-[9px] font-medium">{item.label}</span>
+            <span className="text-[9px] font-medium">{label}</span>
           </button>
         );
       })}

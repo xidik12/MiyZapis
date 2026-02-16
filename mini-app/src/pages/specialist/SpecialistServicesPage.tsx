@@ -223,7 +223,7 @@ export const SpecialistServicesPage: React.FC = () => {
                     <div className="flex items-center gap-3 mt-1.5">
                       <div className="flex items-center gap-1">
                         <Clock size={12} className="text-text-secondary" />
-                        <span className="text-xs text-text-secondary">{service.duration} min</span>
+                        <span className="text-xs text-text-secondary">{service.duration} {t(commonStrings, 'min', locale)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <DollarSign size={12} className="text-text-secondary" />

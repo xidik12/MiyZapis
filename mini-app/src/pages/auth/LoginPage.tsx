@@ -11,6 +11,8 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { telegramAuthAsync, registerAsync, clearError, setCredentials } from '@/store/slices/authSlice';
 import { addToast } from '@/store/slices/uiSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { loginStrings, commonStrings } from '@/utils/translations';
 
 // @ts-ignore - Vite env types
 const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
@@ -29,6 +31,10 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, initData, webApp } = useTelegram();
+  const locale = useLocale();
+
+  const s = (key: string) => t(loginStrings, key, locale);
+  const c = (key: string) => t(commonStrings, key, locale);
 
   // Raw Telegram user from WebApp SDK
   const telegramUser = webApp?.initDataUnsafe?.user || null;
@@ -152,19 +158,19 @@ export const LoginPage: React.FC = () => {
           } catch {}
         }
 
-        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
+        dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || 'Google sign-in failed');
       }
     } catch (err) {
       console.error('Google auth error:', err);
-      dispatch(addToast({ type: 'error', title: 'Sign-in Failed', message: err instanceof Error ? err.message : 'Google sign-in failed' }));
+      dispatch(addToast({ type: 'error', title: s('signInFailed'), message: err instanceof Error ? err.message : 'Google sign-in failed' }));
       hapticFeedback.notificationError();
     } finally {
       setGoogleLoading(false);
     }
-  }, [dispatch, hapticFeedback, telegramUser, initDataUnsafe]);
+  }, [dispatch, hapticFeedback, telegramUser, initDataUnsafe, locale]);
 
   // Telegram auto-login
   const handleAutoLogin = async () => {
@@ -189,7 +195,7 @@ export const LoginPage: React.FC = () => {
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
         dispatch(setCredentials({ user, token: authToken }));
-        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
+        dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || data.message || 'Telegram auth failed');
@@ -204,7 +210,7 @@ export const LoginPage: React.FC = () => {
   // Email/password login
   const handleEmailLogin = async () => {
     if (!emailLoginData.email || !emailLoginData.password) {
-      dispatch(addToast({ type: 'error', title: 'Required', message: 'Email and password are required' }));
+      dispatch(addToast({ type: 'error', title: s('required'), message: s('emailPasswordRequired') }));
       return;
     }
 
@@ -250,14 +256,14 @@ export const LoginPage: React.FC = () => {
           } catch {}
         }
 
-        dispatch(addToast({ type: 'success', title: 'Welcome!', message: `Signed in as ${user.firstName}` }));
+        dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || data.message || 'Login failed');
       }
     } catch (err) {
       console.error('Email login error:', err);
-      dispatch(addToast({ type: 'error', title: 'Login Failed', message: err instanceof Error ? err.message : 'Invalid email or password' }));
+      dispatch(addToast({ type: 'error', title: s('loginFailed'), message: err instanceof Error ? err.message : s('invalidCredentials') }));
       hapticFeedback.notificationError();
     } finally {
       setEmailLoading(false);
@@ -268,7 +274,7 @@ export const LoginPage: React.FC = () => {
   const handleRegistration = async () => {
     if (!registrationData.firstName.trim()) {
       hapticFeedback.notificationError();
-      dispatch(addToast({ type: 'error', title: 'Required Field', message: 'First name is required.' }));
+      dispatch(addToast({ type: 'error', title: s('requiredField'), message: s('firstNameRequired') }));
       return;
     }
 
@@ -296,14 +302,14 @@ export const LoginPage: React.FC = () => {
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
         dispatch(setCredentials({ user, token: authToken }));
-        dispatch(addToast({ type: 'success', title: 'Registration Complete!', message: 'Your account has been created successfully.' }));
+        dispatch(addToast({ type: 'success', title: s('regComplete'), message: s('regSuccess') }));
         hapticFeedback.notificationSuccess();
       } else {
         throw new Error(data.error || data.message || 'Registration failed');
       }
     } catch (err) {
       console.error('Registration failed:', err);
-      dispatch(addToast({ type: 'error', title: 'Registration Failed', message: err instanceof Error ? err.message : 'Please try again.' }));
+      dispatch(addToast({ type: 'error', title: s('regFailed'), message: err instanceof Error ? err.message : s('tryAgain') }));
       hapticFeedback.notificationError();
     }
   };
@@ -316,12 +322,12 @@ export const LoginPage: React.FC = () => {
   if (isLoading || googleLoading || emailLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary">
-        <Header title="Signing In..." />
+        <Header title={s('signingIn')} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
             <p className="text-text-secondary">
-              {googleLoading ? 'Signing in with Google...' : emailLoading ? 'Signing in...' : 'Authenticating with Telegram...'}
+              {googleLoading ? s('signingInGoogle') : emailLoading ? s('signingInEmail') : s('authTelegram')}
             </p>
           </div>
         </div>
@@ -331,7 +337,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary text-text-primary">
-      <Header title="Welcome to MiyZapis" subtitle="Your booking platform" />
+      <Header title={s('welcome')} subtitle={s('yourPlatform')} />
 
       <div className="flex-1 px-4 py-6 page-stagger overflow-y-auto">
         {/* Hero */}
@@ -341,7 +347,7 @@ export const LoginPage: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">MiyZapis</h1>
           <p className="text-text-secondary text-sm max-w-[280px] mx-auto">
-            Book appointments with top specialists. Manage your schedule effortlessly.
+            {s('heroDesc')}
           </p>
         </div>
 
@@ -371,17 +377,17 @@ export const LoginPage: React.FC = () => {
 
               {!showRegistrationForm ? (
                 <Button fullWidth onClick={handleAutoLogin} disabled={isLoading}>
-                  Continue with Telegram
+                  {s('continueWith')}
                 </Button>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-text-secondary text-sm">Complete your profile:</p>
-                  <Input label="First Name" value={registrationData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} icon={<User size={16} />} placeholder="First name" required />
-                  <Input label="Last Name" value={registrationData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} icon={<User size={16} />} placeholder="Last name" />
-                  <Input label="Email" type="email" value={registrationData.email} onChange={(e) => handleInputChange('email', e.target.value)} icon={<Mail size={16} />} placeholder="your@email.com" />
-                  <Input label="Phone" type="tel" value={registrationData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} icon={<Phone size={16} />} placeholder="+380..." />
+                  <p className="text-text-secondary text-sm">{s('completeProfile')}</p>
+                  <Input label={s('firstName')} value={registrationData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} icon={<User size={16} />} placeholder={s('firstName')} required />
+                  <Input label={s('lastName')} value={registrationData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} icon={<User size={16} />} placeholder={s('lastName')} />
+                  <Input label={s('email')} type="email" value={registrationData.email} onChange={(e) => handleInputChange('email', e.target.value)} icon={<Mail size={16} />} placeholder="your@email.com" />
+                  <Input label={s('phone')} type="tel" value={registrationData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} icon={<Phone size={16} />} placeholder="+380..." />
                   <Button fullWidth onClick={handleRegistration} disabled={!registrationData.firstName.trim() || isLoading} loading={isLoading}>
-                    Complete Registration
+                    {s('completeReg')}
                   </Button>
                 </div>
               )}
@@ -392,7 +398,7 @@ export const LoginPage: React.FC = () => {
           {telegramUser && (
             <div className="flex items-center gap-3 my-2">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-text-muted">or sign in with</span>
+              <span className="text-xs text-text-muted">{s('orSignIn')}</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
           )}
@@ -411,13 +417,13 @@ export const LoginPage: React.FC = () => {
               className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/10 hover:bg-white/15 text-text-primary font-medium rounded-xl transition-colors text-sm border border-white/10"
             >
               <Mail size={18} />
-              Sign in with Email
+              {s('signInEmail')}
             </button>
           ) : (
             <Card>
               <div className="space-y-3">
                 <Input
-                  label="Email"
+                  label={s('email')}
                   type="email"
                   value={emailLoginData.email}
                   onChange={(e) => setEmailLoginData(prev => ({ ...prev, email: e.target.value }))}
@@ -426,12 +432,12 @@ export const LoginPage: React.FC = () => {
                 />
                 <div className="relative">
                   <Input
-                    label="Password"
+                    label={s('password')}
                     type={showPassword ? 'text' : 'password'}
                     value={emailLoginData.password}
                     onChange={(e) => setEmailLoginData(prev => ({ ...prev, password: e.target.value }))}
                     icon={<Lock size={16} />}
-                    placeholder="Your password"
+                    placeholder={s('password')}
                   />
                   <button
                     type="button"
@@ -446,13 +452,13 @@ export const LoginPage: React.FC = () => {
                   onClick={handleEmailLogin}
                   disabled={!emailLoginData.email || !emailLoginData.password}
                 >
-                  Sign In
+                  {s('signIn')}
                 </Button>
                 <button
                   onClick={() => setShowEmailLogin(false)}
                   className="w-full text-center text-xs text-text-muted hover:text-text-secondary"
                 >
-                  Cancel
+                  {c('cancel')}
                 </button>
               </div>
             </Card>
@@ -465,12 +471,12 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <AlertCircle size={18} className="text-accent-red flex-shrink-0" />
               <div>
-                <h4 className="font-medium text-accent-red text-sm">Error</h4>
+                <h4 className="font-medium text-accent-red text-sm">{s('errorTitle')}</h4>
                 <p className="text-xs text-accent-red/80 mt-0.5">{error}</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={() => dispatch(clearError())} className="mt-2 text-accent-red">
-              Dismiss
+              {s('dismiss')}
             </Button>
           </Card>
         )}
@@ -478,13 +484,13 @@ export const LoginPage: React.FC = () => {
         {/* Security note */}
         <div className="flex items-center gap-2 justify-center text-text-muted mb-4">
           <Shield size={14} />
-          <span className="text-[11px]">Secure sign-in. Your data is protected.</span>
+          <span className="text-[11px]">{s('secureNote')}</span>
         </div>
 
         {/* Browse without account */}
         <div className="text-center">
           <Button variant="ghost" onClick={() => navigate('/')} className="text-text-secondary text-sm">
-            Browse without account
+            {s('browseWithout')}
           </Button>
         </div>
       </div>
