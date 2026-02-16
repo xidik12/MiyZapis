@@ -25,7 +25,6 @@ import apiRoutes from '@/routes';
 
 // Telegram Bot
 import { bot } from '@/bot';
-import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { initializeVapid } from '@/services/push';
@@ -314,21 +313,14 @@ const gracefulShutdown = async (signal: string) => {
     logger.info('HTTP server closed');
 
     try {
-      // Stop Telegram bots
+      // Stop Telegram bot
       if (bot && bot.botInfo) {
         try {
           await bot.stop('SIGTERM');
-          logger.info('🤖 Basic Telegram bot stopped');
+          logger.info('🤖 Telegram bot stopped');
         } catch (botError) {
-          logger.warn('Basic bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
+          logger.warn('Bot stop error:', botError instanceof Error ? botError.message : botError);
         }
-      }
-      
-      try {
-        await enhancedTelegramBot.stop();
-        logger.info('🚀 Enhanced Telegram bot stopped');
-      } catch (botError) {
-        logger.warn('Enhanced bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
       }
       
       // Stop workers
@@ -444,25 +436,25 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start enhanced Telegram bot with retry (basic bot disabled — same token conflict)
-      // Retry handles 409 during Railway zero-downtime deploys when old instance is still polling
-      const launchBot = async (retries = 5, delay = 5000) => {
-        enhancedTelegramBot.initialize();
-        for (let attempt = 1; attempt <= retries; attempt++) {
-          try {
-            await enhancedTelegramBot.launch();
-            logger.info('🚀 Enhanced Telegram bot started in polling mode');
-            return;
-          } catch (error: any) {
-            logger.warn(`Bot launch attempt ${attempt}/${retries} failed: ${error.message}`);
-            if (attempt < retries) {
-              await new Promise(r => setTimeout(r, delay));
+      // Launch Telegram bot with retry (handles 409 during Railway zero-downtime deploys)
+      if (bot) {
+        const launchBot = async (retries = 8, delay = 8000) => {
+          for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+              await bot.launch({ dropPendingUpdates: true });
+              logger.info('🤖 Telegram bot started in polling mode');
+              return;
+            } catch (error: any) {
+              logger.warn(`Bot launch attempt ${attempt}/${retries} failed: ${error.message}`);
+              if (attempt < retries) {
+                await new Promise(r => setTimeout(r, delay));
+              }
             }
           }
-        }
-        logger.error('Enhanced Telegram bot failed to start after all retries');
-      };
-      launchBot().catch(err => logger.error('Bot launcher error:', err));
+          logger.error('Telegram bot failed to start after all retries');
+        };
+        launchBot().catch(err => logger.error('Bot launcher error:', err));
+      }
 
       // Start background workers (stateless, safe to run once per instance)
       try {

@@ -3,6 +3,8 @@ import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
 
+const SITE_URL = config.frontend?.url || 'https://miyzapis.com';
+
 if (!config.telegram.botToken) {
   logger.warn('Telegram bot token not provided, bot will not start');
 }
@@ -19,11 +21,29 @@ if (bot) {
     if (payload === 'link') {
       const telegramId = user.id.toString();
       await ctx.reply(
-        `🔗 Telegram Account Linking\n\nYour Telegram ID: ${telegramId}\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website.`,
-        Markup.inlineKeyboard([
-          [Markup.button.url('🌐 Open Settings', 'https://miyzapis.com/settings')],
-          [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-        ])
+        `🔗 *Telegram Account Linking*\n\nYour Telegram ID: \`${telegramId}\`\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website settings page.`,
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.url('🌐 Open Settings', `${SITE_URL}/settings`)],
+            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+          ])
+        }
+      );
+      return;
+    }
+
+    // Handle /start login — web login via Telegram
+    if (payload === 'login') {
+      await ctx.reply(
+        `🔐 *Login via Telegram*\n\nTo sign in to MiyZapis with your Telegram account, use the Telegram Login widget on the website.`,
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.url('🌐 Open Login Page', `${SITE_URL}/auth/login`)],
+            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+          ])
+        }
       );
       return;
     }
@@ -41,37 +61,32 @@ if (bot) {
             telegramId: user.id.toString(),
             firstName: user.first_name || 'User',
             lastName: user.last_name || '',
-            email: `telegram_${user.id}@temp.com`, // Temporary email
+            email: `telegram_${user.id}@temp.com`,
             userType: 'CUSTOMER',
             isEmailVerified: false
           }
         });
-        
-        await ctx.reply(
-          `🎉 Welcome to BookingHub, ${user.first_name}! 
-          
-Your account has been created and you can now:
-• 📅 Browse and book services
-• 🔍 Find specialists near you  
-• ⭐ Leave reviews and ratings
-• 🎁 Earn loyalty points
 
-Let's get started!`,
-          Markup.inlineKeyboard([
-            [Markup.button.callback('🔍 Browse Services', 'browse_services')],
-            [Markup.button.callback('👤 My Profile', 'my_profile')],
-            [Markup.button.callback('❓ Help', 'help')]
-          ])
+        await ctx.reply(
+          `🎉 *Welcome to MiyZapis, ${user.first_name}!*\n\nYour account has been created. You can now:\n• 📅 Browse and book services\n• 🔍 Find specialists near you\n• ⭐ Leave reviews and ratings\n• 🎁 Earn loyalty points\n\nLet's get started!`,
+          {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([
+              [Markup.button.callback('🔍 Browse Services', 'browse_services')],
+              [Markup.button.url('🌐 Open Website', SITE_URL)],
+              [Markup.button.callback('👤 My Profile', 'my_profile')],
+              [Markup.button.callback('❓ Help', 'help')]
+            ])
+          }
         );
       } else {
         await ctx.reply(
-          `Welcome back, ${user.first_name}! 👋
-          
-What would you like to do today?`,
+          `Welcome back, ${user.first_name}! 👋\n\nWhat would you like to do today?`,
           Markup.inlineKeyboard([
             [Markup.button.callback('🔍 Browse Services', 'browse_services')],
             [Markup.button.callback('📅 My Bookings', 'my_bookings')],
-            [Markup.button.callback('👤 My Profile', 'my_profile')]
+            [Markup.button.callback('👤 My Profile', 'my_profile')],
+            [Markup.button.url('🌐 Open Website', SITE_URL)]
           ])
         );
       }
@@ -84,7 +99,7 @@ What would you like to do today?`,
   // Browse services
   bot.action('browse_services', async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     try {
       const categories = [
         { id: 'haircut', name: 'Hair & Beauty', icon: '✂️' },
@@ -117,7 +132,7 @@ What would you like to do today?`,
   // My bookings
   bot.action('my_bookings', async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     try {
       const user = await prisma.user.findUnique({
         where: { telegramId: ctx.from?.id.toString() },
@@ -155,7 +170,7 @@ What would you like to do today?`,
       }
 
       let message = '📅 *My Recent Bookings*\n\n';
-      
+
       user.customerBookings.forEach((booking, index) => {
         const date = new Date(booking.scheduledAt).toLocaleDateString();
         const time = new Date(booking.scheduledAt).toLocaleTimeString();
@@ -185,7 +200,7 @@ What would you like to do today?`,
   // My profile
   bot.action('my_profile', async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     try {
       const user = await prisma.user.findUnique({
         where: { telegramId: ctx.from?.id.toString() }
@@ -209,6 +224,7 @@ What would you like to do today?`,
           parse_mode: 'Markdown',
           ...Markup.inlineKeyboard([
             [Markup.button.callback('📅 My Bookings', 'my_bookings')],
+            [Markup.button.url('🌐 Open Website', SITE_URL)],
             [Markup.button.callback('🏠 Main Menu', 'main_menu')]
           ])
         }
@@ -222,14 +238,14 @@ What would you like to do today?`,
   // Category selection
   bot.action(/category_(.+)/, async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     const category = ctx.match[1];
-    
+
     try {
       const services = await prisma.service.findMany({
-        where: { 
+        where: {
           category,
-          isActive: true 
+          isActive: true
         },
         include: {
           specialist: {
@@ -253,7 +269,7 @@ What would you like to do today?`,
       }
 
       let message = `🔍 *Services in ${category}*\n\n`;
-      
+
       services.forEach((service, index) => {
         message += `${index + 1}. *${service.name}*\n`;
         message += `   👤 ${service.specialist.user.firstName} ${service.specialist.user.lastName}\n`;
@@ -261,14 +277,14 @@ What would you like to do today?`,
         message += `   ⭐ ${service.specialist.rating}/5 (${service.specialist.reviewCount} reviews)\n\n`;
       });
 
-      message += `💡 *To book a service, visit our website:*\nhttp://localhost:3000`;
+      message += `💡 *To book a service, visit our website!*`;
 
       await ctx.editMessageText(
         message,
         {
           parse_mode: 'Markdown',
           ...Markup.inlineKeyboard([
-            [Markup.button.url('🌐 Open Website', 'http://localhost:3000')],
+            [Markup.button.url('🌐 Book on Website', SITE_URL)],
             [Markup.button.callback('🔙 Back to Categories', 'browse_services')],
             [Markup.button.callback('🏠 Main Menu', 'main_menu')]
           ])
@@ -283,7 +299,7 @@ What would you like to do today?`,
   // Main menu
   bot.action('main_menu', async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     await ctx.editMessageText(
       `🏠 *Main Menu*\n\nWhat would you like to do?`,
       {
@@ -291,7 +307,8 @@ What would you like to do today?`,
         ...Markup.inlineKeyboard([
           [Markup.button.callback('🔍 Browse Services', 'browse_services')],
           [Markup.button.callback('📅 My Bookings', 'my_bookings')],
-          [Markup.button.callback('👤 My Profile', 'my_profile')]
+          [Markup.button.callback('👤 My Profile', 'my_profile')],
+          [Markup.button.url('🌐 Open Website', SITE_URL)]
         ])
       }
     );
@@ -300,12 +317,12 @@ What would you like to do today?`,
   // Help command
   bot.action('help', async (ctx) => {
     await ctx.answerCbQuery();
-    
+
     const helpText = `❓ *Help & Support*\n\n` +
       `🔍 *Browse Services* - Find and explore available services\n` +
       `📅 *My Bookings* - View your booking history\n` +
       `👤 *My Profile* - View your account information\n` +
-      `🌐 *Website* - Full booking functionality at http://localhost:3000\n\n` +
+      `🌐 *Website* - Full booking functionality at miyzapis.com\n\n` +
       `📞 *Need help?* Contact our support team through the website.`;
 
     await ctx.editMessageText(
@@ -313,7 +330,7 @@ What would you like to do today?`,
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
-          [Markup.button.url('🌐 Open Website', 'http://localhost:3000')],
+          [Markup.button.url('🌐 Open Website', SITE_URL)],
           [Markup.button.callback('🏠 Main Menu', 'main_menu')]
         ])
       }
@@ -321,7 +338,7 @@ What would you like to do today?`,
   });
 
   // Error handling
-  bot.catch((err, ctx) => {
+  bot.catch((err: any, ctx: any) => {
     logger.error('Bot error:', err);
     ctx.reply('Sorry, something went wrong. Please try again later.');
   });
