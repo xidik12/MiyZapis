@@ -84,7 +84,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
     });
   };
 
-  const getBlockStyle = (block: TimeBlock, day: Date) => {
+  const getBlockStyle = (block: TimeBlock, _day: Date) => {
     const start = new Date(block.startDateTime);
     const end = new Date(block.endDateTime);
 

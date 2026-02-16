@@ -18,6 +18,7 @@ import {
 import { createSuccessResponse, createErrorResponse, calculatePaginationOffset, createPaginationMeta, formatValidationErrors } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import bcrypt from 'bcryptjs';
+import { generateLinkCode } from '@/utils/telegram-link-codes';
 
 const router = Router();
 
@@ -307,6 +308,46 @@ router.put('/password', authenticateToken, validateUpdatePassword, async (req: A
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to update password',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
+
+// Generate a one-time link code for Telegram account linking
+router.post('/telegram/generate-link-code', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    // Check if user already has Telegram linked
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { telegramId: true }
+    });
+
+    if (user?.telegramId) {
+      return res.status(409).json(
+        createErrorResponse(
+          ErrorCodes.DUPLICATE_RESOURCE,
+          'Telegram account is already linked',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+
+    const code = generateLinkCode(userId!);
+
+    return res.json(createSuccessResponse({
+      code,
+      expiresIn: 300, // 5 minutes in seconds
+      deepLink: `https://t.me/MiyZapis_Bot?start=link_${code}`
+    }));
+  } catch (error) {
+    logger.error('Generate link code error:', error);
+    return res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        'Failed to generate link code',
         req.headers['x-request-id'] as string
       )
     );

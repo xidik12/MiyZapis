@@ -128,6 +128,20 @@ export class UserService {
     }
   }
 
+  // Generate a one-time Telegram link code
+  async generateTelegramLinkCode(): Promise<{ code: string; expiresIn: number; deepLink: string }> {
+    try {
+      const response = await apiClient.post<{ code: string; expiresIn: number; deepLink: string }>(API_ENDPOINTS.USERS.TELEGRAM_GENERATE_LINK_CODE, {});
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to generate link code');
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to generate link code';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Link Telegram account
   async linkTelegram(data: { telegramId: string; firstName: string; lastName?: string; username?: string; authDate: number; hash: string }): Promise<any> {
     try {

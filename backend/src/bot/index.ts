@@ -2,6 +2,7 @@ import { Telegraf, Markup } from 'telegraf';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import { consumeLinkCode } from '@/utils/telegram-link-codes';
 
 const SITE_URL = config.frontend?.url || 'https://miyzapis.com';
 
@@ -17,18 +18,78 @@ if (bot) {
     const user = ctx.from;
     const payload = (ctx as any).startPayload || ctx.message?.text?.split(' ')[1] || '';
 
-    // Handle /start link — account linking from web Settings page
-    if (payload === 'link') {
+    // Handle /start link_CODE — token-based account linking from web Settings page
+    if (payload.startsWith('link_')) {
+      const code = payload.slice(5); // Remove "link_" prefix
       const telegramId = user.id.toString();
-      await ctx.reply(
-        `🔗 *Telegram Account Linking*\n\nYour Telegram ID: \`${telegramId}\`\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website settings page.`,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.url('🌐 Open Settings', `${SITE_URL}/settings`)],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-          ])
+
+      try {
+        const linkedUserId = consumeLinkCode(code);
+
+        if (!linkedUserId) {
+          await ctx.reply(
+            `Link code expired or invalid.\n\nPlease go back to the website settings and click "Link Telegram" again to get a new code.`,
+            Markup.inlineKeyboard([
+              [Markup.button.url('Open Settings', `${SITE_URL}/settings`)],
+              [Markup.button.callback('Main Menu', 'main_menu')]
+            ])
+          );
+          return;
         }
+
+        // Check if this Telegram ID is already linked to another account
+        const existingUser = await prisma.user.findFirst({
+          where: { telegramId, id: { not: linkedUserId } }
+        });
+
+        if (existingUser) {
+          await ctx.reply(
+            `This Telegram account is already linked to a different MiyZapis account. Please unlink it first from the other account's settings.`,
+            Markup.inlineKeyboard([
+              [Markup.button.callback('Main Menu', 'main_menu')]
+            ])
+          );
+          return;
+        }
+
+        // Link the Telegram account
+        await prisma.user.update({
+          where: { id: linkedUserId },
+          data: { telegramId }
+        });
+
+        const linkedUser = await prisma.user.findUnique({
+          where: { id: linkedUserId },
+          select: { firstName: true }
+        });
+
+        await ctx.reply(
+          `*Telegram Linked Successfully!*\n\n${linkedUser?.firstName || 'Your account'}, your Telegram is now connected to your MiyZapis profile.\n\nYou'll receive booking notifications here.`,
+          {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([
+              [Markup.button.url('Open Website', SITE_URL)],
+              [Markup.button.callback('Main Menu', 'main_menu')]
+            ])
+          }
+        );
+
+        logger.info('Telegram account linked via bot', { telegramId, userId: linkedUserId });
+      } catch (error) {
+        logger.error('Bot link error:', error);
+        await ctx.reply('Something went wrong while linking your account. Please try again.');
+      }
+      return;
+    }
+
+    // Handle /start link (without code) — legacy fallback
+    if (payload === 'link') {
+      await ctx.reply(
+        `To link your Telegram to MiyZapis, please use the "Link Telegram" button on the website settings page. It will generate a secure link for you.`,
+        Markup.inlineKeyboard([
+          [Markup.button.url('Open Settings', `${SITE_URL}/settings`)],
+          [Markup.button.callback('Main Menu', 'main_menu')]
+        ])
       );
       return;
     }

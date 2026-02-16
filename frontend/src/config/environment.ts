@@ -54,6 +54,7 @@ export const API_ENDPOINTS = {
     DELETE_ACCOUNT: '/users',
     TELEGRAM_LINK: '/users/telegram/link',
     TELEGRAM_UNLINK: '/users/telegram/unlink',
+    TELEGRAM_GENERATE_LINK_CODE: '/users/telegram/generate-link-code',
   },
   
   // Specialists
