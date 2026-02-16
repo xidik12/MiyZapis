@@ -66,6 +66,10 @@ export const ServiceDetailPage: React.FC = () => {
     );
   }
 
+  const specialistName = selectedService.specialist?.name || '';
+  const specialistRating = selectedService.specialist?.rating || 0;
+  const specialistReviewCount = selectedService.specialist?.reviewCount || 0;
+
   const handleBookNow = () => {
     if (!isAuthenticated && !authState) {
       navigate('/auth');
@@ -85,12 +89,12 @@ export const ServiceDetailPage: React.FC = () => {
 
     switch (method) {
       case 'phone':
-        if (selectedService.specialist.phone) {
+        if (selectedService.specialist?.phone) {
           window.open(`tel:${selectedService.specialist.phone}`);
         }
         break;
       case 'email':
-        if (selectedService.specialist.email) {
+        if (selectedService.specialist?.email) {
           window.open(`mailto:${selectedService.specialist.email}`);
         }
         break;
@@ -117,16 +121,18 @@ export const ServiceDetailPage: React.FC = () => {
     // TODO: Implement favorite functionality
   };
 
+  const images = selectedService.images || [];
+
   const nextImage = () => {
     setCurrentImageIndex(
-      (prev) => (prev + 1) % selectedService.images.length
+      (prev) => (prev + 1) % (images.length || 1)
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex(
       (prev) =>
-        (prev - 1 + selectedService.images.length) % selectedService.images.length
+        (prev - 1 + (images.length || 1)) % (images.length || 1)
     );
   };
 
@@ -160,14 +166,14 @@ export const ServiceDetailPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Image Gallery */}
         <div className="relative h-64 bg-bg-hover">
-          {selectedService.images.length > 0 ? (
+          {images.length > 0 ? (
             <>
               <img
-                src={selectedService.images[currentImageIndex]}
+                src={images[currentImageIndex]}
                 alt={selectedService.name}
                 className="w-full h-full object-cover"
               />
-              {selectedService.images.length > 1 && (
+              {images.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
@@ -182,7 +188,7 @@ export const ServiceDetailPage: React.FC = () => {
                     <ChevronRight size={16} />
                   </button>
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                    {selectedService.images.map((_, index) => (
+                    {images.map((_, index) => (
                       <div
                         key={index}
                         className={`w-2 h-2 rounded-full ${
@@ -230,10 +236,10 @@ export const ServiceDetailPage: React.FC = () => {
               <div className="flex items-center gap-1">
                 <Star size={16} className="text-accent-yellow fill-current" />
                 <span className="font-medium">
-                  {selectedService.specialist.rating}
+                  {specialistRating}
                 </span>
                 <span className="text-text-secondary">
-                  ({selectedService.specialist.reviewCount} reviews)
+                  ({specialistReviewCount} reviews)
                 </span>
               </div>
             </div>
@@ -244,12 +250,12 @@ export const ServiceDetailPage: React.FC = () => {
             <h3 className="font-semibold mb-2">{s('description')}</h3>
             <p className="text-text-secondary leading-relaxed">
               {showFullDescription
-                ? selectedService.description
-                : `${selectedService.description.slice(0, 150)}${
-                    selectedService.description.length > 150 ? '...' : ''
+                ? (selectedService.description || '')
+                : `${(selectedService.description || '').slice(0, 150)}${
+                    (selectedService.description || '').length > 150 ? '...' : ''
                   }`}
             </p>
-            {selectedService.description.length > 150 && (
+            {(selectedService.description || '').length > 150 && (
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
                 className="text-accent-primary mt-2 text-sm"
@@ -280,20 +286,20 @@ export const ServiceDetailPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
                 <img
-                  src={selectedService.specialist.avatar || '/api/placeholder/64/64'}
-                  alt={selectedService.specialist.name}
+                  src={selectedService.specialist?.avatar || '/api/placeholder/64/64'}
+                  alt={specialistName}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold">{selectedService.specialist.name}</h3>
+                <h3 className="font-semibold">{specialistName}</h3>
                 <div className="flex items-center gap-1 mb-1">
                   <Star size={14} className="text-accent-yellow fill-current" />
                   <span className="text-sm font-medium">
-                    {selectedService.specialist.rating}
+                    {specialistRating}
                   </span>
                   <span className="text-sm text-text-secondary">
-                    ({selectedService.specialist.reviewCount} reviews)
+                    ({specialistReviewCount} reviews)
                   </span>
                 </div>
                 <div className="flex items-center gap-1">

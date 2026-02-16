@@ -115,14 +115,27 @@ export const fetchSpecialistsAsync = createAsyncThunk(
 export const fetchSpecialistAsync = createAsyncThunk(
   'specialists/fetchSpecialist',
   async (id: string) => {
-    return await apiService.getSpecialist(id);
+    const raw: any = await apiService.getSpecialist(id);
+    return {
+      ...raw,
+      name: raw.user ? `${raw.user.firstName} ${raw.user.lastName}`.trim() : raw.name || '',
+      avatar: raw.user?.avatar || raw.avatar,
+      phone: raw.user?.phoneNumber || raw.phoneNumber || raw.phone || '',
+      email: raw.user?.email || raw.email || '',
+      reviewCount: raw.totalReviews || raw.reviewCount || 0,
+    };
   }
 );
 
 export const fetchSpecialistServicesAsync = createAsyncThunk(
   'specialists/fetchSpecialistServices',
   async (id: string) => {
-    return await apiService.getSpecialistServices(id);
+    const raw: any = await apiService.getSpecialistServices(id);
+    const services = Array.isArray(raw) ? raw : raw?.services || [];
+    return services.map((s: any) => ({
+      ...s,
+      price: Number(s.price) || Number(s.basePrice) || 0,
+    }));
   }
 );
 

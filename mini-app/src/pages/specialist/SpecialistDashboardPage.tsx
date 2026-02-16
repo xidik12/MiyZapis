@@ -248,9 +248,9 @@ export const SpecialistDashboardPage: React.FC = () => {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-text-primary truncate">
-                      {booking.customer.firstName} {booking.customer.lastName}
+                      {booking.customer?.firstName} {booking.customer?.lastName}
                     </div>
-                    <div className="text-sm text-text-secondary truncate">{booking.service.name}</div>
+                    <div className="text-sm text-text-secondary truncate">{booking.service?.name || booking.serviceName}</div>
                     <div className="flex items-center gap-2 text-xs text-text-muted mt-1">
                       <Calendar size={12} />
                       <span>{format(parseISO(booking.scheduledAt), 'PPP')}</span>

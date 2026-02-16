@@ -187,12 +187,14 @@ export const SpecialistProfilePage: React.FC = () => {
                   ({selectedSpecialist.reviewCount} reviews)
                 </span>
               </div>
-              <div className="flex items-center gap-1 opacity-80">
-                <MapPin size={14} />
-                <span className="text-sm">
-                  {selectedSpecialist.location.city}, {selectedSpecialist.location.state}
-                </span>
-              </div>
+              {selectedSpecialist.location && (
+                <div className="flex items-center gap-1 opacity-80">
+                  <MapPin size={14} />
+                  <span className="text-sm">
+                    {selectedSpecialist.location.city}{selectedSpecialist.location.state ? `, ${selectedSpecialist.location.state}` : ''}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="text-center">
               <div className="w-3 h-3 rounded-full bg-green-400 mx-auto mb-1"></div>
@@ -320,19 +322,21 @@ export const SpecialistProfilePage: React.FC = () => {
               )}
 
               {/* Location */}
-              <Card>
-                <h3 className="font-semibold mb-2">{t(specialistProfileStrings, 'location', locale)}</h3>
-                <div className="flex items-start gap-2">
-                  <MapPin size={16} className="text-text-secondary mt-1" />
-                  <div className="text-text-secondary">
-                    <p>{selectedSpecialist.location.address}</p>
-                    <p>
-                      {selectedSpecialist.location.city}, {selectedSpecialist.location.state}{' '}
-                      {selectedSpecialist.location.zipCode}
-                    </p>
+              {selectedSpecialist.location && (
+                <Card>
+                  <h3 className="font-semibold mb-2">{t(specialistProfileStrings, 'location', locale)}</h3>
+                  <div className="flex items-start gap-2">
+                    <MapPin size={16} className="text-text-secondary mt-1" />
+                    <div className="text-text-secondary">
+                      {selectedSpecialist.location.address && <p>{selectedSpecialist.location.address}</p>}
+                      <p>
+                        {selectedSpecialist.location.city}{selectedSpecialist.location.state ? `, ${selectedSpecialist.location.state}` : ''}{' '}
+                        {selectedSpecialist.location.zipCode || ''}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
             </div>
           )}
 

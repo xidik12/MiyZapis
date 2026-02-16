@@ -371,10 +371,10 @@ export const BookingFlow: React.FC = () => {
           <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-hover">
-                {selectedService.specialist.avatar ? (
+                {selectedService.specialist?.avatar ? (
                   <img
                     src={selectedService.specialist.avatar}
-                    alt={selectedService.specialist.name}
+                    alt={selectedService.specialist?.name || ''}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -386,13 +386,13 @@ export const BookingFlow: React.FC = () => {
 
               <div className="flex-1">
                 <h4 className="font-semibold text-text-primary">
-                  {selectedService.specialist.name}
+                  {selectedService.specialist?.name || ''}
                 </h4>
                 <div className="flex items-center gap-2 text-sm">
                   <div className="flex items-center gap-1">
                     <Star size={12} className="text-yellow-400 fill-current" />
-                    <span className="text-text-primary">{selectedService.specialist.rating}</span>
-                    <span className="text-text-secondary">({selectedService.specialist.reviewCount})</span>
+                    <span className="text-text-primary">{selectedService.specialist?.rating || 0}</span>
+                    <span className="text-text-secondary">({selectedService.specialist?.reviewCount || 0})</span>
                   </div>
                 </div>
               </div>
@@ -564,7 +564,7 @@ export const BookingFlow: React.FC = () => {
             {selectedService.specialist && (
               <div className="flex justify-between">
                 <span className="text-text-secondary">{t(bookingFlowStrings, 'specialist', locale)}:</span>
-                <span className="font-medium text-text-primary">{selectedService.specialist.name}</span>
+                <span className="font-medium text-text-primary">{selectedService.specialist?.name || ''}</span>
               </div>
             )}
 

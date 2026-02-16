@@ -16,10 +16,29 @@ export interface Service {
     avatar?: string;
     rating: number;
     reviewCount: number;
+    phone?: string;
+    email?: string;
   };
   tags: string[];
   isActive: boolean;
 }
+
+// Backend returns specialist.user.firstName/lastName and specialist.totalReviews
+// Normalize to flat specialist.name and specialist.reviewCount
+const normalizeServiceSpecialist = (specialist: any) => {
+  if (!specialist) return { id: '', name: '', rating: 0, reviewCount: 0 };
+  return {
+    id: specialist.id || '',
+    name: specialist.user
+      ? `${specialist.user.firstName || ''} ${specialist.user.lastName || ''}`.trim()
+      : specialist.name || '',
+    avatar: specialist.user?.avatar || specialist.avatar,
+    rating: specialist.rating || 0,
+    reviewCount: specialist.totalReviews || specialist.reviewCount || 0,
+    phone: specialist.user?.phoneNumber || specialist.phoneNumber || specialist.phone || '',
+    email: specialist.user?.email || specialist.email || '',
+  };
+};
 
 export interface ServiceCategory {
   id: string;
@@ -83,7 +102,11 @@ export const fetchServicesAsync = createAsyncThunk(
     // Normalize to { items, pagination }
     if (response?.services) {
       return {
-        items: response.services,
+        items: response.services.map((s: any) => ({
+          ...s,
+          price: Number(s.price) || Number(s.basePrice) || 0,
+          specialist: normalizeServiceSpecialist(s.specialist),
+        })),
         pagination: {
           page: response.page || 1,
           limit: params?.limit || 10,
@@ -99,7 +122,12 @@ export const fetchServicesAsync = createAsyncThunk(
 export const fetchServiceAsync = createAsyncThunk(
   'services/fetchService',
   async (id: string) => {
-    return await apiService.getService(id);
+    const raw: any = await apiService.getService(id);
+    return {
+      ...raw,
+      price: Number(raw.price) || Number(raw.basePrice) || 0,
+      specialist: normalizeServiceSpecialist(raw.specialist),
+    };
   }
 );
 

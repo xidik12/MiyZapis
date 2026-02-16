@@ -270,10 +270,10 @@ export const SpecialistBookingsPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-semibold text-text-primary truncate">
-                            {booking.customer.firstName} {booking.customer.lastName}
+                            {booking.customer?.firstName} {booking.customer?.lastName}
                           </h3>
                           <p className="text-sm text-text-secondary truncate">
-                            {booking.service.name}
+                            {booking.service?.name || booking.serviceName}
                           </p>
                         </div>
                       </div>

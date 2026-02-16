@@ -153,11 +153,11 @@ export const SearchPage: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-text-primary truncate">{service.name}</h3>
-              <p className="text-sm text-text-secondary mb-1">{service.specialist.name}</p>
+              <p className="text-sm text-text-secondary mb-1">{service.specialist?.name || ''}</p>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1">
                   <Star size={12} className="text-accent-yellow fill-current" />
-                  <span className="text-sm font-medium">{service.specialist.rating}</span>
+                  <span className="text-sm font-medium">{service.specialist?.rating || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={12} className="text-text-secondary" />
@@ -190,12 +190,12 @@ export const SearchPage: React.FC = () => {
         <div className="space-y-2">
           <div>
             <h3 className="font-semibold text-text-primary text-sm">{service.name}</h3>
-            <p className="text-xs text-text-secondary">{service.specialist.name}</p>
+            <p className="text-xs text-text-secondary">{service.specialist?.name || ''}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <Star size={10} className="text-accent-yellow fill-current" />
-              <span className="text-xs font-medium">{service.specialist.rating}</span>
+              <span className="text-xs font-medium">{service.specialist?.rating || 0}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock size={10} className="text-text-secondary" />
