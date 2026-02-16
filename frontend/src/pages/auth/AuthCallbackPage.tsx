@@ -47,15 +47,15 @@ const AuthCallbackPage: React.FC = () => {
           return;
         }
 
-        if (token && refreshToken) {
-          // Set authentication tokens
+        if (token) {
+          // Set authentication tokens (refreshToken may be absent for bot-based login)
           setAuthTokens({
             accessToken: token,
-            refreshToken: refreshToken,
+            refreshToken: refreshToken || token,
           });
 
           toast.success(t('auth.signedIn') || 'Successfully signed in!');
-          
+
           // Redirect to appropriate page
           const redirectTo = sessionStorage.getItem('redirectAfterAuth') || '/';
           sessionStorage.removeItem('redirectAfterAuth');

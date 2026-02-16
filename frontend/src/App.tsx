@@ -195,6 +195,7 @@ function App() {
                     <Route path="reset-password" element={<ResetPasswordPage />} />
                     <Route path="verify-email" element={<VerifyEmailPage />} />
                     <Route path="callback" element={<AuthCallbackPage />} />
+                    <Route path="telegram-callback" element={<AuthCallbackPage />} />
                     <Route path="*" element={<Navigate to="/auth/login" replace />} />
                   </Routes>
                 </Suspense>

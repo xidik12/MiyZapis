@@ -1,4 +1,5 @@
 import { Telegraf, Markup } from 'telegraf';
+import jwt from 'jsonwebtoken';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
@@ -47,14 +48,61 @@ if (bot) {
       return;
     }
 
-    // Handle /start login
+    // Handle /start login — authenticate via bot and redirect back to website
     if (payload === 'login') {
-      await ctx.reply(
-        `To sign in with Telegram, visit the MiyZapis website.`,
-        Markup.inlineKeyboard([
-          [Markup.button.url('Open Login Page', `${SITE_URL}/auth/login`)]
-        ])
-      );
+      try {
+        const telegramId = user.id.toString();
+
+        // Find or create user
+        let dbUser = await prisma.user.findUnique({
+          where: { telegramId }
+        });
+
+        if (!dbUser) {
+          dbUser = await prisma.user.create({
+            data: {
+              telegramId,
+              firstName: user.first_name || 'User',
+              lastName: user.last_name || '',
+              email: `telegram_${user.id}@temp.com`,
+              userType: 'CUSTOMER',
+              isEmailVerified: false,
+              isActive: true,
+            }
+          });
+        } else {
+          await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { lastLoginAt: new Date() }
+          });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+          { userId: dbUser.id, email: dbUser.email, userType: dbUser.userType },
+          config.jwt.secret as string,
+          { expiresIn: config.jwt.expiresIn as string } as jwt.SignOptions
+        );
+
+        const loginUrl = `${SITE_URL}/auth/telegram-callback?token=${encodeURIComponent(token)}`;
+
+        await ctx.reply(
+          `Welcome, ${user.first_name}! Click below to sign in.`,
+          Markup.inlineKeyboard([
+            [Markup.button.url('Sign in to MiyZapis', loginUrl)]
+          ])
+        );
+
+        logger.info('Bot login token generated', { telegramId, userId: dbUser.id });
+      } catch (error) {
+        logger.error('Bot login error:', error);
+        await ctx.reply(
+          'Could not sign in. Please try again or use email login.',
+          Markup.inlineKeyboard([
+            [Markup.button.url('Open Login Page', `${SITE_URL}/auth/login`)]
+          ])
+        );
+      }
       return;
     }
 
