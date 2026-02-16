@@ -671,19 +671,19 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using local date components to match calendar display
+      // Compare using UTC date components (times are stored as-is in UTC)
       if (
-        blockStart.getFullYear() !== date.getFullYear() ||
-        blockStart.getMonth() !== date.getMonth() ||
-        blockStart.getDate() !== date.getDate()
+        blockStart.getUTCFullYear() !== date.getFullYear() ||
+        blockStart.getUTCMonth() !== date.getMonth() ||
+        blockStart.getUTCDate() !== date.getDate()
       ) {
         return false;
       }
 
-      // Then check if the block overlaps with this hour (local time)
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
+      // Check if the block overlaps with this hour (using UTC time)
+      const blockHour = blockStart.getUTCHours();
+      const blockEndHour = blockEnd.getUTCHours();
+      const blockEndMinute = blockEnd.getUTCMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -701,10 +701,10 @@ const SpecialistSchedule: React.FC = () => {
       const bookingStart = new Date(booking.scheduledAt);
       if (Number.isNaN(bookingStart.getTime())) return false;
       return (
-        bookingStart.getFullYear() === date.getFullYear() &&
-        bookingStart.getMonth() === date.getMonth() &&
-        bookingStart.getDate() === date.getDate() &&
-        bookingStart.getHours() === hour
+        bookingStart.getUTCFullYear() === date.getFullYear() &&
+        bookingStart.getUTCMonth() === date.getMonth() &&
+        bookingStart.getUTCDate() === date.getDate() &&
+        bookingStart.getUTCHours() === hour
       );
     });
   };
@@ -1120,7 +1120,7 @@ const SpecialistSchedule: React.FC = () => {
                                     {booking.service?.name || 'Booking'}
                                   </div>
                                   <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                    {new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
+                                    {(() => { const d = new Date(booking.scheduledAt); return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
                                   </div>
                                 </motion.div>
                               ))}
@@ -1147,9 +1147,9 @@ const SpecialistSchedule: React.FC = () => {
                                         ? 'text-green-900 dark:text-green-100'
                                         : 'text-red-900 dark:text-red-100'
                                     }`}>
-                                      {blockStart.getHours().toString().padStart(2, '0')}:{blockStart.getMinutes().toString().padStart(2, '0')}
+                                      {blockStart.getUTCHours().toString().padStart(2, '0')}:{blockStart.getUTCMinutes().toString().padStart(2, '0')}
                                       {' - '}
-                                      {blockEnd.getHours().toString().padStart(2, '0')}:{blockEnd.getMinutes().toString().padStart(2, '0')}
+                                      {blockEnd.getUTCHours().toString().padStart(2, '0')}:{blockEnd.getUTCMinutes().toString().padStart(2, '0')}
                                     </div>
                                     {block.reason && (
                                       <div className={`text-xs mt-1 ${
