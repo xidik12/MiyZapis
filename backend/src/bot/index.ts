@@ -150,10 +150,22 @@ if (bot) {
       });
 
       if (existingUser) {
-        await ctx.reply(
-          'This Telegram account is already linked to a different MiyZapis account. Unlink it from the other account first.'
-        );
-        return;
+        // If the existing account is a bot-created temp account, auto-unlink it
+        if (existingUser.email?.match(/^telegram_\d+@temp\.com$/)) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { telegramId: null }
+          });
+          logger.info('Auto-unlinked Telegram from temp account', {
+            tempUserId: existingUser.id,
+            telegramId
+          });
+        } else {
+          await ctx.reply(
+            'This Telegram account is already linked to a different MiyZapis account. Unlink it from the other account\'s settings first.'
+          );
+          return;
+        }
       }
 
       // Link the account
