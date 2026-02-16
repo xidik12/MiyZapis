@@ -216,6 +216,7 @@ export const homeStrings: Record<string, Record<Locale, string>> = {
   specEarnings: { en: 'Earnings', uk: 'Дохід', ru: 'Доход' },
   specAnalytics: { en: 'Analytics', uk: 'Аналітика', ru: 'Аналитика' },
   specReviews: { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  specServices: { en: 'Services', uk: 'Послуги', ru: 'Услуги' },
   specClients: { en: 'Clients', uk: 'Клієнти', ru: 'Клиенты' },
   specSettings: { en: 'Settings', uk: 'Налашт.', ru: 'Настр.' },
   // Welcome banner

@@ -38,13 +38,11 @@ interface BookingDetails {
   };
   specialist: {
     id: string;
-    name: string;
     firstName?: string;
     lastName?: string;
     avatar?: string;
   };
-  startTime: string;
-  endTime: string;
+  scheduledAt: string;
   status: string;
 }
 
@@ -252,7 +250,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{p('total')}</span>
-                  <span className="text-accent-primary text-sm font-bold">${booking.service.basePrice}</span>
+                  <span className="text-accent-primary text-sm font-bold">${booking.service.price}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{locale === 'uk' ? 'Метод' : locale === 'ru' ? 'Метод' : 'Method'}</span>
@@ -363,7 +361,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">{p('total')}</span>
                   <span className="text-xl font-bold text-accent-primary">
-                    ${booking.service.basePrice}
+                    ${booking.service.price}
                   </span>
                 </div>
               </div>
@@ -424,7 +422,7 @@ export const PaymentProcessingPage: React.FC = () => {
       {/* Fixed Bottom Pay Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 p-4 z-20">
         <Button onClick={handlePayment} size="lg" className="w-full">
-          {p('payNow')} - ${booking.service.basePrice}
+          {p('payNow')} - ${booking.service.price}
         </Button>
       </div>
     </div>
