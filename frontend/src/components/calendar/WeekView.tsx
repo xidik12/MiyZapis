@@ -42,10 +42,39 @@ export const WeekView: React.FC<WeekViewProps> = ({
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
+  // Merge consecutive same-type blocks into single range blocks
+  const mergeConsecutiveBlocks = (blocks: TimeBlock[]): TimeBlock[] => {
+    if (blocks.length === 0) return [];
+
+    const sorted = [...blocks].sort(
+      (a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime()
+    );
+
+    const merged: TimeBlock[] = [];
+    let current = { ...sorted[0] };
+
+    for (let i = 1; i < sorted.length; i++) {
+      const next = sorted[i];
+      const currentEnd = new Date(current.endDateTime).getTime();
+      const nextStart = new Date(next.startDateTime).getTime();
+
+      if (nextStart === currentEnd && next.isAvailable === current.isAvailable) {
+        // Extend current block
+        current = { ...current, endDateTime: next.endDateTime };
+      } else {
+        merged.push(current);
+        current = { ...next };
+      }
+    }
+    merged.push(current);
+    return merged;
+  };
+
   const getBlocksForDay = (day: Date) => {
-    return timeBlocks.filter(block =>
+    const dayBlocks = timeBlocks.filter(block =>
       isSameDay(new Date(block.startDateTime), day)
     );
+    return mergeConsecutiveBlocks(dayBlocks);
   };
 
   const getBookingsForDay = (day: Date) => {
@@ -72,7 +101,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
     return {
       top: `${top * 4}rem`, // 4rem per hour
       height: `${height * 4}rem`,
-      minHeight: '2rem'
+      minHeight: '1.5rem'
     };
   };
 
@@ -208,31 +237,26 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     return (
                       <motion.div
                         key={block.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onBlockClick) onBlockClick(block);
                         }}
                         style={style}
-                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-md pointer-events-auto cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                        className={`absolute left-0.5 right-0.5 rounded-md p-1.5 pointer-events-auto cursor-pointer transition-all duration-200 overflow-hidden ${
                           block.isAvailable
-                            ? 'bg-green-500 text-white border-2 border-green-600'
-                            : 'bg-red-500 text-white border-2 border-red-600'
+                            ? 'bg-emerald-500/15 border-l-[3px] border-emerald-500 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-red-500/15 border-l-[3px] border-red-500 hover:bg-red-500/25 text-red-700 dark:text-red-300'
                         } ${block.isRecurring ? 'border-dashed' : ''}`}
                       >
-                        <div className="text-xs font-bold">
-                          {format(new Date(block.startDateTime), 'h:mm a')}
+                        <div className="text-[10px] font-semibold leading-tight">
+                          {format(new Date(block.startDateTime), 'h:mm a')} – {format(new Date(block.endDateTime), 'h:mm a')}
                         </div>
-                        <div className="text-xs">
+                        <div className="text-[10px] opacity-75 leading-tight">
                           {block.isAvailable ? 'Available' : (block.reason || 'Blocked')}
                         </div>
-                        {block.isRecurring && (
-                          <div className="text-xs opacity-75 mt-1">
-                            🔄 Recurring
-                          </div>
-                        )}
                       </motion.div>
                     );
                   })}
