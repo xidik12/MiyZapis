@@ -80,28 +80,19 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Authenticate via /auth-enhanced/telegram endpoint
+  // Authenticate via /auth-enhanced/telegram/webapp endpoint (WebApp initData)
   const authenticateWithTelegram = useCallback(async (): Promise<boolean> => {
     if (!telegramWebApp.initData) return false;
 
     const tgUser = (telegramWebApp.webApp as any)?.initDataUnsafe?.user;
     if (!tgUser?.id) return false;
 
-    const parsed = parseInitData(telegramWebApp.initData);
-    if (!parsed) return false;
-
     try {
-      const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram`, {
+      // Use the WebApp endpoint which validates initData with the correct HMAC
+      const res = await fetch(`${API_BASE_URL}/auth-enhanced/telegram/webapp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          telegramId: tgUser.id.toString(),
-          firstName: tgUser.first_name || 'User',
-          lastName: tgUser.last_name || '',
-          username: tgUser.username || '',
-          authDate: parsed.authDate,
-          hash: parsed.hash,
-        }),
+        body: JSON.stringify({ initData: telegramWebApp.initData }),
       });
 
       const data = await res.json();
@@ -111,6 +102,10 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         const authToken = tokens?.accessToken || tokens?.token || token || '';
         if (authToken) {
           storeTokens(authToken, tokens?.refreshToken);
+        }
+        // Map backend userType to role for mini-app compatibility
+        if (authUser && !authUser.role && authUser.userType) {
+          authUser.role = authUser.userType.toLowerCase();
         }
         setUser(authUser);
         setIsAuthenticated(true);
@@ -131,7 +126,12 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       });
       const data = await res.json();
       if (data.success && data.data) {
-        setUser(data.data);
+        const userData = data.data;
+        // Map backend userType to role for mini-app compatibility
+        if (userData && !userData.role && userData.userType) {
+          userData.role = userData.userType.toLowerCase();
+        }
+        setUser(userData);
         setIsAuthenticated(true);
         return true;
       }
@@ -207,6 +207,10 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
           const { tokens, user: authUser, token } = data.data;
           const authToken = tokens?.accessToken || tokens?.token || token || '';
           if (authToken) storeTokens(authToken, tokens?.refreshToken);
+          // Map backend userType to role for mini-app compatibility
+          if (authUser && !authUser.role && authUser.userType) {
+            authUser.role = authUser.userType.toLowerCase();
+          }
           setUser(authUser);
           setIsAuthenticated(true);
           telegramWebApp.hapticFeedback.notificationSuccess();

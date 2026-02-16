@@ -17,6 +17,14 @@ const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
 // @ts-ignore
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
 
+/** Map backend userType to role for mini-app compatibility */
+function normalizeUser(user: any): any {
+  if (user && !user.role && user.userType) {
+    return { ...user, role: user.userType.toLowerCase() };
+  }
+  return user;
+}
+
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -116,7 +124,8 @@ export const LoginPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.data) {
-        const { tokens, user } = data.data;
+        const { tokens, user: rawUser } = data.data;
+        const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || '';
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
@@ -174,7 +183,8 @@ export const LoginPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.data) {
-        const { tokens, user, token } = data.data;
+        const { tokens, user: rawUser, token } = data.data;
+        const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
@@ -212,7 +222,8 @@ export const LoginPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.data) {
-        const { tokens, user, token } = data.data;
+        const { tokens, user: rawUser, token } = data.data;
+        const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);
@@ -279,7 +290,8 @@ export const LoginPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.data) {
-        const { tokens, user, token } = data.data;
+        const { tokens, user: rawUser, token } = data.data;
+        const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('booking_app_token', authToken);

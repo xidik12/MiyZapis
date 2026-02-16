@@ -32,11 +32,12 @@ export class UserService {
   // Get current user profile
   async getProfile(): Promise<User> {
     try {
-      const response = await apiClient.get<{ user: User }>(API_ENDPOINTS.USERS.PROFILE);
+      const response = await apiClient.get<User>(API_ENDPOINTS.USERS.PROFILE);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get user profile');
       }
-      return response.data.user;
+      // Backend returns user data directly in response.data (not nested under .user)
+      return response.data;
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user profile';
       throw new Error(errorMessage);
