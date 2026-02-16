@@ -12,111 +12,59 @@ if (!config.telegram.botToken) {
 
 const bot = config.telegram.botToken ? new Telegraf(config.telegram.botToken) : null;
 
+// Helper: safely edit or send a new message (editMessageText fails if message was already edited/deleted)
+async function safeEdit(ctx: any, text: string, extra?: any) {
+  try {
+    await ctx.editMessageText(text, extra);
+  } catch {
+    await ctx.reply(text, extra);
+  }
+}
+
 if (bot) {
-  // Start command
+
+  // ── /start command ──────────────────────────────────────────────────
   bot.start(async (ctx) => {
     const user = ctx.from;
     const payload = (ctx as any).startPayload || ctx.message?.text?.split(' ')[1] || '';
 
-    // Handle /start link_CODE — token-based account linking from web Settings page
+    logger.info('Bot /start received', { telegramId: user.id, payload });
+
+    // Handle /start link_CODE — token-based account linking
     if (payload.startsWith('link_')) {
-      const code = payload.slice(5); // Remove "link_" prefix
-      const telegramId = user.id.toString();
-
-      try {
-        const linkedUserId = consumeLinkCode(code);
-
-        if (!linkedUserId) {
-          await ctx.reply(
-            `Link code expired or invalid.\n\nPlease go back to the website settings and click "Link Telegram" again to get a new code.`,
-            Markup.inlineKeyboard([
-              [Markup.button.url('Open Settings', `${SITE_URL}/settings`)],
-              [Markup.button.callback('Main Menu', 'main_menu')]
-            ])
-          );
-          return;
-        }
-
-        // Check if this Telegram ID is already linked to another account
-        const existingUser = await prisma.user.findFirst({
-          where: { telegramId, id: { not: linkedUserId } }
-        });
-
-        if (existingUser) {
-          await ctx.reply(
-            `This Telegram account is already linked to a different MiyZapis account. Please unlink it first from the other account's settings.`,
-            Markup.inlineKeyboard([
-              [Markup.button.callback('Main Menu', 'main_menu')]
-            ])
-          );
-          return;
-        }
-
-        // Link the Telegram account
-        await prisma.user.update({
-          where: { id: linkedUserId },
-          data: { telegramId }
-        });
-
-        const linkedUser = await prisma.user.findUnique({
-          where: { id: linkedUserId },
-          select: { firstName: true }
-        });
-
-        await ctx.reply(
-          `*Telegram Linked Successfully!*\n\n${linkedUser?.firstName || 'Your account'}, your Telegram is now connected to your MiyZapis profile.\n\nYou'll receive booking notifications here.`,
-          {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([
-              [Markup.button.url('Open Website', SITE_URL)],
-              [Markup.button.callback('Main Menu', 'main_menu')]
-            ])
-          }
-        );
-
-        logger.info('Telegram account linked via bot', { telegramId, userId: linkedUserId });
-      } catch (error) {
-        logger.error('Bot link error:', error);
-        await ctx.reply('Something went wrong while linking your account. Please try again.');
-      }
+      await handleLinkCode(ctx, payload.slice(5));
       return;
     }
 
-    // Handle /start link (without code) — legacy fallback
+    // Handle /start link (without code) — redirect to website
     if (payload === 'link') {
       await ctx.reply(
-        `To link your Telegram to MiyZapis, please use the "Link Telegram" button on the website settings page. It will generate a secure link for you.`,
+        `To link your Telegram to MiyZapis, click "Link Telegram" on the website settings page — it will generate a code for you to send here.`,
         Markup.inlineKeyboard([
-          [Markup.button.url('Open Settings', `${SITE_URL}/settings`)],
-          [Markup.button.callback('Main Menu', 'main_menu')]
+          [Markup.button.url('Open Settings', `${SITE_URL}/settings`)]
         ])
       );
       return;
     }
 
-    // Handle /start login — web login via Telegram
+    // Handle /start login
     if (payload === 'login') {
       await ctx.reply(
-        `🔐 *Login via Telegram*\n\nTo sign in to MiyZapis with your Telegram account, use the Telegram Login widget on the website.`,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.url('🌐 Open Login Page', `${SITE_URL}/auth/login`)],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-          ])
-        }
+        `To sign in with Telegram, visit the MiyZapis website.`,
+        Markup.inlineKeyboard([
+          [Markup.button.url('Open Login Page', `${SITE_URL}/auth/login`)]
+        ])
       );
       return;
     }
 
+    // Regular /start — welcome or welcome back
     try {
-      // Check if user exists in database
       let dbUser = await prisma.user.findUnique({
         where: { telegramId: user.id.toString() }
       });
 
       if (!dbUser) {
-        // Create new user
         dbUser = await prisma.user.create({
           data: {
             telegramId: user.id.toString(),
@@ -129,70 +77,152 @@ if (bot) {
         });
 
         await ctx.reply(
-          `🎉 *Welcome to MiyZapis, ${user.first_name}!*\n\nYour account has been created. You can now:\n• 📅 Browse and book services\n• 🔍 Find specialists near you\n• ⭐ Leave reviews and ratings\n• 🎁 Earn loyalty points\n\nLet's get started!`,
-          {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([
-              [Markup.button.callback('🔍 Browse Services', 'browse_services')],
-              [Markup.button.url('🌐 Open Website', SITE_URL)],
-              [Markup.button.callback('👤 My Profile', 'my_profile')],
-              [Markup.button.callback('❓ Help', 'help')]
-            ])
-          }
+          [
+            `Welcome to MiyZapis, ${user.first_name}!`,
+            '',
+            'Your account is ready. You can:',
+            '- Browse and book services',
+            '- Find specialists near you',
+            '- Leave reviews and earn points',
+          ].join('\n'),
+          Markup.inlineKeyboard([
+            [Markup.button.callback('Browse Services', 'browse_services')],
+            [Markup.button.url('Open Website', SITE_URL)],
+            [Markup.button.callback('Help', 'help')]
+          ])
         );
       } else {
         await ctx.reply(
-          `Welcome back, ${user.first_name}! 👋\n\nWhat would you like to do today?`,
+          `Welcome back, ${user.first_name}! What would you like to do?`,
           Markup.inlineKeyboard([
-            [Markup.button.callback('🔍 Browse Services', 'browse_services')],
-            [Markup.button.callback('📅 My Bookings', 'my_bookings')],
-            [Markup.button.callback('👤 My Profile', 'my_profile')],
-            [Markup.button.url('🌐 Open Website', SITE_URL)]
+            [Markup.button.callback('Browse Services', 'browse_services')],
+            [Markup.button.callback('My Bookings', 'my_bookings'), Markup.button.callback('My Profile', 'my_profile')],
+            [Markup.button.url('Open Website', SITE_URL)]
           ])
         );
       }
     } catch (error) {
       logger.error('Bot start error:', error);
-      await ctx.reply('Sorry, something went wrong. Please try again later.');
+      await ctx.reply('Something went wrong. Please try /start again.');
     }
   });
 
-  // Browse services
+  // ── Text messages — handle link codes sent as plain text ────────────
+  bot.on('text', async (ctx) => {
+    const text = ctx.message.text.trim();
+
+    // Accept link codes in formats: "link_abc123", "LINK_abc123", or just the code
+    if (/^(link_)?[a-f0-9]{8}$/i.test(text)) {
+      const code = text.replace(/^link_/i, '');
+      await handleLinkCode(ctx, code);
+      return;
+    }
+
+    // Default response for unrecognized text
+    await ctx.reply(
+      'Use /start to see the main menu, or send a link code from the website to connect your account.',
+      Markup.inlineKeyboard([
+        [Markup.button.callback('Main Menu', 'main_menu')]
+      ])
+    );
+  });
+
+  // ── Link code handler (shared by /start link_CODE and text messages) ──
+  async function handleLinkCode(ctx: any, code: string) {
+    const telegramId = ctx.from.id.toString();
+
+    try {
+      const linkedUserId = consumeLinkCode(code);
+
+      if (!linkedUserId) {
+        await ctx.reply(
+          'This link code is expired or invalid.\n\nGo back to Settings > Connected Accounts and click "Link Telegram" to get a fresh code.',
+          Markup.inlineKeyboard([
+            [Markup.button.url('Open Settings', `${SITE_URL}/settings`)]
+          ])
+        );
+        return;
+      }
+
+      // Check if this Telegram is already linked to a different account
+      const existingUser = await prisma.user.findFirst({
+        where: { telegramId, id: { not: linkedUserId } }
+      });
+
+      if (existingUser) {
+        await ctx.reply(
+          'This Telegram account is already linked to a different MiyZapis account. Unlink it from the other account first.'
+        );
+        return;
+      }
+
+      // Link the account
+      await prisma.user.update({
+        where: { id: linkedUserId },
+        data: { telegramId }
+      });
+
+      const linkedUser = await prisma.user.findUnique({
+        where: { id: linkedUserId },
+        select: { firstName: true }
+      });
+
+      await ctx.reply(
+        [
+          'Telegram linked successfully!',
+          '',
+          `${linkedUser?.firstName || 'Your account'} is now connected.`,
+          'You will receive booking notifications here.',
+        ].join('\n'),
+        Markup.inlineKeyboard([
+          [Markup.button.url('Open Website', SITE_URL)],
+          [Markup.button.callback('Main Menu', 'main_menu')]
+        ])
+      );
+
+      logger.info('Telegram account linked via bot', { telegramId, userId: linkedUserId });
+    } catch (error) {
+      logger.error('Bot link error:', error);
+      await ctx.reply('Something went wrong while linking. Please try again.');
+    }
+  }
+
+  // ── Browse Services ─────────────────────────────────────────────────
   bot.action('browse_services', async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
     try {
       const categories = [
-        { id: 'haircut', name: 'Hair & Beauty', icon: '✂️' },
-        { id: 'massage', name: 'Massage & Spa', icon: '💆‍♀️' },
-        { id: 'fitness', name: 'Fitness & Training', icon: '🏋️‍♂️' },
-        { id: 'beauty', name: 'Beauty & Nails', icon: '💅' },
+        { id: 'haircut', name: 'Hair & Beauty', icon: '✂' },
+        { id: 'massage', name: 'Massage & Spa', icon: '💆' },
+        { id: 'fitness', name: 'Fitness', icon: '💪' },
+        { id: 'beauty', name: 'Nails & Beauty', icon: '💅' },
         { id: 'tattoo', name: 'Tattoo & Piercing', icon: '🎨' },
-        { id: 'therapy', name: 'Therapy & Wellness', icon: '🧘‍♀️' }
+        { id: 'therapy', name: 'Therapy & Wellness', icon: '🧘' }
       ];
 
       const keyboard = categories.map(cat => [
         Markup.button.callback(`${cat.icon} ${cat.name}`, `category_${cat.id}`)
       ]);
+      keyboard.push([Markup.button.callback('< Back', 'main_menu')]);
 
-      keyboard.push([Markup.button.callback('🏠 Main Menu', 'main_menu')]);
-
-      await ctx.editMessageText(
-        '🔍 *Browse Service Categories*\n\nChoose a category to find specialists:',
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard(keyboard)
-        }
+      await safeEdit(ctx,
+        'Browse Service Categories\n\nChoose a category:',
+        Markup.inlineKeyboard(keyboard)
       );
     } catch (error) {
       logger.error('Browse services error:', error);
-      await ctx.reply('Error loading categories. Please try again.');
+      await ctx.reply('Could not load categories. Try /start.');
     }
   });
 
-  // My bookings
+  // ── My Bookings ─────────────────────────────────────────────────────
   bot.action('my_bookings', async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
     try {
       const user = await prisma.user.findUnique({
@@ -200,67 +230,58 @@ if (bot) {
         include: {
           customerBookings: {
             include: {
-              service: {
-                include: {
-                  specialist: {
-                    include: {
-                      user: true
-                    }
-                  }
-                }
-              }
+              service: true
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { scheduledAt: 'desc' },
             take: 5
           }
         }
       });
 
       if (!user || user.customerBookings.length === 0) {
-        await ctx.editMessageText(
-          '📅 *My Bookings*\n\nYou don\'t have any bookings yet.\n\nWould you like to browse services?',
-          {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([
-              [Markup.button.callback('🔍 Browse Services', 'browse_services')],
-              [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-            ])
-          }
+        await safeEdit(ctx,
+          'You don\'t have any bookings yet.\n\nBrowse services to book your first appointment!',
+          Markup.inlineKeyboard([
+            [Markup.button.callback('Browse Services', 'browse_services')],
+            [Markup.button.callback('< Back', 'main_menu')]
+          ])
         );
         return;
       }
 
-      let message = '📅 *My Recent Bookings*\n\n';
+      const lines = ['Your Recent Bookings\n'];
 
-      user.customerBookings.forEach((booking, index) => {
-        const date = new Date(booking.scheduledAt).toLocaleDateString();
-        const time = new Date(booking.scheduledAt).toLocaleTimeString();
-        message += `${index + 1}. *${booking.service.name}*\n`;
-        message += `   👤 ${booking.service.specialist.user.firstName} ${booking.service.specialist.user.lastName}\n`;
-        message += `   📅 ${date} at ${time}\n`;
-        message += `   💰 $${booking.totalAmount}\n`;
-        message += `   📊 Status: ${booking.status}\n\n`;
-      });
+      for (const booking of user.customerBookings) {
+        const date = new Date(booking.scheduledAt).toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        });
+        const time = new Date(booking.scheduledAt).toLocaleTimeString('en-GB', {
+          hour: '2-digit', minute: '2-digit'
+        });
+        const status = booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase();
+        lines.push(`${booking.service.name}`);
+        lines.push(`  ${date} at ${time} — ${status}`);
+        lines.push(`  $${booking.totalAmount}\n`);
+      }
 
-      await ctx.editMessageText(
-        message,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.callback('🔍 Browse More Services', 'browse_services')],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-          ])
-        }
+      await safeEdit(ctx,
+        lines.join('\n'),
+        Markup.inlineKeyboard([
+          [Markup.button.callback('Browse Services', 'browse_services')],
+          [Markup.button.callback('< Back', 'main_menu')]
+        ])
       );
     } catch (error) {
       logger.error('My bookings error:', error);
-      await ctx.reply('Error loading bookings. Please try again.');
+      await ctx.reply('Could not load bookings. Try /start.');
     }
   });
 
-  // My profile
+  // ── My Profile ──────────────────────────────────────────────────────
   bot.action('my_profile', async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
     try {
       const user = await prisma.user.findUnique({
@@ -268,140 +289,150 @@ if (bot) {
       });
 
       if (!user) {
-        await ctx.reply('User not found. Please start the bot again with /start');
+        await ctx.reply('Account not found. Press /start to create one.');
         return;
       }
 
-      const message = `👤 *My Profile*\n\n` +
-        `📝 Name: ${user.firstName} ${user.lastName}\n` +
-        `📧 Email: ${user.email}\n` +
-        `🎁 Loyalty Points: ${user.loyaltyPoints}\n` +
-        `👤 Account Type: ${user.userType}\n` +
-        `📅 Member since: ${new Date(user.createdAt).toLocaleDateString()}`;
+      const memberSince = new Date(user.createdAt).toLocaleDateString('en-GB', {
+        month: 'long', year: 'numeric'
+      });
 
-      await ctx.editMessageText(
-        message,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.callback('📅 My Bookings', 'my_bookings')],
-            [Markup.button.url('🌐 Open Website', SITE_URL)],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-          ])
-        }
+      await safeEdit(ctx,
+        [
+          'Your Profile',
+          '',
+          `Name: ${user.firstName} ${user.lastName || ''}`.trim(),
+          `Email: ${user.email}`,
+          `Type: ${user.userType}`,
+          `Points: ${user.loyaltyPoints}`,
+          `Member since: ${memberSince}`,
+        ].join('\n'),
+        Markup.inlineKeyboard([
+          [Markup.button.callback('My Bookings', 'my_bookings')],
+          [Markup.button.url('Edit on Website', `${SITE_URL}/settings`)],
+          [Markup.button.callback('< Back', 'main_menu')]
+        ])
       );
     } catch (error) {
       logger.error('My profile error:', error);
-      await ctx.reply('Error loading profile. Please try again.');
+      await ctx.reply('Could not load profile. Try /start.');
     }
   });
 
-  // Category selection
+  // ── Category Selection ──────────────────────────────────────────────
   bot.action(/category_(.+)/, async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
     const category = ctx.match[1];
 
     try {
       const services = await prisma.service.findMany({
-        where: {
-          category,
-          isActive: true
-        },
+        where: { category, isActive: true },
         include: {
           specialist: {
-            include: {
-              user: true
-            }
+            include: { user: true }
           }
         },
         take: 5
       });
 
       if (services.length === 0) {
-        await ctx.editMessageText(
-          `No services found in this category yet.\n\nWould you like to browse other categories?`,
+        await safeEdit(ctx,
+          `No services in "${category}" yet.`,
           Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back to Categories', 'browse_services')],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+            [Markup.button.callback('< Back to Categories', 'browse_services')],
+            [Markup.button.callback('Main Menu', 'main_menu')]
           ])
         );
         return;
       }
 
-      let message = `🔍 *Services in ${category}*\n\n`;
+      const lines = [`Services — ${category}\n`];
 
-      services.forEach((service, index) => {
-        message += `${index + 1}. *${service.name}*\n`;
-        message += `   👤 ${service.specialist.user.firstName} ${service.specialist.user.lastName}\n`;
-        message += `   💰 $${service.basePrice} • ⏱️ ${service.duration}min\n`;
-        message += `   ⭐ ${service.specialist.rating}/5 (${service.specialist.reviewCount} reviews)\n\n`;
-      });
+      for (const service of services) {
+        lines.push(`${service.name}`);
+        lines.push(`  by ${service.specialist.user.firstName} ${service.specialist.user.lastName || ''}`);
+        lines.push(`  $${service.basePrice} / ${service.duration}min\n`);
+      }
 
-      message += `💡 *To book a service, visit our website!*`;
+      lines.push('Visit the website to book!');
 
-      await ctx.editMessageText(
-        message,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.url('🌐 Book on Website', SITE_URL)],
-            [Markup.button.callback('🔙 Back to Categories', 'browse_services')],
-            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
-          ])
-        }
+      await safeEdit(ctx,
+        lines.join('\n'),
+        Markup.inlineKeyboard([
+          [Markup.button.url('Book on Website', SITE_URL)],
+          [Markup.button.callback('< Back to Categories', 'browse_services')],
+          [Markup.button.callback('Main Menu', 'main_menu')]
+        ])
       );
     } catch (error) {
       logger.error('Category services error:', error);
-      await ctx.reply('Error loading services. Please try again.');
+      await ctx.reply('Could not load services. Try /start.');
     }
   });
 
-  // Main menu
+  // ── Main Menu ───────────────────────────────────────────────────────
   bot.action('main_menu', async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
-    await ctx.editMessageText(
-      `🏠 *Main Menu*\n\nWhat would you like to do?`,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.callback('🔍 Browse Services', 'browse_services')],
-          [Markup.button.callback('📅 My Bookings', 'my_bookings')],
-          [Markup.button.callback('👤 My Profile', 'my_profile')],
-          [Markup.button.url('🌐 Open Website', SITE_URL)]
+    try {
+      await safeEdit(ctx,
+        'What would you like to do?',
+        Markup.inlineKeyboard([
+          [Markup.button.callback('Browse Services', 'browse_services')],
+          [Markup.button.callback('My Bookings', 'my_bookings'), Markup.button.callback('My Profile', 'my_profile')],
+          [Markup.button.url('Open Website', SITE_URL)]
         ])
-      }
-    );
+      );
+    } catch (error) {
+      await ctx.reply(
+        'What would you like to do?',
+        Markup.inlineKeyboard([
+          [Markup.button.callback('Browse Services', 'browse_services')],
+          [Markup.button.callback('My Bookings', 'my_bookings'), Markup.button.callback('My Profile', 'my_profile')],
+          [Markup.button.url('Open Website', SITE_URL)]
+        ])
+      );
+    }
   });
 
-  // Help command
+  // ── Help ────────────────────────────────────────────────────────────
   bot.action('help', async (ctx) => {
-    await ctx.answerCbQuery();
+    try {
+      await ctx.answerCbQuery();
+    } catch {}
 
-    const helpText = `❓ *Help & Support*\n\n` +
-      `🔍 *Browse Services* - Find and explore available services\n` +
-      `📅 *My Bookings* - View your booking history\n` +
-      `👤 *My Profile* - View your account information\n` +
-      `🌐 *Website* - Full booking functionality at miyzapis.com\n\n` +
-      `📞 *Need help?* Contact our support team through the website.`;
-
-    await ctx.editMessageText(
-      helpText,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.url('🌐 Open Website', SITE_URL)],
-          [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+    try {
+      await safeEdit(ctx,
+        [
+          'Help',
+          '',
+          'Browse Services — discover specialists',
+          'My Bookings — view your appointments',
+          'My Profile — your account info',
+          '',
+          'For full features, visit miyzapis.com',
+        ].join('\n'),
+        Markup.inlineKeyboard([
+          [Markup.button.url('Open Website', SITE_URL)],
+          [Markup.button.callback('< Back', 'main_menu')]
         ])
-      }
-    );
+      );
+    } catch (error) {
+      await ctx.reply('Visit miyzapis.com for help and support.');
+    }
   });
 
-  // Error handling
+  // ── Global error handler ────────────────────────────────────────────
   bot.catch((err: any, ctx: any) => {
-    logger.error('Bot error:', err);
-    ctx.reply('Sorry, something went wrong. Please try again later.');
+    logger.error('Bot unhandled error:', err);
+    try {
+      ctx.reply('Something went wrong. Try /start.');
+    } catch {}
   });
 
   logger.info('Telegram bot configured successfully');
