@@ -58,7 +58,8 @@ export const SpecialistReviewsPage: React.FC = () => {
     try {
       setLoading(true);
       const data = (await apiService.getSpecialistReviews({ limit: 100 })) as any;
-      const items = data?.items || data || [];
+      // Backend may wrap as { reviews: [...] } or return paginated { items: [...] }
+      const items = data?.reviews || data?.items || (Array.isArray(data) ? data : []);
       setReviews(items);
     } catch {
       setReviews([]);

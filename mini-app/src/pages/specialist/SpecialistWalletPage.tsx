@@ -58,12 +58,25 @@ export const SpecialistWalletPage: React.FC = () => {
         apiService.getSpecialistPayouts(),
       ]);
 
-      if (walletData.status === 'fulfilled') setWallet(walletData.value as any);
-      else setWallet({ balance: 0, pendingBalance: 0, currency: 'UAH', totalEarned: 0 });
+      if (walletData.status === 'fulfilled') {
+        const raw = walletData.value as any;
+        // Backend may wrap as { wallet: {...} } or { balance: {...} }
+        const w = raw?.wallet || raw?.balance || raw;
+        setWallet({
+          balance: Number(w?.balance) || Number(w?.availableBalance) || 0,
+          pendingBalance: Number(w?.pendingBalance) || Number(w?.pending) || 0,
+          currency: w?.currency || 'UAH',
+          totalEarned: Number(w?.totalEarned) || Number(w?.totalEarnings) || 0,
+        });
+      } else {
+        setWallet({ balance: 0, pendingBalance: 0, currency: 'UAH', totalEarned: 0 });
+      }
 
       if (payoutsData.status === 'fulfilled') {
         const data = payoutsData.value as any;
-        setPayouts(data?.items || data || []);
+        // Backend may wrap as { transactions: [...] } or { payouts: [...] }
+        const list = data?.transactions || data?.payouts || data?.items || (Array.isArray(data) ? data : []);
+        setPayouts(list);
       }
     } finally {
       setLoading(false);

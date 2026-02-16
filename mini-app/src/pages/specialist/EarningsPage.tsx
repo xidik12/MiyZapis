@@ -79,46 +79,45 @@ export const EarningsPage: React.FC = () => {
         apiService.getEarningsTrends({ months: 6 }),
       ]);
 
-      // Process earnings data
+      // Process earnings data — backend wraps as { earnings: { totalEarnings, ... } }
       if (earningsRes.status === 'fulfilled' && earningsRes.value) {
-        const data = earningsRes.value as any;
+        const raw = earningsRes.value as any;
+        const data = raw?.earnings || raw;
         setEarnings({
-          totalEarnings: Number(data.totalEarnings) || 0,
-          thisMonth: Number(data.thisMonth) || 0,
-          lastMonth: Number(data.lastMonth) || 0,
-          thisWeek: Number(data.thisWeek) || 0,
-          pendingPayouts: Number(data.pendingPayouts) || 0,
-          completedBookings: Number(data.completedBookings) || 0,
-          avgPerBooking: Number(data.avgPerBooking) || 0,
-          growthPercent: Number(data.growthPercent) || 0,
+          totalEarnings: Number(data.totalEarnings) || Number(data.totalRevenue) || 0,
+          thisMonth: Number(data.thisMonth) || Number(data.currentMonthEarnings) || 0,
+          lastMonth: Number(data.lastMonth) || Number(data.previousMonthEarnings) || 0,
+          thisWeek: Number(data.thisWeek) || Number(data.currentWeekEarnings) || 0,
+          pendingPayouts: Number(data.pendingPayouts) || Number(data.pendingAmount) || 0,
+          completedBookings: Number(data.completedBookings) || Number(data.bookingCount) || 0,
+          avgPerBooking: Number(data.avgPerBooking) || Number(data.averageBookingValue) || 0,
+          growthPercent: Number(data.growthPercent) || Number(data.monthlyGrowth) || 0,
         });
       }
 
-      // Process overview (payouts)
+      // Process overview (payouts) — backend wraps as { overview: { ... } }
       if (overviewRes.status === 'fulfilled' && overviewRes.value) {
-        const overview = overviewRes.value as any;
-        if (overview.recentPayouts && Array.isArray(overview.recentPayouts)) {
-          setRecentPayouts(overview.recentPayouts);
+        const raw = overviewRes.value as any;
+        const overview = raw?.overview || raw;
+        const payouts = overview?.recentPayouts || overview?.payouts || [];
+        if (Array.isArray(payouts)) {
+          setRecentPayouts(payouts);
         }
       }
 
-      // Process trends (monthly breakdown)
+      // Process trends (monthly breakdown) — backend wraps as { trends: { ... } }
       if (trendsRes.status === 'fulfilled' && trendsRes.value) {
-        const trends = trendsRes.value as any;
-        if (Array.isArray(trends)) {
+        const raw = trendsRes.value as any;
+        const trends = raw?.trends || raw;
+        const entries = Array.isArray(trends)
+          ? trends
+          : trends?.months || trends?.data || trends?.entries || [];
+        if (Array.isArray(entries)) {
           setMonthlyBreakdown(
-            trends.map((item: any) => ({
-              month: item.month || '',
-              label: item.label || item.month || '',
-              amount: Number(item.amount) || Number(item.revenue) || 0,
-            }))
-          );
-        } else if (trends.months && Array.isArray(trends.months)) {
-          setMonthlyBreakdown(
-            trends.months.map((item: any) => ({
-              month: item.month || '',
-              label: item.label || item.month || '',
-              amount: Number(item.amount) || Number(item.revenue) || 0,
+            entries.map((item: any) => ({
+              month: item.month || item.date || '',
+              label: item.label || item.month || item.date || '',
+              amount: Number(item.amount) || Number(item.revenue) || Number(item.earnings) || 0,
             }))
           );
         }

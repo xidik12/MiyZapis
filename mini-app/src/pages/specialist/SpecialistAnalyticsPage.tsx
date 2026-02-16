@@ -72,22 +72,36 @@ export const SpecialistAnalyticsPage: React.FC = () => {
       ]);
 
       if (analyticsData.status === 'fulfilled') {
-        const data = analyticsData.value as any;
+        const raw = analyticsData.value as any;
+        // Backend wraps as { analytics: { totalRevenue, totalBookings, ... }, debug: {...} }
+        const data = raw?.analytics || raw;
         setKpi({
-          revenue: Number(data.revenue) || 0,
-          bookings: Number(data.bookings) || 0,
-          newClients: Number(data.newClients) || 0,
-          retentionRate: Number(data.retentionRate) || 0,
+          revenue: Number(data.totalRevenue) || Number(data.revenue) || 0,
+          bookings: Number(data.totalBookings) || Number(data.bookings) || 0,
+          newClients: Number(data.activeClients) || Number(data.newClients) || 0,
+          retentionRate: Number(data.conversionRate) || Number(data.retentionRate) || 0,
         });
-        setPopularServices(data.popularServices || []);
+        // servicePerformance contains popular services data
+        const services = data.servicePerformance || data.revenueByService || data.popularServices || [];
+        setPopularServices(services.map((s: any) => ({
+          name: s.name || s.serviceName || '',
+          bookings: Number(s.bookings) || Number(s.count) || 0,
+          amount: Number(s.revenue) || Number(s.amount) || Number(s.totalRevenue) || 0,
+        })));
       } else {
         setKpi({ revenue: 0, bookings: 0, newClients: 0, retentionRate: 0 });
         setPopularServices([]);
       }
 
       if (revenue.status === 'fulfilled') {
-        const rData = revenue.value as any;
-        setRevenueData(rData?.months || rData || []);
+        const rRaw = revenue.value as any;
+        // Backend wraps as { revenue: { breakdown: [...], totalRevenue, ... } }
+        const revObj = rRaw?.revenue || rRaw;
+        const breakdown = revObj?.breakdown || revObj?.months || revObj?.revenueTrend || (Array.isArray(revObj) ? revObj : []);
+        setRevenueData(breakdown.map((item: any) => ({
+          month: item.month || item.date || item.label || '',
+          amount: Number(item.revenue) || Number(item.amount) || 0,
+        })));
       } else {
         setRevenueData([]);
       }

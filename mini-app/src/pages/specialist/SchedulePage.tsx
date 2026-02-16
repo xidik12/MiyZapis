@@ -88,29 +88,25 @@ export const SchedulePage: React.FC = () => {
   const sc = useCallback((key: string) => t(scheduleStrings, key, locale), [locale]);
   const c = useCallback((key: string) => t(commonStrings, key, locale), [locale]);
 
-  // Fetch schedule data
+  // Fetch schedule from specialist profile's workingHours (same as web frontend)
   const fetchSchedule = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await apiService.getAvailabilityBlocks() as any;
+      const profile = await apiService.getSpecialistProfile() as any;
+      const wh = profile?.workingHours || {};
 
-      if (data && Array.isArray(data) && data.length > 0) {
-        const newSchedule = getDefaultSchedule();
-        data.forEach((block: any) => {
-          const dayIndex = block.dayOfWeek;
-          if (dayIndex >= 0 && dayIndex < 7) {
-            newSchedule[dayIndex] = {
-              ...newSchedule[dayIndex],
-              id: block.id,
-              isWorking: true,
-              startTime: block.startTime || '09:00',
-              endTime: block.endTime || '18:00',
-              breaks: block.breaks || [],
-            };
-          }
-        });
-        setSchedule(newSchedule);
-      }
+      const newSchedule = DAY_KEYS.map((key, index) => {
+        const day = wh[key] || {};
+        return {
+          dayOfWeek: index,
+          dayKey: key,
+          isWorking: day.isOpen ?? day.isWorking ?? false,
+          startTime: day.startTime || day.start || '09:00',
+          endTime: day.endTime || day.end || '18:00',
+          breaks: day.breaks || [],
+        };
+      });
+      setSchedule(newSchedule);
     } catch {
       // Use default schedule if fetch fails
     } finally {
@@ -173,26 +169,21 @@ export const SchedulePage: React.FC = () => {
 
     setSaving(true);
     try {
-      if (editingDay.isWorking) {
-        const payload = {
-          dayOfWeek: editingDay.dayOfWeek,
-          startTime: editingDay.startTime,
-          endTime: editingDay.endTime,
-          isRecurring: true,
-        };
-
-        if (editingDay.id) {
-          await apiService.updateAvailabilityBlock(editingDay.id, payload);
-        } else {
-          await apiService.createAvailabilityBlock(payload);
-        }
-      } else if (editingDay.id) {
-        await apiService.deleteAvailabilityBlock(editingDay.id);
-      }
-
-      // Update local state
+      // Build full workingHours from current schedule + edited day
       const newSchedule = [...schedule];
       newSchedule[editingDayIndex] = editingDay;
+
+      const workingHours: Record<string, any> = {};
+      newSchedule.forEach(day => {
+        workingHours[day.dayKey] = {
+          isOpen: day.isWorking,
+          startTime: day.startTime,
+          endTime: day.endTime,
+          breaks: day.breaks,
+        };
+      });
+
+      await apiService.updateSpecialistProfile({ workingHours });
       setSchedule(newSchedule);
 
       dispatch(addToast({
