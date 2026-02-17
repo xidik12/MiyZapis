@@ -448,6 +448,9 @@ model Review {
   response   ReviewResponse?
   comments   ReviewComment[]
 
+  @@index([specialistId, createdAt])
+  @@index([customerId])
+  @@index([rating])
   @@map("reviews")
 }
 
@@ -633,6 +636,9 @@ model LoyaltyTransaction {
   // Relations
   user User @relation(fields: [userId], references: [id])
 
+  @@index([userId, createdAt])
+  @@index([userId, type])
+  @@index([referenceId])
   @@map("loyalty_transactions")
 }
 
@@ -695,6 +701,7 @@ model AvailabilityBlock {
   // Relations
   specialist Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
 
+  @@index([specialistId, startDateTime, endDateTime])
   @@map("availability_blocks")
 }
 
@@ -796,6 +803,9 @@ model AuditLog {
   // Timestamps
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -860,6 +870,8 @@ model Message {
   sender       User @relation("SentMessages", fields: [senderId], references: [id])
   receiver     User @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
+  @@index([conversationId, createdAt])
+  @@index([receiverId, isRead])
   @@map("messages")
 }
 
@@ -895,6 +907,9 @@ model Conversation {
   messages      Message[]
 
   @@unique([customerId, specialistId, bookingId])
+  @@index([customerId])
+  @@index([specialistId])
+  @@index([lastMessageAt])
   @@map("conversations")
 }
 

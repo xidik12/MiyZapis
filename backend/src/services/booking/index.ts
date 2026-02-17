@@ -1561,29 +1561,39 @@ export class BookingService {
         };
       }
 
-      const bookings = await prisma.booking.findMany({
-        where,
-        select: {
-          status: true,
-          totalAmount: true,
-        },
+      // Use groupBy + aggregate instead of fetching all records
+      const [statusGroups, revenueAgg] = await Promise.all([
+        prisma.booking.groupBy({
+          by: ['status'],
+          where,
+          _count: true,
+        }),
+        prisma.booking.aggregate({
+          where: { ...where, status: 'COMPLETED' },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+      ]);
+
+      const statusMap: Record<string, number> = {};
+      let totalBookings = 0;
+      statusGroups.forEach(g => {
+        statusMap[g.status] = g._count;
+        totalBookings += g._count;
       });
 
-      const stats = {
-        totalBookings: bookings.length,
-        pendingBookings: bookings.filter(b => b.status === 'PENDING').length,
-        confirmedBookings: bookings.filter(b => b.status === 'CONFIRMED').length,
-        completedBookings: bookings.filter(b => b.status === 'COMPLETED').length,
-        cancelledBookings: bookings.filter(b => b.status === 'CANCELLED').length,
-        totalRevenue: bookings
-          .filter(b => b.status === 'COMPLETED')
-          .reduce((sum, b) => sum + Number(b.totalAmount), 0),
-        averageBookingValue: 0,
-      };
+      const totalRevenue = Number(revenueAgg._sum.totalAmount || 0);
+      const completedBookings = revenueAgg._count;
 
-      stats.averageBookingValue = stats.completedBookings > 0
-        ? stats.totalRevenue / stats.completedBookings
-        : 0;
+      const stats = {
+        totalBookings,
+        pendingBookings: statusMap['PENDING'] || 0,
+        confirmedBookings: statusMap['CONFIRMED'] || 0,
+        completedBookings,
+        cancelledBookings: statusMap['CANCELLED'] || 0,
+        totalRevenue,
+        averageBookingValue: completedBookings > 0 ? totalRevenue / completedBookings : 0,
+      };
 
       return stats;
     } catch (error) {

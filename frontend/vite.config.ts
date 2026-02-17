@@ -129,15 +129,20 @@ export default defineConfig({
         },
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Large independent libraries
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
+            // React core must stay together to prevent hook errors
+            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) {
+              return 'vendor-react';
             }
-            if (id.includes('@stripe')) {
-              return 'vendor-stripe';
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux') || id.includes('redux-persist') || id.includes('immer')) {
+              return 'vendor-state';
             }
-            // Keep everything else together to ensure proper dependency loading
-            // This prevents React hook errors from improper code splitting
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'vendor-charts';
+            if (id.includes('date-fns')) return 'vendor-date';
+            if (id.includes('framer-motion')) return 'vendor-framer';
+            if (id.includes('@stripe')) return 'vendor-stripe';
+            if (id.includes('socket.io')) return 'vendor-socket';
+            if (id.includes('i18next')) return 'vendor-i18n';
             return 'vendor';
           }
         }

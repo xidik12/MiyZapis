@@ -154,29 +154,30 @@ export class AnalyticsService {
   ): Promise<any> {
     try {
       const dateFilter = this.buildDateFilter(fromDate, toDate);
+      const where = { specialistId, createdAt: dateFilter };
 
-      const bookings = await this.prisma.booking.findMany({
-        where: {
-          specialistId,
-          createdAt: dateFilter
-        },
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
-          totalAmount: true
-        }
-      });
+      // Use aggregate/groupBy instead of fetching all records
+      const [total, revenue, statusGroups, bookings] = await Promise.all([
+        this.prisma.booking.count({ where }),
+        this.prisma.booking.aggregate({ where, _sum: { totalAmount: true } }),
+        this.prisma.booking.groupBy({ by: ['status'], where, _count: true }),
+        // Still need individual records for time-period grouping
+        this.prisma.booking.findMany({
+          where,
+          select: { status: true, createdAt: true, totalAmount: true }
+        })
+      ]);
 
-      // Group bookings by time period
       const grouped = this.groupDataByPeriod(bookings, groupBy, 'createdAt');
+      const byStatus: Record<string, number> = {};
+      statusGroups.forEach(g => { byStatus[g.status] = g._count; });
 
       return {
         data: grouped,
         summary: {
-          total: bookings.length,
-          byStatus: this.groupByStatus(bookings),
-          totalRevenue: bookings.reduce((sum, booking) => sum + Number(booking.totalAmount || 0), 0)
+          total,
+          byStatus,
+          totalRevenue: Number(revenue._sum.totalAmount || 0)
         }
       };
     } catch (error) {
@@ -240,33 +241,31 @@ export class AnalyticsService {
   ): Promise<any> {
     try {
       const dateFilter = this.buildDateFilter(fromDate, toDate);
+      const where = { specialistId, createdAt: dateFilter };
 
-      const reviews = await this.prisma.review.findMany({
-        where: {
-          specialistId,
-          createdAt: dateFilter
-        },
-        select: {
-          rating: true,
-          createdAt: true,
-          tags: true
-        }
-      });
+      // Use aggregate + groupBy instead of fetching all records
+      const [totalAndAvg, ratingGroups, reviews] = await Promise.all([
+        this.prisma.review.aggregate({ where, _count: true, _avg: { rating: true } }),
+        this.prisma.review.groupBy({ by: ['rating'], where, _count: true }),
+        // Still need records for time-series and tags
+        this.prisma.review.findMany({ where, select: { rating: true, createdAt: true, tags: true } })
+      ]);
 
-      // Rating distribution
+      // Rating distribution from groupBy
+      const ratingMap = new Map(ratingGroups.map(g => [g.rating, g._count]));
       const ratingDistribution = [1, 2, 3, 4, 5].map(rating => ({
         rating,
-        count: reviews.filter(review => review.rating === rating).length
+        count: ratingMap.get(rating) || 0
       }));
 
       // Average rating over time
       const ratingOverTime = this.groupRatingByPeriod(reviews, 'week');
 
       // Most common tags
-      const allTags = reviews.flatMap(review => 
+      const allTags = reviews.flatMap(review =>
         review.tags ? JSON.parse(review.tags) : []
       );
-      const tagCounts = allTags.reduce((acc, tag) => {
+      const tagCounts = allTags.reduce((acc: Record<string, number>, tag: string) => {
         acc[tag] = (acc[tag] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -278,8 +277,8 @@ export class AnalyticsService {
 
       return {
         summary: {
-          totalReviews: reviews.length,
-          averageRating: reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0
+          totalReviews: totalAndAvg._count,
+          averageRating: totalAndAvg._avg.rating || 0
         },
         ratingDistribution,
         ratingOverTime,

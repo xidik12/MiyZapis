@@ -6,6 +6,54 @@ import { AuthenticatedRequest, JwtPayload, ErrorCodes } from '@/types';
 import { logger } from '@/utils/logger';
 import { createErrorResponse } from '@/utils/response';
 
+// In-memory user cache with 30s TTL to avoid DB hit on every request
+const USER_CACHE_TTL = 30_000;
+const userCache = new Map<string, { data: any; expiresAt: number }>();
+
+const USER_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  userType: true,
+  isActive: true,
+  avatar: true,
+  loyaltyPoints: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+async function getCachedUser(userId: string) {
+  const now = Date.now();
+  const cached = userCache.get(userId);
+  if (cached && cached.expiresAt > now) {
+    return cached.data;
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: USER_SELECT,
+  });
+  if (user) {
+    userCache.set(userId, { data: user, expiresAt: now + USER_CACHE_TTL });
+  } else {
+    userCache.delete(userId);
+  }
+  return user;
+}
+
+// Invalidate cache entry (call on user update/deactivation)
+export function invalidateUserCache(userId: string) {
+  userCache.delete(userId);
+}
+
+// Periodic cleanup of expired entries (every 5 min)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of userCache) {
+    if (val.expiresAt <= now) userCache.delete(key);
+  }
+}, 300_000);
+
 // Verify JWT token and attach user to request
 export const authenticateToken = async (
   req: AuthenticatedRequest,
@@ -30,22 +78,8 @@ export const authenticateToken = async (
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
 
-    // Fetch user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        userType: true,
-        isActive: true,
-        avatar: true,
-        loyaltyPoints: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    // Fetch user (cached for 30s)
+    const user = await getCachedUser(decoded.userId);
 
     if (!user) {
       res.status(401).json(
@@ -127,22 +161,8 @@ export const optionalAuth = async (
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
 
-    // Fetch user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        userType: true,
-        isActive: true,
-        avatar: true,
-        loyaltyPoints: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    // Fetch user (cached for 30s)
+    const user = await getCachedUser(decoded.userId);
 
     if (user && user.isActive) {
       req.user = user as any;
@@ -314,24 +334,10 @@ export const authenticateTokenOptional = async (
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
     
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { 
-        id: decoded.userId,
-        isActive: true
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        userType: true,
-        isActive: true,
-        lastLoginAt: true
-      }
-    });
+    // Fetch user (cached for 30s)
+    const user = await getCachedUser(decoded.userId);
 
-    if (!user) {
+    if (!user || !user.isActive) {
       // Invalid user, continue without authentication
       req.user = null;
       next();

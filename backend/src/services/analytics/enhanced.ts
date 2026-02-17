@@ -149,11 +149,18 @@ export class EnhancedAnalyticsService {
         ...dateFilter,
       };
 
-      // Get basic metrics
+      // Get basic metrics using aggregate + count instead of fetching all records
+      const reviewWhere = {
+        specialistId,
+        ...(startDate && { createdAt: { gte: startDate } }),
+        ...(endDate && { createdAt: { lte: endDate } }),
+      };
+
       const [
         totalBookings,
         completedBookings,
         cancelledBookings,
+        revenueAgg,
         bookingDetails,
         reviews,
         popularServices,
@@ -161,28 +168,22 @@ export class EnhancedAnalyticsService {
         prisma.booking.count({ where: bookingWhere }),
         prisma.booking.count({ where: { ...bookingWhere, status: 'COMPLETED' } }),
         prisma.booking.count({ where: { ...bookingWhere, status: 'CANCELLED' } }),
+        prisma.booking.aggregate({
+          where: { ...bookingWhere, status: 'COMPLETED' },
+          _sum: { totalAmount: true },
+        }),
+        // Still need bookingDetails for customer analysis
         prisma.booking.findMany({
           where: bookingWhere,
           select: {
             totalAmount: true,
             status: true,
             customerId: true,
-            service: {
-              select: {
-                id: true,
-                name: true,
-                category: true,
-              },
-            },
             createdAt: true,
           },
         }),
         prisma.review.findMany({
-          where: {
-            specialistId,
-            ...(startDate && { createdAt: { gte: startDate } }),
-            ...(endDate && { createdAt: { lte: endDate } }),
-          },
+          where: reviewWhere,
           include: {
             customer: {
               select: {
@@ -197,10 +198,8 @@ export class EnhancedAnalyticsService {
         this.getPopularServices(specialist.userId, dateFilter),
       ]);
 
-      // Calculate revenue
-      const totalRevenue = bookingDetails
-        .filter(b => b.status === 'COMPLETED')
-        .reduce((sum, b) => sum + Number(b.totalAmount), 0);
+      // Revenue from aggregate (no JS filtering needed)
+      const totalRevenue = Number(revenueAgg._sum.totalAmount || 0);
 
       // Calculate average rating
       const averageRating = reviews.length > 0
@@ -601,49 +600,64 @@ export class EnhancedAnalyticsService {
   }
 
   /**
-   * Get daily metrics
+   * Get daily metrics — batch queries instead of per-day loop
    */
   private static async getDailyMetrics(filters: AnalyticsFilters) {
     const endDate = filters.endDate || new Date();
     const startDate = filters.startDate || new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    const rangeStart = new Date(startDate);
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(endDate);
+    rangeEnd.setHours(23, 59, 59, 999);
+
+    const dateRange = { gte: rangeStart, lte: rangeEnd };
+
+    // 3 batch queries instead of 90 (3 per day × 30 days)
+    const [allBookings, completedBookings, allUsers] = await Promise.all([
+      prisma.booking.findMany({
+        where: { createdAt: dateRange },
+        select: { createdAt: true },
+      }),
+      prisma.booking.findMany({
+        where: { status: 'COMPLETED', createdAt: dateRange },
+        select: { createdAt: true, totalAmount: true },
+      }),
+      prisma.user.findMany({
+        where: { createdAt: dateRange },
+        select: { createdAt: true },
+      }),
+    ]);
+
+    // Group by date string in JS
+    const bookingsByDay: Record<string, number> = {};
+    const revenueByDay: Record<string, number> = {};
+    const usersByDay: Record<string, number> = {};
+
+    for (const b of allBookings) {
+      const d = b.createdAt.toISOString().split('T')[0];
+      bookingsByDay[d] = (bookingsByDay[d] || 0) + 1;
+    }
+    for (const b of completedBookings) {
+      const d = b.createdAt.toISOString().split('T')[0];
+      revenueByDay[d] = (revenueByDay[d] || 0) + Number(b.totalAmount || 0);
+    }
+    for (const u of allUsers) {
+      const d = u.createdAt.toISOString().split('T')[0];
+      usersByDay[d] = (usersByDay[d] || 0) + 1;
+    }
+
+    // Build daily array
     const days = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      const dayStart = new Date(currentDate);
-      dayStart.setHours(0, 0, 0, 0);
-
-      const dayEnd = new Date(currentDate);
-      dayEnd.setHours(23, 59, 59, 999);
-
-      const [bookings, revenue, newUsers] = await Promise.all([
-        prisma.booking.count({
-          where: {
-            createdAt: { gte: dayStart, lte: dayEnd },
-          },
-        }),
-        prisma.booking.aggregate({
-          where: {
-            status: 'COMPLETED',
-            createdAt: { gte: dayStart, lte: dayEnd },
-          },
-          _sum: { totalAmount: true },
-        }),
-        prisma.user.count({
-          where: {
-            createdAt: { gte: dayStart, lte: dayEnd },
-          },
-        }),
-      ]);
-
+    const currentDate = new Date(rangeStart);
+    while (currentDate <= rangeEnd) {
+      const dateStr = currentDate.toISOString().split('T')[0];
       days.push({
-        date: currentDate.toISOString().split('T')[0],
-        bookings,
-        revenue: revenue._sum.totalAmount || 0,
-        newUsers,
+        date: dateStr,
+        bookings: bookingsByDay[dateStr] || 0,
+        revenue: revenueByDay[dateStr] || 0,
+        newUsers: usersByDay[dateStr] || 0,
       });
-
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
