@@ -57,32 +57,54 @@ export const ReferralsPage: React.FC = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      // Ensure user has a referral code
-      const [, configData, analyticsData, referralsData] = await Promise.allSettled([
-        apiService.createReferral().catch(() => {}),
+
+      // Step 1: Create/ensure referral code exists, then fetch all data
+      const [createResult, configData, analyticsData, referralsData] = await Promise.allSettled([
+        apiService.createReferral().catch(() => null),
         apiService.getReferralConfig(),
         apiService.getReferralAnalytics(),
         apiService.getMyReferrals(),
       ]);
 
+      // Extract referral code from create response or from existing referrals
+      let referralCode = '';
+      let shareUrl = '';
+      if (createResult.status === 'fulfilled' && createResult.value) {
+        const cr = createResult.value as any;
+        referralCode = cr?.referral?.referralCode || '';
+        shareUrl = cr?.referral?.shareUrl || '';
+      }
+
+      // If create didn't give us a code, try to get it from existing referrals
+      if (!referralCode && referralsData.status === 'fulfilled') {
+        const raw = referralsData.value as any;
+        const list = raw?.referrals || raw?.items || (Array.isArray(raw) ? raw : []);
+        if (list.length > 0) {
+          referralCode = list[0].referralCode || '';
+          shareUrl = list[0].shareUrl || '';
+        }
+      }
+
+      // Build the referral link (prefer Telegram deep link)
+      const referralLink = referralCode
+        ? `https://t.me/MiyZapisBot?start=ref_${referralCode}`
+        : 'https://t.me/MiyZapisBot';
+
       if (configData.status === 'fulfilled') {
         const raw = configData.value as any;
-        // Backend returns: { config: REFERRAL_CONFIG, userType, isSpecialist, availableTypes, limits }
         const cfg = raw?.config || raw;
-        // Find or construct referral link from user's existing referrals or create endpoint
         setConfig({
-          referralLink: raw?.referralLink || `https://t.me/MiyZapisBot?start=ref`,
+          referralLink,
           rewardAmount: Number(cfg?.REFERRER_POINTS) || Number(cfg?.rewardAmount) || 50,
           currency: cfg?.currency || 'UAH',
           description: cfg?.description || '',
         });
       } else {
-        setConfig({ referralLink: 'https://t.me/MiyZapisBot?start=ref', rewardAmount: 50, currency: 'UAH', description: '' });
+        setConfig({ referralLink, rewardAmount: 50, currency: 'UAH', description: '' });
       }
 
       if (analyticsData.status === 'fulfilled') {
         const raw = analyticsData.value as any;
-        // Backend returns: { analytics: { overview: { totalReferrals, completedReferrals, ... }, ... } }
         const overview = raw?.analytics?.overview || raw?.overview || raw;
         setAnalytics({
           totalReferred: Number(overview?.totalReferrals) || Number(overview?.totalReferred) || 0,
@@ -95,11 +117,12 @@ export const ReferralsPage: React.FC = () => {
 
       if (referralsData.status === 'fulfilled') {
         const raw = referralsData.value as any;
-        // Backend returns: { referrals: [...], pagination: {...} }
         const list = raw?.referrals || raw?.items || (Array.isArray(raw) ? raw : []);
         setReferrals(list.map((r: any) => ({
           id: r.id,
-          referredUserName: r.referred?.name || r.referredUserName || r.referralCode || '',
+          referredUserName: r.referred?.firstName
+            ? `${r.referred.firstName} ${r.referred.lastName || ''}`.trim()
+            : r.referredUserName || r.referralCode || '',
           status: (r.status || '').toLowerCase() === 'completed' ? 'reward_earned'
             : (r.status || '').toLowerCase() === 'pending' ? 'registered'
             : r.status || 'registered',

@@ -556,7 +556,11 @@ class ApiService {
   }
 
   async createReferral() {
-    return this.post('/referral/create');
+    return this.post('/referral/create', {
+      referralType: 'CUSTOMER_TO_CUSTOMER',
+      targetUserType: 'CUSTOMER',
+      inviteChannel: 'LINK',
+    });
   }
 
   async getMyReferrals(params?: { page?: number; limit?: number }) {

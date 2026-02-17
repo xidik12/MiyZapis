@@ -11,7 +11,7 @@ export const BottomNavigation: React.FC = () => {
 
   const userRole = useSelector((state: RootState) => state.auth?.user?.role);
 
-  const homePath = userRole === 'specialist' ? '/specialist-dashboard' : '/dashboard';
+  const homePath = '/';
 
   const handleBack = () => {
     hapticFeedback.selectionChanged();

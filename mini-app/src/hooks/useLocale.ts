@@ -101,17 +101,55 @@ export function useCurrency(): [string, (currency: string) => void] {
 }
 
 /**
+ * Approximate exchange rates from UAH (base currency in DB) to other currencies.
+ * All amounts in the database are stored in UAH.
+ */
+const UAH_EXCHANGE_RATES: Record<string, number> = {
+  UAH: 1,
+  USD: 41.5,   // 1 USD ≈ 41.5 UAH
+  EUR: 43.5,   // 1 EUR ≈ 43.5 UAH
+  GBP: 52,
+  RUB: 0.45,
+};
+
+/**
  * Format a monetary amount with currency symbol.
- * Uses the currency from the data, or the user's saved preference, or defaults to UAH.
+ * Amounts in DB are in UAH — this converts to the user's preferred display currency.
+ *
+ * @param amount - Amount in the source currency (default: UAH from DB)
+ * @param sourceCurrency - The currency the amount is already in (e.g. 'UAH' from DB).
+ *                         If omitted, assumes UAH and converts to user preference.
+ * @param locale - Display locale
  */
 export function formatCurrency(
   amount: number | string,
-  currency?: string,
+  sourceCurrency?: string,
   locale?: Locale
 ): string {
   const num = Number(amount) || 0;
-  const cur = (currency || getSavedCurrency()).toUpperCase();
-  const symbol = CURRENCY_SYMBOLS[cur] || cur;
+  const displayCur = getSavedCurrency();
+  const source = (sourceCurrency || 'UAH').toUpperCase();
+
+  // Convert: source → UAH → display currency
+  let converted = num;
+  if (source !== displayCur) {
+    // First convert source to UAH
+    const sourceRate = UAH_EXCHANGE_RATES[source] || 1;
+    const uahAmount = source === 'UAH' ? num : num * sourceRate;
+    // Then convert UAH to display currency
+    const displayRate = UAH_EXCHANGE_RATES[displayCur] || 1;
+    converted = displayCur === 'UAH' ? uahAmount : uahAmount / displayRate;
+  }
+
+  const symbol = CURRENCY_SYMBOLS[displayCur] || displayCur;
   const loc = locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US';
-  return `${symbol}${num.toLocaleString(loc)}`;
+
+  // Round to 2 decimal places for non-UAH, 0 for UAH
+  const decimals = displayCur === 'UAH' ? 0 : 2;
+  const formatted = converted.toLocaleString(loc, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+
+  return `${symbol}${formatted}`;
 }
