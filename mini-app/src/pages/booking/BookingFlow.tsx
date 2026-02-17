@@ -231,16 +231,14 @@ export const BookingFlow: React.FC = () => {
           throw new Error('Missing service or specialist information');
         }
 
-        // Calculate end time based on service duration
-        const startDateTime = new Date(`${selectedDate}T${selectedTime}`);
-        const endDateTime = new Date(startDateTime.getTime() + selectedService.duration * 60000);
+        // Backend expects scheduledAt (ISO8601)
+        const scheduledAt = new Date(`${selectedDate}T${selectedTime}`);
 
         // Create booking via Redux
         const result = await dispatch(createBookingAsync({
           serviceId: selectedService.id,
           specialistId: specialistId,
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
+          scheduledAt: scheduledAt.toISOString(),
           notes: bookingDetails.notes
         })).unwrap();
 

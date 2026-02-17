@@ -333,13 +333,6 @@ export const SpecialistDashboardPage: React.FC = () => {
           <div className="space-y-3 divide-y divide-white/5">
             <div className="flex justify-between items-center">
               <span className="text-text-secondary flex items-center gap-2">
-                <Clock size={16} className="text-text-muted" />
-                {s('responseTime')}
-              </span>
-              <span className="font-medium text-text-primary">{stats.responseTime} {c('min')}</span>
-            </div>
-            <div className="flex justify-between items-center pt-3">
-              <span className="text-text-secondary flex items-center gap-2">
                 <TrendingUp size={16} className="text-text-muted" />
                 {s('completionRate')}
               </span>

@@ -115,11 +115,21 @@ export const CreatePostPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) {
+    if (!title.trim() || title.trim().length < 3) {
       dispatch(addToast({
         type: 'warning',
         title: cm('missingFields'),
-        message: locale === 'uk' ? 'Заголовок та вміст обов\'язкові' : locale === 'ru' ? 'Заголовок и содержание обязательны' : 'Title and content are required',
+        message: locale === 'uk' ? 'Заголовок має бути від 3 символів' : locale === 'ru' ? 'Заголовок должен быть от 3 символов' : 'Title must be at least 3 characters',
+      }));
+      hapticFeedback.notificationError();
+      return;
+    }
+
+    if (!content.trim() || content.trim().length < 10) {
+      dispatch(addToast({
+        type: 'warning',
+        title: cm('missingFields'),
+        message: locale === 'uk' ? 'Вміст має бути від 10 символів' : locale === 'ru' ? 'Содержание должно быть от 10 символов' : 'Content must be at least 10 characters',
       }));
       hapticFeedback.notificationError();
       return;
@@ -167,15 +177,16 @@ export const CreatePostPage: React.FC = () => {
       dispatch(addToast({ type: 'success', title: successTitle, message: '' }));
       hapticFeedback.notificationSuccess();
       navigate('/community');
-    } catch {
-      dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || (locale === 'uk' ? 'Не вдалося опублікувати' : locale === 'ru' ? 'Не удалось опубликовать' : 'Failed to publish');
+      dispatch(addToast({ type: 'error', title: c('error'), message: msg }));
       hapticFeedback.notificationError();
     } finally {
       setSubmitting(false);
     }
   };
 
-  const isValid = title.trim().length > 0 && content.trim().length > 0;
+  const isValid = title.trim().length >= 3 && content.trim().length >= 10;
 
   if (loading) {
     return (
@@ -192,7 +203,7 @@ export const CreatePostPage: React.FC = () => {
         title={isEditing ? cm('editPost') : cm('createPost')}
       />
 
-      <div className="flex-1 overflow-y-auto pb-24 page-stagger">
+      <div className="flex-1 overflow-y-auto pb-36 page-stagger">
         <div className="px-4 pt-4 space-y-4">
           {/* Type Selection */}
           <div>
@@ -366,8 +377,8 @@ export const CreatePostPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Fixed Bottom Submit */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 p-4 z-20">
+      {/* Fixed Bottom Submit — above BottomNavigation (h-14) */}
+      <div className="fixed bottom-14 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 p-4 z-40">
         <Button
           onClick={handleSubmit}
           className="w-full"

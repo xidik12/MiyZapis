@@ -146,8 +146,7 @@ export const createBookingAsync = createAsyncThunk(
   async (bookingData: {
     serviceId: string;
     specialistId: string;
-    startTime: string;
-    endTime: string;
+    scheduledAt: string;
     notes?: string;
   }) => {
     return await apiService.createBooking(bookingData);

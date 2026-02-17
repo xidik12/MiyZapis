@@ -17,7 +17,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Sheet } from '@/components/ui/Sheet';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
-import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
+import { fetchBookingsAsync, updateBookingStatus } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
@@ -89,6 +89,8 @@ export const SpecialistBookingsPage: React.FC = () => {
   const handleAccept = async (bookingId: string) => {
     hapticFeedback.impactLight();
     setActionLoading(bookingId);
+    // Optimistic update — show confirmed immediately
+    dispatch(updateBookingStatus({ bookingId, status: 'confirmed' }));
     try {
       await apiService.confirmBooking(bookingId);
       dispatch(addToast({
@@ -97,8 +99,9 @@ export const SpecialistBookingsPage: React.FC = () => {
         message: s('accepted'),
       }));
       hapticFeedback.notificationSuccess();
-      dispatch(fetchBookingsAsync({ userType: 'specialist' }));
     } catch {
+      // Revert on failure
+      dispatch(updateBookingStatus({ bookingId, status: 'pending' }));
       dispatch(addToast({
         type: 'error',
         title: c('error'),
@@ -120,20 +123,24 @@ export const SpecialistBookingsPage: React.FC = () => {
   const handleConfirmReject = async () => {
     if (!rejectingBookingId) return;
 
-    setActionLoading(rejectingBookingId);
+    const bookingId = rejectingBookingId;
+    setActionLoading(bookingId);
+    // Optimistic update — show cancelled immediately
+    dispatch(updateBookingStatus({ bookingId, status: 'cancelled' }));
+    setShowRejectSheet(false);
+    setRejectingBookingId(null);
+    setRejectReason('');
     try {
-      await apiService.rejectBooking(rejectingBookingId, rejectReason);
+      await apiService.rejectBooking(bookingId, rejectReason);
       dispatch(addToast({
         type: 'success',
         title: c('success'),
         message: s('rejected'),
       }));
       hapticFeedback.notificationSuccess();
-      setShowRejectSheet(false);
-      setRejectingBookingId(null);
-      setRejectReason('');
-      dispatch(fetchBookingsAsync({ userType: 'specialist' }));
     } catch {
+      // Revert on failure
+      dispatch(updateBookingStatus({ bookingId, status: 'pending' }));
       dispatch(addToast({
         type: 'error',
         title: c('error'),

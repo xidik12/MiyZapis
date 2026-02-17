@@ -129,7 +129,9 @@ export const fetchServicesAsync = createAsyncThunk(
 export const fetchServiceAsync = createAsyncThunk(
   'services/fetchService',
   async (id: string) => {
-    const raw: any = await apiService.getService(id);
+    const response: any = await apiService.getService(id);
+    // Backend wraps in { service: {...} } — unwrap it
+    const raw = response?.service || response;
     return {
       ...raw,
       price: Number(raw.price) || Number(raw.basePrice) || 0,

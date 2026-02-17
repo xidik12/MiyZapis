@@ -171,8 +171,7 @@ class ApiService {
   async createBooking(bookingData: {
     serviceId: string;
     specialistId: string;
-    startTime: string;
-    endTime: string;
+    scheduledAt: string;
     notes?: string;
   }) {
     return this.post('/bookings', bookingData);

@@ -273,29 +273,6 @@ export const HelpSupportPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Support Stats */}
-        <div className="px-4 pb-4">
-          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">
-            {hs('supportStats')}
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            <Card className="text-center py-3">
-              <Clock size={16} className="text-accent-primary mx-auto mb-1" />
-              <div className="text-sm font-bold text-text-primary">~2h</div>
-              <div className="text-[10px] text-text-secondary">{hs('avgResponseTime')}</div>
-            </Card>
-            <Card className="text-center py-3">
-              <CheckCircle size={16} className="text-accent-green mx-auto mb-1" />
-              <div className="text-sm font-bold text-text-primary">98%</div>
-              <div className="text-[10px] text-text-secondary">{hs('resolutionRate')}</div>
-            </Card>
-            <Card className="text-center py-3">
-              <Star size={16} className="text-accent-yellow mx-auto mb-1" />
-              <div className="text-sm font-bold text-text-primary">4.9/5</div>
-              <div className="text-[10px] text-text-secondary">{hs('satisfaction')}</div>
-            </Card>
-          </div>
-        </div>
 
         {/* Category Pills */}
         <div className="px-4 py-3 overflow-x-auto">

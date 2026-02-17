@@ -15,6 +15,7 @@ import {
   Mail,
   Award,
   CheckCircle,
+  User,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -288,12 +289,16 @@ export const ServiceDetailPage: React.FC = () => {
           {/* Specialist Info */}
           <Card className="mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
-                <img
-                  src={selectedService.specialist?.avatar || ''}
-                  alt={specialistName}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover flex items-center justify-center">
+                {selectedService.specialist?.avatar ? (
+                  <img
+                    src={selectedService.specialist.avatar}
+                    alt={specialistName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={28} className="text-text-muted" />
+                )}
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">{specialistName}</h3>
@@ -365,12 +370,16 @@ export const ServiceDetailPage: React.FC = () => {
                 {reviews.slice(0, 3).map((review) => (
                   <div key={review.id} className="border-b border-white/5 pb-3 last:border-b-0">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-bg-hover overflow-hidden">
-                        <img
-                          src={review.customer.avatar || ''}
-                          alt={`${review.customer.firstName} ${review.customer.lastName}`}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="w-8 h-8 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
+                        {review.customer.avatar ? (
+                          <img
+                            src={review.customer.avatar}
+                            alt={`${review.customer.firstName} ${review.customer.lastName}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User size={14} className="text-text-muted" />
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -404,8 +413,8 @@ export const ServiceDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Fixed Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
+      {/* Fixed Bottom Action — above BottomNavigation (h-14) */}
+      <div className="fixed bottom-14 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4 z-40">
         <Button onClick={handleBookNow} size="lg" className="w-full">
           <Calendar size={18} className="mr-2" />
           {s('bookNow')} - ${selectedService.price}
@@ -422,12 +431,16 @@ export const ServiceDetailPage: React.FC = () => {
           {reviews.map((review) => (
             <div key={review.id} className="border-b border-white/5 pb-4 last:border-b-0">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden">
-                  <img
-                    src={review.customer.avatar || ''}
-                    alt={`${review.customer.firstName} ${review.customer.lastName}`}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
+                  {review.customer.avatar ? (
+                    <img
+                      src={review.customer.avatar}
+                      alt={`${review.customer.firstName} ${review.customer.lastName}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={18} className="text-text-muted" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
