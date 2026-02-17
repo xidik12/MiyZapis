@@ -8,20 +8,26 @@ import { RootState } from '@/store';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
+  requiredRole?: 'customer' | 'specialist' | 'admin';
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  requireAuth = true
+  requireAuth = true,
+  requiredRole
 }) => {
-  const { isAuthenticated: tgAuth, isLoading: tgLoading } = useTelegram();
-  const { isAuthenticated: reduxAuth, isLoading: reduxLoading } = useSelector(
+  const { isAuthenticated: tgAuth, isLoading: tgLoading, user: tgUser } = useTelegram();
+  const { isAuthenticated: reduxAuth, isLoading: reduxLoading, user: reduxUser } = useSelector(
     (state: RootState) => state.auth
   );
   const location = useLocation();
 
   const isAuthenticated = tgAuth || reduxAuth;
   const isLoading = tgLoading || reduxLoading;
+
+  // Get user role from either source, normalize to lowercase
+  const user = tgUser || reduxUser;
+  const userRole = (user?.role || (user as any)?.userType || '').toLowerCase();
 
   if (isLoading) {
     return (
@@ -36,6 +42,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (requireAuth && !isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Role-based access control
+  if (requiredRole && userRole && userRole !== requiredRole && userRole !== 'admin') {
+    // Redirect to appropriate home based on actual role
+    const redirectPath = userRole === 'specialist' ? '/specialist-dashboard' : '/dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;

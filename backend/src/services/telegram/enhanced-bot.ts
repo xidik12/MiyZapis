@@ -948,8 +948,13 @@ export class EnhancedTelegramBot {
     await ctx.reply(message, keyboard);
   }
 
+  private getMiniAppUrl(): string {
+    return process.env.TELEGRAM_MINI_APP_URL || 'https://miyzapis-telegram-miniapp.railway.app';
+  }
+
   private getCustomerMenuKeyboard(lang: keyof typeof this.messages) {
     return Markup.inlineKeyboard([
+      [Markup.button.webApp('📱 Open MiyZapis App', this.getMiniAppUrl())],
       [Markup.button.callback(this.messages[lang].searchServices, 'search_services')],
       [Markup.button.callback(this.messages[lang].myBookings, 'my_bookings')],
       [
@@ -970,6 +975,7 @@ export class EnhancedTelegramBot {
 
   private getSpecialistMenuKeyboard(lang: keyof typeof this.messages) {
     return Markup.inlineKeyboard([
+      [Markup.button.webApp('📱 Open MiyZapis App', this.getMiniAppUrl())],
       [Markup.button.callback(this.messages[lang].myServices, 'my_services')],
       [Markup.button.callback(this.messages[lang].specialistBookings, 'specialist_bookings')],
       [

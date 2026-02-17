@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { TelegramProvider } from '@/components/telegram/TelegramProvider';
 import { TelegramThemeProvider } from '@/components/telegram/TelegramThemeProvider';
@@ -7,58 +7,82 @@ import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-
-// Pages
-import { HomePage } from '@/pages/shared/HomePage';
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { BookingFlow } from '@/pages/booking/BookingFlow';
-import { BookingsPage } from '@/pages/customer/BookingsPage';
-import { ProfilePage } from '@/pages/customer/ProfilePage';
+import { PageErrorBoundary } from '@/components/common/PageErrorBoundary';
 import { ToastContainer } from '@/components/ui/Toast';
-import { SearchPage } from '@/pages/shared/SearchPage';
-import { ServiceDetailPage } from '@/pages/shared/ServiceDetailPage';
-import { SpecialistProfilePage } from '@/pages/shared/SpecialistProfilePage';
-import { MessagingPage } from '@/pages/shared/MessagingPage';
-import { CommunityPage } from '@/pages/shared/CommunityPage';
-import { AnalyticsPage } from '@/pages/customer/AnalyticsPage';
-import { WalletPage } from '@/pages/customer/WalletPage';
-import { FavoritesPage } from '@/pages/customer/FavoritesPage';
-import { LoyaltyPage } from '@/pages/customer/LoyaltyPage';
-import { SettingsPage } from '@/pages/customer/SettingsPage';
-import { ReviewsPage } from '@/pages/customer/ReviewsPage';
-import { SpecialistDashboardPage } from '@/pages/specialist/SpecialistDashboardPage';
-import { SpecialistServicesPage } from '@/pages/specialist/SpecialistServicesPage';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+
+// Suspense fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <LoadingSpinner size="lg" />
+  </div>
+);
+
+// Helper for lazy loading named exports
+const lazy = <T extends React.ComponentType<any>>(
+  factory: () => Promise<{ [key: string]: T }>,
+  name: string
+) => React.lazy(() => factory().then(m => ({ default: (m as any)[name] })));
+
+// Pages — lazy loaded
+const HomePage = lazy(() => import('@/pages/shared/HomePage'), 'HomePage');
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'), 'LoginPage');
+const BookingFlow = lazy(() => import('@/pages/booking/BookingFlow'), 'BookingFlow');
+const BookingsPage = lazy(() => import('@/pages/customer/BookingsPage'), 'BookingsPage');
+const ProfilePage = lazy(() => import('@/pages/customer/ProfilePage'), 'ProfilePage');
+const SearchPage = lazy(() => import('@/pages/shared/SearchPage'), 'SearchPage');
+const ServiceDetailPage = lazy(() => import('@/pages/shared/ServiceDetailPage'), 'ServiceDetailPage');
+const SpecialistProfilePage = lazy(() => import('@/pages/shared/SpecialistProfilePage'), 'SpecialistProfilePage');
+const MessagingPage = lazy(() => import('@/pages/shared/MessagingPage'), 'MessagingPage');
+const CommunityPage = lazy(() => import('@/pages/shared/CommunityPage'), 'CommunityPage');
+const AnalyticsPage = lazy(() => import('@/pages/customer/AnalyticsPage'), 'AnalyticsPage');
+const WalletPage = lazy(() => import('@/pages/customer/WalletPage'), 'WalletPage');
+const FavoritesPage = lazy(() => import('@/pages/customer/FavoritesPage'), 'FavoritesPage');
+const LoyaltyPage = lazy(() => import('@/pages/customer/LoyaltyPage'), 'LoyaltyPage');
+const SettingsPage = lazy(() => import('@/pages/customer/SettingsPage'), 'SettingsPage');
+const ReviewsPage = lazy(() => import('@/pages/customer/ReviewsPage'), 'ReviewsPage');
+const SpecialistDashboardPage = lazy(() => import('@/pages/specialist/SpecialistDashboardPage'), 'SpecialistDashboardPage');
+const SpecialistServicesPage = lazy(() => import('@/pages/specialist/SpecialistServicesPage'), 'SpecialistServicesPage');
 
 // Phase 1: Notifications, Chat, Customer Dashboard
-import { NotificationsPage } from '@/pages/customer/NotificationsPage';
-import { ChatPage } from '@/pages/shared/ChatPage';
-import { DashboardPage } from '@/pages/customer/DashboardPage';
+const NotificationsPage = lazy(() => import('@/pages/customer/NotificationsPage'), 'NotificationsPage');
+const ChatPage = lazy(() => import('@/pages/shared/ChatPage'), 'ChatPage');
+const DashboardPage = lazy(() => import('@/pages/customer/DashboardPage'), 'DashboardPage');
 
 // Phase 2: Specialist Business Management
-import { SpecialistBookingsPage } from '@/pages/specialist/SpecialistBookingsPage';
-import { SchedulePage } from '@/pages/specialist/SchedulePage';
-import { EarningsPage } from '@/pages/specialist/EarningsPage';
+const SpecialistBookingsPage = lazy(() => import('@/pages/specialist/SpecialistBookingsPage'), 'SpecialistBookingsPage');
+const SchedulePage = lazy(() => import('@/pages/specialist/SchedulePage'), 'SchedulePage');
+const EarningsPage = lazy(() => import('@/pages/specialist/EarningsPage'), 'EarningsPage');
 
 // Phase 3: Community Enhancement + Payments
-import { PostDetailPage } from '@/pages/shared/PostDetailPage';
-import { CreatePostPage } from '@/pages/shared/CreatePostPage';
-import { PaymentProcessingPage } from '@/pages/booking/PaymentProcessingPage';
+const PostDetailPage = lazy(() => import('@/pages/shared/PostDetailPage'), 'PostDetailPage');
+const CreatePostPage = lazy(() => import('@/pages/shared/CreatePostPage'), 'CreatePostPage');
+const PaymentProcessingPage = lazy(() => import('@/pages/booking/PaymentProcessingPage'), 'PaymentProcessingPage');
 
 // Phase 4: Specialist Profile & Analytics
-import { SpecialistProfileEditPage } from '@/pages/specialist/SpecialistProfileEditPage';
-import { SpecialistAnalyticsPage } from '@/pages/specialist/SpecialistAnalyticsPage';
-import { SpecialistReviewsPage } from '@/pages/specialist/SpecialistReviewsPage';
-import { ClientsPage } from '@/pages/specialist/ClientsPage';
+const SpecialistProfileEditPage = lazy(() => import('@/pages/specialist/SpecialistProfileEditPage'), 'SpecialistProfileEditPage');
+const SpecialistAnalyticsPage = lazy(() => import('@/pages/specialist/SpecialistAnalyticsPage'), 'SpecialistAnalyticsPage');
+const SpecialistReviewsPage = lazy(() => import('@/pages/specialist/SpecialistReviewsPage'), 'SpecialistReviewsPage');
+const ClientsPage = lazy(() => import('@/pages/specialist/ClientsPage'), 'ClientsPage');
 
 // Phase 5: Settings, Help, Referrals
-import { PaymentMethodsPage } from '@/pages/customer/PaymentMethodsPage';
-import { HelpSupportPage } from '@/pages/shared/HelpSupportPage';
-import { ReferralsPage } from '@/pages/customer/ReferralsPage';
-import { SpecialistSettingsPage } from '@/pages/specialist/SpecialistSettingsPage';
-import { SpecialistWalletPage } from '@/pages/specialist/SpecialistWalletPage';
+const PaymentMethodsPage = lazy(() => import('@/pages/customer/PaymentMethodsPage'), 'PaymentMethodsPage');
+const HelpSupportPage = lazy(() => import('@/pages/shared/HelpSupportPage'), 'HelpSupportPage');
+const ReferralsPage = lazy(() => import('@/pages/customer/ReferralsPage'), 'ReferralsPage');
+const SpecialistSettingsPage = lazy(() => import('@/pages/specialist/SpecialistSettingsPage'), 'SpecialistSettingsPage');
+const SpecialistWalletPage = lazy(() => import('@/pages/specialist/SpecialistWalletPage'), 'SpecialistWalletPage');
 
 // Phase 6: Specialist Onboarding
-import { OnboardingPage } from '@/pages/specialist/OnboardingPage';
+const OnboardingPage = lazy(() => import('@/pages/specialist/OnboardingPage'), 'OnboardingPage');
+
+// Wraps lazy page with Suspense + per-page error boundary
+const Page: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <PageErrorBoundary>
+    <Suspense fallback={<PageLoader />}>
+      {children}
+    </Suspense>
+  </PageErrorBoundary>
+);
 
 function App() {
   return (
@@ -70,25 +94,25 @@ function App() {
             <Routes>
               {/* Auth routes */}
               <Route path="/auth" element={<AuthLayout />}>
-                <Route index element={<LoginPage />} />
+                <Route index element={<Page><LoginPage /></Page>} />
               </Route>
 
               {/* Main app routes */}
               <Route path="/" element={<MainLayout />}>
-                <Route index element={<HomePage />} />
+                <Route index element={<Page><HomePage /></Page>} />
 
                 {/* Public routes */}
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/service/:id" element={<ServiceDetailPage />} />
-                <Route path="/specialist/:id" element={<SpecialistProfilePage />} />
-                <Route path="/community" element={<CommunityPage />} />
+                <Route path="/search" element={<Page><SearchPage /></Page>} />
+                <Route path="/service/:id" element={<Page><ServiceDetailPage /></Page>} />
+                <Route path="/specialist/:id" element={<Page><SpecialistProfilePage /></Page>} />
+                <Route path="/community" element={<Page><CommunityPage /></Page>} />
 
                 {/* Protected customer routes */}
                 <Route
                   path="/bookings"
                   element={
                     <ProtectedRoute>
-                      <BookingsPage />
+                      <Page><BookingsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -97,7 +121,7 @@ function App() {
                   path="/booking"
                   element={
                     <ProtectedRoute>
-                      <BookingFlow />
+                      <Page><BookingFlow /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -106,7 +130,7 @@ function App() {
                   path="/favorites"
                   element={
                     <ProtectedRoute>
-                      <FavoritesPage />
+                      <Page><FavoritesPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -115,7 +139,7 @@ function App() {
                   path="/wallet"
                   element={
                     <ProtectedRoute>
-                      <WalletPage />
+                      <Page><WalletPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -124,7 +148,7 @@ function App() {
                   path="/loyalty"
                   element={
                     <ProtectedRoute>
-                      <LoyaltyPage />
+                      <Page><LoyaltyPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -133,7 +157,7 @@ function App() {
                   path="/reviews"
                   element={
                     <ProtectedRoute>
-                      <ReviewsPage />
+                      <Page><ReviewsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -142,7 +166,7 @@ function App() {
                   path="/profile"
                   element={
                     <ProtectedRoute>
-                      <ProfilePage />
+                      <Page><ProfilePage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -151,7 +175,7 @@ function App() {
                   path="/settings"
                   element={
                     <ProtectedRoute>
-                      <SettingsPage />
+                      <Page><SettingsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -160,7 +184,7 @@ function App() {
                   path="/messages"
                   element={
                     <ProtectedRoute>
-                      <MessagingPage />
+                      <Page><MessagingPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -169,17 +193,17 @@ function App() {
                   path="/analytics"
                   element={
                     <ProtectedRoute>
-                      <AnalyticsPage />
+                      <Page><AnalyticsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Specialist routes */}
+                {/* Specialist routes — require specialist role */}
                 <Route
                   path="/specialist-dashboard"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistDashboardPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistDashboardPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -187,8 +211,8 @@ function App() {
                 <Route
                   path="/specialist-services"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistServicesPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistServicesPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -198,7 +222,7 @@ function App() {
                   path="/notifications"
                   element={
                     <ProtectedRoute>
-                      <NotificationsPage />
+                      <Page><NotificationsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -206,7 +230,7 @@ function App() {
                   path="/messages/:conversationId"
                   element={
                     <ProtectedRoute>
-                      <ChatPage />
+                      <Page><ChatPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -214,7 +238,7 @@ function App() {
                   path="/dashboard"
                   element={
                     <ProtectedRoute>
-                      <DashboardPage />
+                      <Page><DashboardPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -223,35 +247,35 @@ function App() {
                 <Route
                   path="/specialist-bookings"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistBookingsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistBookingsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/schedule"
                   element={
-                    <ProtectedRoute>
-                      <SchedulePage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SchedulePage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/earnings"
                   element={
-                    <ProtectedRoute>
-                      <EarningsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><EarningsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
 
                 {/* Phase 3: Community + Payments */}
-                <Route path="/community/post/:id" element={<PostDetailPage />} />
+                <Route path="/community/post/:id" element={<Page><PostDetailPage /></Page>} />
                 <Route
                   path="/community/create"
                   element={
                     <ProtectedRoute>
-                      <CreatePostPage />
+                      <Page><CreatePostPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -259,7 +283,7 @@ function App() {
                   path="/community/edit/:postId"
                   element={
                     <ProtectedRoute>
-                      <CreatePostPage />
+                      <Page><CreatePostPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -267,7 +291,7 @@ function App() {
                   path="/payment/:bookingId"
                   element={
                     <ProtectedRoute>
-                      <PaymentProcessingPage />
+                      <Page><PaymentProcessingPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -276,32 +300,32 @@ function App() {
                 <Route
                   path="/specialist/profile/edit"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistProfileEditPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistProfileEditPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/analytics"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistAnalyticsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistAnalyticsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/reviews"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistReviewsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistReviewsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/clients"
                   element={
-                    <ProtectedRoute>
-                      <ClientsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><ClientsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -311,48 +335,48 @@ function App() {
                   path="/payment-methods"
                   element={
                     <ProtectedRoute>
-                      <PaymentMethodsPage />
+                      <Page><PaymentMethodsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/help" element={<HelpSupportPage />} />
+                <Route path="/help" element={<Page><HelpSupportPage /></Page>} />
                 <Route
                   path="/referrals"
                   element={
                     <ProtectedRoute>
-                      <ReferralsPage />
+                      <Page><ReferralsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/settings"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistSettingsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistSettingsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/notifications"
                   element={
-                    <ProtectedRoute>
-                      <NotificationsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><NotificationsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/wallet"
                   element={
-                    <ProtectedRoute>
-                      <SpecialistWalletPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistWalletPage /></Page>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/specialist/referrals"
                   element={
-                    <ProtectedRoute>
-                      <ReferralsPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><ReferralsPage /></Page>
                     </ProtectedRoute>
                   }
                 />
@@ -361,8 +385,8 @@ function App() {
                 <Route
                   path="/specialist/onboarding"
                   element={
-                    <ProtectedRoute>
-                      <OnboardingPage />
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><OnboardingPage /></Page>
                     </ProtectedRoute>
                   }
                 />
