@@ -3,7 +3,8 @@ import { toast } from 'react-toastify';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { specialistService, reviewService } from '../services';
+import { specialistService } from '../services';
+import { reviewsService } from '../services/reviews.service';
 import { profileViewService } from '../services/profileView.service';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { 
@@ -165,11 +166,7 @@ const SpecialistProfilePage: React.FC = () => {
 
         // Fetch specialist reviews with basic parameters
         try {
-          const reviewsData = await reviewService.getSpecialistReviews(specialistId, {
-            page: 1,
-            limit: 10,
-            sortBy: 'createdAt'
-          });
+          const reviewsData = await reviewsService.getSpecialistReviews(specialistId, 1, 10);
           setReviews(reviewsData.reviews || []);
         } catch (reviewError) {
           console.warn('Failed to load reviews, continuing without them:', reviewError);

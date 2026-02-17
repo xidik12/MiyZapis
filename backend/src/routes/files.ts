@@ -4,6 +4,7 @@ import { authenticateToken as authMiddleware, optionalAuth as optionalAuthMiddle
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
 import * as s3UploadController from '@/controllers/files/s3-upload.controller';
+import { logger } from '@/utils/logger';
 import path from 'path';
 
 const router = Router();
@@ -42,7 +43,7 @@ router.post('/test-notification', authMiddleware, async (req, res) => {
       userId: req.user?.id
     });
   } catch (error) {
-    console.error('Test notification error:', error);
+    logger.error('Test notification error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to send test notification',
@@ -68,7 +69,7 @@ router.get('/test-notifications', authMiddleware, async (req, res) => {
       userId: req.user?.id
     });
   } catch (error) {
-    console.error('Test notifications fetch error:', error);
+    logger.error('Test notifications fetch error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch notifications',
@@ -106,7 +107,7 @@ router.get('/test-db', authMiddleware, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Database test error:', error);
+    logger.error('Database test error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Database connection failed',
@@ -118,7 +119,7 @@ router.get('/test-db', authMiddleware, async (req, res) => {
 // Robust file upload that works on Railway
 router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
   try {
-    console.log('🔍 Upload request details:', {
+    logger.debug('🔍 Upload request details:', {
       userId: req.user?.id,
       purpose: req.query.purpose,
       filesCount: Array.isArray(req.files) ? req.files.length : 0,
@@ -126,13 +127,13 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     });
 
     if (!req.user?.id) {
-      console.error('❌ No authenticated user');
+      logger.error('❌ No authenticated user');
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
     const files = req.files as Express.Multer.File[];
     if (!files || !Array.isArray(files) || files.length === 0) {
-      console.error('❌ No files provided');
+      logger.error('❌ No files provided');
       return res.status(400).json({ success: false, error: 'No files provided' });
     }
     
@@ -140,7 +141,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     const purpose = (req.query.purpose as string) || 'general';
     const userId = req.user.id;
     
-    console.log('📁 Processing file:', {
+    logger.debug('📁 Processing file:', {
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
@@ -157,7 +158,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
 
     const allowedTypes = allowedMimeTypes[purpose as keyof typeof allowedMimeTypes] || allowedMimeTypes.portfolio;
     if (!allowedTypes.includes(file.mimetype)) {
-      console.error('❌ Invalid file type:', file.mimetype);
+      logger.error('❌ Invalid file type:', file.mimetype);
       return res.status(400).json({ 
         success: false, 
         error: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}` 
@@ -180,7 +181,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       // Railway typically sets PORT and other indicators
     };
     
-    console.log('🔍 Environment detection:', railwayIndicators);
+    logger.debug('🔍 Environment detection:', railwayIndicators);
     
     // More robust Railway detection
     const isRailway = !!(
@@ -204,7 +205,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       '/tmp/uploads'
     ];
     
-    console.log('🏗️ Railway detection result:', {
+    logger.debug('🏗️ Railway detection result:', {
       isRailway,
       uploadOptions,
       cwd: process.cwd()
@@ -215,7 +216,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     // Find a working uploads directory
     for (const testDir of uploadOptions) {
       try {
-        console.log(`🔍 Testing upload directory: ${testDir}`);
+        logger.debug(`🔍 Testing upload directory: ${testDir}`);
         
         // Try to create directory if it doesn't exist
         if (!fs.existsSync(testDir)) {
@@ -228,16 +229,16 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
         fs.unlinkSync(testFile);
         
         uploadsDir = testDir;
-        console.log('✅ Found working upload directory:', uploadsDir);
+        logger.debug('✅ Found working upload directory:', uploadsDir);
         break;
       } catch (error) {
-        console.warn(`⚠️ Upload directory ${testDir} failed test:`, error.message);
+        logger.warn(`⚠️ Upload directory ${testDir} failed test:`, error.message);
         continue;
       }
     }
     
     if (!uploadsDir) {
-      console.error('❌ No writable upload directory found');
+      logger.error('❌ No writable upload directory found');
       return res.status(500).json({ 
         success: false, 
         error: 'No writable upload directory available',
@@ -245,7 +246,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       });
     }
     
-    console.log('📂 Using upload directory:', uploadsDir);
+    logger.debug('📂 Using upload directory:', uploadsDir);
     
     // Create unique filename with flat structure
     const timestamp = Date.now();
@@ -253,14 +254,14 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     const filename = `${purpose}_${userId}_${timestamp}${ext}`;
     const filepath = path.join(uploadsDir, filename);
     
-    console.log('💾 Saving file to:', filepath);
+    logger.debug('💾 Saving file to:', filepath);
     
     // Save file to disk
     try {
       fs.writeFileSync(filepath, file.buffer);
-      console.log('✅ File saved successfully');
+      logger.debug('✅ File saved successfully');
     } catch (saveError) {
-      console.error('❌ Failed to save file:', saveError);
+      logger.error('❌ Failed to save file:', saveError);
       return res.status(500).json({ 
         success: false, 
         error: 'Failed to save file to disk' 
@@ -295,9 +296,9 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       });
       
       await prisma.$disconnect();
-      console.log('✅ Database record created:', fileRecord.id);
+      logger.debug('✅ Database record created:', fileRecord.id);
     } catch (dbError) {
-      console.error('⚠️ Database record creation failed (file still uploaded):', dbError);
+      logger.error('⚠️ Database record creation failed (file still uploaded):', dbError);
       // Continue without database record - file is still accessible
     }
 
@@ -315,7 +316,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       uploadedAt: new Date().toISOString()
     }];
 
-    console.log('📤 Upload successful:', { filename, url: fileUrl });
+    logger.debug('📤 Upload successful:', { filename, url: fileUrl });
 
     return res.json({
       success: true,
@@ -323,7 +324,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       message: 'File uploaded successfully'
     });
   } catch (error) {
-    console.error('💥 Upload error:', error);
+    logger.error('💥 Upload error:', error);
     return res.status(500).json({
       success: false,
       error: 'File upload failed',
@@ -384,16 +385,16 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
         fs.unlinkSync(testFile);
         
         uploadsDir = testDir;
-        console.log('✅ Simple upload found working directory:', uploadsDir);
+        logger.debug('✅ Simple upload found working directory:', uploadsDir);
         break;
       } catch (error) {
-        console.warn(`⚠️ Simple upload directory ${testDir} failed test:`, error.message);
+        logger.warn(`⚠️ Simple upload directory ${testDir} failed test:`, error.message);
         continue;
       }
     }
     
     if (!uploadsDir) {
-      console.error('❌ No writable upload directory found for simple upload');
+      logger.error('❌ No writable upload directory found for simple upload');
       return res.status(500).json({ 
         success: false, 
         error: 'No writable upload directory available',
@@ -426,8 +427,8 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
       createdAt: new Date().toISOString()
     }];
 
-    console.log('File saved:', filepath);
-    console.log('File URL:', fileUrl);
+    logger.debug('File saved:', filepath);
+    logger.debug('File URL:', fileUrl);
 
     return res.json({
       success: true,
@@ -435,7 +436,7 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
       message: 'File uploaded successfully'
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error:', error);
     return res.status(500).json({
       success: false,
       error: 'File upload failed',
@@ -448,7 +449,7 @@ const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 
 // S3 Cloud Storage endpoints (when enabled)
 if (useS3Storage) {
-  console.log('🌅 S3 storage enabled - adding S3 upload routes');
+  logger.debug('🌅 S3 storage enabled - adding S3 upload routes');
   
   // S3 file upload endpoint
   router.post('/upload-s3', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
@@ -462,7 +463,7 @@ if (useS3Storage) {
   // Use S3 upload as the main upload endpoint when S3 is enabled
   router.post('/upload', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
 } else {
-  console.log('📁 Using local file storage');
+  logger.debug('📁 Using local file storage');
   // Main upload endpoint using proper FileController (local storage)
   router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
 }
@@ -473,12 +474,12 @@ router.get('/s3-proxy/*', async (req, res) => {
     const s3Path = req.params[0]; // Gets everything after /s3-proxy/
     const s3Url = `https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/${s3Path}`;
     
-    console.log(`🔄 Proxying S3 request: ${s3Path}`);
+    logger.debug(`🔄 Proxying S3 request: ${s3Path}`);
     
     const response = await fetch(s3Url);
     
     if (!response.ok) {
-      console.log(`❌ S3 proxy failed: ${response.status} for ${s3Url}`);
+      logger.debug(`❌ S3 proxy failed: ${response.status} for ${s3Url}`);
       return res.status(response.status).json({
         success: false,
         error: 'S3 file not found',
@@ -503,7 +504,7 @@ router.get('/s3-proxy/*', async (req, res) => {
     return res.send(Buffer.from(buffer));
 
   } catch (error) {
-    console.error('❌ S3 proxy error:', error);
+    logger.error('❌ S3 proxy error:', error);
     return res.status(500).json({
       success: false,
       error: 'S3 proxy failed',
@@ -555,7 +556,7 @@ router.get('/uploads/:filename', (req, res) => {
     if (!filepath) {
       // For old files that don't exist locally, check if they might be in S3
       // and provide a helpful error message
-      console.log(`File not found locally: ${filename}. This file may have been migrated to S3.`);
+      logger.debug(`File not found locally: ${filename}. This file may have been migrated to S3.`);
       
       return res.status(404).json({ 
         success: false, 
@@ -568,7 +569,7 @@ router.get('/uploads/:filename', (req, res) => {
     
     return res.sendFile(filepath);
   } catch (error) {
-    console.error('Error serving file:', error);
+    logger.error('Error serving file:', error);
     return res.status(500).json({ success: false, error: 'Failed to serve file' });
   }
 });
@@ -638,7 +639,7 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       message: 'External image processed'
     });
   } catch (error) {
-    console.error('Save external image error:', error);
+    logger.error('Save external image error:', error);
     return res.status(500).json({ 
       success: false, 
       error: 'Failed to save external image',
@@ -662,7 +663,7 @@ router.post('/migrate-portfolio', authMiddleware, async (req, res) => {
     }
 
     // For missing portfolio images, return a placeholder or suggest re-upload
-    console.log(`📁 Portfolio migration requested for missing file: ${filename}`);
+    logger.debug(`📁 Portfolio migration requested for missing file: ${filename}`);
     
     return res.json({
       success: false,
@@ -673,7 +674,7 @@ router.post('/migrate-portfolio', authMiddleware, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Portfolio migration error:', error);
+    logger.error('❌ Portfolio migration error:', error);
     return res.status(500).json({ 
       success: false, 
       error: 'Portfolio migration failed',

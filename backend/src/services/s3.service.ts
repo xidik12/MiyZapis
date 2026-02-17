@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import path from 'path';
+import { logger } from '@/utils/logger';
 
 interface S3Config {
   region: string;
@@ -47,7 +48,7 @@ export class S3Service {
     this.bucketName = config.bucketName;
     this.publicUrl = config.publicUrl || `https://${config.bucketName}.s3.${config.region}.amazonaws.com`;
 
-    console.log('🌅 S3Service initialized:', {
+    logger.debug('🌅 S3Service initialized:', {
       region: config.region,
       bucket: config.bucketName,
       publicUrl: this.publicUrl
@@ -64,7 +65,7 @@ export class S3Service {
     options: UploadOptions = {}
   ): Promise<UploadResult> {
     try {
-      console.log('📤 Starting S3 upload:', {
+      logger.debug('📤 Starting S3 upload:', {
         originalName,
         mimeType,
         size: buffer.length,
@@ -76,12 +77,12 @@ export class S3Service {
       let finalMimeType = mimeType;
 
       if (this.isImageFile(mimeType) && options.resize) {
-        console.log('🖼️ Processing image with sharp...');
+        logger.debug('🖼️ Processing image with sharp...');
         // Detect animated WebP and preserve without processing
         const meta = await sharp(buffer, { animated: true }).metadata();
         const isAnimatedWebp = (mimeType === 'image/webp') && (typeof meta.pages === 'number') && meta.pages > 1;
         if (isAnimatedWebp) {
-          console.log('🌀 Animated WebP detected. Skipping processing to preserve animation.');
+          logger.debug('🌀 Animated WebP detected. Skipping processing to preserve animation.');
         } else {
           let sharpInstance = sharp(buffer);
         
@@ -99,7 +100,7 @@ export class S3Service {
           }
 
           processedBuffer = await sharpInstance.toBuffer();
-          console.log('✅ Image processed:', {
+          logger.debug('✅ Image processed:', {
             originalSize: buffer.length,
             processedSize: processedBuffer.length,
             compression: `${(((buffer.length - processedBuffer.length) / buffer.length) * 100).toFixed(1)}%`
@@ -135,7 +136,7 @@ export class S3Service {
         mimeType: finalMimeType
       };
 
-      console.log('✅ S3 upload successful:', {
+      logger.debug('✅ S3 upload successful:', {
         key,
         url: result.url,
         size: result.size
@@ -143,7 +144,7 @@ export class S3Service {
 
       return result;
     } catch (error) {
-      console.error('❌ S3 upload failed:', error);
+      logger.error('❌ S3 upload failed:', error);
       throw new Error(`S3 upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -153,7 +154,7 @@ export class S3Service {
    */
   async deleteFile(key: string): Promise<void> {
     try {
-      console.log('🗑️ Deleting file from S3:', key);
+      logger.debug('🗑️ Deleting file from S3:', key);
 
       const command = new DeleteObjectCommand({
         Bucket: this.bucketName,
@@ -161,9 +162,9 @@ export class S3Service {
       });
 
       await this.s3Client.send(command);
-      console.log('✅ File deleted from S3:', key);
+      logger.debug('✅ File deleted from S3:', key);
     } catch (error) {
-      console.error('❌ S3 delete failed:', error);
+      logger.error('❌ S3 delete failed:', error);
       throw new Error(`S3 delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -202,7 +203,7 @@ export class S3Service {
 
       const fileUrl = `${this.publicUrl}/${key}`;
 
-      console.log('✅ Generated presigned upload URL:', {
+      logger.debug('✅ Generated presigned upload URL:', {
         key,
         fileUrl,
         expiresIn: '1 hour'
@@ -214,7 +215,7 @@ export class S3Service {
         key
       };
     } catch (error) {
-      console.error('❌ Presigned URL generation failed:', error);
+      logger.error('❌ Presigned URL generation failed:', error);
       throw new Error(`Presigned URL generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -230,11 +231,11 @@ export class S3Service {
       });
 
       const url = await getSignedUrl(this.s3Client, command, { expiresIn });
-      console.log('✅ Generated presigned download URL for:', key);
+      logger.debug('✅ Generated presigned download URL for:', key);
       
       return url;
     } catch (error) {
-      console.error('❌ Presigned download URL generation failed:', error);
+      logger.error('❌ Presigned download URL generation failed:', error);
       throw new Error(`Presigned download URL generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -255,7 +256,7 @@ export class S3Service {
       } catch (error: any) {
         // If we get NoSuchKey error, it means we can connect to the bucket
         if (error.name === 'NoSuchKey') {
-          console.log('✅ S3 connection test successful');
+          logger.debug('✅ S3 connection test successful');
           return true;
         }
         throw error;
@@ -263,7 +264,7 @@ export class S3Service {
 
       return true;
     } catch (error) {
-      console.error('❌ S3 connection test failed:', error);
+      logger.error('❌ S3 connection test failed:', error);
       return false;
     }
   }

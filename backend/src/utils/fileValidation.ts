@@ -3,6 +3,8 @@
  * Validates files using magic numbers (file signatures) to prevent malicious uploads
  */
 
+import { logger } from '@/utils/logger';
+
 // File magic numbers (first bytes that identify file types)
 const FILE_SIGNATURES: Record<string, Buffer[]> = {
   'image/jpeg': [
@@ -47,7 +49,7 @@ export const validateFileSignature = (
   if (!signatures) {
     // If we don't have signatures for this type, allow it
     // but log a warning
-    console.warn(`No file signature validation for MIME type: ${mimeType}`);
+    logger.warn(`No file signature validation for MIME type: ${mimeType}`);
     return true;
   }
 

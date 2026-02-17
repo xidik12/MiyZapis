@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { createRailwayAdmin } from '../scripts/railway-admin-setup';
+import { logger } from '@/utils/logger';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
       password: process.env.ADMIN_PASSWORD
     };
 
-    console.log('🚀 Starting admin setup via HTTP endpoint...');
+    logger.debug('🚀 Starting admin setup via HTTP endpoint...');
     await createRailwayAdmin(RAILWAY_ADMIN_CONFIG);
 
     return res.json({
@@ -40,7 +41,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    console.error('❌ Admin setup failed:', error.message);
+    logger.error('❌ Admin setup failed:', error.message);
 
     if (error.message.includes('Admin user already exists')) {
       return res.status(409).json({

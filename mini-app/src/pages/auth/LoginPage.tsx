@@ -14,10 +14,8 @@ import { addToast } from '@/store/slices/uiSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { loginStrings, commonStrings } from '@/utils/translations';
 
-// @ts-ignore - Vite env types
-const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
-// @ts-ignore
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 /** Map backend userType to role for mini-app compatibility */
 function normalizeUser(user: any): any {

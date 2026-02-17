@@ -441,8 +441,8 @@ export function setupTestEnvironment() {
     emailService: mockServices.email,
   }));
   
-  jest.mock('@/services/telegram/bot-service', () => ({
-    telegramBot: mockServices.telegram,
+  jest.mock('@/bot', () => ({
+    bot: mockServices.telegram,
   }));
   
   jest.mock('@/services/payment', () => ({
