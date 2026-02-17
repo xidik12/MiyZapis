@@ -12,7 +12,6 @@ import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
-import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
 
 interface Service {
@@ -312,7 +311,7 @@ const SpecialistServices: React.FC = () => {
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
       currency: service.currency || 'USD',
-      duration: service.duration.toString(),
+      duration: (service.duration || 60).toString(),
       serviceLocation: service.serviceLocation || '',
       locationNotes: service.locationNotes || '',
       isActive: service.isActive,
@@ -765,13 +764,13 @@ const SpecialistServices: React.FC = () => {
               <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : (t('common.notAvailable') || 'N/A')}
+              {service.rating && !isNaN(Number(service.rating)) ? Number(service.rating).toFixed(1) : (t('common.notAvailable') || 'N/A')}
             </span>
           </div>
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
+            {service.basePrice && !isNaN(Number(service.basePrice)) ? formatPrice(Number(service.basePrice), getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {getLocalizedText(service, 'category')}

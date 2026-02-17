@@ -182,7 +182,7 @@ const SearchPage: React.FC = () => {
           id: service.id,
           name: service.name,
           description: service.description,
-          price: service.basePrice || service.price || 0,
+          price: Number(service.basePrice || service.price) || 0,
           currency: service.currency || 'USD',
           duration: service.duration || 0,
           category: service.category || '',

@@ -232,7 +232,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
       <div className="relative w-32 h-32">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
           {data.map((item, index) => {
-            const percent = (item.value / total) * 100;
+            const percent = total > 0 ? (item.value / total) * 100 : 0;
             const strokeDasharray = `${percent} ${100 - percent}`;
             const strokeDashoffset = -cumulativePercent;
             cumulativePercent += percent;
@@ -262,7 +262,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
               style={{ backgroundColor: item.color }}
             />
             <span className="text-sm text-gray-600 dark:text-gray-300">{item.label}</span>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 ml-2">{((item.value / total) * 100).toFixed(1)}%</span>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 ml-2">{(total > 0 ? (item.value / total) * 100 : 0).toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -442,7 +442,7 @@ Performance:
         
         // Calculate real metrics from booking data with proper currency conversion
         const totalRevenue = completedBookings.reduce((sum, booking) => {
-          const amount = booking.totalAmount || 0;
+          const amount = Number(booking.totalAmount) || 0;
           const bookingCurrency = getBookingCurrency(booking);
           
           // Convert to user's preferred currency for consistent total
@@ -528,7 +528,7 @@ Performance:
           }
           const service = serviceGroups.get(serviceName);
           service.count++;
-          service.revenue += booking.totalAmount || 0;
+          service.revenue += Number(booking.totalAmount) || 0;
         });
 
         const bookingsByService = Array.from(serviceGroups.entries()).map(([serviceName, data]) => ({
@@ -642,7 +642,7 @@ Performance:
             const data = chartDataMap.get(groupKey);
             
             // Apply same currency conversion as main calculation
-            const amount = booking.totalAmount || 0;
+            const amount = Number(booking.totalAmount) || 0;
             const bookingCurrency = getBookingCurrency(booking);
             const convertedAmount = convertPrice(amount, bookingCurrency);
             

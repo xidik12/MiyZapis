@@ -151,7 +151,7 @@ const SpecialistEarnings: React.FC = () => {
             
             // Calculate total earnings from completed bookings (accurate amounts with currency conversion)
             totalEarnings = completedBookings.reduce((sum, booking) => {
-              const amount = booking.totalAmount || 0;
+              const amount = Number(booking.totalAmount) || 0;
               const bookingCurrency = getBookingCurrency(booking);
               
               // Convert to user's preferred currency for consistent total
@@ -174,7 +174,7 @@ const SpecialistEarnings: React.FC = () => {
                 }
               })
               .reduce((sum, booking) => {
-                const amount = booking.totalAmount || 0;
+                const amount = Number(booking.totalAmount) || 0;
                 const bookingCurrency = getBookingCurrency(booking);
                 const convertedAmount = convertPrice(amount, bookingCurrency);
                 return sum + Math.round(convertedAmount * 100) / 100;
@@ -187,7 +187,7 @@ const SpecialistEarnings: React.FC = () => {
                 const date = new Date(booking.updatedAt || booking.createdAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
                 const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
-                const amount = booking.totalAmount || 0;
+                const amount = Number(booking.totalAmount) || 0;
                 const bookingCurrency = getBookingCurrency(booking);
                 const convertedAmount = convertPrice(amount, bookingCurrency);
                 monthlyData.set(monthKey, {

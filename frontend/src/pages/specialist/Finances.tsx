@@ -113,7 +113,7 @@ const SpecialistFinances: React.FC = () => {
         )
       ]);
 
-      setExpenses(expensesResponse.expenses);
+      setExpenses(expensesResponse.expenses || []);
       setSummary(summaryResponse);
     } catch (error: any) {
       console.error('Error loading expenses:', error);
@@ -135,7 +135,7 @@ const SpecialistFinances: React.FC = () => {
     setEditingExpense(expense);
     setFormData({
       category: expense.category,
-      amount: expense.amount.toString(),
+      amount: String(expense.amount || ''),
       currency: expense.currency,
       description: expense.description,
       date: new Date(expense.date).toISOString().split('T')[0],
@@ -265,8 +265,8 @@ const SpecialistFinances: React.FC = () => {
     ? summary.currency
     : 'UAH';
 
-  const monthlyAverage = summary && summary.monthlyBreakdown.length > 0
-    ? summary.totalExpenses / summary.monthlyBreakdown.length
+  const monthlyAverage = summary && summary.monthlyBreakdown && summary.monthlyBreakdown.length > 0
+    ? Number(summary.totalExpenses) / summary.monthlyBreakdown.length
     : 0;
 
   return (
@@ -355,7 +355,7 @@ const SpecialistFinances: React.FC = () => {
                     {t('finances.totalExpenses') || 'Total Expenses'}
                   </p>
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                    {formatPrice(summary.totalExpenses, summaryCurrency)}
+                    {formatPrice(Number(summary.totalExpenses) || 0, summaryCurrency)}
                   </p>
                 </div>
               </div>
@@ -398,7 +398,7 @@ const SpecialistFinances: React.FC = () => {
         )}
 
         {/* Category Breakdown */}
-        {summary && summary.byCategory.length > 0 && (
+        {summary && summary.byCategory && summary.byCategory.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {t('finances.categoryBreakdown') || 'Category Breakdown'}
@@ -418,7 +418,7 @@ const SpecialistFinances: React.FC = () => {
                           {getCategoryLabel(cat.category as ExpenseCategory)}
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {formatPrice(cat.amount, summaryCurrency)} ({cat.percentage}%)
+                          {formatPrice(Number(cat.amount) || 0, summaryCurrency)} ({cat.percentage}%)
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -495,7 +495,7 @@ const SpecialistFinances: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="font-semibold text-red-600 dark:text-red-400">
-                          -{formatPrice(expense.amount, expense.currency as 'USD' | 'EUR' | 'UAH')}
+                          -{formatPrice(Number(expense.amount) || 0, (expense.currency || 'UAH') as 'USD' | 'EUR' | 'UAH')}
                         </span>
                         <div className="flex items-center gap-2">
                           <button
