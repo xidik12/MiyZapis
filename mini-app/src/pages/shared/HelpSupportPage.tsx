@@ -6,6 +6,15 @@ import {
   Send,
   MessageSquare,
   Search,
+  Phone,
+  Mail,
+  MessageCircle,
+  BookOpen,
+  Shield,
+  CreditCard,
+  Clock,
+  CheckCircle,
+  Star,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -32,6 +41,15 @@ interface FAQCategory {
   name: string;
 }
 
+interface ContactMethod {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  value: string;
+  availability: string;
+}
+
 export const HelpSupportPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback } = useTelegram();
@@ -39,6 +57,7 @@ export const HelpSupportPage: React.FC = () => {
 
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [categories, setCategories] = useState<FAQCategory[]>([]);
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -49,12 +68,16 @@ export const HelpSupportPage: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const hs = (key: string) => t(helpSupportStrings, key, locale);
+  const c = (key: string) => t(commonStrings, key, locale);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [faqsData, categoriesData] = await Promise.allSettled([
+      const [faqsData, categoriesData, contactData] = await Promise.allSettled([
         apiService.getFAQs({ language: locale }),
         apiService.getFAQCategories({ language: locale }),
+        apiService.getContactMethods(),
       ]);
 
       if (faqsData.status === 'fulfilled') {
@@ -68,6 +91,10 @@ export const HelpSupportPage: React.FC = () => {
           id: c.id || c.category || '',
           name: c.name || c.category || '',
         })));
+      }
+      if (contactData.status === 'fulfilled') {
+        const raw = contactData.value as any;
+        setContactMethods(raw?.contactMethods || (Array.isArray(raw) ? raw : []));
       }
     } finally {
       setLoading(false);
@@ -98,12 +125,36 @@ export const HelpSupportPage: React.FC = () => {
     setExpandedId(prev => prev === id ? null : id);
   };
 
+  const handleContactAction = (method: ContactMethod) => {
+    hapticFeedback.impactLight();
+    if (method.type === 'email' || method.type === 'EMAIL') {
+      window.open(`mailto:${method.value}`);
+    } else if (method.type === 'phone' || method.type === 'PHONE') {
+      window.open(`tel:${method.value}`);
+    } else if (method.type === 'telegram' || method.type === 'TELEGRAM') {
+      window.open(`https://t.me/${method.value.replace('@', '')}`);
+    } else if (method.type === 'chat' || method.type === 'CHAT') {
+      // Navigate to in-app chat or open link
+      if (method.value.startsWith('http')) {
+        window.open(method.value);
+      }
+    }
+  };
+
+  const getContactIcon = (type: string) => {
+    const t = type.toLowerCase();
+    if (t === 'email') return <Mail size={18} className="text-accent-primary" />;
+    if (t === 'phone') return <Phone size={18} className="text-accent-green" />;
+    if (t === 'telegram' || t === 'chat') return <MessageCircle size={18} className="text-blue-400" />;
+    return <MessageSquare size={18} className="text-accent-primary" />;
+  };
+
   const handleSubmitFeedback = async () => {
     if (!subject.trim() || !message.trim()) {
       dispatch(addToast({
         type: 'warning',
-        title: t(commonStrings, 'error', locale),
-        message: locale === 'uk' ? 'Заповніть усі поля' : locale === 'ru' ? 'Заполните все поля' : 'Please fill all fields',
+        title: c('error'),
+        message: hs('fillAllFields'),
       }));
       return;
     }
@@ -115,8 +166,8 @@ export const HelpSupportPage: React.FC = () => {
       await apiService.submitFeedback({ subject, message, email: userEmail || 'user@miyzapis.app', category: 'general' });
       dispatch(addToast({
         type: 'success',
-        title: t(commonStrings, 'success', locale),
-        message: t(helpSupportStrings, 'feedbackSent', locale),
+        title: c('success'),
+        message: hs('feedbackSent'),
       }));
       hapticFeedback.notificationSuccess();
       setSubject('');
@@ -124,8 +175,8 @@ export const HelpSupportPage: React.FC = () => {
     } catch {
       dispatch(addToast({
         type: 'error',
-        title: t(commonStrings, 'error', locale),
-        message: t(helpSupportStrings, 'feedbackFailed', locale),
+        title: c('error'),
+        message: hs('feedbackFailed'),
       }));
       hapticFeedback.notificationError();
     } finally {
@@ -141,6 +192,12 @@ export const HelpSupportPage: React.FC = () => {
       )
     : faqs;
 
+  const userGuides = [
+    { icon: BookOpen, title: hs('guideBooking'), desc: hs('guideBookingDesc'), color: 'text-accent-primary bg-accent-primary/10' },
+    { icon: CreditCard, title: hs('guidePayments'), desc: hs('guidePaymentsDesc'), color: 'text-accent-green bg-accent-green/10' },
+    { icon: Shield, title: hs('guideSecurity'), desc: hs('guideSecurityDesc'), color: 'text-blue-400 bg-blue-400/10' },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -151,7 +208,7 @@ export const HelpSupportPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title={t(helpSupportStrings, 'title', locale)} />
+      <Header title={hs('title')} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Search */}
@@ -159,9 +216,85 @@ export const HelpSupportPage: React.FC = () => {
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t(helpSupportStrings, 'searchFAQ', locale)}
+            placeholder={hs('searchFAQ')}
             icon={<Search size={18} />}
           />
+        </div>
+
+        {/* Contact Methods */}
+        {contactMethods.length > 0 && (
+          <div className="px-4 pb-4">
+            <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">
+              {hs('contactMethods')}
+            </h3>
+            <div className="space-y-2">
+              {contactMethods.map(method => (
+                <Card key={method.id} hover onClick={() => handleContactAction(method)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
+                      {getContactIcon(method.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-text-primary">{method.title}</h4>
+                      <p className="text-xs text-text-secondary">{method.description}</p>
+                      {method.availability && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Clock size={10} className="text-text-muted" />
+                          <span className="text-[10px] text-text-muted">{method.availability}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* User Guides */}
+        <div className="px-4 pb-4">
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">
+            {hs('userGuides')}
+          </h3>
+          <div className="space-y-2">
+            {userGuides.map((guide, i) => (
+              <Card key={i}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${guide.color}`}>
+                    <guide.icon size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-text-primary">{guide.title}</h4>
+                    <p className="text-xs text-text-secondary">{guide.desc}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Support Stats */}
+        <div className="px-4 pb-4">
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">
+            {hs('supportStats')}
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            <Card className="text-center py-3">
+              <Clock size={16} className="text-accent-primary mx-auto mb-1" />
+              <div className="text-sm font-bold text-text-primary">~2h</div>
+              <div className="text-[10px] text-text-secondary">{hs('avgResponseTime')}</div>
+            </Card>
+            <Card className="text-center py-3">
+              <CheckCircle size={16} className="text-accent-green mx-auto mb-1" />
+              <div className="text-sm font-bold text-text-primary">98%</div>
+              <div className="text-[10px] text-text-secondary">{hs('resolutionRate')}</div>
+            </Card>
+            <Card className="text-center py-3">
+              <Star size={16} className="text-accent-yellow mx-auto mb-1" />
+              <div className="text-sm font-bold text-text-primary">4.9/5</div>
+              <div className="text-[10px] text-text-secondary">{hs('satisfaction')}</div>
+            </Card>
+          </div>
         </div>
 
         {/* Category Pills */}
@@ -190,49 +323,21 @@ export const HelpSupportPage: React.FC = () => {
                 {cat.name}
               </button>
             ))}
-            {/* Static pills if no categories loaded */}
             {categories.length === 0 && (
               <>
-                <button
-                  onClick={() => handleCategoryChange('general')}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    activeCategory === 'general'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
-                  }`}
-                >
-                  {t(helpSupportStrings, 'general', locale)}
-                </button>
-                <button
-                  onClick={() => handleCategoryChange('bookings')}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    activeCategory === 'bookings'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
-                  }`}
-                >
-                  {t(helpSupportStrings, 'bookingsHelp', locale)}
-                </button>
-                <button
-                  onClick={() => handleCategoryChange('payments')}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    activeCategory === 'payments'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
-                  }`}
-                >
-                  {t(helpSupportStrings, 'paymentsHelp', locale)}
-                </button>
-                <button
-                  onClick={() => handleCategoryChange('account')}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    activeCategory === 'account'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
-                  }`}
-                >
-                  {t(helpSupportStrings, 'accountHelp', locale)}
-                </button>
+                {['general', 'bookings', 'payments', 'account'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategoryChange(cat)}
+                    className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                      activeCategory === cat
+                        ? 'bg-accent-primary text-white'
+                        : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
+                    }`}
+                  >
+                    {hs(cat === 'bookings' ? 'bookingsHelp' : cat === 'payments' ? 'paymentsHelp' : cat === 'account' ? 'accountHelp' : 'general')}
+                  </button>
+                ))}
               </>
             )}
           </div>
@@ -241,13 +346,13 @@ export const HelpSupportPage: React.FC = () => {
         {/* FAQ Section */}
         <div className="px-4 space-y-2">
           <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">
-            {t(helpSupportStrings, 'faq', locale)}
+            {hs('faq')}
           </h3>
 
           {filteredFaqs.length === 0 ? (
             <Card className="text-center py-8">
               <HelpCircle size={32} className="text-text-secondary mx-auto mb-2" />
-              <p className="text-text-secondary text-sm">{t(commonStrings, 'noResults', locale)}</p>
+              <p className="text-text-secondary text-sm">{c('noResults')}</p>
             </Card>
           ) : (
             filteredFaqs.map(faq => (
@@ -283,7 +388,7 @@ export const HelpSupportPage: React.FC = () => {
         {/* Contact Support / Feedback Form */}
         <div className="px-4 pt-6 space-y-4">
           <h3 className="text-sm font-semibold text-text-secondary px-1">
-            {t(helpSupportStrings, 'contactSupport', locale)}
+            {hs('contactSupport')}
           </h3>
 
           <Card>
@@ -293,17 +398,15 @@ export const HelpSupportPage: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-text-primary">
-                  {t(helpSupportStrings, 'submitFeedback', locale)}
+                  {hs('submitFeedback')}
                 </h4>
-                <p className="text-xs text-text-secondary">
-                  {locale === 'uk' ? 'Ми відповімо найближчим часом' : locale === 'ru' ? 'Мы ответим в ближайшее время' : 'We will respond shortly'}
-                </p>
+                <p className="text-xs text-text-secondary">{hs('weWillRespond')}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <Input
-                label={t(helpSupportStrings, 'subject', locale)}
+                label={hs('subject')}
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 placeholder={
@@ -313,7 +416,7 @@ export const HelpSupportPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-1.5">
-                  {t(helpSupportStrings, 'message', locale)}
+                  {hs('message')}
                 </label>
                 <textarea
                   value={message}
@@ -332,11 +435,11 @@ export const HelpSupportPage: React.FC = () => {
                 disabled={submitting || !subject.trim() || !message.trim()}
               >
                 {submitting ? (
-                  t(commonStrings, 'loading', locale)
+                  c('loading')
                 ) : (
                   <>
                     <Send size={16} className="mr-2" />
-                    {t(helpSupportStrings, 'submitFeedback', locale)}
+                    {hs('submitFeedback')}
                   </>
                 )}
               </Button>

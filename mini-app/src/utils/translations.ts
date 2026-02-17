@@ -306,6 +306,19 @@ export const reviewsStrings: Record<string, Record<Locale, string>> = {
   noReviews: { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Отзывов пока нет' },
   leaveReview: { en: 'After completing a booking, you can leave a review', uk: 'Після завершення запису ви можете залишити відгук', ru: 'После завершения записи вы можете оставить отзыв' },
   viewBookings: { en: 'View Bookings', uk: 'Переглянути записи', ru: 'Посмотреть записи' },
+  allRatings: { en: 'All', uk: 'Всі', ru: 'Все' },
+  newest: { en: 'Newest', uk: 'Новіші', ru: 'Новые' },
+  oldest: { en: 'Oldest', uk: 'Старіші', ru: 'Старые' },
+  highest: { en: 'Highest', uk: 'Найвищі', ru: 'Высшие' },
+  lowest: { en: 'Lowest', uk: 'Найнижчі', ru: 'Низшие' },
+  sortBy: { en: 'Sort', uk: 'Сортування', ru: 'Сортировка' },
+  report: { en: 'Report', uk: 'Поскаржитись', ru: 'Пожаловаться' },
+  reportReason: { en: 'Reason', uk: 'Причина', ru: 'Причина' },
+  reportSent: { en: 'Report sent', uk: 'Скаргу надіслано', ru: 'Жалоба отправлена' },
+  inappropriate: { en: 'Inappropriate', uk: 'Неприйнятний', ru: 'Неприемлемый' },
+  spam: { en: 'Spam', uk: 'Спам', ru: 'Спам' },
+  fake: { en: 'Fake review', uk: 'Фейковий відгук', ru: 'Поддельный отзыв' },
+  other: { en: 'Other', uk: 'Інше', ru: 'Другое' },
 };
 
 // Analytics page
@@ -648,6 +661,19 @@ export const helpSupportStrings: Record<string, Record<Locale, string>> = {
   accountHelp: { en: 'Account', uk: 'Акаунт', ru: 'Аккаунт' },
   fillAllFields: { en: 'Please fill all fields', uk: 'Заповніть усі поля', ru: 'Заполните все поля' },
   weWillRespond: { en: 'We will respond shortly', uk: 'Ми відповімо найближчим часом', ru: 'Мы ответим в ближайшее время' },
+  contactMethods: { en: 'Contact Us', uk: 'Зв\'яжіться з нами', ru: 'Свяжитесь с нами' },
+  noContactMethods: { en: 'Contact methods will be added soon', uk: 'Методи зв\'язку з\'являться незабаром', ru: 'Методы связи появятся скоро' },
+  userGuides: { en: 'User Guides', uk: 'Посібники', ru: 'Руководства' },
+  guideBooking: { en: 'How to Book', uk: 'Як записатися', ru: 'Как записаться' },
+  guideBookingDesc: { en: 'Step-by-step booking process', uk: 'Покрокова інструкція запису', ru: 'Пошаговая инструкция записи' },
+  guidePayments: { en: 'Payment Methods', uk: 'Методи оплати', ru: 'Методы оплаты' },
+  guidePaymentsDesc: { en: 'Available payment options explained', uk: 'Доступні способи оплати', ru: 'Доступные способы оплаты' },
+  guideSecurity: { en: 'Account Security', uk: 'Безпека акаунту', ru: 'Безопасность аккаунта' },
+  guideSecurityDesc: { en: 'Protect your account and data', uk: 'Захистіть свій акаунт та дані', ru: 'Защитите свой аккаунт и данные' },
+  supportStats: { en: 'Support Stats', uk: 'Статистика підтримки', ru: 'Статистика поддержки' },
+  avgResponseTime: { en: 'Avg Response Time', uk: 'Сер. час відповіді', ru: 'Ср. время ответа' },
+  resolutionRate: { en: 'Resolution Rate', uk: 'Рівень вирішення', ru: 'Уровень решения' },
+  satisfaction: { en: 'Satisfaction', uk: 'Задоволеність', ru: 'Удовлетворённость' },
 };
 
 // Referrals page

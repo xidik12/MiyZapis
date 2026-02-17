@@ -94,8 +94,35 @@ export const NotificationsPage: React.FC = () => {
     if (!notif.isRead) {
       dispatch(markNotificationReadAsync(notif.id));
     }
+
+    // Navigate based on notification type/data
+    if (notif.data?.actionUrl) {
+      navigate(notif.data.actionUrl);
+      return;
+    }
     if (notif.data?.bookingId) {
-      navigate(`/booking/${notif.data.bookingId}`);
+      navigate(`/bookings`);
+      return;
+    }
+    if (notif.type.includes('PAYMENT')) {
+      navigate('/wallet');
+      return;
+    }
+    if (notif.type.includes('REVIEW')) {
+      navigate('/reviews');
+      return;
+    }
+    if (notif.type.includes('BOOKING')) {
+      navigate('/bookings');
+      return;
+    }
+    if (notif.type.includes('MESSAGE')) {
+      navigate('/messages');
+      return;
+    }
+    if (notif.type.includes('COMMUNITY')) {
+      navigate('/community');
+      return;
     }
   };
 

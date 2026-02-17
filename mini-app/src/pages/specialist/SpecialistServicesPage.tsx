@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus,
   Edit,
@@ -9,6 +9,9 @@ import {
   ToggleRight,
   Briefcase,
   Search,
+  Camera,
+  X,
+  ImageIcon,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -35,6 +38,7 @@ interface SpecialistService {
   basePrice?: string;
   currency: string;
   isActive: boolean;
+  images?: string[];
 }
 
 interface ServiceFormData {
@@ -44,6 +48,7 @@ interface ServiceFormData {
   duration: number;
   price: number;
   currency: string;
+  images: string[];
 }
 
 export const SpecialistServicesPage: React.FC = () => {
@@ -57,6 +62,8 @@ export const SpecialistServicesPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState<SpecialistService | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ServiceFormData>({
     name: '',
     description: '',
@@ -64,6 +71,7 @@ export const SpecialistServicesPage: React.FC = () => {
     duration: 60,
     price: 0,
     currency: 'UAH',
+    images: [],
   });
 
   const fetchData = useCallback(async () => {
@@ -77,12 +85,20 @@ export const SpecialistServicesPage: React.FC = () => {
       if (servicesData.status === 'fulfilled') {
         const raw: any = servicesData.value;
         const arr = Array.isArray(raw) ? raw : raw?.services || [];
-        setServices(arr.map((s: any) => ({
-          ...s,
-          price: Number(s.price) || Number(s.basePrice) || 0,
-          category: typeof s.category === 'string' ? s.category : s.category?.name || '',
-          categoryId: typeof s.category === 'object' ? s.category?.id : s.categoryId || '',
-        })));
+        setServices(arr.map((s: any) => {
+          let parsedImages: string[] = [];
+          if (Array.isArray(s.images)) parsedImages = s.images;
+          else if (typeof s.images === 'string') {
+            try { parsedImages = JSON.parse(s.images); } catch { parsedImages = []; }
+          }
+          return {
+            ...s,
+            price: Number(s.price) || Number(s.basePrice) || 0,
+            category: typeof s.category === 'string' ? s.category : s.category?.name || '',
+            categoryId: typeof s.category === 'object' ? s.category?.id : s.categoryId || '',
+            images: parsedImages,
+          };
+        }));
       }
       if (categoriesData.status === 'fulfilled') {
         const raw: any = categoriesData.value;
@@ -106,10 +122,11 @@ export const SpecialistServicesPage: React.FC = () => {
         duration: service.duration,
         price: service.price,
         currency: service.currency || 'UAH',
+        images: service.images || [],
       });
     } else {
       setEditingService(null);
-      setFormData({ name: '', description: '', categoryId: '', duration: 60, price: 0, currency: 'UAH' });
+      setFormData({ name: '', description: '', categoryId: '', duration: 60, price: 0, currency: 'UAH', images: [] });
     }
     setShowForm(true);
   };
@@ -122,11 +139,15 @@ export const SpecialistServicesPage: React.FC = () => {
 
     try {
       setSaving(true);
+      const submitData = {
+        ...formData,
+        images: formData.images.length > 0 ? formData.images : undefined,
+      };
       if (editingService) {
-        await apiService.updateService(editingService.id, formData);
+        await apiService.updateService(editingService.id, submitData);
         dispatch(addToast({ type: 'success', title: t(commonStrings, 'success', locale), message: t(specialistServicesStrings, 'serviceUpdated', locale) }));
       } else {
-        await apiService.createService(formData);
+        await apiService.createService(submitData);
         dispatch(addToast({ type: 'success', title: t(commonStrings, 'success', locale), message: t(specialistServicesStrings, 'serviceCreated', locale) }));
       }
       hapticFeedback.notificationSuccess();
@@ -171,6 +192,34 @@ export const SpecialistServicesPage: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        if (file.size > 10 * 1024 * 1024) {
+          dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Max 10MB' }));
+          continue;
+        }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) continue;
+        const result = await apiService.uploadFile(file, 'service');
+        setFormData(p => ({ ...p, images: [...p.images, result.url] }));
+      }
+      hapticFeedback.notificationSuccess();
+    } catch {
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Upload failed' }));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(p => ({ ...p, images: p.images.filter((_, i) => i !== index) }));
+    hapticFeedback.selectionChanged();
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
   }
@@ -205,10 +254,14 @@ export const SpecialistServicesPage: React.FC = () => {
             services.map(service => (
               <Card key={service.id}>
                 <div className="flex items-start gap-3">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden ${
                     service.isActive ? 'bg-accent-primary/10' : 'bg-bg-secondary'
                   }`}>
-                    <Briefcase size={22} className={service.isActive ? 'text-accent-primary' : 'text-text-muted'} />
+                    {service.images && service.images.length > 0 ? (
+                      <img src={service.images[0]} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Briefcase size={22} className={service.isActive ? 'text-accent-primary' : 'text-text-muted'} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -320,6 +373,51 @@ export const SpecialistServicesPage: React.FC = () => {
               onChange={e => setFormData(p => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
               icon={<DollarSign size={16} />}
             />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
+              {locale === 'uk' ? 'Фото послуги' : locale === 'ru' ? 'Фото услуги' : 'Service Photos'}
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed transition-colors ${
+                uploading
+                  ? 'border-accent-primary/30 bg-accent-primary/5 text-accent-primary'
+                  : 'border-white/10 bg-bg-secondary text-text-secondary hover:border-accent-primary/50'
+              }`}
+            >
+              {uploading ? (
+                <><LoadingSpinner size="sm" /><span className="text-sm">{locale === 'uk' ? 'Завантаження...' : locale === 'ru' ? 'Загрузка...' : 'Uploading...'}</span></>
+              ) : (
+                <><Camera size={18} /><span className="text-sm font-medium">{locale === 'uk' ? 'Додати фото' : locale === 'ru' ? 'Добавить фото' : 'Add Photos'}</span></>
+              )}
+            </button>
+            {formData.images.length > 0 && (
+              <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                {formData.images.map((url, index) => (
+                  <div key={`${url}-${index}`} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-bg-secondary">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center"
+                    >
+                      <X size={10} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

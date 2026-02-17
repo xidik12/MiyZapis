@@ -631,6 +631,20 @@ class ApiService {
     return { url: data[0].url, filename: data[0].filename };
   }
 
+  // ==================== Review Reactions ====================
+  async reactToReview(reviewId: string, reactionType: 'LIKE' | 'DISLIKE') {
+    return this.post(`/reviews/${reviewId}/react`, { reactionType });
+  }
+
+  async reportReview(reviewId: string, reason: string, details?: string) {
+    return this.post(`/reviews/${reviewId}/report`, { reason, details });
+  }
+
+  // ==================== Help Contact Methods ====================
+  async getContactMethods() {
+    return this.get('/help/contact-methods');
+  }
+
   // Health check
   async healthCheck() {
     return this.get('/health');

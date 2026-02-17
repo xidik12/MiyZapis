@@ -11,6 +11,7 @@ import { RootState, AppDispatch } from '@/store';
 import { fetchBookingsAsync, cancelBookingAsync } from '@/store/slices/bookingsSlice';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { bookingsStrings, commonStrings } from '@/utils/translations';
+import apiService from '@/services/api.service';
 import { format, parseISO } from 'date-fns';
 
 type BookingTab = 'upcoming' | 'past';
@@ -214,7 +215,8 @@ export const BookingsPage: React.FC = () => {
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          alert('Reschedule feature coming soon');
+                          // Navigate to booking detail for reschedule options
+                          navigate(`/booking/${booking.id}`);
                         }}
                       >
                         {s('reschedule')}
@@ -222,9 +224,25 @@ export const BookingsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          alert('This will send a message via the bot');
+                          hapticFeedback.impactLight();
+                          try {
+                            // Create or get conversation with specialist
+                            const specialistUserId = booking.specialist?.userId || booking.specialist?.id;
+                            if (specialistUserId) {
+                              const conv = await apiService.createConversation(specialistUserId) as any;
+                              const convId = conv?.id || conv?.conversationId;
+                              if (convId) {
+                                navigate(`/messages/${convId}`);
+                                return;
+                              }
+                            }
+                            // Fallback: navigate to messages list
+                            navigate('/messages');
+                          } catch {
+                            navigate('/messages');
+                          }
                         }}
                       >
                         <MessageCircle size={16} />
