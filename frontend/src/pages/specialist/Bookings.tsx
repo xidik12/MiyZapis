@@ -1464,7 +1464,7 @@ const SpecialistBookings: React.FC = () => {
                                   : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
                                 )
                                 : (booking.specialist
-                                ? `${((booking.specialist as any).firstName || (booking.specialist as any).user?.firstName || '')?.[0] || ''}${((booking.specialist as any).lastName || (booking.specialist as any).user?.lastName || '')?.[0] || ''}`
+                                ? `${((booking.specialist as any).firstName || (booking.specialist as any).user?.firstName || 'U')[0]}${((booking.specialist as any).lastName || (booking.specialist as any).user?.lastName || '')[0] || ''}`
                                   : 'US'
                                 )
                               }
@@ -1517,7 +1517,7 @@ const SpecialistBookings: React.FC = () => {
                       {getStatusBadge(booking.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
+                      {formatPrice(booking.totalAmount || 0, getBookingCurrency(booking))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${

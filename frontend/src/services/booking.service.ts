@@ -288,7 +288,7 @@ export class BookingService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get upcoming bookings');
     }
-    return response.data.bookings;
+    return response.data.bookings || [];
   }
 
   // Get booking statistics

@@ -375,7 +375,7 @@ export const PostDetailPage: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
+      <div className="flex-1 overflow-y-auto pb-36 page-stagger">
         {/* Post Content */}
         <div className="px-4 pt-4">
           <Card>
@@ -538,7 +538,7 @@ export const PostDetailPage: React.FC = () => {
       </div>
 
       {/* Fixed Comment Input */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 px-4 py-3 z-20">
+      <div className="fixed bottom-14 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 px-4 py-3 z-40">
         {replyingTo && (
           <div className="flex items-center justify-between mb-2 px-1">
             <div className="flex items-center gap-1.5">

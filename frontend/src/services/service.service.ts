@@ -88,7 +88,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get featured services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Get services by category
@@ -109,7 +109,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get similar services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Get services by location
@@ -141,7 +141,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get trending services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Search suggestions/autocomplete
@@ -189,7 +189,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get service availability');
     }
-    return response.data.availability;
+    return response.data.availability || [];
   }
 
   // Report service issue
@@ -240,7 +240,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get recently viewed services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Track service view
@@ -259,7 +259,7 @@ export class ServiceService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get recommended services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Get service comparison data

@@ -581,7 +581,7 @@ const CustomerBookings: React.FC = () => {
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{t('bookings.amount')}</p>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {formatPrice(booking.totalAmount)}
+                          {formatPrice(booking.totalAmount || 0)}
                         </p>
                       </div>
                     </div>
@@ -696,7 +696,7 @@ const CustomerBookings: React.FC = () => {
                             {getStatusBadge(booking.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {formatPrice(booking.totalAmount)}
+                            {formatPrice(booking.totalAmount || 0)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">

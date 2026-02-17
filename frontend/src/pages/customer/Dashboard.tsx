@@ -60,8 +60,10 @@ interface RecentBooking {
   specialistName: string;
   serviceName: string;
   date: string;
+  time: string;
   status: 'completed' | 'confirmed' | 'pending' | 'cancelled';
   amount: number;
+  currency?: 'USD' | 'EUR' | 'UAH';
 }
 
 interface FavoriteSpecialist {
@@ -192,8 +194,10 @@ const CustomerDashboard: React.FC = () => {
           specialistName: b.specialist ? `${b.specialist.firstName || ''} ${b.specialist.lastName || ''}`.trim() : b.specialistName || 'Specialist',
           serviceName: b.service?.name || b.serviceName || 'Service',
           date: new Date(b.scheduledAt).toLocaleDateString(),
+          time: new Date(b.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           status: 'completed' as const,
-          amount: b.totalAmount,
+          amount: b.totalAmount || 0,
+          currency: (b.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD',
         }));
         setRecentBookings(recent);
 
@@ -573,7 +577,7 @@ const CustomerDashboard: React.FC = () => {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
-                        {formatPrice(booking.amount, booking.currency)}
+                        {formatPrice(booking.amount || 0, booking.currency || 'USD')}
                       </p>
                       <span className={`inline-block px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {getStatusText(booking.status)}
@@ -628,7 +632,7 @@ const CustomerDashboard: React.FC = () => {
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-xs sm:text-sm">
-                          {specialist.name.split(' ').map(n => n[0]).join('')}
+                          {(specialist.name || 'S').split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">

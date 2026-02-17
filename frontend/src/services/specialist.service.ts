@@ -30,7 +30,10 @@ export class SpecialistService {
     }
     
     // Extract the specialist data from the nested response
-    const specialistData = response.data.specialist;
+    const specialistData = response.data.specialist || response.data;
+    if (!specialistData || typeof specialistData !== 'object') {
+      throw new Error('Invalid specialist data in response');
+    }
     logger.debug('Raw specialist data from API:', specialistData);
 
     // Check if avatar URLs are accessible (basic validation)
@@ -86,10 +89,10 @@ export class SpecialistService {
       country: specialistData.location?.country || specialistData.country,
       address: specialistData.location?.address || specialistData.address,
       // Ensure specialties is properly handled
-      specialties: Array.isArray(specialistData.specialties) 
-        ? specialistData.specialties 
-        : (typeof specialistData.specialties === 'string' 
-           ? JSON.parse(specialistData.specialties) 
+      specialties: Array.isArray(specialistData.specialties)
+        ? specialistData.specialties
+        : (typeof specialistData.specialties === 'string'
+           ? (() => { try { return JSON.parse(specialistData.specialties); } catch { return []; } })()
            : []),
       // Ensure portfolio images are properly structured
       portfolioImages: (() => {
@@ -544,7 +547,7 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get top services');
     }
-    return response.data.services;
+    return response.data.services || [];
   }
 
   // Get customer insights

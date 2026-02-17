@@ -680,7 +680,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {booking.customerName?.split(' ').map(n => n[0]).join('')}
+                      {(booking.customerName || 'U').split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
@@ -721,7 +721,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {appointment.customerName.split(' ').map(n => n[0]).join('')}
+                      {(appointment.customerName || 'U').split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>

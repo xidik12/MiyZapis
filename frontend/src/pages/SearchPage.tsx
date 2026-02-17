@@ -322,8 +322,8 @@ const SearchPage: React.FC = () => {
   const getFilteredServices = () => {
     let list = services;
     if (showFavoritesOnly) {
-      const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.specialist.id);
-      list = list.filter(service => favoriteSpecialistIds.includes(service.specialist.id));
+      const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.specialist?.id).filter(Boolean);
+      list = list.filter(service => favoriteSpecialistIds.includes(service.specialist?.id));
     }
     if (availableNow) {
       // Heuristic: treat responseTime <= 30 minutes as available now
@@ -365,16 +365,16 @@ const SearchPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="relative flex-shrink-0 self-center sm:self-start">
           <Avatar
-            src={service.specialist.user.avatar}
-            alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+            src={service.specialist?.user?.avatar}
+            alt={`${service.specialist?.user?.firstName || ''} ${service.specialist?.user?.lastName || ''}`}
             size="lg"
             fallbackIcon={false}
             lazy={true}
           />
-          {service.specialist.user.isVerified && (
+          {service.specialist?.user?.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}
-          {service.specialist.isOnline && (
+          {service.specialist?.isOnline && (
             <>
               <span className="absolute -top-1 -right-1 inline-flex h-4 w-4">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -392,13 +392,13 @@ const SearchPage: React.FC = () => {
             <div className="flex items-center space-x-1">
               {renderStars(service.rating)}
               <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                {service.rating.toFixed(1)} ({service.reviewCount})
+                {(service.rating ?? 0).toFixed(1)} ({service.reviewCount ?? 0})
               </span>
             </div>
           </div>
 
           <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-            {translateProfession(service.specialist.businessName, t)} • {service.specialist.user.firstName} {service.specialist.user.lastName}
+            {translateProfession(service.specialist?.businessName, t)} • {service.specialist?.user?.firstName || ''} {service.specialist?.user?.lastName || ''}
           </p>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -425,7 +425,7 @@ const SearchPage: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-              {(service.specialist.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
+              {(service.specialist?.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist?.experience || ''}
               {typeof service.specialist.responseTime === 'number' && (
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
                   ~{service.specialist.responseTime} {t('common.minutes') || 'min'}
@@ -437,7 +437,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
             </div>
           </div>
