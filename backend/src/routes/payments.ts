@@ -62,7 +62,9 @@ router.get('/coinbase/charge/:chargeCode', authenticateToken, PaymentController.
 // Coinbase Commerce webhook (no authentication required)
 router.post('/webhooks/coinbase', PaymentController.handleCoinbaseWebhook);
 
-// Development routes (for testing payments without Stripe)
-router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
+// Development routes (for testing payments without Stripe) — disabled in production
+if (process.env.NODE_ENV !== 'production') {
+  router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
+}
 
 export default router;

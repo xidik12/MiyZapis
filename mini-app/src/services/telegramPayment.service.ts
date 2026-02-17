@@ -216,7 +216,7 @@ class TelegramPaymentService {
         date: bookingData.date,
         time: bookingData.time
       }),
-      providerToken: process.env.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN || '',
+      providerToken: import.meta.env.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN || '',
       currency: bookingData.currency,
       amount: Math.round(bookingData.amount * 100), // Convert to cents
       photoUrl: '/api/placeholder/400/300',
@@ -248,7 +248,7 @@ class TelegramPaymentService {
         type: 'deposit',
         bookingId: depositData.bookingId
       }),
-      providerToken: process.env.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN || '',
+      providerToken: import.meta.env.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN || '',
       currency: depositData.currency,
       amount: Math.round(depositData.amount * 100),
       needName: true,

@@ -1111,17 +1111,28 @@ export class BookingService {
           });
 
           // Create wallet transaction record
+          const customerData = await tx.user.findUnique({
+            where: { id: booking.customerId },
+            select: { walletBalance: true, currency: true }
+          });
+          const balanceBefore = Number(customerData?.walletBalance || 0) - refundAmount;
+          const balanceAfter = Number(customerData?.walletBalance || 0);
+
           await tx.walletTransaction.create({
             data: {
               userId: booking.customerId,
+              bookingId: bookingId,
               amount: refundAmount,
+              currency: customerData?.currency || 'USD',
+              balanceBefore: balanceBefore,
+              balanceAfter: balanceAfter,
               type: 'REFUND',
+              reason: 'CANCELLATION_CREDIT',
               description: isSpecialistCancellation
                 ? 'Booking cancellation refund (specialist cancelled)'
                 : 'Booking cancellation refund',
-              relatedBookingId: bookingId,
               status: 'COMPLETED',
-              createdAt: new Date()
+              processedAt: new Date()
             }
           });
 

@@ -57,14 +57,6 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
   }
 });
 
-// Health check for setup endpoint
-router.get('/setup-status', async (req: Request, res: Response) => {
-  res.json({
-    status: 'Setup endpoint available',
-    environment: process.env.NODE_ENV,
-    hasAdminEmail: !!process.env.ADMIN_EMAIL,
-    hasAdminPassword: !!process.env.ADMIN_PASSWORD
-  });
-});
+// REMOVED: setup-status endpoint revealed admin credential configuration state to unauthenticated users
 
 export default router;

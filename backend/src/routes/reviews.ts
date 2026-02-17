@@ -689,7 +689,7 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
     await prisma.user.update({
       where: { id: review.customerId },
       data: {
-        loyaltyPoints: { decrement: 50 }
+        loyaltyPoints: { decrement: 5 }
       }
     });
 
@@ -697,7 +697,7 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
       data: {
         userId: review.customerId,
         type: 'REDEEMED',
-        points: -5, // Deduct the new amount (5 points)
+        points: -5,
         reason: 'Review deletion',
         description: 'Deducted 5 points for deleted review',
         referenceId: id
@@ -962,22 +962,28 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
     const { id } = req.params;
     const { reason, description } = req.body;
 
-    // In production, you'd have a reports table
-    // For now, we'll create a notification for admin
-    await prisma.notification.create({
-      data: {
-        userId: 'admin-user-id', // Would be actual admin user ID
-        type: 'REVIEW_REPORTED',
-        title: 'Review Reported',
-        message: `Review ${id} has been reported for: ${reason}`,
-        data: JSON.stringify({
-          reviewId: id,
-          reportedBy: userId,
-          reason,
-          description
-        })
-      }
+    // Find an admin user to send the notification to
+    const adminUser = await prisma.user.findFirst({
+      where: { userType: 'ADMIN', isActive: true },
+      select: { id: true }
     });
+
+    if (adminUser) {
+      await prisma.notification.create({
+        data: {
+          userId: adminUser.id,
+          type: 'REVIEW_REPORTED',
+          title: 'Review Reported',
+          message: `Review ${id} has been reported for: ${reason}`,
+          data: JSON.stringify({
+            reviewId: id,
+            reportedBy: userId,
+            reason,
+            description
+          })
+        }
+      });
+    }
 
     return res.json(createSuccessResponse({
       message: 'Review report submitted successfully',
