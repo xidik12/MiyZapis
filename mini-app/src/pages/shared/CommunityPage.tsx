@@ -7,31 +7,29 @@ import {
   Search,
   Plus,
   User,
-  Image,
-  Send,
+  Tag,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Sheet } from '@/components/ui/Sheet';
-import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { useAppSelector } from '@/hooks/redux';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
-import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
-import { communityStrings, commonStrings } from '@/utils/translations';
+import { communityStrings } from '@/utils/translations';
 
-// Matches backend response from getPosts() exactly
 interface CommunityPost {
   id: string;
   title: string;
   content: string;
   type: string;
   image?: string;
+  images?: string[];
+  price?: number | null;
+  currency?: string | null;
   author: {
     id: string;
     firstName: string;
@@ -45,7 +43,11 @@ interface CommunityPost {
   createdAt: string;
 }
 
-const POST_TYPES = ['ALL', 'DISCUSSION', 'TIP', 'QUESTION', 'SHOWCASE', 'EVENT'];
+const POST_TYPES = ['ALL', 'DISCUSSION', 'SALE'];
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  UAH: '₴', USD: '$', EUR: '€', GBP: '£',
+};
 
 export const CommunityPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,9 +62,8 @@ export const CommunityPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [showCreatePost, setShowCreatePost] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', content: '', type: 'DISCUSSION' });
-  const [creating, setCreating] = useState(false);
+
+  const cm = (key: string) => t(communityStrings, key, locale);
 
   const fetchPosts = useCallback(async (pageNum: number, append = false) => {
     try {
@@ -73,14 +74,25 @@ export const CommunityPage: React.FC = () => {
 
       const data = await apiService.getCommunityPosts(params) as any;
       const rawItems = data.items || data.posts || (Array.isArray(data) ? data : []);
-      const items = rawItems.map((p: any) => ({
-        ...p,
-        likeCount: p.likeCount ?? 0,
-        commentCount: p.commentCount ?? 0,
-        viewCount: p.viewCount ?? 0,
-        isLiked: p.isLiked ?? false,
-        author: p.author || { id: '', firstName: '?', lastName: '' },
-      }));
+      const items = rawItems.map((p: any) => {
+        // Parse images from JSON string if needed
+        let parsedImages: string[] = [];
+        if (Array.isArray(p.images)) {
+          parsedImages = p.images;
+        } else if (typeof p.images === 'string') {
+          try { parsedImages = JSON.parse(p.images); } catch { parsedImages = []; }
+        }
+
+        return {
+          ...p,
+          images: parsedImages,
+          likeCount: p.likeCount ?? 0,
+          commentCount: p.commentCount ?? 0,
+          viewCount: p.viewCount ?? 0,
+          isLiked: p.isLiked ?? false,
+          author: p.author || { id: '', firstName: '?', lastName: '' },
+        };
+      });
       if (append) {
         setPosts(prev => [...prev, ...items]);
       } else {
@@ -132,32 +144,6 @@ export const CommunityPage: React.FC = () => {
     }
   };
 
-  const handleCreatePost = async () => {
-    if (!newPost.title.trim() || !newPost.content.trim()) {
-      const msg = locale === 'uk' ? 'Заголовок та вміст обов\'язкові' : locale === 'ru' ? 'Заголовок и содержание обязательны' : 'Title and content are required';
-      dispatch(addToast({ type: 'warning', title: t(communityStrings, 'missingFields', locale), message: msg }));
-      return;
-    }
-
-    try {
-      setCreating(true);
-      await apiService.createCommunityPost(newPost);
-      const successTitle = locale === 'uk' ? 'Опубліковано!' : locale === 'ru' ? 'Опубликовано!' : 'Posted!';
-      const successMsg = locale === 'uk' ? 'Ваш пост опубліковано' : locale === 'ru' ? 'Ваш пост опубликован' : 'Your post has been published';
-      dispatch(addToast({ type: 'success', title: successTitle, message: successMsg }));
-      hapticFeedback.notificationSuccess();
-      setShowCreatePost(false);
-      setNewPost({ title: '', content: '', type: 'DISCUSSION' });
-      fetchPosts(1);
-    } catch {
-      const errorMsg = locale === 'uk' ? 'Не вдалося створити пост' : locale === 'ru' ? 'Не удалось создать пост' : 'Failed to create post';
-      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
-      hapticFeedback.notificationError();
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -177,14 +163,33 @@ export const CommunityPage: React.FC = () => {
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
+  const getTypeBadge = (type: string) => {
+    if (type === 'SALE') {
+      return { label: cm('sale'), color: 'bg-accent-green/15 text-accent-green' };
+    }
+    return { label: cm('discussion'), color: 'bg-bg-secondary text-text-secondary' };
+  };
+
+  const getFirstImage = (post: CommunityPost): string | null => {
+    if (post.images && post.images.length > 0) return post.images[0];
+    if (post.image) return post.image;
+    return null;
+  };
+
+  const formatPrice = (price: number | null | undefined, currency: string | null | undefined) => {
+    if (price == null) return null;
+    const sym = CURRENCY_SYMBOLS[(currency || 'UAH').toUpperCase()] || currency || '';
+    return `${sym}${Number(price).toLocaleString()}`;
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title={t(communityStrings, 'title', locale)}
+        title={cm('title')}
         rightContent={
           isAuthenticated ? (
             <button
-              onClick={() => { setShowCreatePost(true); hapticFeedback.impactLight(); }}
+              onClick={() => { navigate('/community/create'); hapticFeedback.impactLight(); }}
               className="w-8 h-8 bg-accent-primary rounded-lg flex items-center justify-center"
             >
               <Plus size={18} className="text-white" />
@@ -203,7 +208,7 @@ export const CommunityPage: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder={t(communityStrings, 'searchPosts', locale)}
+              placeholder={cm('searchPosts')}
               className="input-telegram w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
             />
           </div>
@@ -218,11 +223,13 @@ export const CommunityPage: React.FC = () => {
                 onClick={() => { setActiveFilter(type); hapticFeedback.selectionChanged(); }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
                   activeFilter === type
-                    ? 'bg-accent-primary text-white'
+                    ? type === 'SALE'
+                      ? 'bg-accent-green text-white'
+                      : 'bg-accent-primary text-white'
                     : 'bg-bg-secondary text-text-secondary'
                 }`}
               >
-                {type === 'ALL' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
+                {type === 'ALL' ? cm('all') : type === 'SALE' ? cm('sale') : cm('discussion')}
               </button>
             ))}
           </div>
@@ -237,73 +244,88 @@ export const CommunityPage: React.FC = () => {
           ) : posts.length === 0 ? (
             <Card className="text-center py-12">
               <MessageCircle size={40} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-text-primary font-medium">{t(communityStrings, 'noPosts', locale)}</p>
-              <p className="text-text-secondary text-sm mt-1">{t(communityStrings, 'beFirst', locale)}</p>
+              <p className="text-text-primary font-medium">{cm('noPosts')}</p>
+              <p className="text-text-secondary text-sm mt-1">{cm('beFirst')}</p>
               {isAuthenticated && (
-                <Button size="sm" onClick={() => setShowCreatePost(true)} className="mt-4">
-                  {t(communityStrings, 'createPost', locale)}
+                <Button size="sm" onClick={() => navigate('/community/create')} className="mt-4">
+                  {cm('createPost')}
                 </Button>
               )}
             </Card>
           ) : (
             <>
-              {posts.map(post => (
-                <Card key={post.id} hover onClick={() => { hapticFeedback.impactLight(); navigate(`/community/post/${post.id}`); }}>
-                  {/* Author */}
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
-                      {post.author.avatar ? (
-                        <img src={post.author.avatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User size={16} className="text-text-secondary" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">
-                        {post.author.firstName} {post.author.lastName}
-                      </p>
-                      <p className="text-xs text-text-secondary">{formatDate(post.createdAt)}</p>
-                    </div>
-                    <span className="px-2 py-0.5 bg-bg-secondary rounded-full text-xs text-text-secondary">
-                      {post.type.charAt(0) + post.type.slice(1).toLowerCase()}
-                    </span>
-                  </div>
+              {posts.map(post => {
+                const badge = getTypeBadge(post.type);
+                const firstImage = getFirstImage(post);
+                const priceStr = post.type === 'SALE' ? formatPrice(post.price, post.currency) : null;
 
-                  {/* Content */}
-                  <h3 className="text-sm font-semibold text-text-primary mb-1">{post.title}</h3>
-                  <p className="text-sm text-text-secondary line-clamp-3 mb-3">{post.content}</p>
+                return (
+                  <Card key={post.id} hover onClick={() => { hapticFeedback.impactLight(); navigate(`/community/post/${post.id}`); }}>
+                    {/* Author */}
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
+                        {post.author.avatar ? (
+                          <img src={post.author.avatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User size={16} className="text-text-secondary" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {post.author.firstName} {post.author.lastName}
+                        </p>
+                        <p className="text-xs text-text-secondary">{formatDate(post.createdAt)}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                    </div>
 
-                  {post.image && (
-                    <div className="rounded-xl overflow-hidden mb-3 max-h-48">
-                      <img src={post.image} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )}
+                    {/* Content */}
+                    <h3 className="text-sm font-semibold text-text-primary mb-1">{post.title}</h3>
+                    <p className="text-sm text-text-secondary line-clamp-3 mb-3">{post.content}</p>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-5 pt-2 border-t border-white/5">
-                    <button
-                      onClick={() => handleLike(post)}
-                      className="flex items-center gap-1.5"
-                    >
-                      <Heart
-                        size={16}
-                        className={post.isLiked ? 'text-accent-red fill-accent-red' : 'text-text-secondary'}
-                      />
-                      <span className="text-xs text-text-secondary">{post.likeCount}</span>
-                    </button>
-                    <div className="flex items-center gap-1.5">
-                      <MessageCircle size={16} className="text-text-secondary" />
-                      <span className="text-xs text-text-secondary">{post.commentCount}</span>
+                    {/* Price badge for SALE posts */}
+                    {priceStr && (
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Tag size={14} className="text-accent-green" />
+                        <span className="text-sm font-bold text-accent-green">{priceStr}</span>
+                      </div>
+                    )}
+
+                    {/* Image */}
+                    {firstImage && (
+                      <div className="rounded-xl overflow-hidden mb-3 max-h-48">
+                        <img src={firstImage} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-5 pt-2 border-t border-white/5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleLike(post); }}
+                        className="flex items-center gap-1.5"
+                      >
+                        <Heart
+                          size={16}
+                          className={post.isLiked ? 'text-accent-red fill-accent-red' : 'text-text-secondary'}
+                        />
+                        <span className="text-xs text-text-secondary">{post.likeCount}</span>
+                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <MessageCircle size={16} className="text-text-secondary" />
+                        <span className="text-xs text-text-secondary">{post.commentCount}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Eye size={16} className="text-text-secondary" />
+                        <span className="text-xs text-text-secondary">{post.viewCount}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Eye size={16} className="text-text-secondary" />
-                      <span className="text-xs text-text-secondary">{post.viewCount}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
 
               {hasMore && (
                 <Button
@@ -318,56 +340,6 @@ export const CommunityPage: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Create Post Sheet */}
-      <Sheet isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} title={t(communityStrings, 'createPost', locale)}>
-        <div className="space-y-4">
-          <Input
-            label={t(communityStrings, 'postTitle', locale)}
-            value={newPost.title}
-            onChange={e => setNewPost(p => ({ ...p, title: e.target.value }))}
-            placeholder={locale === 'uk' ? 'Заголовок посту' : locale === 'ru' ? 'Заголовок поста' : 'Post title'}
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(communityStrings, 'content', locale)}</label>
-            <textarea
-              value={newPost.content}
-              onChange={e => setNewPost(p => ({ ...p, content: e.target.value }))}
-              rows={4}
-              className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder={t(communityStrings, 'whatsOnMind', locale)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(communityStrings, 'type', locale)}</label>
-            <div className="flex flex-wrap gap-2">
-              {POST_TYPES.filter(t => t !== 'ALL').map(type => (
-                <button
-                  key={type}
-                  onClick={() => setNewPost(p => ({ ...p, type }))}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    newPost.type === type
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-bg-secondary text-text-secondary'
-                  }`}
-                >
-                  {type.charAt(0) + type.slice(1).toLowerCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button onClick={handleCreatePost} className="w-full" disabled={creating}>
-            <Send size={16} className="mr-2" />
-            {creating
-              ? (locale === 'uk' ? 'Публікація...' : locale === 'ru' ? 'Публикация...' : 'Publishing...')
-              : t(communityStrings, 'publishPost', locale)
-            }
-          </Button>
-        </div>
-      </Sheet>
     </div>
   );
 };

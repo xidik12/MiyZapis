@@ -294,8 +294,33 @@ class ApiService {
     return this.get('/community/posts', params);
   }
 
-  async createCommunityPost(data: { title: string; content: string; type: string; image?: string }) {
+  async createCommunityPost(data: {
+    title: string;
+    content: string;
+    type: string;
+    price?: number;
+    currency?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    images?: string[];
+  }) {
     return this.post('/community/posts', data);
+  }
+
+  async updateCommunityPost(id: string, data: {
+    title?: string;
+    content?: string;
+    price?: number;
+    currency?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    images?: string[];
+  }) {
+    return this.put(`/community/posts/${id}`, data);
+  }
+
+  async deleteCommunityPost(id: string) {
+    return this.delete(`/community/posts/${id}`);
   }
 
   async likeCommunityPost(postId: string) {
@@ -587,6 +612,23 @@ class ApiService {
   // ==================== Onboarding ====================
   async completeOnboarding(data: any) {
     return this.post('/specialists/profile', data);
+  }
+
+  // ==================== File Upload ====================
+  async uploadFile(file: File, purpose: string = 'portfolio'): Promise<{ url: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('files', file);
+
+    const response = await this.api.post(`/files/upload?purpose=${purpose}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
+    });
+
+    const data = response.data?.data;
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      throw new Error('Upload failed');
+    }
+    return { url: data[0].url, filename: data[0].filename };
   }
 
   // Health check

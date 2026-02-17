@@ -10,12 +10,18 @@ import {
   Trash2,
   CornerDownRight,
   Share,
-  ArrowLeft,
+  Tag,
+  Phone,
+  Mail,
+  Edit3,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Sheet } from '@/components/ui/Sheet';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
@@ -32,10 +38,16 @@ interface PostAuthor {
 
 interface CommunityPost {
   id: string;
+  authorId?: string;
   title: string;
   content: string;
   type: string;
   image?: string;
+  images?: string[];
+  price?: number | null;
+  currency?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
   author: PostAuthor;
   likeCount: number;
   commentCount: number;
@@ -52,6 +64,10 @@ interface Comment {
   replies?: Comment[];
   createdAt: string;
 }
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  UAH: '₴', USD: '$', EUR: '€', GBP: '£',
+};
 
 export const PostDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +86,8 @@ export const PostDetailPage: React.FC = () => {
   const [replyingTo, setReplyingTo] = useState<{ id: string; authorName: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const s = (key: string) => t(postDetailStrings, key, locale);
   const cm = (key: string) => t(communityStrings, key, locale);
@@ -81,7 +99,14 @@ export const PostDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await apiService.getCommunityPost(id) as any;
-      setPost(data);
+      // Parse images
+      let parsedImages: string[] = [];
+      if (Array.isArray(data.images)) {
+        parsedImages = data.images;
+      } else if (typeof data.images === 'string') {
+        try { parsedImages = JSON.parse(data.images); } catch { parsedImages = []; }
+      }
+      setPost({ ...data, images: parsedImages });
     } catch {
       setError(c('error'));
     } finally {
@@ -94,16 +119,13 @@ export const PostDetailPage: React.FC = () => {
     try {
       setCommentsLoading(true);
       const data = await apiService.getPostComments(id) as any;
-      const items: Comment[] = data.items || data || [];
-      // Nest replies under their parent comments
+      const items: Comment[] = data.items || data.comments || data || [];
       const topLevel: Comment[] = [];
       const repliesMap: Record<string, Comment[]> = {};
 
       items.forEach((comment: Comment) => {
         if (comment.parentId) {
-          if (!repliesMap[comment.parentId]) {
-            repliesMap[comment.parentId] = [];
-          }
+          if (!repliesMap[comment.parentId]) repliesMap[comment.parentId] = [];
           repliesMap[comment.parentId].push(comment);
         } else {
           topLevel.push(comment);
@@ -133,33 +155,24 @@ export const PostDetailPage: React.FC = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = diffMs / (1000 * 60 * 60);
 
-    if (diffHrs < 1) {
-      return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
-    }
+    if (diffHrs < 1) return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
     if (diffHrs < 24) {
       const hrs = Math.floor(diffHrs);
       return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
     }
-    if (diffHrs < 48) {
-      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
-    }
+    if (diffHrs < 48) return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   const handleLike = async () => {
     if (!post) return;
-    if (!isAuthenticated) {
-      navigate('/auth');
-      return;
-    }
+    if (!isAuthenticated) { navigate('/auth'); return; }
 
     hapticFeedback.impactLight();
-
-    // Optimistic update
     setPost(prev => prev ? {
       ...prev,
       isLiked: !prev.isLiked,
-      likesCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
+      likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
     } : null);
 
     try {
@@ -169,30 +182,24 @@ export const PostDetailPage: React.FC = () => {
         await apiService.likeCommunityPost(post.id);
       }
     } catch {
-      // Revert on failure
       setPost(prev => prev ? {
         ...prev,
         isLiked: post.isLiked,
-        likesCount: post.likeCount,
+        likeCount: post.likeCount,
       } : null);
     }
   };
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return;
-    if (!isAuthenticated) {
-      navigate('/auth');
-      return;
-    }
+    if (!isAuthenticated) { navigate('/auth'); return; }
 
     try {
       setSubmitting(true);
       hapticFeedback.impactLight();
 
       const data: { content: string; parentId?: string } = { content: commentText.trim() };
-      if (replyingTo) {
-        data.parentId = replyingTo.id;
-      }
+      if (replyingTo) data.parentId = replyingTo.id;
 
       await apiService.createComment(id, data);
       dispatch(addToast({ type: 'success', title: s('commentAdded'), message: '' }));
@@ -200,9 +207,7 @@ export const PostDetailPage: React.FC = () => {
       setCommentText('');
       setReplyingTo(null);
       fetchComments();
-
-      // Update post comment count optimistically
-      setPost(prev => prev ? { ...prev, commentsCount: prev.commentCount + 1 } : null);
+      setPost(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : null);
     } catch {
       dispatch(addToast({ type: 'error', title: c('error'), message: s('commentFailed') }));
       hapticFeedback.notificationError();
@@ -218,11 +223,26 @@ export const PostDetailPage: React.FC = () => {
       await apiService.deleteComment(id, commentId);
       dispatch(addToast({ type: 'success', title: s('commentDeleted'), message: '' }));
       fetchComments();
-      setPost(prev => prev ? { ...prev, commentsCount: Math.max(0, prev.commentCount - 1) } : null);
+      setPost(prev => prev ? { ...prev, commentCount: Math.max(0, prev.commentCount - 1) } : null);
     } catch {
       dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
       hapticFeedback.notificationError();
     }
+  };
+
+  const handleDeletePost = async () => {
+    if (!id) return;
+    try {
+      hapticFeedback.impactLight();
+      await apiService.deleteCommunityPost(id);
+      dispatch(addToast({ type: 'success', title: cm('postDeleted'), message: '' }));
+      hapticFeedback.notificationSuccess();
+      navigate('/community');
+    } catch {
+      dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
+      hapticFeedback.notificationError();
+    }
+    setShowDeleteConfirm(false);
   };
 
   const handleReply = (comment: Comment) => {
@@ -240,6 +260,18 @@ export const PostDetailPage: React.FC = () => {
       });
     }
     hapticFeedback.selectionChanged();
+  };
+
+  const isOwner = post && user && (post.authorId === (user as any).id || post.author?.id === (user as any).id);
+
+  const allImages = post?.images && post.images.length > 0
+    ? post.images
+    : post?.image ? [post.image] : [];
+
+  const formatPostPrice = (price: number | null | undefined, currency: string | null | undefined) => {
+    if (price == null) return null;
+    const sym = CURRENCY_SYMBOLS[(currency || 'UAH').toUpperCase()] || currency || '';
+    return `${sym}${Number(price).toLocaleString()}`;
   };
 
   if (loading) {
@@ -265,6 +297,10 @@ export const PostDetailPage: React.FC = () => {
       </div>
     );
   }
+
+  const typeBadge = post.type === 'SALE'
+    ? { label: cm('sale'), color: 'bg-accent-green/15 text-accent-green' }
+    : { label: cm('discussion'), color: 'bg-accent-primary/15 text-accent-primary' };
 
   const renderComment = (comment: Comment, isReply = false) => (
     <div key={comment.id} className={`${isReply ? 'ml-10' : ''}`}>
@@ -312,7 +348,6 @@ export const PostDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Nested replies */}
       {comment.replies && comment.replies.length > 0 && (
         <div>
           {comment.replies.map(reply => renderComment(reply, true))}
@@ -327,9 +362,16 @@ export const PostDetailPage: React.FC = () => {
         showBackButton
         title={cm('title')}
         rightContent={
-          <button onClick={handleShare} className="p-2 touch-manipulation">
-            <Share size={20} className="text-text-secondary" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <button onClick={() => navigate(`/community/edit/${post.id}`)} className="p-2 touch-manipulation">
+                <Edit3 size={20} className="text-text-secondary" />
+              </button>
+            )}
+            <button onClick={handleShare} className="p-2 touch-manipulation">
+              <Share size={20} className="text-text-secondary" />
+            </button>
+          </div>
         }
       />
 
@@ -354,8 +396,8 @@ export const PostDetailPage: React.FC = () => {
                 </p>
                 <p className="text-xs text-text-secondary">{formatDate(post.createdAt)}</p>
               </div>
-              <span className="px-2.5 py-1 bg-accent-primary/15 text-accent-primary rounded-full text-xs font-medium">
-                {post.type.charAt(0) + post.type.slice(1).toLowerCase()}
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeBadge.color}`}>
+                {typeBadge.label}
               </span>
             </div>
 
@@ -363,10 +405,75 @@ export const PostDetailPage: React.FC = () => {
             <h1 className="text-lg font-bold text-text-primary mb-2">{post.title}</h1>
             <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap mb-3">{post.content}</p>
 
-            {/* Post Image */}
-            {post.image && (
-              <div className="rounded-xl overflow-hidden mb-3">
-                <img src={post.image} alt="" className="w-full object-cover max-h-72" />
+            {/* Price for SALE posts */}
+            {post.type === 'SALE' && post.price != null && (
+              <div className="flex items-center gap-2 mb-3 p-3 bg-accent-green/10 rounded-xl">
+                <Tag size={18} className="text-accent-green" />
+                <span className="text-lg font-bold text-accent-green">
+                  {formatPostPrice(post.price, post.currency)}
+                </span>
+              </div>
+            )}
+
+            {/* Contact info for SALE posts */}
+            {post.type === 'SALE' && (post.contactPhone || post.contactEmail) && (
+              <div className="mb-3 p-3 bg-bg-secondary rounded-xl space-y-2">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{cm('contact')}</p>
+                {post.contactPhone && (
+                  <a
+                    href={`tel:${post.contactPhone}`}
+                    className="flex items-center gap-2 text-sm text-accent-primary"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <Phone size={14} />
+                    {post.contactPhone}
+                  </a>
+                )}
+                {post.contactEmail && (
+                  <a
+                    href={`mailto:${post.contactEmail}`}
+                    className="flex items-center gap-2 text-sm text-accent-primary"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <Mail size={14} />
+                    {post.contactEmail}
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Image Gallery */}
+            {allImages.length > 0 && (
+              <div className="relative rounded-xl overflow-hidden mb-3">
+                <img
+                  src={allImages[currentImageIndex]}
+                  alt=""
+                  className="w-full object-cover max-h-72"
+                />
+                {allImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center"
+                    >
+                      <ChevronLeft size={18} className="text-white" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentImageIndex(i => (i + 1) % allImages.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center"
+                    >
+                      <ChevronRight size={18} className="text-white" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {allImages.map((_, i) => (
+                        <div
+                          key={i}
+                          className={`w-1.5 h-1.5 rounded-full ${i === currentImageIndex ? 'bg-white' : 'bg-white/40'}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -392,6 +499,16 @@ export const PostDetailPage: React.FC = () => {
                 <Eye size={18} className="text-text-secondary" />
                 <span className="text-sm text-text-secondary">{post.viewCount}</span>
               </div>
+
+              {/* Delete button for owner */}
+              {isOwner && (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="ml-auto flex items-center gap-1 text-text-muted hover:text-accent-red transition-colors touch-manipulation"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           </Card>
         </div>
@@ -422,7 +539,6 @@ export const PostDetailPage: React.FC = () => {
 
       {/* Fixed Comment Input */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 px-4 py-3 z-20">
-        {/* Reply indicator */}
         {replyingTo && (
           <div className="flex items-center justify-between mb-2 px-1">
             <div className="flex items-center gap-1.5">
@@ -468,6 +584,22 @@ export const PostDetailPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Delete Confirmation Sheet */}
+      <Sheet isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title={cm('deletePost')}>
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">{cm('deleteConfirm')}</p>
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)} className="flex-1">
+              {c('cancel')}
+            </Button>
+            <Button onClick={handleDeletePost} className="flex-1 !bg-accent-red">
+              <Trash2 size={16} className="mr-2" />
+              {cm('deletePost')}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </div>
   );
 };

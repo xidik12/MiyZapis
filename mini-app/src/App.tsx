@@ -256,6 +256,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/community/edit/:postId"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePostPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/payment/:bookingId"
                   element={
                     <ProtectedRoute>

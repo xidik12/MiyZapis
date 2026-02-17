@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
   Send,
-  Image,
+  Camera,
   Type,
   FileText,
-  LinkIcon,
+  X,
+  DollarSign,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
@@ -19,48 +23,114 @@ import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { communityStrings, commonStrings } from '@/utils/translations';
 
-const POST_TYPES = ['DISCUSSION', 'TIP', 'QUESTION', 'SHOWCASE', 'EVENT'];
+const POST_TYPES = ['DISCUSSION', 'SALE'] as const;
 
 export const CreatePostPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const locale = useLocale();
   const { hapticFeedback } = useTelegram();
+  const { postId } = useParams<{ postId: string }>();
+  const isEditing = !!postId;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [type, setType] = useState('DISCUSSION');
-  const [imageUrl, setImageUrl] = useState('');
+  const [type, setType] = useState<string>('DISCUSSION');
+  const [price, setPrice] = useState<string>('');
+  const [currency, setCurrency] = useState('UAH');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cm = (key: string) => t(communityStrings, key, locale);
   const c = (key: string) => t(commonStrings, key, locale);
 
-  const getTypeName = (postType: string) => {
-    const key = postType.toLowerCase();
-    const nameMap: Record<string, string> = {
-      discussion: cm('discussion'),
-      tip: cm('tip'),
-      question: cm('question'),
-      showcase: cm('showcase'),
-      event: cm('event'),
+  // Load existing post for editing
+  useEffect(() => {
+    if (!postId) return;
+    const loadPost = async () => {
+      try {
+        setLoading(true);
+        const data = await apiService.getCommunityPost(postId) as any;
+        setTitle(data.title || '');
+        setContent(data.content || '');
+        setType(data.type || 'DISCUSSION');
+        setPrice(data.price != null ? String(data.price) : '');
+        setCurrency(data.currency || 'UAH');
+        setContactPhone(data.contactPhone || '');
+        setContactEmail(data.contactEmail || '');
+        // Parse images
+        if (Array.isArray(data.images)) {
+          setImages(data.images);
+        } else if (typeof data.images === 'string') {
+          try { setImages(JSON.parse(data.images)); } catch { setImages([]); }
+        }
+      } catch {
+        dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
+        navigate('/community');
+      } finally {
+        setLoading(false);
+      }
     };
-    return nameMap[key] || postType.charAt(0) + postType.slice(1).toLowerCase();
+    loadPost();
+  }, [postId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (const file of files) {
+        // Validate
+        if (file.size > 10 * 1024 * 1024) {
+          dispatch(addToast({ type: 'error', title: c('error'), message: 'File too large (max 10MB)' }));
+          continue;
+        }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+          dispatch(addToast({ type: 'error', title: c('error'), message: 'Only JPG, PNG, WebP allowed' }));
+          continue;
+        }
+
+        const result = await apiService.uploadFile(file, 'portfolio');
+        setImages(prev => [...prev, result.url]);
+      }
+      hapticFeedback.notificationSuccess();
+    } catch {
+      dispatch(addToast({ type: 'error', title: c('error'), message: 'Upload failed' }));
+      hapticFeedback.notificationError();
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    hapticFeedback.selectionChanged();
   };
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
-      const msg = locale === 'uk'
-        ? 'Заголовок та вміст обов\'язкові'
-        : locale === 'ru'
-          ? 'Заголовок и содержание обязательны'
-          : 'Title and content are required';
       dispatch(addToast({
         type: 'warning',
-        title: locale === 'uk' ? 'Відсутні поля' : locale === 'ru' ? 'Отсутствующие поля' : 'Missing fields',
-        message: msg,
+        title: cm('missingFields'),
+        message: locale === 'uk' ? 'Заголовок та вміст обов\'язкові' : locale === 'ru' ? 'Заголовок и содержание обязательны' : 'Title and content are required',
       }));
       hapticFeedback.notificationError();
+      return;
+    }
+
+    if (type === 'SALE' && price && Number(price) < 0) {
+      dispatch(addToast({
+        type: 'warning',
+        title: c('error'),
+        message: locale === 'uk' ? 'Ціна не може бути від\'ємною' : locale === 'ru' ? 'Цена не может быть отрицательной' : 'Price cannot be negative',
+      }));
       return;
     }
 
@@ -68,29 +138,37 @@ export const CreatePostPage: React.FC = () => {
       setSubmitting(true);
       hapticFeedback.impactLight();
 
-      const postData: { title: string; content: string; type: string; image?: string } = {
+      const postData: any = {
         title: title.trim(),
         content: content.trim(),
         type,
       };
-      if (imageUrl.trim()) {
-        postData.image = imageUrl.trim();
+
+      if (type === 'SALE') {
+        if (price) postData.price = Number(price);
+        postData.currency = currency;
+        if (contactPhone.trim()) postData.contactPhone = contactPhone.trim();
+        if (contactEmail.trim()) postData.contactEmail = contactEmail.trim();
       }
 
-      await apiService.createCommunityPost(postData);
+      if (images.length > 0) {
+        postData.images = images;
+      }
 
-      const successTitle = locale === 'uk' ? 'Опубліковано!' : locale === 'ru' ? 'Опубликовано!' : 'Posted!';
-      const successMsg = locale === 'uk' ? 'Ваш пост опубліковано' : locale === 'ru' ? 'Ваш пост опубликован' : 'Your post has been published';
-      dispatch(addToast({ type: 'success', title: successTitle, message: successMsg }));
+      if (isEditing) {
+        await apiService.updateCommunityPost(postId!, postData);
+      } else {
+        await apiService.createCommunityPost(postData);
+      }
+
+      const successTitle = isEditing
+        ? (locale === 'uk' ? 'Оновлено!' : locale === 'ru' ? 'Обновлено!' : 'Updated!')
+        : (locale === 'uk' ? 'Опубліковано!' : locale === 'ru' ? 'Опубликовано!' : 'Posted!');
+      dispatch(addToast({ type: 'success', title: successTitle, message: '' }));
       hapticFeedback.notificationSuccess();
       navigate('/community');
     } catch {
-      const errorMsg = locale === 'uk'
-        ? 'Не вдалося створити пост'
-        : locale === 'ru'
-          ? 'Не удалось создать пост'
-          : 'Failed to create post';
-      dispatch(addToast({ type: 'error', title: c('error'), message: errorMsg }));
+      dispatch(addToast({ type: 'error', title: c('error'), message: '' }));
       hapticFeedback.notificationError();
     } finally {
       setSubmitting(false);
@@ -99,15 +177,47 @@ export const CreatePostPage: React.FC = () => {
 
   const isValid = title.trim().length > 0 && content.trim().length > 0;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         showBackButton
-        title={cm('createPost')}
+        title={isEditing ? cm('editPost') : cm('createPost')}
       />
 
-      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
+      <div className="flex-1 overflow-y-auto pb-24 page-stagger">
         <div className="px-4 pt-4 space-y-4">
+          {/* Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              {cm('type')}
+            </label>
+            <div className="flex gap-2">
+              {POST_TYPES.map(postType => (
+                <button
+                  key={postType}
+                  onClick={() => { setType(postType); hapticFeedback.selectionChanged(); }}
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 touch-manipulation ${
+                    type === postType
+                      ? postType === 'DISCUSSION'
+                        ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/25'
+                        : 'bg-accent-green text-white shadow-lg shadow-accent-green/25'
+                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
+                  }`}
+                >
+                  {postType === 'DISCUSSION' ? cm('discussion') : cm('sale')}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Title */}
           <Input
             label={cm('postTitle')}
@@ -139,75 +249,120 @@ export const CreatePostPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              {cm('type')}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {POST_TYPES.map(postType => (
-                <button
-                  key={postType}
-                  onClick={() => { setType(postType); hapticFeedback.selectionChanged(); }}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 touch-manipulation ${
-                    type === postType
-                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/25'
-                      : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
-                  }`}
-                >
-                  {getTypeName(postType)}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* SALE-specific fields */}
+          {type === 'SALE' && (
+            <Card>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-accent-green uppercase tracking-wide">
+                  {cm('sale')}
+                </p>
 
-          {/* Image URL */}
-          <Input
-            label={locale === 'uk' ? 'URL зображення (необов\'язково)' : locale === 'ru' ? 'URL изображения (необязательно)' : 'Image URL (optional)'}
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            icon={<Image size={18} />}
-          />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    label={cm('price')}
+                    type="number"
+                    value={price}
+                    onChange={e => setPrice(e.target.value)}
+                    placeholder="0.00"
+                    icon={<DollarSign size={18} />}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      {cm('currency')}
+                    </label>
+                    <div className="flex gap-1.5">
+                      {['UAH', 'USD', 'EUR'].map(cur => (
+                        <button
+                          key={cur}
+                          onClick={() => { setCurrency(cur); hapticFeedback.selectionChanged(); }}
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+                            currency === cur
+                              ? 'bg-accent-primary text-white'
+                              : 'bg-bg-secondary text-text-secondary'
+                          }`}
+                        >
+                          {cur}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-          {/* Image Preview */}
-          {imageUrl.trim() && (
-            <Card padding="sm">
-              <p className="text-xs text-text-muted mb-2">
-                {locale === 'uk' ? 'Попередній перегляд' : locale === 'ru' ? 'Предпросмотр' : 'Preview'}
-              </p>
-              <div className="rounded-xl overflow-hidden bg-bg-hover max-h-48">
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                <Input
+                  label={cm('contactPhone')}
+                  value={contactPhone}
+                  onChange={e => setContactPhone(e.target.value)}
+                  placeholder="+380..."
+                  icon={<Phone size={18} />}
+                />
+
+                <Input
+                  label={cm('contactEmail')}
+                  type="email"
+                  value={contactEmail}
+                  onChange={e => setContactEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  icon={<Mail size={18} />}
                 />
               </div>
             </Card>
           )}
 
-          {/* Post Preview */}
-          {(title.trim() || content.trim()) && (
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                {locale === 'uk' ? 'Попередній перегляд' : locale === 'ru' ? 'Предпросмотр' : 'Preview'}
-              </label>
-              <Card>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 bg-accent-primary/15 text-accent-primary rounded-full text-xs font-medium">
-                    {getTypeName(type)}
-                  </span>
-                </div>
-                {title.trim() && (
-                  <h3 className="text-sm font-semibold text-text-primary mb-1">{title}</h3>
-                )}
-                {content.trim() && (
-                  <p className="text-sm text-text-secondary line-clamp-3">{content}</p>
-                )}
-              </Card>
-            </div>
-          )}
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              {cm('images')}
+            </label>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed transition-colors touch-manipulation ${
+                uploading
+                  ? 'border-accent-primary/30 bg-accent-primary/5 text-accent-primary'
+                  : 'border-white/10 bg-bg-secondary text-text-secondary hover:border-accent-primary/50'
+              }`}
+            >
+              {uploading ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  <span className="text-sm">{cm('uploading')}</span>
+                </>
+              ) : (
+                <>
+                  <Camera size={20} />
+                  <span className="text-sm font-medium">{cm('uploadImages')}</span>
+                </>
+              )}
+            </button>
+            <p className="text-xs text-text-muted mt-1">{cm('imageHelp')}</p>
+
+            {/* Image Previews */}
+            {images.length > 0 && (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                {images.map((url, index) => (
+                  <div key={`${url}-${index}`} className="relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-bg-secondary">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                    >
+                      <X size={12} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -222,7 +377,7 @@ export const CreatePostPage: React.FC = () => {
           <Send size={16} className="mr-2" />
           {submitting
             ? (locale === 'uk' ? 'Публікація...' : locale === 'ru' ? 'Публикация...' : 'Publishing...')
-            : cm('publishPost')
+            : isEditing ? cm('updatePost') : cm('publishPost')
           }
         </Button>
       </div>
