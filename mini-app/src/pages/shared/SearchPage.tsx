@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Search,
-  Filter,
   SlidersHorizontal,
   Star,
   MapPin,
@@ -12,6 +11,8 @@ import {
   Grid3X3,
   List,
   X,
+  Bookmark,
+  Save,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -27,9 +28,38 @@ import {
   setFilters,
   clearFilters,
 } from '@/store/slices/servicesSlice';
+import { addToast } from '@/store/slices/uiSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { searchStrings, commonStrings, serviceDetailStrings, specialistServicesStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
+
+interface SavedPreset {
+  name: string;
+  data: {
+    searchQuery: string;
+    category: string;
+    minPrice: string;
+    maxPrice: string;
+    sort: string;
+    rating: string;
+  };
+}
+
+const PRESETS_KEY = 'miyzapis_search_presets';
+const MAX_PRESETS = 8;
+
+const loadPresets = (): SavedPreset[] => {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const savePresetsToStorage = (presets: SavedPreset[]) => {
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets.slice(0, MAX_PRESETS)));
+};
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,11 +77,16 @@ export const SearchPage: React.FC = () => {
     filters,
   } = useSelector((state: RootState) => state.services);
 
+  const s = (key: string) => t(searchStrings, key, locale);
+
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('q') || ''
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [showSavePreset, setShowSavePreset] = useState(false);
+  const [presetName, setPresetName] = useState('');
+  const [savedPresets, setSavedPresets] = useState<SavedPreset[]>(loadPresets);
   const [localFilters, setLocalFilters] = useState({
     category: searchParams.get('category') || '',
     minPrice: '',
@@ -66,6 +101,55 @@ export const SearchPage: React.FC = () => {
     dispatch(fetchCategoriesAsync());
     performSearch();
   }, []);
+
+  // Saved presets
+  const handleSavePreset = () => {
+    const name = presetName.trim() || (locale === 'uk' ? 'Мій фільтр' : locale === 'ru' ? 'Мой фильтр' : 'My filter');
+    const preset: SavedPreset = {
+      name,
+      data: { searchQuery, ...localFilters },
+    };
+    const updated = [preset, ...savedPresets.filter(p => p.name !== name)].slice(0, MAX_PRESETS);
+    setSavedPresets(updated);
+    savePresetsToStorage(updated);
+    setPresetName('');
+    setShowSavePreset(false);
+    hapticFeedback.notificationOccurred('success');
+    dispatch(addToast({ message: s('presetSaved'), type: 'success' }));
+  };
+
+  const handleLoadPreset = (preset: SavedPreset) => {
+    setSearchQuery(preset.data.searchQuery || '');
+    setLocalFilters({
+      category: preset.data.category || '',
+      minPrice: preset.data.minPrice || '',
+      maxPrice: preset.data.maxPrice || '',
+      sort: preset.data.sort || 'popular',
+      rating: preset.data.rating || '',
+    });
+    // Apply the preset filters immediately
+    const newFilters: any = {};
+    if (preset.data.category) newFilters.category = preset.data.category;
+    if (preset.data.minPrice) newFilters.minPrice = Number(preset.data.minPrice);
+    if (preset.data.maxPrice) newFilters.maxPrice = Number(preset.data.maxPrice);
+    if (preset.data.sort) newFilters.sort = preset.data.sort;
+    if (preset.data.rating) newFilters.rating = Number(preset.data.rating);
+    dispatch(setFilters(newFilters));
+    hapticFeedback.impactLight();
+  };
+
+  const handleDeletePreset = (name: string) => {
+    const updated = savedPresets.filter(p => p.name !== name);
+    setSavedPresets(updated);
+    savePresetsToStorage(updated);
+    hapticFeedback.impactLight();
+  };
+
+  const handleQuickSort = (sortValue: string) => {
+    setLocalFilters(prev => ({ ...prev, sort: sortValue }));
+    dispatch(setFilters({ ...filters, sort: sortValue }));
+    hapticFeedback.selectionChanged();
+  };
 
   useEffect(() => {
     if (searchTimeoutRef.current) {
@@ -304,6 +388,56 @@ export const SearchPage: React.FC = () => {
           </div>
         )}
 
+        {/* Quick Sort Pills */}
+        <div className="px-4 pb-2 overflow-x-auto">
+          <div className="flex gap-2 min-w-max">
+            {[
+              { value: 'popular', label: s('mostPopular') },
+              { value: 'rating', label: s('topRated') },
+              { value: 'price_asc', label: s('priceLowToHigh') },
+              { value: 'price_desc', label: s('priceHighToLow') },
+              { value: 'newest', label: s('newest') },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleQuickSort(opt.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                  (filters.sort || localFilters.sort) === opt.value
+                    ? 'bg-accent-primary text-white'
+                    : 'bg-bg-secondary text-text-secondary'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Saved Presets */}
+        {savedPresets.length > 0 && (
+          <div className="px-4 pb-2 overflow-x-auto">
+            <div className="flex items-center gap-2 min-w-max">
+              <Bookmark size={14} className="text-text-muted flex-shrink-0" />
+              {savedPresets.map(preset => (
+                <div key={preset.name} className="flex items-center gap-1 bg-bg-secondary rounded-full">
+                  <button
+                    onClick={() => handleLoadPreset(preset)}
+                    className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                  <button
+                    onClick={() => handleDeletePreset(preset.name)}
+                    className="pr-2 text-text-muted hover:text-accent-red transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         <div className="px-4 py-4">
           {isLoading ? (
@@ -462,6 +596,37 @@ export const SearchPage: React.FC = () => {
               {t(searchStrings, 'applyFilters', locale)}
             </Button>
           </div>
+
+          {/* Save Preset */}
+          <button
+            onClick={() => { setShowFilters(false); setShowSavePreset(true); }}
+            className="w-full mt-3 flex items-center justify-center gap-2 py-2 text-sm text-accent-primary"
+          >
+            <Save size={16} />
+            {s('savePreset')}
+          </button>
+        </div>
+      </Sheet>
+
+      {/* Save Preset Sheet */}
+      <Sheet
+        isOpen={showSavePreset}
+        onClose={() => setShowSavePreset(false)}
+        title={s('savePreset')}
+      >
+        <div className="space-y-4">
+          <Input
+            placeholder={s('presetName')}
+            value={presetName}
+            onChange={(e) => setPresetName(e.target.value)}
+            icon={<Bookmark size={18} />}
+          />
+          {savedPresets.length >= MAX_PRESETS && (
+            <p className="text-xs text-text-muted">{s('maxPresets')}</p>
+          )}
+          <Button onClick={handleSavePreset} className="w-full">
+            {t(commonStrings, 'save', locale)}
+          </Button>
         </div>
       </Sheet>
     </div>

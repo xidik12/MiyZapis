@@ -126,6 +126,16 @@ export const searchStrings: Record<string, Record<Locale, string>> = {
   noServices: { en: 'No services found', uk: 'Послуг не знайдено', ru: 'Услуг не найдено' },
   tryDifferent: { en: 'Try different filters', uk: 'Спробуйте інші фільтри', ru: 'Попробуйте другие фильтры' },
   applyFilters: { en: 'Apply Filters', uk: 'Застосувати фільтри', ru: 'Применить фильтры' },
+  // Quick sort
+  topRated: { en: 'Top Rated', uk: 'Найкращі', ru: 'Лучшие' },
+  nearby: { en: 'Nearby', uk: 'Поряд', ru: 'Рядом' },
+  // Saved presets
+  savedPresets: { en: 'Saved Filters', uk: 'Збережені фільтри', ru: 'Сохранённые фильтры' },
+  savePreset: { en: 'Save Filter', uk: 'Зберегти фільтр', ru: 'Сохранить фильтр' },
+  presetName: { en: 'Filter name', uk: 'Назва фільтра', ru: 'Название фильтра' },
+  presetSaved: { en: 'Filter saved', uk: 'Фільтр збережено', ru: 'Фильтр сохранён' },
+  presetDeleted: { en: 'Filter deleted', uk: 'Фільтр видалено', ru: 'Фильтр удалён' },
+  maxPresets: { en: 'Max 8 saved filters', uk: 'Максимум 8 фільтрів', ru: 'Максимум 8 фильтров' },
 };
 
 // Service detail page
