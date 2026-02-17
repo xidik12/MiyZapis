@@ -12,6 +12,8 @@ import { AdminRoute } from './components/admin/AdminRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ConditionalLayout } from './components/layout/ConditionalLayout';
+import SpecialistLayout from './components/layout/SpecialistLayout';
+import CustomerLayout from './components/layout/CustomerLayout';
 import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
 
 // Lazy load pages for better performance
@@ -67,10 +69,6 @@ const SpecialistNotifications = React.lazy(() => import('./pages/specialist/Noti
 
 // Admin pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
-
-// Layout
-const SpecialistLayout = React.lazy(() => import('./components/layout/SpecialistLayout'));
-const CustomerLayout = React.lazy(() => import('./components/layout/CustomerLayout'));
 
 // Routing
 const SearchPageRouter = React.lazy(() => import('./components/routing/SearchPageRouter'));
