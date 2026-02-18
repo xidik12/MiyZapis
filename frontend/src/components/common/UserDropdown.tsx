@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { UserCircleIcon, CalendarIcon, CogIcon, HeartIcon, QuestionMarkCircleIcon, ArrowRightOnRectangleIcon, ChartBarIcon, WrenchScrewdriverIcon, BuildingStorefrontIcon } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserDropdownProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   onLogout,
 }) => {
   const user = useAppSelector(selectUser);
+  const { t } = useLanguage();
 
   if (!isOpen || !user) return null;
 
@@ -24,21 +26,21 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   };
 
   const customerMenuItems = [
-    { icon: CalendarIcon, label: 'My Bookings', href: '/bookings' },
-    { icon: UserCircleIcon, label: 'Profile', href: '/profile' },
-    { icon: HeartIcon, label: 'Favorites', href: '/favorites' },
-    { icon: CogIcon, label: 'Settings', href: '/settings' },
-    { icon: QuestionMarkCircleIcon, label: 'Help & Support', href: '/help' },
+    { icon: CalendarIcon, label: t('userMenu.bookings'), href: '/bookings' },
+    { icon: UserCircleIcon, label: t('userMenu.profile'), href: '/profile' },
+    { icon: HeartIcon, label: t('userMenu.favorites'), href: '/favorites' },
+    { icon: CogIcon, label: t('userMenu.settings'), href: '/settings' },
+    { icon: QuestionMarkCircleIcon, label: t('userMenu.help'), href: '/help' },
   ];
 
   const specialistMenuItems = [
-    { icon: ChartBarIcon, label: 'Dashboard', href: '/specialist/dashboard' },
-    { icon: CalendarIcon, label: 'My Bookings', href: '/specialist/bookings' },
-    { icon: WrenchScrewdriverIcon, label: 'My Services', href: '/specialist/services' },
-    { icon: BuildingStorefrontIcon, label: 'Business Profile', href: '/specialist/profile' },
-    { icon: ChartBarIcon, label: 'Analytics', href: '/specialist/analytics' },
-    { icon: CogIcon, label: 'Settings', href: '/specialist/settings' },
-    { icon: QuestionMarkCircleIcon, label: 'Help & Support', href: '/help' },
+    { icon: ChartBarIcon, label: t('userMenu.dashboard'), href: '/specialist/dashboard' },
+    { icon: CalendarIcon, label: t('userMenu.bookings'), href: '/specialist/bookings' },
+    { icon: WrenchScrewdriverIcon, label: t('userMenu.specialistDashboard'), href: '/specialist/services' },
+    { icon: BuildingStorefrontIcon, label: t('userMenu.profile'), href: '/specialist/profile' },
+    { icon: ChartBarIcon, label: t('userMenu.dashboard'), href: '/specialist/analytics' },
+    { icon: CogIcon, label: t('userMenu.settings'), href: '/specialist/settings' },
+    { icon: QuestionMarkCircleIcon, label: t('userMenu.help'), href: '/help' },
   ];
 
   const menuItems = user.userType === 'specialist' ? specialistMenuItems : customerMenuItems;
@@ -96,7 +98,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
           className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
-          Sign out
+          {t('userMenu.signOut')}
         </button>
       </div>
     </div>

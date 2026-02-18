@@ -218,7 +218,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
               <div>
                 {/* Today */}
                 <NotificationGroup
-                  title="TODAY"
+                  title={t('notifications.group.today')}
                   notifications={groupedNotifications.today}
                   onNotificationClick={handleNotificationClick}
                   onMarkAsRead={handleMarkAsRead}
@@ -230,7 +230,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
 
                 {/* Yesterday */}
                 <NotificationGroup
-                  title="YESTERDAY"
+                  title={t('notifications.group.yesterday')}
                   notifications={groupedNotifications.yesterday}
                   onNotificationClick={handleNotificationClick}
                   onMarkAsRead={handleMarkAsRead}
@@ -242,7 +242,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
 
                 {/* This Week */}
                 <NotificationGroup
-                  title="THIS WEEK"
+                  title={t('notifications.group.older')}
                   notifications={groupedNotifications.this_week}
                   onNotificationClick={handleNotificationClick}
                   onMarkAsRead={handleMarkAsRead}
@@ -254,7 +254,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
 
                 {/* Earlier */}
                 <NotificationGroup
-                  title="EARLIER"
+                  title={t('notifications.group.older')}
                   notifications={groupedNotifications.earlier}
                   onNotificationClick={handleNotificationClick}
                   onMarkAsRead={handleMarkAsRead}

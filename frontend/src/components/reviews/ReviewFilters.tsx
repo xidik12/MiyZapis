@@ -6,6 +6,7 @@ import {
   FunnelIcon,
   XIcon
 } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface ReviewFiltersData {
   rating?: number;
@@ -24,6 +25,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
   filters,
   onFilterChange
 }) => {
+  const { t } = useLanguage();
   const hasActiveFilters = filters.rating !== undefined || filters.verified !== undefined || filters.withComment !== undefined;
 
   const handleRatingFilter = (rating?: number) => {
@@ -61,7 +63,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
         <div className="flex items-center gap-2">
           <FunnelIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            Filters & Sorting
+            {t('reviews.filters.all')}
           </h3>
         </div>
         {hasActiveFilters && (
@@ -89,7 +91,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            All Ratings
+            {t('reviews.filters.all')}
           </button>
           {[5, 4, 3, 2, 1].map((rating) => (
             <button
@@ -122,7 +124,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            Most Recent
+            {t('reviews.filters.newest')}
           </button>
           <button
             onClick={() => handleSortChange('rating', 'desc')}
@@ -132,7 +134,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            Highest Rating
+            {t('reviews.filters.5stars')}
           </button>
           <button
             onClick={() => handleSortChange('helpful', 'desc')}
@@ -142,7 +144,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            Most Helpful
+            {t('reviews.filters.verified')}
           </button>
         </div>
       </div>
@@ -162,7 +164,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
             }`}
           >
             <CheckBadgeIcon className="w-4 h-4" />
-            Verified Only
+            {t('reviews.filters.verified')}
           </button>
           <button
             onClick={handleWithCommentToggle}
@@ -172,7 +174,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            With Comments
+            {t('reviews.filters.withPhotos')}
           </button>
         </div>
       </div>

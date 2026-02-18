@@ -285,7 +285,7 @@ export const HelpSupportPage: React.FC = () => {
                   : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
               }`}
             >
-              {locale === 'uk' ? 'Все' : locale === 'ru' ? 'Все' : 'All'}
+              {hs('allCategories')}
             </button>
             {categories.map(cat => (
               <button
@@ -386,9 +386,7 @@ export const HelpSupportPage: React.FC = () => {
                 label={hs('subject')}
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder={
-                  locale === 'uk' ? 'Тема вашого запиту' : locale === 'ru' ? 'Тема вашего запроса' : 'Subject of your request'
-                }
+                placeholder={hs('subjectPlaceholder')}
               />
 
               <div>
@@ -400,9 +398,7 @@ export const HelpSupportPage: React.FC = () => {
                   onChange={e => setMessage(e.target.value)}
                   rows={4}
                   className="input-telegram w-full rounded-xl text-sm resize-none"
-                  placeholder={
-                    locale === 'uk' ? 'Опишіть вашу проблему або запит...' : locale === 'ru' ? 'Опишите вашу проблему или запрос...' : 'Describe your issue or request...'
-                  }
+                  placeholder={hs('messagePlaceholder')}
                 />
               </div>
 

@@ -152,17 +152,17 @@ export const HomePage: React.FC = () => {
         {/* Welcome banner for unauthenticated users */}
         {!isAuthenticated && !authState && (
           <div className="mx-4 mt-3 rounded-2xl overflow-hidden bg-gradient-to-br from-[#3b97f2] via-[#2563eb] to-[#1d4ed8] p-5 text-white shadow-lg">
-            <h2 className="text-xl font-bold mb-1">{s('welcomeTitle') || 'Welcome to MiyZapis'}</h2>
-            <p className="text-blue-100 text-sm mb-3">{s('welcomeSubtitle') || 'Book appointments with top specialists near you'}</p>
+            <h2 className="text-xl font-bold mb-1">{s('welcomeTitle')}</h2>
+            <p className="text-blue-100 text-sm mb-3">{s('welcomeSubtitle')}</p>
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => { hapticFeedback.impactMedium(); navigate('/auth'); }}
                 className="w-full bg-white text-[#3b97f2] font-semibold py-2.5 px-4 rounded-xl text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
               >
                 <User size={16} />
-                {s('signIn') || 'Sign In / Register'}
+                {s('signIn')}
               </button>
-              <p className="text-blue-200 text-[11px] text-center">{s('welcomeHint') || 'Sign in to book, track, and manage appointments'}</p>
+              <p className="text-blue-200 text-[11px] text-center">{s('welcomeHint')}</p>
             </div>
           </div>
         )}

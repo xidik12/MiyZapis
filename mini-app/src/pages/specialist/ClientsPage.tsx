@@ -172,19 +172,19 @@ export const ClientsPage: React.FC = () => {
               <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
                 <div className="text-lg font-bold text-accent-green">{stats.active}</div>
                 <div className="text-[10px] text-text-secondary">
-                  {locale === 'uk' ? 'Активні' : locale === 'ru' ? 'Активные' : 'Active'}
+                  {s('activeClients')}
                 </div>
               </div>
               <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
                 <div className="text-lg font-bold text-accent-primary">{stats.avgBookings}</div>
                 <div className="text-[10px] text-text-secondary">
-                  {locale === 'uk' ? 'Сер. записів' : locale === 'ru' ? 'Ср. записей' : 'Avg Book'}
+                  {s('avgBookings')}
                 </div>
               </div>
               <div className="text-center p-2 bg-bg-card/80 rounded-xl border border-white/5">
                 <div className="text-lg font-bold text-accent-yellow">{stats.repeatRate}%</div>
                 <div className="text-[10px] text-text-secondary">
-                  {locale === 'uk' ? 'Повторні' : locale === 'ru' ? 'Повторные' : 'Repeat'}
+                  {s('repeatClients')}
                 </div>
               </div>
             </div>
@@ -239,7 +239,7 @@ export const ClientsPage: React.FC = () => {
                         </h4>
                         {client.isActive && (
                           <span className="px-1.5 py-0.5 bg-accent-green/15 text-accent-green text-[10px] rounded-full font-medium flex-shrink-0">
-                            {locale === 'uk' ? 'Активний' : locale === 'ru' ? 'Активный' : 'Active'}
+                            {c('active')}
                           </span>
                         )}
                       </div>
@@ -294,7 +294,7 @@ export const ClientsPage: React.FC = () => {
                 </h3>
                 {selectedClient.isActive && (
                   <span className="px-2 py-0.5 bg-accent-green/15 text-accent-green text-xs rounded-full font-medium">
-                    {locale === 'uk' ? 'Активний клієнт' : locale === 'ru' ? 'Активный клиент' : 'Active client'}
+                    {s('activeClient')}
                   </span>
                 )}
               </div>
@@ -324,7 +324,7 @@ export const ClientsPage: React.FC = () => {
             <div>
               <h4 className="text-sm font-semibold text-text-primary flex items-center gap-1.5 mb-2">
                 <Clock size={14} className="text-text-muted" />
-                {locale === 'uk' ? 'Історія записів' : locale === 'ru' ? 'История записей' : 'Booking History'}
+                {s('bookingHistory')}
               </h4>
 
               {selectedClient.bookings.length > 0 ? (
@@ -339,7 +339,7 @@ export const ClientsPage: React.FC = () => {
                           {booking.service?.name || booking.serviceName || 'Service'}
                         </p>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
-                          {(booking.status || '').toLowerCase()}
+                          {c(booking.status?.toLowerCase() || '')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -356,7 +356,7 @@ export const ClientsPage: React.FC = () => {
               ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-text-muted">
-                    {locale === 'uk' ? 'Записів немає' : locale === 'ru' ? 'Записей нет' : 'No bookings'}
+                    {s('noBookings')}
                   </p>
                 </div>
               )}

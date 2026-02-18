@@ -159,7 +159,7 @@ export const DashboardPage: React.FC = () => {
                 <Clock size={16} className="text-accent-primary" />
                 <span className="text-sm font-medium text-accent-primary">{s('nextAppointment')}</span>
               </div>
-              <p className="font-semibold text-text-primary">{nextBooking.service?.name || nextBooking.serviceName || 'Service'}</p>
+              <p className="font-semibold text-text-primary">{nextBooking.service?.name || nextBooking.serviceName || c('service')}</p>
               <p className="text-sm text-text-secondary">{[nextBooking.specialist?.firstName, nextBooking.specialist?.lastName].filter(Boolean).join(' ') || ''}</p>
               <p className="text-sm text-text-muted mt-1">
                 {format(parseISO(nextBooking.scheduledAt), 'PPP')} {c('at')} {format(parseISO(nextBooking.scheduledAt), 'p')}
@@ -189,7 +189,7 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => { hapticFeedback.impactLight(); navigate(`/booking/${b.id}`); }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || b.serviceName || 'Service'}</p>
+                      <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || b.serviceName || c('service')}</p>
                       <p className="text-xs text-text-muted">{format(parseISO(b.scheduledAt), 'PPP')}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(b.status)}`}>
@@ -206,19 +206,19 @@ export const DashboardPage: React.FC = () => {
             <h3 className="font-semibold text-text-primary mb-3">{s('quickActions')}</h3>
             <div className="grid grid-cols-4 gap-2">
               {([
-                { icon: <Search size={20} />, label: locale === 'uk' ? 'Пошук' : locale === 'ru' ? 'Поиск' : 'Search', path: '/search', color: 'text-accent-primary' },
-                { icon: <Calendar size={20} />, label: locale === 'uk' ? 'Записи' : locale === 'ru' ? 'Записи' : 'Bookings', path: '/bookings', color: 'text-blue-400' },
+                { icon: <Search size={20} />, label: s('search'), path: '/search', color: 'text-accent-primary' },
+                { icon: <Calendar size={20} />, label: s('bookings'), path: '/bookings', color: 'text-blue-400' },
                 { icon: <Heart size={20} />, label: s('favorites'), path: '/favorites', color: 'text-pink-400' },
-                { icon: <Wallet size={20} />, label: locale === 'uk' ? 'Оплати' : locale === 'ru' ? 'Платежи' : 'Payments', path: '/wallet', color: 'text-teal-400' },
+                { icon: <Wallet size={20} />, label: s('payments'), path: '/wallet', color: 'text-teal-400' },
                 { icon: <MessageCircle size={20} />, label: s('messages'), path: '/messages', color: 'text-blue-400' },
-                { icon: <Bell size={20} />, label: locale === 'uk' ? 'Сповіщ.' : locale === 'ru' ? 'Уведомл.' : 'Alerts', path: '/notifications', color: 'text-accent-red' },
-                { icon: <Star size={20} />, label: locale === 'uk' ? 'Відгуки' : locale === 'ru' ? 'Отзывы' : 'Reviews', path: '/reviews', color: 'text-accent-yellow' },
+                { icon: <Bell size={20} />, label: s('alerts'), path: '/notifications', color: 'text-accent-red' },
+                { icon: <Star size={20} />, label: s('reviews'), path: '/reviews', color: 'text-accent-yellow' },
                 { icon: <Gift size={20} />, label: s('rewards'), path: '/loyalty', color: 'text-accent-purple' },
-                { icon: <Users size={20} />, label: locale === 'uk' ? 'Спільнота' : locale === 'ru' ? 'Сообщество' : 'Community', path: '/community', color: 'text-orange-400' },
-                { icon: <Gift size={20} />, label: locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals', path: '/referrals', color: 'text-teal-400' },
-                { icon: <User size={20} />, label: locale === 'uk' ? 'Профіль' : locale === 'ru' ? 'Профиль' : 'Profile', path: '/profile', color: 'text-accent-primary' },
-                { icon: <Settings size={20} />, label: locale === 'uk' ? 'Налашт.' : locale === 'ru' ? 'Настр.' : 'Settings', path: '/settings', color: 'text-text-secondary' },
-                { icon: <HelpCircle size={20} />, label: locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help', path: '/help', color: 'text-accent-yellow' },
+                { icon: <Users size={20} />, label: s('community'), path: '/community', color: 'text-orange-400' },
+                { icon: <Gift size={20} />, label: s('referrals'), path: '/referrals', color: 'text-teal-400' },
+                { icon: <User size={20} />, label: s('profile'), path: '/profile', color: 'text-accent-primary' },
+                { icon: <Settings size={20} />, label: s('settings'), path: '/settings', color: 'text-text-secondary' },
+                { icon: <HelpCircle size={20} />, label: s('help'), path: '/help', color: 'text-accent-yellow' },
               ] as const).map((item) => (
                 <button
                   key={item.path}

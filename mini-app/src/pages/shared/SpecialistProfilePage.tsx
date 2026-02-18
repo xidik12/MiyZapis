@@ -104,7 +104,7 @@ export const SpecialistProfilePage: React.FC = () => {
     if (navigator.share) {
       navigator.share({
         title: selectedSpecialist.name,
-        text: `Check out ${selectedSpecialist.name}'s profile`,
+        text: t(specialistProfileStrings, 'shareText', locale),
         url: window.location.href,
       });
     }
@@ -188,7 +188,7 @@ export const SpecialistProfilePage: React.FC = () => {
                 <Star size={16} className="text-yellow-300 fill-current" />
                 <span className="font-semibold">{selectedSpecialist.rating}</span>
                 <span className="opacity-80">
-                  ({selectedSpecialist.reviewCount} reviews)
+                  ({selectedSpecialist.reviewCount} {t(commonStrings, 'reviews', locale)})
                 </span>
               </div>
               {selectedSpecialist.location && (
@@ -368,13 +368,13 @@ export const SpecialistProfilePage: React.FC = () => {
                       size="sm"
                       onClick={() => handleBookService(service)}
                     >
-                      {locale === 'uk' ? 'Забронювати' : locale === 'ru' ? 'Забронировать' : 'Book'}
+                      {t(specialistProfileStrings, 'book', locale)}
                     </Button>
                   </div>
                 </Card>
               )) || (
                 <p className="text-center text-text-secondary py-8">
-                  {locale === 'uk' ? 'Немає доступних послуг' : locale === 'ru' ? 'Нет доступных услуг' : 'No services available'}
+                  {t(specialistProfileStrings, 'noServicesAvailable', locale)}
                 </p>
               )}
             </div>
@@ -411,7 +411,7 @@ export const SpecialistProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-center text-text-secondary py-8">
-                  {locale === 'uk' ? 'Немає елементів портфоліо' : locale === 'ru' ? 'Нет элементов портфолио' : 'No portfolio items available'}
+                  {t(specialistProfileStrings, 'noPortfolio', locale)}
                 </p>
               )}
             </div>
@@ -425,7 +425,7 @@ export const SpecialistProfilePage: React.FC = () => {
                 </div>
               ) : reviews.length === 0 ? (
                 <p className="text-center text-text-secondary py-8">
-                  {locale === 'uk' ? 'Відгуків поки немає' : locale === 'ru' ? 'Отзывов пока нет' : 'No reviews yet'}
+                  {t(specialistProfileStrings, 'noReviewsYet', locale)}
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -478,7 +478,7 @@ export const SpecialistProfilePage: React.FC = () => {
                       onClick={() => setShowAllReviews(true)}
                       className="w-full py-3 text-accent-primary text-center"
                     >
-                      {locale === 'uk' ? 'Переглянути всі відгуки' : locale === 'ru' ? 'Посмотреть все отзывы' : 'View all reviews'}
+                      {t(specialistProfileStrings, 'viewAllReviews', locale)}
                     </button>
                   )}
                 </div>
@@ -525,7 +525,7 @@ export const SpecialistProfilePage: React.FC = () => {
           disabled={!selectedSpecialist.services || selectedSpecialist.services.length === 0}
         >
           <Calendar size={18} className="mr-2" />
-          {locale === 'uk' ? 'Забронювати візит' : locale === 'ru' ? 'Забронировать визит' : 'Book an Appointment'}
+          {t(specialistProfileStrings, 'bookAppointment', locale)}
         </Button>
       </div>
     </div>

@@ -171,18 +171,18 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           text: review.comment || `${review.rating} star review`,
           url: window.location.href
         });
-        toast.success('Shared successfully!');
+        toast.success(t('reviews.shared') || 'Shared successfully!');
       } else {
         // Fallback: Copy to clipboard
         const reviewUrl = `${window.location.origin}${window.location.pathname}#review-${review.id}`;
         await navigator.clipboard.writeText(reviewUrl);
-        toast.success('Review link copied to clipboard!');
+        toast.success(t('reviews.linkCopied') || 'Review link copied to clipboard!');
       }
     } catch (error: any) {
       // User cancelled share or clipboard failed
       if (error.name !== 'AbortError') {
         console.error('[ReviewCard] Share error:', error);
-        toast.error('Failed to share review');
+        toast.error(t('reviews.shareFailed') || 'Failed to share review');
       }
     } finally {
       setIsSharing(false);
@@ -196,7 +196,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       setComments(prevComments => [...prevComments, newComment]);
     } catch (error: any) {
       console.error('[ReviewCard] Error posting comment:', error);
-      toast.error(error.message || 'Failed to post comment');
+      toast.error(error.message || t('reviews.comments.postError') || 'Failed to post comment');
       throw error; // Re-throw so CommentThread can handle it
     }
   };
@@ -233,7 +233,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       );
     } catch (error: any) {
       console.error('[ReviewCard] Error reacting to comment:', error);
-      toast.error(error.message || 'Failed to react to comment');
+      toast.error(error.message || t('reviews.comments.reactError') || 'Failed to react to comment');
     }
   };
 
@@ -243,10 +243,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
       // Remove comment from local state
       setComments(prevComments => prevComments.filter(c => c.id !== commentId));
-      toast.success('Comment deleted successfully');
+      toast.success(t('reviews.commentDeleted') || 'Comment deleted successfully');
     } catch (error: any) {
       console.error('[ReviewCard] Error deleting comment:', error);
-      toast.error(error.message || 'Failed to delete comment');
+      toast.error(error.message || t('reviews.comments.deleteError') || 'Failed to delete comment');
       throw error; // Re-throw so CommentThread can handle it
     }
   };
@@ -300,7 +300,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
               {review.isVerified && (
                 <CheckBadgeIcon
                   className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 flex-shrink-0"
-                  title="Verified Purchase"
+                  title={t('reviews.verified') || 'Verified Purchase'}
                 />
               )}
             </div>
@@ -337,7 +337,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
                 onClick={() => setShowFullComment(!showFullComment)}
                 className="text-primary-600 dark:text-primary-400 text-xs sm:text-sm font-semibold mt-1 hover:underline"
               >
-                {showFullComment ? 'Show less' : 'Read more'}
+                {showFullComment ? (t('reviews.showLess') || 'Show less') : (t('reviews.readMore') || 'Read more')}
               </button>
             )}
           </div>
@@ -425,7 +425,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
               className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 active:scale-95"
             >
               <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="text-xs font-semibold whitespace-nowrap">Respond</span>
+              <span className="text-xs font-semibold whitespace-nowrap">{t('reviews.respond') || 'Respond'}</span>
             </button>
           )}
 
@@ -436,7 +436,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
               className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-700 dark:hover:text-orange-300 transition-all duration-200 active:scale-95"
             >
               <FlagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="text-xs font-semibold whitespace-nowrap">Report</span>
+              <span className="text-xs font-semibold whitespace-nowrap">{t('reviews.report') || 'Report'}</span>
             </button>
           )}
 
@@ -447,7 +447,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="text-xs font-semibold whitespace-nowrap">{isSharing ? 'Sharing...' : 'Share'}</span>
+            <span className="text-xs font-semibold whitespace-nowrap">{isSharing ? (t('reviews.sharing') || 'Sharing...') : (t('reviews.share') || 'Share')}</span>
           </button>
         </div>
       </div>

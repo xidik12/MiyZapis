@@ -169,7 +169,7 @@ export const BookingsPage: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-text-primary">
-                        {booking.service?.name || booking.serviceName || 'Service'}
+                        {booking.service?.name || booking.serviceName || c('service')}
                       </h3>
                       <p className="text-sm text-text-secondary">
                         {[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ') || ''}

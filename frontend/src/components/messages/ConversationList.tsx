@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { MagnifyingGlassIcon, InboxIcon } from '@/components/icons';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Conversation {
   id: string;
@@ -48,6 +49,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   emptyDescription,
   userRole = 'customer'
 }) => {
+  const { t } = useLanguage();
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -96,7 +98,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search conversations..."
+            placeholder={t('messages.searchConversations')}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl border border-transparent focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none transition-all duration-200"
           />
         </div>
@@ -187,7 +189,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                             ? 'text-gray-900 dark:text-white font-medium'
                             : 'text-gray-600 dark:text-gray-400'
                         }`}>
-                          {conversation.lastMessage?.content || 'No messages yet'}
+                          {conversation.lastMessage?.content || t('messages.noConversations')}
                         </p>
                         {hasUnread && (
                           <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">

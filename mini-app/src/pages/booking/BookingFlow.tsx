@@ -602,7 +602,7 @@ export const BookingFlow: React.FC = () => {
                 <p className="font-medium text-text-primary">
                   {t(bookingFlowStrings, 'telegramPayments', locale)}
                 </p>
-                <p className="text-sm text-accent-primary">Secure payment via Telegram</p>
+                <p className="text-sm text-accent-primary">{t(bookingFlowStrings, 'securePaymentViaTelegram', locale)}</p>
               </div>
               <div className="w-4 h-4 rounded-full bg-accent-primary" />
             </div>

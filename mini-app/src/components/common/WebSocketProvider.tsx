@@ -7,6 +7,9 @@ import { updateBookingStatus } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
 import { addNotification, fetchUnreadCountAsync } from '@/store/slices/notificationsSlice';
 import { addMessage, fetchMessageUnreadCountAsync } from '@/store/slices/messagesSlice';
+import { t } from '@/hooks/useLocale';
+import { webSocketNotificationStrings } from '@/utils/translations';
+import type { Locale } from '@/utils/categories';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -83,12 +86,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       });
     };
 
+    const getLocale = (): Locale => (localStorage.getItem('locale') || 'uk') as Locale;
+    const ws = (key: string) => t(webSocketNotificationStrings, key, getLocale());
+
     const handleBookingUpdate = (data: any) => {
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: data.status }));
       dispatch(addToast({
         type: 'info',
-        title: 'Booking Updated',
-        message: `Your booking has been ${data.status}.`
+        title: ws('bookingUpdated'),
+        message: `${ws('bookingUpdated')}.`
       }));
       handleMessage(data);
     };
@@ -97,8 +103,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: 'confirmed' }));
       dispatch(addToast({
         type: 'success',
-        title: 'Booking Confirmed!',
-        message: 'Your appointment has been confirmed.'
+        title: ws('bookingConfirmed'),
+        message: ws('bookingConfirmedMsg')
       }));
       handleMessage(data);
     };
@@ -107,8 +113,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: 'cancelled' }));
       dispatch(addToast({
         type: 'warning',
-        title: 'Booking Cancelled',
-        message: data.reason || 'Your booking has been cancelled.'
+        title: ws('bookingCancelled'),
+        message: data.reason || ws('bookingCancelledMsg')
       }));
       handleMessage(data);
     };
@@ -129,7 +135,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       dispatch(fetchUnreadCountAsync() as any);
       dispatch(addToast({
         type: 'info',
-        title: data.title || 'New Notification',
+        title: data.title || ws('newNotification'),
         message: data.message || ''
       }));
       handleMessage(data);
@@ -141,8 +147,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       dispatch(fetchMessageUnreadCountAsync() as any);
       dispatch(addToast({
         type: 'info',
-        title: 'New Message',
-        message: data.content ? data.content.substring(0, 50) : 'You have a new message'
+        title: ws('newMessage'),
+        message: data.content ? data.content.substring(0, 50) : ws('newMessage')
       }));
       handleMessage(data);
     };

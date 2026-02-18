@@ -1428,7 +1428,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Precise Address (Shown only to confirmed customers) <span className="text-red-500">*</span>
+                          {t('specialist.preciseAddress') || 'Precise Address (Shown only to confirmed customers)'} <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
                           <>
@@ -1436,7 +1436,7 @@ const SpecialistProfile: React.FC = () => {
                               type="text"
                               value={profile.preciseAddress || ''}
                               onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
-                              placeholder="Apt 5B, Building A, 123 Main Street"
+                              placeholder={t('specialist.preciseAddressPlaceholder') || 'Apt 5B, Building A, 123 Main Street'}
                               className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                 validationErrors.preciseAddress
                                   ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
@@ -1454,7 +1454,7 @@ const SpecialistProfile: React.FC = () => {
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.preciseAddress || 'Not specified'}</span>
+                              <span>{profile.preciseAddress || (t('specialist.professionNotSpecified') || 'Not specified')}</span>
                             </div>
                           </div>
                         )}
@@ -1462,7 +1462,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Business Phone <span className="text-red-500">*</span>
+                          {t('specialist.businessPhone') || 'Business Phone'} <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
                           <>
@@ -1470,7 +1470,7 @@ const SpecialistProfile: React.FC = () => {
                               type="tel"
                               value={profile.businessPhone || ''}
                               onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
-                              placeholder="+1 (555) 123-4567"
+                              placeholder={t('specialist.phonePlaceholder') || '+1 (555) 123-4567'}
                               className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                 validationErrors.businessPhone
                                   ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
@@ -1488,7 +1488,7 @@ const SpecialistProfile: React.FC = () => {
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <PhoneIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.businessPhone || 'Not specified'}</span>
+                              <span>{profile.businessPhone || (t('specialist.professionNotSpecified') || 'Not specified')}</span>
                             </div>
                           </div>
                         )}
@@ -1496,21 +1496,21 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          WhatsApp Number (Optional)
+                          {t('specialist.whatsappNumber') || 'WhatsApp Number'} ({t('common.optional') || 'Optional'})
                         </label>
                         {isEditing ? (
                           <input
                             type="tel"
                             value={profile.whatsappNumber || ''}
                             onChange={(e) => handleProfileChange('whatsappNumber', e.target.value)}
-                            placeholder="+1 (555) 123-4567"
+                            placeholder={t('specialist.phonePlaceholder') || '+1 (555) 123-4567'}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <PhoneIcon className="h-5 w-5 text-green-500" />
-                              <span>{profile.whatsappNumber || 'Not specified'}</span>
+                              <span>{profile.whatsappNumber || (t('specialist.professionNotSpecified') || 'Not specified')}</span>
                             </div>
                           </div>
                         )}
@@ -1518,57 +1518,57 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Location Notes
+                          {t('specialist.locationNotes') || 'Location Notes'}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.locationNotes || ''}
                             onChange={(e) => handleProfileChange('locationNotes', e.target.value)}
-                            placeholder="Special instructions for finding the location..."
+                            placeholder={t('specialist.locationNotesPlaceholder') || 'Special instructions for finding the location...'}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.locationNotes || 'No special instructions'}</span>
+                            <span>{profile.locationNotes || (t('specialist.noSpecialInstructions') || 'No special instructions')}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Parking Information
+                          {t('specialist.parkingInfo') || 'Parking Information'}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.parkingInfo || ''}
                             onChange={(e) => handleProfileChange('parkingInfo', e.target.value)}
-                            placeholder="Parking instructions, costs, restrictions..."
+                            placeholder={t('specialist.parkingInfoPlaceholder') || 'Parking instructions, costs, restrictions...'}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.parkingInfo || 'No parking information provided'}</span>
+                            <span>{profile.parkingInfo || (t('specialist.noParkingInfo') || 'No parking information provided')}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Access Instructions
+                          {t('specialist.accessInstructions') || 'Access Instructions'}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.accessInstructions || ''}
                             onChange={(e) => handleProfileChange('accessInstructions', e.target.value)}
-                            placeholder="Building access codes, buzzer instructions, etc..."
+                            placeholder={t('specialist.accessInstructionsPlaceholder') || 'Building access codes, buzzer instructions, etc...'}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.accessInstructions || 'No access instructions provided'}</span>
+                            <span>{profile.accessInstructions || (t('specialist.noAccessInstructions') || 'No access instructions provided')}</span>
                           </div>
                         )}
                       </div>

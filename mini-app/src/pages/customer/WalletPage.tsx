@@ -134,14 +134,14 @@ export const WalletPage: React.FC = () => {
     const diffHrs = diffMs / (1000 * 60 * 60);
 
     if (diffHrs < 1) {
-      return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
+      return t(commonStrings, 'justNow', locale);
     }
     if (diffHrs < 24) {
       const hrs = Math.floor(diffHrs);
-      return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
+      return `${hrs}${t(commonStrings, 'hoursAgo', locale)}`;
     }
     if (diffHrs < 48) {
-      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+      return t(commonStrings, 'yesterday', locale);
     }
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' });
   };

@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { BookingCard, BookingData } from './BookingCard';
 import { SortableBookingCard } from './SortableBookingCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BookingKanbanProps {
   bookings: BookingData[];
@@ -26,12 +27,12 @@ interface BookingKanbanProps {
   onQuickAction?: (bookingId: string, action: string) => void;
 }
 
-const COLUMNS = [
-  { id: 'PENDING', title: 'Pending', color: 'yellow' },
-  { id: 'CONFIRMED', title: 'Confirmed', color: 'blue' },
-  { id: 'IN_PROGRESS', title: 'In Progress', color: 'purple' },
-  { id: 'COMPLETED', title: 'Completed', color: 'green' },
-  { id: 'CANCELLED', title: 'Cancelled', color: 'red' }
+const COLUMN_DEFS = [
+  { id: 'PENDING', titleKey: 'booking.kanban.pending', color: 'yellow' },
+  { id: 'CONFIRMED', titleKey: 'booking.kanban.confirmed', color: 'blue' },
+  { id: 'IN_PROGRESS', titleKey: 'booking.kanban.inProgress', color: 'purple' },
+  { id: 'COMPLETED', titleKey: 'booking.kanban.completed', color: 'green' },
+  { id: 'CANCELLED', titleKey: 'booking.kanban.cancelled', color: 'red' }
 ];
 
 const columnColors = {
@@ -57,6 +58,7 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
   onStatusChange,
   onQuickAction
 }) => {
+  const { t } = useLanguage();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -106,7 +108,7 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
       onDragEnd={handleDragEnd}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {COLUMNS.map((column) => {
+        {COLUMN_DEFS.map((column) => {
           const columnBookings = getBookingsByStatus(column.id);
           const color = column.color as keyof typeof columnColors;
 
@@ -119,7 +121,7 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
               <div className={`px-4 py-3 ${columnHeaderColors[color]}`}>
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm uppercase tracking-wide">
-                    {column.title}
+                    {t(column.titleKey)}
                   </h3>
                   <span className="px-2 py-0.5 bg-white/50 dark:bg-black/20 rounded-full text-xs font-bold">
                     {columnBookings.length}
@@ -151,7 +153,7 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
                       animate={{ opacity: 1 }}
                       className="text-center py-8 text-gray-400 dark:text-gray-600 text-sm"
                     >
-                      Drop bookings here
+                      {t('booking.kanban.dropHere')}
                     </motion.div>
                   )}
                 </div>

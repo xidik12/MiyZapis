@@ -282,16 +282,16 @@ export const SpecialistDashboardPage: React.FC = () => {
           <h3 className="font-semibold text-text-primary mb-3">{s('quickActions')}</h3>
           <div className="grid grid-cols-4 gap-2">
             {([
-              { icon: <Briefcase size={20} />, label: locale === 'uk' ? 'Послуги' : locale === 'ru' ? 'Услуги' : 'Services', path: '/specialist-services', color: 'text-accent-primary' },
+              { icon: <Briefcase size={20} />, label: s('services'), path: '/specialist-services', color: 'text-accent-primary' },
               { icon: <Calendar size={20} />, label: s('schedule'), path: '/specialist/schedule', color: 'text-accent-green' },
               { icon: <Calendar size={20} />, label: c('bookings') || 'Bookings', path: '/specialist-bookings', color: 'text-blue-400' },
               { icon: <DollarSign size={20} />, label: s('earnings'), path: '/specialist/earnings', color: 'text-accent-green' },
               { icon: <BarChart3 size={20} />, label: s('analytics'), path: '/specialist/analytics', color: 'text-accent-purple' },
-              { icon: <Users size={20} />, label: locale === 'uk' ? 'Клієнти' : locale === 'ru' ? 'Клиенты' : 'Clients', path: '/specialist/clients', color: 'text-orange-400' },
-              { icon: <Wallet size={20} />, label: locale === 'uk' ? 'Гаманець' : locale === 'ru' ? 'Кошелёк' : 'Wallet', path: '/specialist/wallet', color: 'text-teal-400' },
+              { icon: <Users size={20} />, label: s('clients'), path: '/specialist/clients', color: 'text-orange-400' },
+              { icon: <Wallet size={20} />, label: s('wallet'), path: '/specialist/wallet', color: 'text-teal-400' },
               { icon: <Star size={20} />, label: c('reviews'), path: '/specialist/reviews', color: 'text-accent-yellow' },
-              { icon: <Receipt size={20} />, label: locale === 'uk' ? 'Фінанси' : locale === 'ru' ? 'Финансы' : 'Finances', path: '/specialist/finances', color: 'text-rose-400' },
-              { icon: <Gift size={20} />, label: locale === 'uk' ? 'Лояльність' : locale === 'ru' ? 'Лояльность' : 'Loyalty', path: '/specialist/loyalty', color: 'text-amber-400' },
+              { icon: <Receipt size={20} />, label: s('finances'), path: '/specialist/finances', color: 'text-rose-400' },
+              { icon: <Gift size={20} />, label: s('loyalty'), path: '/specialist/loyalty', color: 'text-amber-400' },
             ] as const).map((item) => (
               <button
                 key={item.path}
@@ -309,13 +309,13 @@ export const SpecialistDashboardPage: React.FC = () => {
         <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
           <div className="grid grid-cols-4 gap-2">
             {([
-              { icon: <MessageCircle size={20} />, label: locale === 'uk' ? 'Чати' : locale === 'ru' ? 'Чаты' : 'Messages', path: '/messages', color: 'text-blue-400' },
-              { icon: <Bell size={20} />, label: locale === 'uk' ? 'Сповіщ.' : locale === 'ru' ? 'Уведомл.' : 'Alerts', path: '/notifications', color: 'text-accent-red' },
-              { icon: <Heart size={20} />, label: locale === 'uk' ? 'Спільнота' : locale === 'ru' ? 'Сообщество' : 'Community', path: '/community', color: 'text-pink-400' },
-              { icon: <Gift size={20} />, label: locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals', path: '/referrals', color: 'text-teal-400' },
-              { icon: <User size={20} />, label: locale === 'uk' ? 'Профіль' : locale === 'ru' ? 'Профиль' : 'Profile', path: '/profile', color: 'text-accent-primary' },
-              { icon: <Settings size={20} />, label: locale === 'uk' ? 'Налашт.' : locale === 'ru' ? 'Настр.' : 'Settings', path: '/settings', color: 'text-text-secondary' },
-              { icon: <HelpCircle size={20} />, label: locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help', path: '/help', color: 'text-accent-yellow' },
+              { icon: <MessageCircle size={20} />, label: s('messages'), path: '/messages', color: 'text-blue-400' },
+              { icon: <Bell size={20} />, label: s('alerts'), path: '/notifications', color: 'text-accent-red' },
+              { icon: <Heart size={20} />, label: s('community'), path: '/community', color: 'text-pink-400' },
+              { icon: <Gift size={20} />, label: s('referrals'), path: '/referrals', color: 'text-teal-400' },
+              { icon: <User size={20} />, label: s('profile'), path: '/profile', color: 'text-accent-primary' },
+              { icon: <Settings size={20} />, label: s('settings'), path: '/settings', color: 'text-text-secondary' },
+              { icon: <HelpCircle size={20} />, label: s('help'), path: '/help', color: 'text-accent-yellow' },
             ] as const).map((item) => (
               <button
                 key={item.path}

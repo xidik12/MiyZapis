@@ -123,13 +123,7 @@ export const EarningsPage: React.FC = () => {
         }
       }
     } catch {
-      setError(
-        locale === 'uk'
-          ? 'Не вдалося завантажити дані'
-          : locale === 'ru'
-          ? 'Не удалось загрузить данные'
-          : 'Failed to load earnings data'
-      );
+      setError(s('loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -336,11 +330,7 @@ export const EarningsPage: React.FC = () => {
               <div className="text-center py-6">
                 <CreditCard size={32} className="mx-auto mb-2 text-text-muted" />
                 <p className="text-sm text-text-secondary">
-                  {locale === 'uk'
-                    ? 'Виплат поки немає'
-                    : locale === 'ru'
-                    ? 'Выплат пока нет'
-                    : 'No payouts yet'}
+                  {s('noPayoutsYet')}
                 </p>
               </div>
             ) : (
@@ -367,7 +357,7 @@ export const EarningsPage: React.FC = () => {
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getPayoutStatusColor(payout.status)}`}
                     >
-                      {payout.status}
+                      {c(payout.status?.toLowerCase() || '')}
                     </span>
                   </div>
                 ))}

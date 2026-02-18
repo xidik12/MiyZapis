@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -20,6 +21,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
   config,
   loading = false,
 }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<ReferralFormData>({
     referralType: 'CUSTOMER_TO_CUSTOMER',
     targetUserType: 'CUSTOMER',
@@ -118,7 +120,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Create New Referral
+                {t('referral.create.title')}
               </h3>
               <button
                 type="button"
@@ -147,7 +149,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Referral Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Referral Type
+                  {t('referral.create.name')}
                 </label>
                 <div className="grid grid-cols-1 gap-3">
                   {config.availableTypes.map((type) => {
@@ -204,7 +206,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Invite Channel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  How will you share this?
+                  {t('referral.create.orShare')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {availableChannels.map((channel) => (
@@ -229,12 +231,12 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Custom Message */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Custom Message (Optional)
+                  {t('referral.create.message')}
                 </label>
                 <textarea
                   value={formData.customMessage}
                   onChange={(e) => setFormData(prev => ({ ...prev, customMessage: e.target.value }))}
-                  placeholder="Add a personal message to your referral..."
+                  placeholder={t('referral.create.messagePlaceholder')}
                   rows={3}
                   maxLength={500}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
@@ -247,7 +249,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Expiry Days */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Expires In (Days)
+                  {t('referral.create.terms')}
                 </label>
                 <select
                   value={formData.expiresInDays}
@@ -273,14 +275,14 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                 onClick={onClose}
                 disabled={loading}
               >
-                Cancel
+                {t('referral.create.cancel')}
               </Button>
               <Button
                 type="submit"
                 loading={loading}
                 disabled={loading}
               >
-                Create Referral
+                {loading ? t('referral.create.sending') : t('referral.create.send')}
               </Button>
             </div>
           </form>

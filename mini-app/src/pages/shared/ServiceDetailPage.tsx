@@ -110,7 +110,7 @@ export const ServiceDetailPage: React.FC = () => {
     if (navigator.share) {
       navigator.share({
         title: selectedService.name,
-        text: `Check out this service: ${selectedService.name}`,
+        text: s('shareText'),
         url: window.location.href,
       });
     }
@@ -252,7 +252,7 @@ export const ServiceDetailPage: React.FC = () => {
                   {specialistRating}
                 </span>
                 <span className="text-text-secondary">
-                  ({specialistReviewCount} reviews)
+                  ({specialistReviewCount} {s('reviewsCount')})
                 </span>
               </div>
             </div>
@@ -316,7 +316,7 @@ export const ServiceDetailPage: React.FC = () => {
                     {specialistRating}
                   </span>
                   <span className="text-sm text-text-secondary">
-                    ({specialistReviewCount} reviews)
+                    ({specialistReviewCount} {s('reviewsCount')})
                   </span>
                 </div>
                 <div className="flex items-center gap-1">

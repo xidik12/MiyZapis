@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from '@/components/common/WebSocketProvider';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { Booking } from '@/types';
+import { t } from '@/hooks/useLocale';
+import { realTimeBookingStrings } from '@/utils/translations';
+import type { Locale } from '@/utils/categories';
 
 interface BookingUpdate {
   id: string;
@@ -54,31 +57,35 @@ export const useRealTimeBookings = () => {
 
   // Handle booking reminders
   const handleBookingReminder = useCallback((data: any) => {
+    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+    const rt = (key: string) => t(realTimeBookingStrings, key, locale);
     hapticFeedback.notificationWarning();
-    showAlert(`Reminder: You have an appointment in ${data.timeUntil}`);
+    showAlert(`${rt('appointmentReminder')}: ${data.timeUntil}`);
   }, [hapticFeedback, showAlert]);
 
   // Show notification for booking updates
   const showNotificationForBookingUpdate = useCallback(async (booking: Booking, update: BookingUpdate) => {
+    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+    const rt = (key: string) => t(realTimeBookingStrings, key, locale);
     let message = '';
-    
+
     switch (update.status) {
       case 'CONFIRMED':
-        message = `Your booking for ${booking.service.name} has been confirmed!`;
+        message = `${rt('bookingConfirmedAlert')} - ${booking.service.name}`;
         break;
       case 'CANCELLED':
-        message = `Your booking for ${booking.service.name} has been cancelled.`;
+        message = `${rt('bookingCancelledAlert')} - ${booking.service.name}`;
         break;
       case 'RESCHEDULED':
-        message = `Your booking for ${booking.service.name} has been rescheduled.`;
+        message = `${rt('bookingRescheduledAlert')} - ${booking.service.name}`;
         break;
       case 'COMPLETED':
-        message = `Your booking for ${booking.service.name} is complete. Please rate your experience!`;
+        message = `${rt('bookingCompleteAlert')} - ${booking.service.name}`;
         break;
       default:
-        message = `Your booking for ${booking.service.name} has been updated.`;
+        message = `${rt('bookingUpdatedAlert')} - ${booking.service.name}`;
     }
-    
+
     await showAlert(message);
   }, [showAlert]);
 

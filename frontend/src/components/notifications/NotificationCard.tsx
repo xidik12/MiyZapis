@@ -230,7 +230,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
                 window.location.href = notification.actionUrl!;
               }}
               className="p-2 rounded-xl hover:bg-blue-100/80 dark:hover:bg-blue-900/30 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-90"
-              title="View"
+              title={t('notifications.card.timeAgo')}
               aria-label="View notification details"
             >
               <EyeIcon className="w-4 h-4" />
@@ -241,7 +241,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
             <button
               onClick={onMarkAsRead}
               className="p-2 rounded-xl hover:bg-green-100/80 dark:hover:bg-green-900/30 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200 hover:scale-110 active:scale-90"
-              title="Mark as read"
+              title={t('notifications.card.markRead')}
               aria-label="Mark notification as read"
             >
               <CheckIcon className="w-4 h-4" />
@@ -251,8 +251,8 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
           <button
             onClick={onDelete}
             className="p-2 rounded-xl hover:bg-red-100/80 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:scale-110 active:scale-90"
-            title="Delete"
-            aria-label="Delete notification"
+            title={t('notifications.card.delete')}
+            aria-label={t('notifications.card.delete')}
           >
             <TrashIcon className="w-4 h-4" />
           </button>

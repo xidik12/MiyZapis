@@ -5,6 +5,7 @@ import { ReviewCard, ReviewCardData } from './ReviewCard';
 import { ReviewStats, ReviewStatsData } from './ReviewStats';
 import { ReviewFilters, ReviewFiltersData } from './ReviewFilters';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ReviewFeedProps {
   reviews: ReviewCardData[];
@@ -40,13 +41,17 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
     sortOrder: 'desc'
   },
   onFilterChange,
-  emptyTitle = 'No Reviews Yet',
-  emptyDescription = 'Be the first to leave a review!',
+  emptyTitle,
+  emptyDescription,
   showRespondButton = false
 }) => {
+  const { t } = useLanguage();
+  const resolvedEmptyTitle = emptyTitle || t('reviews.feed.noReviews');
+  const resolvedEmptyDescription = emptyDescription || t('reviews.feed.writeReview');
+
   // Show loading screen only on initial load
   if (loading && reviews.length === 0) {
-    return <FullScreenHandshakeLoader message="Loading reviews..." />;
+    return <FullScreenHandshakeLoader message={t('reviews.feed.title')} />;
   }
 
   return (
@@ -86,10 +91,10 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
               <StarIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" active />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {emptyTitle}
+              {resolvedEmptyTitle}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-              {emptyDescription}
+              {resolvedEmptyDescription}
             </p>
           </motion.div>
         ) : (
@@ -119,10 +124,10 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                  Loading...
+                  {t('reviews.feed.title')}
                 </span>
               ) : (
-                'Load More Reviews'
+                t('reviews.feed.loadMore')
               )}
             </button>
           </div>

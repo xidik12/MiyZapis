@@ -82,11 +82,11 @@ const LoginPage: React.FC = () => {
         setSuccessMessage(t('auth.verificationEmailSent'));
         dispatch(clearError());
       } else {
-        toast.error(response.error?.message || 'Failed to resend verification email');
+        toast.error(response.error?.message || t('auth.resendFailed') || 'Failed to resend verification email');
       }
     } catch (error: any) {
       console.error('Resend verification error:', error);
-      toast.error('Failed to resend verification email. Please try again.');
+      toast.error(t('auth.resendFailed') || 'Failed to resend verification email. Please try again.');
     } finally {
       setResendingEmail(false);
     }

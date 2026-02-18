@@ -37,7 +37,7 @@ export const MessagingPage: React.FC = () => {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     if (diffHrs < 48) {
-      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+      return c('yesterday');
     }
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };

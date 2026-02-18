@@ -109,7 +109,7 @@ export const SearchPage: React.FC = () => {
 
   // Saved presets
   const handleSavePreset = () => {
-    const name = presetName.trim() || (locale === 'uk' ? 'Мій фільтр' : locale === 'ru' ? 'Мой фильтр' : 'My filter');
+    const name = presetName.trim() || s('defaultFilterName');
     const preset: SavedPreset = {
       name,
       data: { searchQuery, ...localFilters },

@@ -25,8 +25,24 @@ export const calculateTier = (points: number): string => {
 
 /**
  * Get tier name for display purposes
+ * @param tier - the tier key (bronze, silver, gold, platinum)
+ * @param t - optional translation function from useLanguage()
  */
-export const getTierName = (tier: string): string => {
+export const getTierName = (tier: string, t?: (key: string) => string): string => {
+  if (t) {
+    switch (tier.toLowerCase()) {
+      case 'bronze':
+        return t('loyalty.tiers.bronze');
+      case 'silver':
+        return t('loyalty.tiers.silver');
+      case 'gold':
+        return t('loyalty.tiers.gold');
+      case 'platinum':
+        return t('loyalty.tiers.platinum');
+      default:
+        return t('loyalty.tiers.bronze');
+    }
+  }
   switch (tier.toLowerCase()) {
     case 'bronze':
       return 'Bronze';
@@ -43,8 +59,22 @@ export const getTierName = (tier: string): string => {
 
 /**
  * Get points needed for next tier
+ * @param currentPoints - current loyalty points
+ * @param t - optional translation function from useLanguage()
  */
-export const getPointsToNextTier = (currentPoints: number): { nextTier: string; pointsNeeded: number } => {
+export const getPointsToNextTier = (currentPoints: number, t?: (key: string) => string): { nextTier: string; pointsNeeded: number } => {
+  if (t) {
+    if (currentPoints < 500) {
+      return { nextTier: t('loyalty.tiers.silver'), pointsNeeded: 500 - currentPoints };
+    }
+    if (currentPoints < 1000) {
+      return { nextTier: t('loyalty.tiers.gold'), pointsNeeded: 1000 - currentPoints };
+    }
+    if (currentPoints < 2000) {
+      return { nextTier: t('loyalty.tiers.platinum'), pointsNeeded: 2000 - currentPoints };
+    }
+    return { nextTier: `${t('loyalty.tiers.platinum')} (Max)`, pointsNeeded: 0 };
+  }
   if (currentPoints < 500) {
     return { nextTier: 'Silver', pointsNeeded: 500 - currentPoints };
   }

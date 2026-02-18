@@ -6,6 +6,7 @@ import {
   ChatCircleIcon as ChatBubbleLeftIcon,
   ChartBarIcon
 } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface ReviewStatsData {
   totalReviews: number;
@@ -26,6 +27,7 @@ interface ReviewStatsProps {
 }
 
 export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
+  const { t } = useLanguage();
   const verifiedPercentage = stats.totalReviews > 0
     ? Math.round((stats.verifiedReviewsCount / stats.totalReviews) * 100)
     : 0;
@@ -35,28 +37,28 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
   const statCards = [
     {
       icon: <StarIcon className="w-8 h-8 text-yellow-500" active />,
-      label: 'Average',
+      label: t('reviews.stats.average'),
       value: stats.averageRating.toFixed(1),
       unit: '⭐',
       color: 'from-yellow-500/10 to-yellow-600/5'
     },
     {
       icon: <ChartBarIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />,
-      label: 'Total Reviews',
+      label: t('reviews.stats.total'),
       value: stats.totalReviews.toString(),
       unit: '',
       color: 'from-blue-500/10 to-blue-600/5'
     },
     {
       icon: <CheckBadgeIcon className="w-8 h-8 text-green-600 dark:text-green-400" />,
-      label: 'Verified',
+      label: t('reviews.stats.recommended'),
       value: `${verifiedPercentage}%`,
       unit: '',
       color: 'from-green-500/10 to-green-600/5'
     },
     {
       icon: <ChatBubbleLeftIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />,
-      label: 'Responses',
+      label: t('reviews.stats.responseRate'),
       value: responseCount.toString(),
       unit: '',
       color: 'from-purple-500/10 to-purple-600/5'
@@ -101,7 +103,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
         className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200/50 dark:border-gray-700/50"
       >
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-          Rating Distribution
+          {t('reviews.stats.distribution')}
         </h3>
         <div className="space-y-3">
           {[5, 4, 3, 2, 1].map((rating) => {

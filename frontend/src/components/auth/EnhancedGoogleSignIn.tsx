@@ -3,6 +3,7 @@ import { useAppDispatch } from '@/hooks/redux';
 import { googleLogin } from '@/store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import UserTypeSelectionModal from './UserTypeSelectionModal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EnhancedGoogleSignInProps {
   onSuccess?: () => void;
@@ -21,10 +22,11 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
   onError, 
   disabled = false 
 }) => {
+  const { t } = useLanguage();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const clientId = (import.meta.env as any).VITE_GOOGLE_CLIENT_ID;
-  
+
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);
 
@@ -116,14 +118,14 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       console.error('Google Sign-In Error:', error);
       
       // Handle different types of errors
-      let errorMessage = 'Google Sign-In failed';
-      
+      let errorMessage = t('auth.google.error');
+
       if (error.message?.includes('CORS') || error.message?.includes('Cross-Origin')) {
-        errorMessage = 'Google Sign-In is temporarily unavailable. Please try again later.';
+        errorMessage = t('auth.google.tryAgain');
       } else if (error.message?.includes('popup_blocked')) {
-        errorMessage = 'Please allow popups for Google Sign-In to work.';
+        errorMessage = t('auth.google.tryAgain');
       } else if (error.message?.includes('access_denied')) {
-        errorMessage = 'Google Sign-In was cancelled.';
+        errorMessage = t('auth.google.error');
       } else if (error.message) {
         errorMessage = error.message;
       }

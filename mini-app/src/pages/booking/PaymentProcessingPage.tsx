@@ -81,10 +81,10 @@ export const PaymentProcessingPage: React.FC = () => {
 
   const getMethodDescription = (method: PaymentMethod) => {
     const desc: Record<PaymentMethod, string> = {
-      telegram: locale === 'uk' ? 'Безпечна оплата через Telegram' : locale === 'ru' ? 'Безопасная оплата через Telegram' : 'Secure payment via Telegram',
-      card: locale === 'uk' ? 'Visa, Mastercard' : locale === 'ru' ? 'Visa, Mastercard' : 'Visa, Mastercard',
-      wallet: locale === 'uk' ? 'Оплата з балансу гаманця' : locale === 'ru' ? 'Оплата с баланса кошелька' : 'Pay from wallet balance',
-      cash: locale === 'uk' ? 'Оплата на місці' : locale === 'ru' ? 'Оплата на месте' : 'Pay at the venue',
+      telegram: p('telegramPayDesc'),
+      card: p('cardPaymentDesc'),
+      wallet: p('walletPaymentDesc'),
+      cash: p('cashPaymentDesc'),
     };
     return desc[method];
   };
@@ -245,7 +245,7 @@ export const PaymentProcessingPage: React.FC = () => {
             <Card className="mb-6 text-left">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-text-secondary text-sm">{locale === 'uk' ? 'Послуга' : locale === 'ru' ? 'Услуга' : 'Service'}</span>
+                  <span className="text-text-secondary text-sm">{c('service')}</span>
                   <span className="text-text-primary text-sm font-medium">{booking.service.name}</span>
                 </div>
                 <div className="flex justify-between">
@@ -253,7 +253,7 @@ export const PaymentProcessingPage: React.FC = () => {
                   <span className="text-accent-primary text-sm font-bold">{formatCurrency(booking.service.price, booking.service.currency, locale)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary text-sm">{locale === 'uk' ? 'Метод' : locale === 'ru' ? 'Метод' : 'Method'}</span>
+                  <span className="text-text-secondary text-sm">{p('method')}</span>
                   <span className="text-text-primary text-sm font-medium">{getMethodName(selectedMethod)}</span>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <ArrowRight size={16} className="ml-2" />
               </Button>
               <Button variant="ghost" onClick={() => navigate('/')} className="w-full">
-                {locale === 'uk' ? 'На головну' : locale === 'ru' ? 'На главную' : 'Go Home'}
+                {p('goHome')}
               </Button>
             </div>
           </div>
@@ -286,11 +286,7 @@ export const PaymentProcessingPage: React.FC = () => {
             </div>
             <h2 className="text-xl font-bold text-text-primary mb-2">{p('paymentFailed')}</h2>
             <p className="text-text-secondary text-sm mb-6">
-              {locale === 'uk'
-                ? 'Щось пішло не так. Спробуйте ще раз.'
-                : locale === 'ru'
-                  ? 'Что-то пошло не так. Попробуйте снова.'
-                  : 'Something went wrong. Please try again.'}
+              {p('failureDesc')}
             </p>
 
             <div className="space-y-3">

@@ -205,7 +205,7 @@ export const OnboardingPage: React.FC = () => {
               label={t(onboardingStrings, 'businessName', locale)}
               value={data.businessName}
               onChange={e => updateData({ businessName: e.target.value })}
-              placeholder={locale === 'uk' ? 'напр. Студія краси Марії' : locale === 'ru' ? 'напр. Студия красоты Марии' : 'e.g. Maria Beauty Studio'}
+              placeholder={t(onboardingStrings, 'businessNamePlaceholder', locale)}
               icon={<User size={18} />}
             />
 
@@ -213,7 +213,7 @@ export const OnboardingPage: React.FC = () => {
               label={t(onboardingStrings, 'specialization', locale)}
               value={data.specialization}
               onChange={e => updateData({ specialization: e.target.value })}
-              placeholder={locale === 'uk' ? 'напр. Перукар, Масажист' : locale === 'ru' ? 'напр. Парикмахер, Массажист' : 'e.g. Hairdresser, Massage Therapist'}
+              placeholder={t(onboardingStrings, 'specializationPlaceholder', locale)}
               icon={<Briefcase size={18} />}
             />
 
@@ -243,13 +243,13 @@ export const OnboardingPage: React.FC = () => {
               label={t(onboardingStrings, 'serviceName', locale)}
               value={data.serviceName}
               onChange={e => updateData({ serviceName: e.target.value })}
-              placeholder={locale === 'uk' ? 'напр. Стрижка, Масаж' : locale === 'ru' ? 'напр. Стрижка, Массаж' : 'e.g. Haircut, Massage'}
+              placeholder={t(onboardingStrings, 'serviceNamePlaceholder', locale)}
               icon={<Briefcase size={18} />}
             />
 
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
-                {locale === 'uk' ? 'Категорія' : locale === 'ru' ? 'Категория' : 'Category'}
+                {t(onboardingStrings, 'category', locale)}
               </label>
               <select
                 value={data.serviceCategory}
@@ -257,7 +257,7 @@ export const OnboardingPage: React.FC = () => {
                 className="input-telegram w-full rounded-xl text-sm"
               >
                 <option value="">
-                  {locale === 'uk' ? 'Оберіть категорію' : locale === 'ru' ? 'Выберите категорию' : 'Select category'}
+                  {t(onboardingStrings, 'selectCategory', locale)}
                 </option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -343,7 +343,7 @@ export const OnboardingPage: React.FC = () => {
                       </div>
                     ) : (
                       <span className="text-sm text-text-secondary">
-                        {locale === 'uk' ? 'Вихідний' : locale === 'ru' ? 'Выходной' : 'Day Off'}
+                        {t(commonStrings, 'dayOff', locale)}
                       </span>
                     )}
                   </div>
@@ -392,11 +392,7 @@ export const OnboardingPage: React.FC = () => {
               <Card className="text-center py-8">
                 <Camera size={40} className="text-text-secondary mx-auto mb-2" />
                 <p className="text-text-secondary text-sm">
-                  {locale === 'uk'
-                    ? 'Вставте URL вашого фото'
-                    : locale === 'ru'
-                    ? 'Вставьте URL вашего фото'
-                    : 'Paste your photo URL'}
+                  {t(onboardingStrings, 'pastePhotoUrl', locale)}
                 </p>
               </Card>
             )}
@@ -469,7 +465,7 @@ export const OnboardingPage: React.FC = () => {
                   <div key={day} className="flex justify-between">
                     <span className="text-text-secondary">{getDayLabel(day)}</span>
                     <span className={`font-medium ${dayData.enabled ? 'text-text-primary' : 'text-text-secondary'}`}>
-                      {dayData.enabled ? `${dayData.start} - ${dayData.end}` : (locale === 'uk' ? 'Вихідний' : locale === 'ru' ? 'Выходной' : 'Off')}
+                      {dayData.enabled ? `${dayData.start} - ${dayData.end}` : t(onboardingStrings, 'off', locale)}
                     </span>
                   </div>
                 ))}

@@ -76,9 +76,9 @@ export const PaymentMethodsPage: React.FC = () => {
       case 'telegram':
         return 'Telegram Payments';
       case 'cash':
-        return locale === 'uk' ? 'Готівка' : locale === 'ru' ? 'Наличные' : 'Cash';
+        return t(paymentMethodsStrings, 'cash', locale);
       case 'wallet':
-        return locale === 'uk' ? 'Баланс гаманця' : locale === 'ru' ? 'Баланс кошелька' : 'Wallet Balance';
+        return t(paymentMethodsStrings, 'walletBalance', locale);
       default:
         return method.type;
     }
@@ -87,13 +87,13 @@ export const PaymentMethodsPage: React.FC = () => {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'card':
-        return locale === 'uk' ? 'Банківська картка' : locale === 'ru' ? 'Банковская карта' : 'Bank Card';
+        return t(paymentMethodsStrings, 'bankCard', locale);
       case 'telegram':
         return 'Telegram Payments';
       case 'cash':
-        return locale === 'uk' ? 'Готівка при візиті' : locale === 'ru' ? 'Наличные при визите' : 'Cash on Visit';
+        return t(paymentMethodsStrings, 'cashOnVisit', locale);
       case 'wallet':
-        return locale === 'uk' ? 'Баланс гаманця' : locale === 'ru' ? 'Баланс кошелька' : 'Wallet Balance';
+        return t(paymentMethodsStrings, 'walletBalance', locale);
       default:
         return type;
     }

@@ -345,11 +345,7 @@ export const SchedulePage: React.FC = () => {
               {sc('weeklySchedule')}
             </h3>
             <p className="text-sm text-text-secondary mb-3">
-              {locale === 'uk'
-                ? 'Налаштуйте робочий час для кожного дня'
-                : locale === 'ru'
-                ? 'Настройте рабочее время для каждого дня'
-                : 'Configure your working hours for each day'}
+              {sc('configureHoursDesc')}
             </p>
             <div className="flex bg-bg-secondary rounded-xl p-1">
               <button
@@ -411,14 +407,14 @@ export const SchedulePage: React.FC = () => {
           <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-4">
             <h3 className="font-semibold text-text-primary flex items-center gap-2 mb-3">
               <Clock size={18} className="text-accent-primary" />
-              {locale === 'uk' ? 'Найближчі записи' : locale === 'ru' ? 'Ближайшие записи' : 'Upcoming Bookings'}
+              {sc('upcomingBookings')}
             </h3>
 
             {upcomingBookings.length === 0 ? (
               <div className="text-center py-6">
                 <Calendar size={32} className="mx-auto mb-2 text-text-muted" />
                 <p className="text-sm text-text-secondary">
-                  {locale === 'uk' ? 'Немає найближчих записів' : locale === 'ru' ? 'Нет ближайших записей' : 'No upcoming bookings'}
+                  {sc('noUpcomingBookings')}
                 </p>
               </div>
             ) : (
@@ -458,7 +454,7 @@ export const SchedulePage: React.FC = () => {
                           <p className="text-xs text-text-muted">{formattedTime}</p>
                         )}
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
-                          {(booking.status || '').toLowerCase()}
+                          {c(booking.status?.toLowerCase() || '')}
                         </span>
                       </div>
                     </div>
@@ -496,13 +492,13 @@ export const SchedulePage: React.FC = () => {
                   <span className="text-sm font-medium text-text-primary">
                     {daySchedule?.isWorking
                       ? `${daySchedule.startTime} — ${daySchedule.endTime}`
-                      : (locale === 'uk' ? 'Вихідний' : locale === 'ru' ? 'Выходной' : 'Day Off')}
+                      : c('dayOff')}
                   </span>
                   <span className={`w-2 h-2 rounded-full ${daySchedule?.isWorking ? 'bg-accent-green' : 'bg-text-muted'}`} />
                 </div>
                 {daySchedule?.breaks?.length > 0 && (
                   <p className="text-xs text-text-muted mt-1">
-                    {daySchedule.breaks.map(b => `${b.startTime}-${b.endTime}`).join(', ')} ({locale === 'uk' ? 'перерва' : locale === 'ru' ? 'перерыв' : 'break'})
+                    {daySchedule.breaks.map(b => `${b.startTime}-${b.endTime}`).join(', ')} ({sc('break')})
                   </p>
                 )}
               </div>
@@ -510,13 +506,13 @@ export const SchedulePage: React.FC = () => {
               {/* Appointments for this date */}
               <div>
                 <h4 className="text-sm font-semibold text-text-primary mb-2">
-                  {locale === 'uk' ? 'Записи' : locale === 'ru' ? 'Записи' : 'Appointments'} ({dayBookings.length})
+                  {sc('appointments')} ({dayBookings.length})
                 </h4>
                 {dayBookings.length === 0 ? (
                   <div className="text-center py-6">
                     <Calendar size={28} className="mx-auto mb-2 text-text-muted" />
                     <p className="text-sm text-text-secondary">
-                      {locale === 'uk' ? 'Немає записів на цей день' : locale === 'ru' ? 'Нет записей на этот день' : 'No appointments this day'}
+                      {sc('noAppointmentsToday')}
                     </p>
                   </div>
                 ) : (
@@ -543,7 +539,7 @@ export const SchedulePage: React.FC = () => {
                           <div className="text-right flex-shrink-0">
                             {timeStr && <p className="text-xs font-medium text-text-primary">{timeStr}</p>}
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getStatusColor(booking.status)}`}>
-                              {(booking.status || '').toLowerCase()}
+                              {c(booking.status?.toLowerCase() || '')}
                             </span>
                           </div>
                         </div>
@@ -645,11 +641,7 @@ export const SchedulePage: React.FC = () => {
 
                   {editingDay.breaks.length === 0 ? (
                     <p className="text-sm text-text-muted text-center py-3">
-                      {locale === 'uk'
-                        ? 'Немає перерв'
-                        : locale === 'ru'
-                        ? 'Нет перерывов'
-                        : 'No breaks added'}
+                      {sc('noBreaksAdded')}
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -783,13 +775,7 @@ export const SchedulePage: React.FC = () => {
               }
               rows={2}
               className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder={
-                locale === 'uk'
-                  ? 'Введіть причину...'
-                  : locale === 'ru'
-                  ? 'Введите причину...'
-                  : 'Enter reason...'
-              }
+              placeholder={sc('enterReason')}
             />
           </div>
 

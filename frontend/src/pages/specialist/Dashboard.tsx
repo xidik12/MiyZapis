@@ -462,7 +462,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting dashboard report:', error);
-      toast.error('Failed to export dashboard report. Please try again.');
+      toast.error(t('dashboard.exportError') || 'Failed to export dashboard report. Please try again.');
     }
   };
 

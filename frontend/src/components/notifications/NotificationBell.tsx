@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@/components/icons';
 import { notificationService } from '../../services/notification.service';
+import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationCenter from './NotificationCenter';
 
 interface NotificationBellProps {
@@ -13,6 +14,7 @@ interface NotificationBellProps {
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) => {
+  const { t } = useLanguage();
   const btnRef = useRef<HTMLButtonElement>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -80,8 +82,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
         ref={btnRef}
         onClick={handleClick}
         className={`relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-colors ${className}`}
-        title="Notifications"
-        aria-label="Open notifications"
+        title={t('notifications.title') || 'Notifications'}
+        aria-label={t('notifications.open') || 'Open notifications'}
       >
         <BellIcon className="h-6 w-6" />
         

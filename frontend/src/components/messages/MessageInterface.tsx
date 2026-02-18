@@ -4,6 +4,7 @@ import { ConversationList } from './ConversationList';
 import { ChatArea } from './ChatArea';
 import { MessagesService } from '@/services/messages.service';
 import { toast } from 'react-toastify';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Message {
   id: string;
@@ -50,6 +51,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   emptyTitle,
   emptyDescription
 }) => {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
@@ -274,7 +276,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
       <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading messages...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('messages.noConversation')}</p>
         </div>
       </div>
     );

@@ -222,7 +222,7 @@ export const SettingsPage: React.FC = () => {
                     <DollarSign size={18} className="text-accent-green" />
                   </div>
                   <span className="text-sm text-text-primary">
-                    {locale === 'uk' ? 'Валюта' : locale === 'ru' ? 'Валюта' : 'Currency'}
+                    {t(settingsStrings, 'currency', locale)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -425,7 +425,7 @@ export const SettingsPage: React.FC = () => {
       <Sheet
         isOpen={showCurrency}
         onClose={() => setShowCurrency(false)}
-        title={locale === 'uk' ? 'Валюта' : locale === 'ru' ? 'Валюта' : 'Currency'}
+        title={t(settingsStrings, 'currency', locale)}
       >
         <div className="space-y-2">
           {[
@@ -441,7 +441,7 @@ export const SettingsPage: React.FC = () => {
                 setShowCurrency(false);
                 dispatch(addToast({
                   type: 'success',
-                  title: locale === 'uk' ? 'Валюту змінено' : locale === 'ru' ? 'Валюта изменена' : 'Currency changed',
+                  title: t(settingsStrings, 'currencyChanged', locale),
                   message: cur.label,
                 }));
               }}

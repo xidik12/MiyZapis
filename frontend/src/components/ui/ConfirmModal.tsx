@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -15,12 +16,15 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   open,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   variant = 'default',
 }) => {
+  const { t } = useLanguage();
+  const resolvedConfirmText = confirmText || t('ui.confirm.ok');
+  const resolvedCancelText = cancelText || t('ui.confirm.cancel');
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -67,13 +71,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onCancel}
             className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 active:scale-95"
           >
-            {cancelText}
+            {resolvedCancelText}
           </button>
           <button
             onClick={onConfirm}
             className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 active:scale-95 ${confirmButtonStyles[variant]}`}
           >
-            {confirmText}
+            {resolvedConfirmText}
           </button>
         </div>
       </div>

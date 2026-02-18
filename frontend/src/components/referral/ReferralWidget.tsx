@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { UserPlusIcon, GiftIcon, ArrowTopRightOnSquareIcon, ClipboardDocumentIcon } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -15,6 +16,7 @@ interface ReferralWidgetProps {
 }
 
 const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) => {
+  const { t } = useLanguage();
   const [analytics, setAnalytics] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
         <div className="text-center">
           <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Referral system unavailable
+            {t('referral.widget.noReferrals')}
           </p>
         </div>
       </Card>
@@ -86,7 +88,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
     <Card className={clsx('p-6', className)}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Referral Program
+          {t('referral.widget.title')}
         </h3>
         <Button
           onClick={() => navigate(`/${userType}/referrals`)}
@@ -94,7 +96,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
           size="sm"
           rightIcon={<ArrowTopRightOnSquareIcon className="h-4 w-4" />}
         >
-          View All
+          {t('referral.widget.share')}
         </Button>
       </div>
 
@@ -104,25 +106,25 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
           <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
             {analytics.overview.totalReferrals}
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalReferred')}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {analytics.overview.completedReferrals}
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Completed</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalEarned')}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
             {analytics.overview.pendingReferrals}
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Pending</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.pending')}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {analytics.overview.totalPointsEarned}
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Points</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalEarned')}</div>
         </div>
       </div>
 
@@ -130,7 +132,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
       <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            Conversion Rate
+            {t('referral.widget.subtitle')}
           </span>
           <span className="text-sm font-medium text-gray-900 dark:text-white">
             {referralService.formatConversionRate(analytics.overview.conversionRate)}
@@ -155,7 +157,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
           className="w-full"
           size="sm"
         >
-          {canCreateReferral ? 'Create Referral' : 'Limit Reached'}
+          {canCreateReferral ? t('referral.widget.startSharing') : t('referral.widget.noReferrals')}
         </Button>
 
         {config && config.limits.dailyUsed < config.limits.dailyLimit && (
@@ -169,7 +171,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
       {analytics.recentActivity.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Recent Activity
+            {t('referral.widget.yourReferrals')}
           </h4>
           <div className="space-y-2">
             {analytics.recentActivity.slice(0, 3).map((activity: any, index: number) => (

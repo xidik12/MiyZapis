@@ -111,7 +111,7 @@ export const AnalyticsPage: React.FC = () => {
       const categoryMap = new Map<string, { bookings: number; spent: number }>();
 
       completedBookings.forEach((booking: any) => {
-        const categoryName = booking.service?.category?.name || 'Other';
+        const categoryName = booking.service?.category?.name || t(analyticsStrings, 'otherCategory', locale);
         const existing = categoryMap.get(categoryName) || { bookings: 0, spent: 0 };
         categoryMap.set(categoryName, {
           bookings: existing.bookings + 1,

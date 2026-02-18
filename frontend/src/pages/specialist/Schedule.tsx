@@ -479,7 +479,7 @@ const SpecialistSchedule: React.FC = () => {
     setConflicts(bookingConflicts);
 
     if (bookingConflicts.length > 0) {
-      toast.warning(`⚠️ ${bookingConflicts.length} booking conflict(s) detected`);
+      toast.warning(`${bookingConflicts.length} ${t('schedule.conflictsDetected') || 'Booking Conflicts Detected'}`);
     }
   }, [bookings]);
 
@@ -574,7 +574,7 @@ const SpecialistSchedule: React.FC = () => {
       setError(null);
       setPreSelectedDate(undefined);
       setPreSelectedTime(undefined);
-      toast.success('Time slot added successfully');
+      toast.success(t('specialist.schedule.toast.saved'));
     } catch (err: any) {
       console.error('Error adding time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to add time slot. Please try again.';
@@ -622,7 +622,7 @@ const SpecialistSchedule: React.FC = () => {
 
       setEditingBlock(null);
       setError(null);
-      toast.success('Time slot updated successfully');
+      toast.success(t('specialist.schedule.toast.saved'));
     } catch (err: any) {
       console.error('Error editing time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to edit time slot. Please try again.';
@@ -643,7 +643,7 @@ const SpecialistSchedule: React.FC = () => {
       );
       setAvailabilityBlocks(prev => prev.filter(block => block.id !== id));
       setError(null);
-      toast.success('Time slot deleted successfully');
+      toast.success(t('specialist.schedule.toast.saved'));
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to delete time slot. Please try again.';
@@ -758,10 +758,10 @@ const SpecialistSchedule: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Card View"
+              title={t('schedule.cardView') || 'Card View'}
             >
               <ListBulletsIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Cards</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('schedule.cards') || 'Cards'}</span>
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -770,10 +770,10 @@ const SpecialistSchedule: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Month View"
+              title={t('schedule.monthView') || 'Month View'}
             >
               <CalendarDaysIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Month</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('schedule.month') || 'Month'}</span>
             </button>
           </div>
 
@@ -1213,7 +1213,7 @@ const SpecialistSchedule: React.FC = () => {
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors disabled:opacity-50"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">Add Time</span>
+                  <span className="text-sm font-medium">{t('schedule.addTime')}</span>
                 </button>
               </div>
             </div>

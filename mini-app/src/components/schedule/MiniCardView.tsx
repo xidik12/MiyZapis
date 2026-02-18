@@ -1,6 +1,9 @@
 import React from 'react';
 import { Clock, CalendarOff, User } from 'lucide-react';
 import { format, parseISO, getDay } from 'date-fns';
+import { t } from '@/hooks/useLocale';
+import { commonStrings, scheduleStrings } from '@/utils/translations';
+import type { Locale } from '@/utils/categories';
 
 interface DaySchedule {
   dayOfWeek: number;
@@ -68,7 +71,7 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
               <div className="text-left">
                 <span className="text-sm font-medium text-text-secondary">{dayLabels[index]}</span>
                 <p className="text-xs text-text-muted">
-                  {locale === 'uk' ? 'Вихідний' : locale === 'ru' ? 'Выходной' : 'Day Off'}
+                  {t(commonStrings, 'dayOff', locale as Locale)}
                 </p>
               </div>
             </button>
@@ -118,7 +121,7 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
                 <span>{day.endTime}</span>
                 {day.breaks.length > 0 && (
                   <span className="text-text-muted">
-                    ({day.breaks.length} {locale === 'uk' ? 'перерв' : locale === 'ru' ? 'перерыв' : 'break'}{day.breaks.length > 1 && locale === 'en' ? 's' : ''})
+                    ({day.breaks.length} {t(scheduleStrings, 'break', locale as Locale)})
                   </span>
                 )}
               </div>
@@ -143,7 +146,7 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
               <div className="mt-2 flex items-center gap-2">
                 <User size={12} className="text-accent-primary" />
                 <span className="text-xs text-accent-primary font-medium">
-                  {dayBookings.length} {locale === 'uk' ? 'записів' : locale === 'ru' ? 'записей' : 'appointment'}{dayBookings.length !== 1 && locale === 'en' ? 's' : ''}
+                  {dayBookings.length} {t(scheduleStrings, 'appointments', locale as Locale)}
                 </span>
                 {dayBookings[0] && (
                   <span className="text-xs text-text-muted truncate">

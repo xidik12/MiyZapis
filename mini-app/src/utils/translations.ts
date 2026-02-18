@@ -57,6 +57,17 @@ export const commonStrings: Record<string, Record<Locale, string>> = {
   verified: { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   dayOff: { en: 'Day Off', uk: 'Вихідний', ru: 'Выходной' },
   copied: { en: 'Copied!', uk: 'Скопійовано!', ru: 'Скопировано!' },
+  home: { en: 'Home', uk: 'Головна', ru: 'Главная' },
+  service: { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
+  hoursAgo: { en: 'h ago', uk: 'год тому', ru: 'ч назад' },
+  daysAgo: { en: 'd ago', uk: 'дн тому', ru: 'дн назад' },
+  inProgress: { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  rescheduled: { en: 'Rescheduled', uk: 'Перенесено', ru: 'Перенесено' },
+  by: { en: 'by', uk: 'від', ru: 'от' },
+  reviews: { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
+  unknown: { en: 'Unknown', uk: 'Невідомо', ru: 'Неизвестно' },
+  logoutFailed: { en: 'Failed to logout', uk: 'Не вдалося вийти', ru: 'Не удалось выйти' },
+  loginFailed: { en: 'Login failed', uk: 'Помилка входу', ru: 'Ошибка входа' },
 };
 
 // Bookings page
@@ -106,6 +117,7 @@ export const bookingFlowStrings: Record<string, Record<Locale, string>> = {
   noSlotsAvailable: { en: 'No time slots available', uk: 'Немає доступних слотів', ru: 'Нет доступных слотов' },
   bookingSuccess: { en: 'Booking created successfully!', uk: 'Запис успішно створено!', ru: 'Запись успешно создана!' },
   bookingFailed: { en: 'Failed to create booking', uk: 'Не вдалося створити запис', ru: 'Не удалось создать запись' },
+  securePaymentViaTelegram: { en: 'Secure payment via Telegram', uk: 'Безпечна оплата через Telegram', ru: 'Безопасная оплата через Telegram' },
 };
 
 // Search page
@@ -140,6 +152,7 @@ export const searchStrings: Record<string, Record<Locale, string>> = {
   city: { en: 'City', uk: 'Місто', ru: 'Город' },
   allCities: { en: 'All Cities', uk: 'Усі міста', ru: 'Все города' },
   selectCity: { en: 'Select City', uk: 'Оберіть місто', ru: 'Выберите город' },
+  defaultFilterName: { en: 'My filter', uk: 'Мій фільтр', ru: 'Мой фильтр' },
 };
 
 // Service detail page
@@ -160,6 +173,8 @@ export const serviceDetailStrings: Record<string, Record<Locale, string>> = {
   showLess: { en: 'Show less', uk: 'Показати менше', ru: 'Показать меньше' },
   viewProfile: { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
   allReviews: { en: 'All Reviews', uk: 'Всі відгуки', ru: 'Все отзывы' },
+  shareText: { en: 'Check out this service on MiyZapis!', uk: 'Подивіться цю послугу на MiyZapis!', ru: 'Посмотрите эту услугу на MiyZapis!' },
+  reviewsCount: { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
 };
 
 // Profile page
@@ -185,6 +200,24 @@ export const profileStrings: Record<string, Record<Locale, string>> = {
   bookFirstService: { en: 'Book Your First Service', uk: 'Забронюйте першу послугу', ru: 'Забронируйте первую услугу' },
   avatarUpload: { en: 'Avatar upload feature will be available soon.', uk: 'Функція завантаження аватара буде доступна незабаром.', ru: 'Функция загрузки аватара будет доступна скоро.' },
   quickActions: { en: 'Quick Actions', uk: 'Швидкі дії', ru: 'Быстрые действия' },
+  name: { en: 'Name', uk: 'Ім\'я', ru: 'Имя' },
+  email: { en: 'Email', uk: 'Email', ru: 'Email' },
+  phone: { en: 'Phone', uk: 'Телефон', ru: 'Телефон' },
+  myBookings: { en: 'My Bookings', uk: 'Мої записи', ru: 'Мои записи' },
+  paymentMethods: { en: 'Payment Methods', uk: 'Способи оплати', ru: 'Способы оплаты' },
+  notLoggedIn: { en: 'Not logged in', uk: 'Ви не увійшли', ru: 'Вы не вошли' },
+  signInToView: { en: 'Sign in to view your profile', uk: 'Увійдіть для перегляду профілю', ru: 'Войдите для просмотра профиля' },
+  signInButton: { en: 'Sign In', uk: 'Увійти', ru: 'Войти' },
+  referrals: { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
+  inviteFriends: { en: 'Invite friends & earn', uk: 'Запрошуйте друзів', ru: 'Приглашайте друзей' },
+  payment: { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
+  specialist: { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
+  dashboard: { en: 'Dashboard', uk: 'Панель', ru: 'Панель' },
+  yourBusiness: { en: 'Your business overview', uk: 'Огляд бізнесу', ru: 'Обзор бизнеса' },
+  specialistSettings: { en: 'Specialist Settings', uk: 'Налаштування спеціаліста', ru: 'Настройки специалиста' },
+  businessProfile: { en: 'Business & profile settings', uk: 'Налаштування бізнесу та профілю', ru: 'Настройки бизнеса и профиля' },
+  notifications: { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  help: { en: 'Help & Support', uk: 'Допомога', ru: 'Помощь' },
 };
 
 // Specialist dashboard
@@ -205,6 +238,18 @@ export const specialistDashboardStrings: Record<string, Record<Locale, string>> 
   performance: { en: 'Performance', uk: 'Продуктивність', ru: 'Производительность' },
   responseTime: { en: 'Response Time', uk: 'Час відповіді', ru: 'Время ответа' },
   averageRating: { en: 'Average Rating', uk: 'Середній рейтинг', ru: 'Средний рейтинг' },
+  services: { en: 'Services', uk: 'Послуги', ru: 'Услуги' },
+  clients: { en: 'Clients', uk: 'Клієнти', ru: 'Клиенты' },
+  wallet: { en: 'Wallet', uk: 'Гаманець', ru: 'Кошелёк' },
+  finances: { en: 'Finances', uk: 'Фінанси', ru: 'Финансы' },
+  loyalty: { en: 'Loyalty', uk: 'Лояльність', ru: 'Лояльность' },
+  messages: { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
+  alerts: { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  community: { en: 'Community', uk: 'Спільнота', ru: 'Сообщество' },
+  referrals: { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
+  profile: { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  settings: { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
+  help: { en: 'Help', uk: 'Допомога', ru: 'Помощь' },
 };
 
 // Settings page
@@ -226,6 +271,8 @@ export const settingsStrings: Record<string, Record<Locale, string>> = {
   promotions: { en: 'Promotions', uk: 'Акції', ru: 'Акции' },
   savePreferences: { en: 'Save Preferences', uk: 'Зберегти налаштування', ru: 'Сохранить настройки' },
   languageChanged: { en: 'Language changed', uk: 'Мову змінено', ru: 'Язык изменён' },
+  currency: { en: 'Currency', uk: 'Валюта', ru: 'Валюта' },
+  currencyChanged: { en: 'Currency changed', uk: 'Валюту змінено', ru: 'Валюта изменена' },
 };
 
 // Community page
@@ -319,6 +366,10 @@ export const loyaltyStrings: Record<string, Record<Locale, string>> = {
   vipSupport: { en: 'VIP support', uk: 'VIP підтримка', ru: 'VIP поддержка' },
   exclusiveServices: { en: 'Exclusive services', uk: 'Ексклюзивні послуги', ru: 'Эксклюзивные услуги' },
   freeCancellation: { en: 'Free cancellation', uk: 'Безкоштовне скасування', ru: 'Бесплатная отмена' },
+  needMorePoints: { en: 'Need more points', uk: 'Потрібно більше балів', ru: 'Нужно больше баллов' },
+  redeemConfirm: { en: 'Redeem this reward?', uk: 'Обміняти цю винагороду?', ru: 'Обменять эту награду?' },
+  redeemed: { en: 'Reward redeemed!', uk: 'Винагороду обміняно!', ru: 'Награда обменена!' },
+  redeemFailed: { en: 'Failed to redeem', uk: 'Не вдалося обміняти', ru: 'Не удалось обменять' },
 };
 
 // Favorites page
@@ -334,6 +385,10 @@ export const favoritesStrings: Record<string, Record<Locale, string>> = {
   exploreSpecialists: { en: 'Explore Specialists', uk: 'Переглянути спеціалістів', ru: 'Посмотреть специалистов' },
   exploreServices: { en: 'Explore Services', uk: 'Переглянути послуги', ru: 'Посмотреть услуги' },
   confirmRemove: { en: 'Remove from favorites?', uk: 'Видалити з обраного?', ru: 'Удалить из избранного?' },
+  removed: { en: 'Removed', uk: 'Видалено', ru: 'Удалено' },
+  removedFromFavorites: { en: 'Removed from favorites', uk: 'Видалено з обраного', ru: 'Удалено из избранного' },
+  failedToRemove: { en: 'Failed to remove', uk: 'Не вдалося видалити', ru: 'Не удалось удалить' },
+  bySpecialist: { en: 'by', uk: 'від', ru: 'от' },
 };
 
 // Reviews page
@@ -358,6 +413,8 @@ export const reviewsStrings: Record<string, Record<Locale, string>> = {
   spam: { en: 'Spam', uk: 'Спам', ru: 'Спам' },
   fake: { en: 'Fake review', uk: 'Фейковий відгук', ru: 'Поддельный отзыв' },
   other: { en: 'Other', uk: 'Інше', ru: 'Другое' },
+  verified: { en: 'Verified', uk: 'Підтверджений', ru: 'Подтверждённый' },
+  specialistResponse: { en: 'Specialist response', uk: 'Відповідь спеціаліста', ru: 'Ответ специалиста' },
 };
 
 // Analytics page
@@ -370,6 +427,7 @@ export const analyticsStrings: Record<string, Record<Locale, string>> = {
   completionRate: { en: 'Completion Rate', uk: 'Рівень завершення', ru: 'Уровень завершения' },
   monthlySpending: { en: 'Monthly Spending', uk: 'Щомісячні витрати', ru: 'Ежемесячные расходы' },
   spendingByCategory: { en: 'Spending by Category', uk: 'Витрати за категоріями', ru: 'Расходы по категориям' },
+  otherCategory: { en: 'Other', uk: 'Інше', ru: 'Другое' },
 };
 
 // Messaging page
@@ -400,6 +458,14 @@ export const specialistProfileStrings: Record<string, Record<Locale, string>> = 
   message: { en: 'Message', uk: 'Написати', ru: 'Написать' },
   call: { en: 'Call', uk: 'Подзвонити', ru: 'Позвонить' },
   email: { en: 'Email', uk: 'Email', ru: 'Email' },
+  shareText: { en: 'Check out this specialist on MiyZapis!', uk: 'Подивіться цього спеціаліста на MiyZapis!', ru: 'Посмотрите этого специалиста на MiyZapis!' },
+  noServices: { en: 'No services available', uk: 'Немає доступних послуг', ru: 'Нет доступных услуг' },
+  book: { en: 'Book', uk: 'Записатися', ru: 'Записаться' },
+  noServicesAvailable: { en: 'No services available', uk: 'Немає доступних послуг', ru: 'Нет доступных услуг' },
+  noPortfolio: { en: 'No portfolio images yet', uk: 'Немає зображень портфоліо', ru: 'Нет изображений портфолио' },
+  noReviewsYet: { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Отзывов пока нет' },
+  viewAllReviews: { en: 'View all reviews', uk: 'Переглянути всі відгуки', ru: 'Посмотреть все отзывы' },
+  bookAppointment: { en: 'Book Appointment', uk: 'Забронювати', ru: 'Забронировать' },
 };
 
 // Specialist services page
@@ -423,6 +489,16 @@ export const specialistServicesStrings: Record<string, Record<Locale, string>> =
   saveFailed: { en: 'Failed to save service', uk: 'Не вдалося зберегти', ru: 'Не удалось сохранить' },
   serviceDeleted: { en: 'Service deleted', uk: 'Послугу видалено', ru: 'Услуга удалена' },
   deleteFailed: { en: 'Failed to delete service', uk: 'Не вдалося видалити', ru: 'Не удалось удалить' },
+  deleteConfirm: { en: 'Delete this service?', uk: 'Видалити цю послугу?', ru: 'Удалить эту услугу?' },
+  deleted: { en: 'Service deleted', uk: 'Послугу видалено', ru: 'Услуга удалена' },
+  updateFailed: { en: 'Failed to update', uk: 'Не вдалося оновити', ru: 'Не удалось обновить' },
+  maxFileSize: { en: 'Max file size: 5MB', uk: 'Макс. розмір: 5МБ', ru: 'Макс. размер: 5МБ' },
+  uploadFailed: { en: 'Upload failed', uk: 'Не вдалося завантажити', ru: 'Не удалось загрузить' },
+  namePlaceholder: { en: 'Enter service name', uk: 'Введіть назву послуги', ru: 'Введите название услуги' },
+  descriptionPlaceholder: { en: 'Describe your service', uk: 'Опишіть вашу послугу', ru: 'Опишите вашу услугу' },
+  servicePhotos: { en: 'Service Photos', uk: 'Фото послуги', ru: 'Фото услуги' },
+  uploading: { en: 'Uploading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  addPhotos: { en: 'Add Photos', uk: 'Додати фото', ru: 'Добавить фото' },
 };
 
 // Notifications page
@@ -462,6 +538,21 @@ export const customerDashboardStrings: Record<string, Record<Locale, string>> = 
   favorites: { en: 'Favorites', uk: 'Обрані', ru: 'Избранное' },
   messages: { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   rewards: { en: 'Rewards', uk: 'Нагороди', ru: 'Награды' },
+  search: { en: 'Search', uk: 'Пошук', ru: 'Поиск' },
+  bookings: { en: 'Bookings', uk: 'Записи', ru: 'Записи' },
+  payments: { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
+  analytics: { en: 'Analytics', uk: 'Аналітика', ru: 'Аналитика' },
+  alerts: { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  reviews: { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  loyalty: { en: 'Loyalty', uk: 'Лояльність', ru: 'Лояльность' },
+  community: { en: 'Community', uk: 'Спільнота', ru: 'Сообщество' },
+  referrals: { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
+  profile: { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  settings: { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
+  help: { en: 'Help', uk: 'Допомога', ru: 'Помощь' },
+  welcomeSubtitle: { en: 'Find and book the best specialists', uk: 'Знайдіть та запишіться до найкращих спеціалістів', ru: 'Найдите и запишитесь к лучшим специалистам' },
+  signIn: { en: 'Sign In', uk: 'Увійти', ru: 'Войти' },
+  welcomeHint: { en: 'Sign in to access all features', uk: 'Увійдіть для доступу до всіх функцій', ru: 'Войдите для доступа ко всем функциям' },
 };
 
 // Specialist bookings management
@@ -527,6 +618,14 @@ export const scheduleStrings: Record<string, Record<Locale, string>> = {
   upcomingBookings: { en: 'Upcoming Bookings', uk: 'Найближчі записи', ru: 'Ближайшие записи' },
   noUpcomingBookings: { en: 'No upcoming bookings', uk: 'Немає найближчих записів', ru: 'Нет ближайших записей' },
   noBreaks: { en: 'No breaks added', uk: 'Немає перерв', ru: 'Нет перерывов' },
+  configureHoursDesc: { en: 'Configure your working hours', uk: 'Налаштуйте робочий час', ru: 'Настройте рабочее время' },
+  break: { en: 'Break', uk: 'Перерва', ru: 'Перерыв' },
+  breaks: { en: 'Breaks', uk: 'Перерви', ru: 'Перерывы' },
+  appointments: { en: 'Appointments', uk: 'Записи', ru: 'Записи' },
+  noAppointmentsToday: { en: 'No appointments today', uk: 'Сьогодні немає записів', ru: 'Сегодня нет записей' },
+  noBreaksAdded: { en: 'No breaks added', uk: 'Немає перерв', ru: 'Нет перерывов' },
+  enterReason: { en: 'Enter reason', uk: 'Введіть причину', ru: 'Введите причину' },
+  appointment: { en: 'Appointment', uk: 'Запис', ru: 'Запись' },
 };
 
 // Specialist earnings
@@ -546,6 +645,8 @@ export const earningsStrings: Record<string, Record<Locale, string>> = {
   avgPerBooking: { en: 'Avg per Booking', uk: 'Серед. за запис', ru: 'Ср. за запись' },
   overview: { en: 'Overview', uk: 'Огляд', ru: 'Обзор' },
   trends: { en: 'Trends', uk: 'Тренди', ru: 'Тренды' },
+  loadFailed: { en: 'Failed to load data', uk: 'Не вдалося завантажити', ru: 'Не удалось загрузить' },
+  noPayoutsYet: { en: 'No payouts yet', uk: 'Виплат поки немає', ru: 'Выплат пока нет' },
 };
 
 // Post detail page
@@ -580,6 +681,13 @@ export const paymentProcessingStrings: Record<string, Record<Locale, string>> = 
   secure: { en: 'Secure payment', uk: 'Безпечна оплата', ru: 'Безопасная оплата' },
   receipt: { en: 'View Receipt', uk: 'Переглянути чек', ru: 'Посмотреть чек' },
   backToBookings: { en: 'Back to Bookings', uk: 'До записів', ru: 'К записям' },
+  goHome: { en: 'Go Home', uk: 'На головну', ru: 'На главную' },
+  failureDesc: { en: 'Something went wrong. Please try again.', uk: 'Щось пішло не так. Спробуйте ще раз.', ru: 'Что-то пошло не так. Попробуйте снова.' },
+  telegramPayDesc: { en: 'Secure payment via Telegram', uk: 'Безпечна оплата через Telegram', ru: 'Безопасная оплата через Telegram' },
+  cardPaymentDesc: { en: 'Visa, Mastercard', uk: 'Visa, Mastercard', ru: 'Visa, Mastercard' },
+  walletPaymentDesc: { en: 'Pay from wallet balance', uk: 'Оплата з балансу гаманця', ru: 'Оплата с баланса кошелька' },
+  cashPaymentDesc: { en: 'Pay at the venue', uk: 'Оплата на місці', ru: 'Оплата на месте' },
+  method: { en: 'Method', uk: 'Метод', ru: 'Метод' },
 };
 
 // Specialist profile edit
@@ -602,6 +710,9 @@ export const specialistProfileEditStrings: Record<string, Record<Locale, string>
   updateFailed: { en: 'Failed to update profile', uk: 'Не вдалося оновити', ru: 'Не удалось обновить' },
   phone: { en: 'Phone', uk: 'Телефон', ru: 'Телефон' },
   email: { en: 'Email', uk: 'Email', ru: 'Email' },
+  businessNamePlaceholder: { en: 'Enter business name', uk: 'Введіть назву бізнесу', ru: 'Введите название бизнеса' },
+  cityPlaceholder: { en: 'Enter city', uk: 'Введіть місто', ru: 'Введите город' },
+  addressPlaceholder: { en: 'Enter address', uk: 'Введіть адресу', ru: 'Введите адрес' },
 };
 
 // Specialist analytics
@@ -713,6 +824,9 @@ export const helpSupportStrings: Record<string, Record<Locale, string>> = {
   avgResponseTime: { en: 'Avg Response Time', uk: 'Сер. час відповіді', ru: 'Ср. время ответа' },
   resolutionRate: { en: 'Resolution Rate', uk: 'Рівень вирішення', ru: 'Уровень решения' },
   satisfaction: { en: 'Satisfaction', uk: 'Задоволеність', ru: 'Удовлетворённость' },
+  allCategories: { en: 'All', uk: 'Все', ru: 'Все' },
+  subjectPlaceholder: { en: 'Subject of your request', uk: 'Тема вашого запиту', ru: 'Тема вашего запроса' },
+  messagePlaceholder: { en: 'Describe your issue or request...', uk: 'Опишіть вашу проблему або запит...', ru: 'Опишите вашу проблему или запрос...' },
 };
 
 // Referrals page
@@ -732,6 +846,7 @@ export const referralsStrings: Record<string, Record<Locale, string>> = {
   registered: { en: 'Registered', uk: 'Зареєстрований', ru: 'Зарегистрирован' },
   booked: { en: 'Booked', uk: 'Забронював', ru: 'Забронировал' },
   rewardEarned: { en: 'Reward Earned', uk: 'Бонус отримано', ru: 'Бонус получен' },
+  shareText: { en: 'Join MiyZapis and get a bonus! Use my referral link:', uk: 'Приєднуйтесь до MiyZapis та отримайте бонус! Моє реферальне посилання:', ru: 'Присоединяйтесь к MiyZapis и получите бонус! Моя реферальная ссылка:' },
 };
 
 // Specialist settings
@@ -748,6 +863,9 @@ export const specialistSettingsStrings: Record<string, Record<Locale, string>> =
   bookingSettings: { en: 'Booking Settings', uk: 'Налаштування записів', ru: 'Настройки записей' },
   autoConfirm: { en: 'Auto-confirm bookings', uk: 'Авто-підтвердження записів', ru: 'Автоподтверждение записей' },
   bufferTime: { en: 'Buffer between bookings', uk: 'Буфер між записами', ru: 'Буфер между записями' },
+  autoConfirmDesc: { en: 'Automatically confirm new bookings', uk: 'Автоматично підтверджувати нові записи', ru: 'Автоматически подтверждать новые записи' },
+  bufferTimeDesc: { en: 'Time between consecutive bookings', uk: 'Час між послідовними записами', ru: 'Время между последовательными записями' },
+  noBuffer: { en: 'No buffer', uk: 'Без буфера', ru: 'Без буфера' },
 };
 
 // Specialist wallet / payouts
@@ -765,6 +883,9 @@ export const specialistWalletStrings: Record<string, Record<Locale, string>> = {
   paid: { en: 'Paid', uk: 'Сплачено', ru: 'Оплачено' },
   minPayout: { en: 'Minimum payout: 100 UAH', uk: 'Мінімальна виплата: 100 UAH', ru: 'Минимальная выплата: 100 UAH' },
   noPayoutsDesc: { en: 'Your payout history will appear here', uk: 'Історія виплат з\'явиться тут', ru: 'История выплат появится здесь' },
+  invalidAmount: { en: 'Invalid amount', uk: 'Невірна сума', ru: 'Неверная сумма' },
+  insufficientBalance: { en: 'Insufficient balance', uk: 'Недостатній баланс', ru: 'Недостаточный баланс' },
+  payoutHistoryHint: { en: 'Your payout history will appear here', uk: 'Історія виплат з\'явиться тут', ru: 'История выплат появится здесь' },
 };
 
 // Onboarding wizard
@@ -797,6 +918,14 @@ export const onboardingStrings: Record<string, Record<Locale, string>> = {
   setupFailed: { en: 'Setup failed', uk: 'Не вдалося налаштувати', ru: 'Не удалось настроить' },
   stepOf: { en: 'Step', uk: 'Крок', ru: 'Шаг' },
   of: { en: 'of', uk: 'з', ru: 'из' },
+  businessNamePlaceholder: { en: 'Enter business name', uk: 'Введіть назву бізнесу', ru: 'Введите название бизнеса' },
+  specializationPlaceholder: { en: 'Enter specialization', uk: 'Введіть спеціалізацію', ru: 'Введите специализацию' },
+  category: { en: 'Category', uk: 'Категорія', ru: 'Категория' },
+  selectCategory: { en: 'Select category', uk: 'Оберіть категорію', ru: 'Выберите категорию' },
+  photoUrlPlaceholder: { en: 'Enter photo URL', uk: 'Введіть URL фото', ru: 'Введите URL фото' },
+  off: { en: 'Off', uk: 'Вимк', ru: 'Выкл' },
+  pastePhotoUrl: { en: 'Paste your photo URL', uk: 'Вставте URL вашого фото', ru: 'Вставьте URL вашего фото' },
+  serviceNamePlaceholder: { en: 'e.g. Haircut, Massage', uk: 'напр. Стрижка, Масаж', ru: 'напр. Стрижка, Массаж' },
 };
 
 // Bottom navigation
@@ -946,4 +1075,62 @@ export const paymentComponentStrings: Record<string, Record<Locale, string>> = {
   paymentNotAvailable: { en: 'Telegram Payments is not available on your device.', uk: 'Telegram Payments недоступний на вашому пристрої.', ru: 'Telegram Payments недоступен на вашем устройстве.' },
   payConfirm: { en: 'for your booking?', uk: 'за ваш запис?', ru: 'за вашу запись?' },
   cardComingSoon: { en: 'Card payment via Stripe coming soon!', uk: 'Оплата карткою через Stripe незабаром!', ru: 'Оплата картой через Stripe скоро!' },
+  paymentFailed: { en: 'Payment failed', uk: 'Оплату не здійснено', ru: 'Оплата не прошла' },
+};
+
+// Create post page
+export const createPostStrings: Record<string, Record<Locale, string>> = {
+  failedToLoadPost: { en: 'Failed to load post', uk: 'Не вдалося завантажити пост', ru: 'Не удалось загрузить пост' },
+  postNotFound: { en: 'Post not found', uk: 'Пост не знайдено', ru: 'Пост не найден' },
+  failedToLoadCategories: { en: 'Failed to load categories', uk: 'Не вдалося завантажити категорії', ru: 'Не удалось загрузить категории' },
+  titleMinLength: { en: 'Title must be at least 3 characters', uk: 'Заголовок мінімум 3 символи', ru: 'Заголовок минимум 3 символа' },
+  contentMinLength: { en: 'Content must be at least 10 characters', uk: 'Вміст мінімум 10 символів', ru: 'Содержание минимум 10 символов' },
+  priceNegative: { en: 'Price cannot be negative', uk: 'Ціна не може бути від\'ємною', ru: 'Цена не может быть отрицательной' },
+  updated: { en: 'Post updated!', uk: 'Пост оновлено!', ru: 'Пост обновлён!' },
+  posted: { en: 'Post published!', uk: 'Пост опубліковано!', ru: 'Пост опубликован!' },
+  failedToPublish: { en: 'Failed to publish post', uk: 'Не вдалося опублікувати', ru: 'Не удалось опубликовать' },
+  titlePlaceholder: { en: 'Enter title', uk: 'Введіть заголовок', ru: 'Введите заголовок' },
+  contentPlaceholder: { en: 'Write your post content...', uk: 'Напишіть вміст посту...', ru: 'Напишите содержание поста...' },
+  pricePlaceholder: { en: 'Enter price', uk: 'Введіть ціну', ru: 'Введите цену' },
+  phonePlaceholder: { en: 'Enter phone number', uk: 'Введіть номер телефону', ru: 'Введите номер телефона' },
+  emailPlaceholder: { en: 'Enter email', uk: 'Введіть email', ru: 'Введите email' },
+  selectType: { en: 'Select type', uk: 'Оберіть тип', ru: 'Выберите тип' },
+  fileTooLarge: { en: 'File too large (max 10MB)', uk: 'Файл занадто великий (макс 10МБ)', ru: 'Файл слишком большой (макс 10МБ)' },
+  invalidFileType: { en: 'Only JPG, PNG, WebP allowed', uk: 'Тільки JPG, PNG, WebP', ru: 'Только JPG, PNG, WebP' },
+  publishing: { en: 'Publishing...', uk: 'Публікація...', ru: 'Публикация...' },
+  uploadFailed: { en: 'Upload failed', uk: 'Не вдалося завантажити', ru: 'Не удалось загрузить' },
+};
+
+// Error boundary
+export const errorBoundaryStrings: Record<string, Record<Locale, string>> = {
+  title: { en: 'Something went wrong', uk: 'Щось пішло не так', ru: 'Что-то пошло не так' },
+  message: { en: 'An unexpected error occurred', uk: 'Виникла несподівана помилка', ru: 'Произошла непредвиденная ошибка' },
+  tryAgain: { en: 'Try Again', uk: 'Спробувати ще', ru: 'Попробовать снова' },
+  pageErrorTitle: { en: 'Page Error', uk: 'Помилка сторінки', ru: 'Ошибка страницы' },
+  pageErrorMessage: { en: 'This page encountered an error', uk: 'На цій сторінці виникла помилка', ru: 'На этой странице произошла ошибка' },
+  reload: { en: 'Reload Page', uk: 'Перезавантажити', ru: 'Перезагрузить' },
+};
+
+// WebSocket notifications
+export const webSocketNotificationStrings: Record<string, Record<Locale, string>> = {
+  bookingUpdated: { en: 'Booking Updated', uk: 'Запис оновлено', ru: 'Запись обновлена' },
+  bookingConfirmed: { en: 'Booking Confirmed', uk: 'Запис підтверджено', ru: 'Запись подтверждена' },
+  bookingConfirmedMsg: { en: 'Your booking has been confirmed', uk: 'Ваш запис підтверджено', ru: 'Ваша запись подтверждена' },
+  bookingCancelled: { en: 'Booking Cancelled', uk: 'Запис скасовано', ru: 'Запись отменена' },
+  bookingCancelledMsg: { en: 'Your booking has been cancelled', uk: 'Ваш запис скасовано', ru: 'Ваша запись отменена' },
+  newNotification: { en: 'New Notification', uk: 'Нове сповіщення', ru: 'Новое уведомление' },
+  newMessage: { en: 'New Message', uk: 'Нове повідомлення', ru: 'Новое сообщение' },
+  newMessageFrom: { en: 'New message from', uk: 'Нове повідомлення від', ru: 'Новое сообщение от' },
+  connectionLost: { en: 'Connection lost', uk: 'З\'єднання втрачено', ru: 'Соединение потеряно' },
+  reconnecting: { en: 'Reconnecting...', uk: 'Перепідключення...', ru: 'Переподключение...' },
+};
+
+// Real-time booking alerts
+export const realTimeBookingStrings: Record<string, Record<Locale, string>> = {
+  appointmentReminder: { en: 'Appointment Reminder', uk: 'Нагадування про запис', ru: 'Напоминание о записи' },
+  bookingConfirmedAlert: { en: 'Booking confirmed!', uk: 'Запис підтверджено!', ru: 'Запись подтверждена!' },
+  bookingCancelledAlert: { en: 'Booking cancelled', uk: 'Запис скасовано', ru: 'Запись отменена' },
+  bookingRescheduledAlert: { en: 'Booking rescheduled', uk: 'Запис перенесено', ru: 'Запись перенесена' },
+  bookingCompleteAlert: { en: 'Booking completed', uk: 'Запис завершено', ru: 'Запись завершена' },
+  bookingUpdatedAlert: { en: 'Booking updated', uk: 'Запис оновлено', ru: 'Запись обновлена' },
 };

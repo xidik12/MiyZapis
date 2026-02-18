@@ -155,12 +155,12 @@ export const PostDetailPage: React.FC = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = diffMs / (1000 * 60 * 60);
 
-    if (diffHrs < 1) return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
+    if (diffHrs < 1) return c('justNow');
     if (diffHrs < 24) {
       const hrs = Math.floor(diffHrs);
-      return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
+      return `${hrs}${c('hoursAgo')}`;
     }
-    if (diffHrs < 48) return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+    if (diffHrs < 48) return c('yesterday');
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };
 

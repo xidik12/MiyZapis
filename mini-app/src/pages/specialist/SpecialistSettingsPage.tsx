@@ -146,11 +146,7 @@ export const SpecialistSettingsPage: React.FC = () => {
                       {t(specialistSettingsStrings, 'autoConfirm', locale)}
                     </span>
                     <span className="text-xs text-text-secondary">
-                      {locale === 'uk'
-                        ? 'Автоматично підтверджувати нові записи'
-                        : locale === 'ru'
-                        ? 'Автоматически подтверждать новые записи'
-                        : 'Automatically confirm new bookings'}
+                      {t(specialistSettingsStrings, 'autoConfirmDesc', locale)}
                     </span>
                   </div>
                 </div>
@@ -169,11 +165,7 @@ export const SpecialistSettingsPage: React.FC = () => {
                     {t(specialistSettingsStrings, 'bufferTime', locale)}
                   </span>
                   <span className="text-xs text-text-secondary">
-                    {locale === 'uk'
-                      ? 'Час між записами для підготовки'
-                      : locale === 'ru'
-                      ? 'Время между записями для подготовки'
-                      : 'Time between bookings to prepare'}
+                    {t(specialistSettingsStrings, 'bufferTimeDesc', locale)}
                   </span>
                 </div>
               </div>
@@ -189,7 +181,7 @@ export const SpecialistSettingsPage: React.FC = () => {
                     }`}
                   >
                     {min === 0
-                      ? (locale === 'uk' ? 'Без буфера' : locale === 'ru' ? 'Без буфера' : 'None')
+                      ? t(specialistSettingsStrings, 'noBuffer', locale)
                       : `${min} ${t(commonStrings, 'min', locale)}`}
                   </button>
                 ))}

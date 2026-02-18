@@ -113,13 +113,10 @@ export const FavoritesPage: React.FC = () => {
     try {
       const targetId = fav.targetId || (fav.type === 'specialist' ? fav.specialist?.id : fav.service?.id) || fav.id;
       await apiService.removeFavorite(targetId, fav.type);
-      const successMsg = locale === 'uk' ? 'Видалено' : locale === 'ru' ? 'Удалено' : 'Removed';
-      const msg = locale === 'uk' ? 'Видалено з обраного' : locale === 'ru' ? 'Удалено из избранного' : 'Removed from favorites';
-      dispatch(addToast({ type: 'success', title: successMsg, message: msg }));
+      dispatch(addToast({ type: 'success', title: t(favoritesStrings, 'removed', locale), message: t(favoritesStrings, 'removedFromFavorites', locale) }));
     } catch {
       setFavorites(prev => [...prev, fav]);
-      const errorMsg = locale === 'uk' ? 'Не вдалося видалити' : locale === 'ru' ? 'Не удалось удалить' : 'Failed to remove favorite';
-      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(favoritesStrings, 'failedToRemove', locale) }));
       hapticFeedback.notificationError();
     }
   };
@@ -257,14 +254,14 @@ export const FavoritesPage: React.FC = () => {
                         <>
                           <div className="flex items-center gap-2 mt-0.5">
                             <Clock size={12} className="text-text-secondary" />
-                            <span className="text-xs text-text-secondary">{fav.service.duration} min</span>
+                            <span className="text-xs text-text-secondary">{fav.service.duration} {t(commonStrings, 'min', locale)}</span>
                             <span className="text-xs font-medium text-accent-primary">
                               {formatCurrency(fav.service.price, fav.service.currency, locale)}
                             </span>
                           </div>
                           {fav.service.specialist && (
                             <p className="text-xs text-text-secondary mt-0.5 truncate">
-                              by {fav.service.specialist.businessName}
+                              {t(favoritesStrings, 'bySpecialist', locale)} {fav.service.specialist.businessName}
                             </p>
                           )}
                         </>
@@ -288,7 +285,7 @@ export const FavoritesPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchFavorites(n, true); }}
                   className="w-full"
                 >
-                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
+                  {t(commonStrings, 'loadMore', locale)}
                 </Button>
               )}
             </>

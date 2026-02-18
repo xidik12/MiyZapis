@@ -100,7 +100,7 @@ export const SpecialistWalletPage: React.FC = () => {
       dispatch(addToast({
         type: 'warning',
         title: t(commonStrings, 'error', locale),
-        message: locale === 'uk' ? 'Введіть коректну суму' : locale === 'ru' ? 'Введите корректную сумму' : 'Enter a valid amount',
+        message: t(specialistWalletStrings, 'invalidAmount', locale),
       }));
       return;
     }
@@ -118,7 +118,7 @@ export const SpecialistWalletPage: React.FC = () => {
       dispatch(addToast({
         type: 'warning',
         title: t(commonStrings, 'error', locale),
-        message: locale === 'uk' ? 'Недостатньо коштів' : locale === 'ru' ? 'Недостаточно средств' : 'Insufficient balance',
+        message: t(specialistWalletStrings, 'insufficientBalance', locale),
       }));
       return;
     }
@@ -259,11 +259,7 @@ export const SpecialistWalletPage: React.FC = () => {
               <DollarSign size={40} className="text-text-secondary mx-auto mb-3" />
               <p className="text-text-primary font-medium">{t(specialistWalletStrings, 'noPayouts', locale)}</p>
               <p className="text-text-secondary text-sm mt-1">
-                {locale === 'uk'
-                  ? 'Історія виплат з\'явиться тут'
-                  : locale === 'ru'
-                  ? 'История выплат появится здесь'
-                  : 'Your payout history will appear here'}
+                {t(specialistWalletStrings, 'payoutHistoryHint', locale)}
               </p>
             </Card>
           ) : (

@@ -3124,6 +3124,327 @@ const translations: Translations = {
   // ========================================
   'featuredSpecialists.noSpecialists': { en: 'No specialists available yet', uk: 'Ще немає доступних спеціалістів', ru: 'Ещё нет доступных специалистов' },
 
+  // ========================================
+  // Not Found Page
+  // ========================================
+  'notFound.title': { en: 'Page Not Found', uk: 'Сторінку не знайдено', ru: 'Страница не найдена' },
+  'notFound.message': { en: 'The page you are looking for does not exist', uk: 'Сторінка, яку ви шукаєте, не існує', ru: 'Страница, которую вы ищете, не существует' },
+  'notFound.goHome': { en: 'Go Home', uk: 'На головну', ru: 'На главную' },
+  'notFound.goBack': { en: 'Go Back', uk: 'Повернутися', ru: 'Вернуться' },
+  'notFound.subtitle': { en: '404 Error', uk: 'Помилка 404', ru: 'Ошибка 404' },
+  'notFound.searchSuggestion': { en: 'Try searching for what you need', uk: 'Спробуйте пошук', ru: 'Попробуйте поиск' },
+  'notFound.browseServices': { en: 'Browse Services', uk: 'Переглянути послуги', ru: 'Просмотреть услуги' },
+  'notFound.contactSupport': { en: 'Contact Support', uk: 'Зв\'язатися з підтримкою', ru: 'Связаться с поддержкой' },
+
+  // ========================================
+  // Payment Page
+  // ========================================
+  'payment.title': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
+  'payment.processing': { en: 'Processing payment...', uk: 'Обробка платежу...', ru: 'Обработка платежа...' },
+
+  // ========================================
+  // Service Detail Page (web)
+  // ========================================
+  'serviceDetail.bookNow': { en: 'Book Now', uk: 'Забронювати', ru: 'Забронировать' },
+  'serviceDetail.selectDate': { en: 'Select a date to see available times', uk: 'Оберіть дату для перегляду часу', ru: 'Выберите дату для просмотра времени' },
+
+  // ========================================
+  // Messages
+  // ========================================
+  'messages.title': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
+  'messages.noConversations': { en: 'No conversations yet', uk: 'Розмов поки немає', ru: 'Разговоров пока нет' },
+  'messages.startNew': { en: 'Start a new conversation', uk: 'Почати нову розмову', ru: 'Начать новый разговор' },
+  'messages.searchConversations': { en: 'Search conversations...', uk: 'Пошук розмов...', ru: 'Поиск разговоров...' },
+  'messages.typeMessage': { en: 'Type a message...', uk: 'Введіть повідомлення...', ru: 'Введите сообщение...' },
+  'messages.send': { en: 'Send', uk: 'Надіслати', ru: 'Отправить' },
+  'messages.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
+  'messages.offline': { en: 'Offline', uk: 'Офлайн', ru: 'Офлайн' },
+  'messages.typing': { en: 'typing...', uk: 'друкує...', ru: 'печатает...' },
+  'messages.noMessages': { en: 'No messages yet', uk: 'Повідомлень поки немає', ru: 'Сообщений пока нет' },
+  'messages.sendFirst': { en: 'Send the first message!', uk: 'Надішліть перше повідомлення!', ru: 'Отправьте первое сообщение!' },
+  'messages.yesterday': { en: 'Yesterday', uk: 'Вчора', ru: 'Вчера' },
+  'messages.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+  'messages.attachFile': { en: 'Attach file', uk: 'Прикріпити файл', ru: 'Прикрепить файл' },
+  'messages.selectConversation': { en: 'Select a conversation to start messaging', uk: 'Оберіть розмову для початку спілкування', ru: 'Выберите разговор для начала общения' },
+
+  // ========================================
+  // Location Picker
+  // ========================================
+  'location.title': { en: 'Select Location', uk: 'Оберіть місце', ru: 'Выберите место' },
+  'location.search': { en: 'Search for a location...', uk: 'Пошук місця...', ru: 'Поиск места...' },
+  'location.useMyLocation': { en: 'Use my location', uk: 'Використати моє місцезнаходження', ru: 'Использовать моё местоположение' },
+  'location.selectOnMap': { en: 'Select on map', uk: 'Обрати на карті', ru: 'Выбрать на карте' },
+  'location.confirm': { en: 'Confirm Location', uk: 'Підтвердити місце', ru: 'Подтвердить место' },
+  'location.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+  'location.loading': { en: 'Loading map...', uk: 'Завантаження карти...', ru: 'Загрузка карты...' },
+  'location.error': { en: 'Failed to load map', uk: 'Не вдалося завантажити карту', ru: 'Не удалось загрузить карту' },
+  'location.noResults': { en: 'No locations found', uk: 'Місць не знайдено', ru: 'Мест не найдено' },
+  'location.city': { en: 'City', uk: 'Місто', ru: 'Город' },
+  'location.address': { en: 'Address', uk: 'Адреса', ru: 'Адрес' },
+  'location.currentLocation': { en: 'Current location', uk: 'Поточне місцезнаходження', ru: 'Текущее местоположение' },
+
+  // ========================================
+  // Booking Card
+  // ========================================
+  'booking.card.service': { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
+  'booking.card.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
+  'booking.card.date': { en: 'Date', uk: 'Дата', ru: 'Дата' },
+  'booking.card.status': { en: 'Status', uk: 'Статус', ru: 'Статус' },
+  'booking.card.actions': { en: 'Actions', uk: 'Дії', ru: 'Действия' },
+
+  // ========================================
+  // Booking Kanban
+  // ========================================
+  'booking.kanban.pending': { en: 'Pending', uk: 'Очікують', ru: 'Ожидают' },
+  'booking.kanban.confirmed': { en: 'Confirmed', uk: 'Підтверджені', ru: 'Подтверждённые' },
+  'booking.kanban.inProgress': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  'booking.kanban.completed': { en: 'Completed', uk: 'Завершені', ru: 'Завершённые' },
+  'booking.kanban.cancelled': { en: 'Cancelled', uk: 'Скасовані', ru: 'Отменённые' },
+  'booking.kanban.dropHere': { en: 'Drop here', uk: 'Перетягніть сюди', ru: 'Перетащите сюда' },
+  'booking.kanban.noBookings': { en: 'No bookings', uk: 'Немає записів', ru: 'Нет записей' },
+
+  // ========================================
+  // Booking View Toggle
+  // ========================================
+  'booking.toggle.list': { en: 'List', uk: 'Список', ru: 'Список' },
+  'booking.toggle.kanban': { en: 'Kanban', uk: 'Канбан', ru: 'Канбан' },
+
+  // ========================================
+  // User Menu / Dropdown
+  // ========================================
+  'userMenu.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'userMenu.dashboard': { en: 'Dashboard', uk: 'Панель керування', ru: 'Панель управления' },
+  'userMenu.bookings': { en: 'My Bookings', uk: 'Мої записи', ru: 'Мои записи' },
+  'userMenu.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
+  'userMenu.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
+  'userMenu.wallet': { en: 'Wallet', uk: 'Гаманець', ru: 'Кошелёк' },
+  'userMenu.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
+  'userMenu.help': { en: 'Help & Support', uk: 'Допомога', ru: 'Помощь' },
+  'userMenu.signOut': { en: 'Sign Out', uk: 'Вийти', ru: 'Выйти' },
+  'userMenu.signIn': { en: 'Sign In', uk: 'Увійти', ru: 'Войти' },
+  'userMenu.specialistDashboard': { en: 'Specialist Dashboard', uk: 'Панель спеціаліста', ru: 'Панель специалиста' },
+  'userMenu.switchToCustomer': { en: 'Switch to Customer', uk: 'Перейти до клієнта', ru: 'Перейти к клиенту' },
+  'userMenu.switchToSpecialist': { en: 'Switch to Specialist', uk: 'Перейти до спеціаліста', ru: 'Перейти к специалисту' },
+  'userMenu.admin': { en: 'Admin Panel', uk: 'Адмін панель', ru: 'Админ панель' },
+
+  // ========================================
+  // Search Bar
+  // ========================================
+  'searchBar.placeholder': { en: 'Search services, specialists...', uk: 'Пошук послуг, спеціалістів...', ru: 'Поиск услуг, специалистов...' },
+
+  // ========================================
+  // Referral Widget
+  // ========================================
+  'referral.widget.title': { en: 'Refer & Earn', uk: 'Запросіть та заробляйте', ru: 'Пригласите и зарабатывайте' },
+  'referral.widget.subtitle': { en: 'Share your referral link and earn rewards', uk: 'Поділіться реферальним посиланням та отримуйте бонуси', ru: 'Поделитесь реферальной ссылкой и получайте бонусы' },
+  'referral.widget.copyLink': { en: 'Copy Link', uk: 'Копіювати посилання', ru: 'Скопировать ссылку' },
+  'referral.widget.copied': { en: 'Copied!', uk: 'Скопійовано!', ru: 'Скопировано!' },
+  'referral.widget.share': { en: 'Share', uk: 'Поділитися', ru: 'Поделиться' },
+  'referral.widget.totalReferred': { en: 'Total Referred', uk: 'Всього запрошено', ru: 'Всего приглашено' },
+  'referral.widget.totalEarned': { en: 'Total Earned', uk: 'Всього зароблено', ru: 'Всего заработано' },
+  'referral.widget.pending': { en: 'Pending', uk: 'Очікують', ru: 'Ожидают' },
+  'referral.widget.yourReferrals': { en: 'Your Referrals', uk: 'Ваші реферали', ru: 'Ваши рефералы' },
+  'referral.widget.noReferrals': { en: 'No referrals yet', uk: 'Рефералів поки немає', ru: 'Рефералов пока нет' },
+  'referral.widget.startSharing': { en: 'Start sharing to earn rewards', uk: 'Почніть ділитися для бонусів', ru: 'Начните делиться для бонусов' },
+  'referral.widget.shareText': { en: 'Check out MiyZapys - the best booking platform!', uk: 'Спробуйте МійЗапис - найкращу платформу для записів!', ru: 'Попробуйте МояЗапись - лучшую платформу для записей!' },
+
+  // ========================================
+  // Referral Create Modal
+  // ========================================
+  'referral.create.title': { en: 'Create Referral', uk: 'Створити реферал', ru: 'Создать реферал' },
+  'referral.create.name': { en: 'Friend\'s Name', uk: 'Ім\'я друга', ru: 'Имя друга' },
+  'referral.create.email': { en: 'Friend\'s Email', uk: 'Email друга', ru: 'Email друга' },
+  'referral.create.phone': { en: 'Friend\'s Phone', uk: 'Телефон друга', ru: 'Телефон друга' },
+  'referral.create.message': { en: 'Personal Message', uk: 'Особисте повідомлення', ru: 'Личное сообщение' },
+  'referral.create.send': { en: 'Send Referral', uk: 'Надіслати запрошення', ru: 'Отправить приглашение' },
+  'referral.create.sending': { en: 'Sending...', uk: 'Надсилання...', ru: 'Отправка...' },
+  'referral.create.success': { en: 'Referral sent successfully!', uk: 'Запрошення надіслано!', ru: 'Приглашение отправлено!' },
+  'referral.create.error': { en: 'Failed to send referral', uk: 'Не вдалося надіслати', ru: 'Не удалось отправить' },
+  'referral.create.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+  'referral.create.namePlaceholder': { en: 'Enter name', uk: 'Введіть ім\'я', ru: 'Введите имя' },
+  'referral.create.emailPlaceholder': { en: 'Enter email', uk: 'Введіть email', ru: 'Введите email' },
+  'referral.create.phonePlaceholder': { en: 'Enter phone', uk: 'Введіть телефон', ru: 'Введите телефон' },
+  'referral.create.messagePlaceholder': { en: 'Write a personal message...', uk: 'Напишіть особисте повідомлення...', ru: 'Напишите личное сообщение...' },
+  'referral.create.orShare': { en: 'Or share your link', uk: 'Або поділіться посиланням', ru: 'Или поделитесь ссылкой' },
+  'referral.create.reward': { en: 'You\'ll earn rewards when they sign up and book!', uk: 'Ви отримаєте бонуси, коли вони зареєструються та забронюють!', ru: 'Вы получите бонусы, когда они зарегистрируются и забронируют!' },
+  'referral.create.terms': { en: 'By sending, you agree to our referral terms', uk: 'Надсилаючи, ви погоджуєтесь з умовами реферальної програми', ru: 'Отправляя, вы соглашаетесь с условиями реферальной программы' },
+  'referral.create.emailOrPhone': { en: 'Email or phone required', uk: 'Потрібен email або телефон', ru: 'Требуется email или телефон' },
+  'referral.create.invalidEmail': { en: 'Invalid email address', uk: 'Невірний email', ru: 'Неверный email' },
+  'referral.create.nameRequired': { en: 'Name is required', uk: 'Ім\'я обов\'язкове', ru: 'Имя обязательно' },
+
+  // ========================================
+  // Reviews
+  // ========================================
+  'reviews.feed.title': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  'reviews.feed.noReviews': { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Отзывов пока нет' },
+  'reviews.feed.loadMore': { en: 'Load More', uk: 'Завантажити ще', ru: 'Загрузить ещё' },
+  'reviews.feed.writeReview': { en: 'Write a Review', uk: 'Написати відгук', ru: 'Написать отзыв' },
+  'reviews.filters.all': { en: 'All', uk: 'Всі', ru: 'Все' },
+  'reviews.filters.5stars': { en: '5 Stars', uk: '5 зірок', ru: '5 звёзд' },
+  'reviews.filters.4stars': { en: '4 Stars', uk: '4 зірки', ru: '4 звезды' },
+  'reviews.filters.3stars': { en: '3 Stars', uk: '3 зірки', ru: '3 звезды' },
+  'reviews.filters.2stars': { en: '2 Stars', uk: '2 зірки', ru: '2 звезды' },
+  'reviews.filters.1star': { en: '1 Star', uk: '1 зірка', ru: '1 звезда' },
+  'reviews.filters.withPhotos': { en: 'With Photos', uk: 'З фото', ru: 'С фото' },
+  'reviews.filters.verified': { en: 'Verified', uk: 'Підтверджені', ru: 'Подтверждённые' },
+  'reviews.filters.newest': { en: 'Newest', uk: 'Новіші', ru: 'Новые' },
+  'reviews.filters.oldest': { en: 'Oldest', uk: 'Старіші', ru: 'Старые' },
+  'reviews.stats.average': { en: 'Average Rating', uk: 'Середній рейтинг', ru: 'Средний рейтинг' },
+  'reviews.stats.total': { en: 'Total Reviews', uk: 'Всього відгуків', ru: 'Всего отзывов' },
+  'reviews.stats.recommended': { en: 'Recommended', uk: 'Рекомендовано', ru: 'Рекомендовано' },
+  'reviews.stats.responseRate': { en: 'Response Rate', uk: 'Рівень відповіді', ru: 'Уровень ответа' },
+  'reviews.stats.distribution': { en: 'Rating Distribution', uk: 'Розподіл рейтингу', ru: 'Распределение рейтинга' },
+  'reviews.specialist.response': { en: 'Specialist Response', uk: 'Відповідь спеціаліста', ru: 'Ответ специалиста' },
+  'reviews.specialist.responded': { en: 'Responded', uk: 'Відповів', ru: 'Ответил' },
+
+  // ========================================
+  // Calendar
+  // ========================================
+  'calendar.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+  'calendar.back': { en: 'Back', uk: 'Назад', ru: 'Назад' },
+  'calendar.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
+  'calendar.month': { en: 'Month', uk: 'Місяць', ru: 'Месяц' },
+
+  // ========================================
+  // Telegram
+  // ========================================
+  'telegram.link.title': { en: 'Link Telegram Account', uk: 'Прив\'язати Telegram', ru: 'Привязать Telegram' },
+  'telegram.link.subtitle': { en: 'Connect your Telegram for instant notifications', uk: 'Підключіть Telegram для миттєвих сповіщень', ru: 'Подключите Telegram для мгновенных уведомлений' },
+  'telegram.link.connected': { en: 'Connected', uk: 'Підключено', ru: 'Подключено' },
+  'telegram.link.notConnected': { en: 'Not Connected', uk: 'Не підключено', ru: 'Не подключено' },
+  'telegram.link.connect': { en: 'Connect Telegram', uk: 'Підключити Telegram', ru: 'Подключить Telegram' },
+  'telegram.link.disconnect': { en: 'Disconnect', uk: 'Відключити', ru: 'Отключить' },
+  'telegram.link.benefits': { en: 'Get instant booking updates and reminders', uk: 'Отримуйте миттєві оновлення та нагадування', ru: 'Получайте мгновенные обновления и напоминания' },
+  'telegram.link.instructions': { en: 'Click the button below to link your Telegram account', uk: 'Натисніть кнопку нижче для прив\'язки Telegram', ru: 'Нажмите кнопку ниже для привязки Telegram' },
+  'telegram.link.success': { en: 'Telegram linked successfully!', uk: 'Telegram успішно прив\'язано!', ru: 'Telegram успешно привязан!' },
+  'telegram.link.error': { en: 'Failed to link Telegram', uk: 'Не вдалося прив\'язати Telegram', ru: 'Не удалось привязать Telegram' },
+  'telegram.login.title': { en: 'Sign in with Telegram', uk: 'Увійти через Telegram', ru: 'Войти через Telegram' },
+  'telegram.login.subtitle': { en: 'Quick and secure authentication', uk: 'Швидка та безпечна авторизація', ru: 'Быстрая и безопасная авторизация' },
+
+  // ========================================
+  // Auth - Google
+  // ========================================
+  'auth.google.signIn': { en: 'Sign in with Google', uk: 'Увійти через Google', ru: 'Войти через Google' },
+  'auth.google.signingIn': { en: 'Signing in...', uk: 'Вхід...', ru: 'Вход...' },
+  'auth.google.error': { en: 'Google sign-in failed', uk: 'Помилка входу через Google', ru: 'Ошибка входа через Google' },
+  'auth.google.tryAgain': { en: 'Please try again', uk: 'Спробуйте ще раз', ru: 'Попробуйте ещё раз' },
+
+  // ========================================
+  // UI Components
+  // ========================================
+  'ui.confirm.ok': { en: 'OK', uk: 'OK', ru: 'OK' },
+  'ui.confirm.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+  'ui.loader.loading': { en: 'Loading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  'ui.loader.pleaseWait': { en: 'Please wait...', uk: 'Зачекайте...', ru: 'Подождите...' },
+  'ui.loader.connecting': { en: 'Connecting...', uk: 'З\'єднання...', ru: 'Соединение...' },
+  'ui.loader.almostDone': { en: 'Almost done...', uk: 'Майже готово...', ru: 'Почти готово...' },
+
+  // ========================================
+  // Notifications
+  // ========================================
+  'notifications.group.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+  'notifications.group.yesterday': { en: 'Yesterday', uk: 'Вчора', ru: 'Вчера' },
+  'notifications.group.older': { en: 'Older', uk: 'Раніше', ru: 'Ранее' },
+  'notifications.card.markRead': { en: 'Mark as read', uk: 'Позначити прочитаним', ru: 'Отметить прочитанным' },
+  'notifications.card.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
+  'notifications.card.timeAgo': { en: 'ago', uk: 'тому', ru: 'назад' },
+  'notifications.dropdown.title': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  'notifications.dropdown.markAllRead': { en: 'Mark all as read', uk: 'Прочитати все', ru: 'Прочитать все' },
+  'notifications.dropdown.viewAll': { en: 'View All', uk: 'Переглянути все', ru: 'Посмотреть все' },
+  'notifications.dropdown.empty': { en: 'No notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
+
+  // ========================================
+  // Loyalty Tiers (for formatPoints.ts)
+  // ========================================
+  'loyalty.tiers.bronze': { en: 'Bronze', uk: 'Бронза', ru: 'Бронза' },
+  'loyalty.tiers.silver': { en: 'Silver', uk: 'Срібло', ru: 'Серебро' },
+  'loyalty.tiers.gold': { en: 'Gold', uk: 'Золото', ru: 'Золото' },
+  'loyalty.tiers.platinum': { en: 'Platinum', uk: 'Платина', ru: 'Платина' },
+  'loyalty.tiers.diamond': { en: 'Diamond', uk: 'Діамант', ru: 'Бриллиант' },
+  'loyalty.tiers.member': { en: 'Member', uk: 'Учасник', ru: 'Участник' },
+  'loyalty.tiers.points': { en: 'points', uk: 'балів', ru: 'баллов' },
+  'loyalty.tiers.pointsToNext': { en: 'points to next tier', uk: 'балів до наступного рівня', ru: 'баллов до следующего уровня' },
+
+  // ========================================
+  // Review Tags
+  // ========================================
+  'reviewTags.professional': { en: 'Professional', uk: 'Професійний', ru: 'Профессиональный' },
+  'reviewTags.punctual': { en: 'Punctual', uk: 'Пунктуальний', ru: 'Пунктуальный' },
+  'reviewTags.friendly': { en: 'Friendly', uk: 'Дружній', ru: 'Дружелюбный' },
+  'reviewTags.skilled': { en: 'Skilled', uk: 'Кваліфікований', ru: 'Квалифицированный' },
+  'reviewTags.clean': { en: 'Clean Space', uk: 'Чисте приміщення', ru: 'Чистое помещение' },
+  'reviewTags.goodValue': { en: 'Good Value', uk: 'Хороша ціна', ru: 'Хорошая цена' },
+  'reviewTags.communicative': { en: 'Communicative', uk: 'Комунікабельний', ru: 'Коммуникабельный' },
+  'reviewTags.experienced': { en: 'Experienced', uk: 'Досвідчений', ru: 'Опытный' },
+  'reviewTags.attentive': { en: 'Attentive', uk: 'Уважний', ru: 'Внимательный' },
+  'reviewTags.fast': { en: 'Fast Service', uk: 'Швидкий сервіс', ru: 'Быстрый сервис' },
+  'reviewTags.patient': { en: 'Patient', uk: 'Терплячий', ru: 'Терпеливый' },
+  'reviewTags.creative': { en: 'Creative', uk: 'Креативний', ru: 'Креативный' },
+  'reviewTags.reliable': { en: 'Reliable', uk: 'Надійний', ru: 'Надёжный' },
+  'reviewTags.knowledgeable': { en: 'Knowledgeable', uk: 'Обізнаний', ru: 'Осведомлённый' },
+  'reviewTags.recommended': { en: 'Recommended', uk: 'Рекомендований', ru: 'Рекомендованный' },
+
+  // ========================================
+  // Toast Messages - Booking Flow
+  // ========================================
+  'booking.flow.toast.success': { en: 'Booking created successfully!', uk: 'Запис успішно створено!', ru: 'Запись успешно создана!' },
+  'booking.flow.toast.error': { en: 'Failed to create booking', uk: 'Не вдалося створити запис', ru: 'Не удалось создать запись' },
+  'booking.flow.toast.cancelled': { en: 'Booking cancelled', uk: 'Запис скасовано', ru: 'Запись отменена' },
+  'booking.flow.toast.updated': { en: 'Booking updated', uk: 'Запис оновлено', ru: 'Запись обновлена' },
+  'booking.flow.toast.paymentRequired': { en: 'Payment required', uk: 'Потрібна оплата', ru: 'Требуется оплата' },
+
+  // ========================================
+  // Toast Messages - Specialist Schedule
+  // ========================================
+  'specialist.schedule.toast.saved': { en: 'Schedule saved', uk: 'Розклад збережено', ru: 'Расписание сохранено' },
+  'specialist.schedule.toast.error': { en: 'Failed to save schedule', uk: 'Не вдалося зберегти розклад', ru: 'Не удалось сохранить расписание' },
+  'specialist.schedule.toast.generated': { en: 'Schedule generated', uk: 'Розклад згенеровано', ru: 'Расписание сгенерировано' },
+
+  // ========================================
+  // Toast Messages - Specialist Bookings
+  // ========================================
+  'specialist.bookings.toast.accepted': { en: 'Booking accepted', uk: 'Запис прийнято', ru: 'Запись принята' },
+  'specialist.bookings.toast.rejected': { en: 'Booking rejected', uk: 'Запис відхилено', ru: 'Запись отклонена' },
+  'specialist.bookings.toast.completed': { en: 'Booking completed', uk: 'Запис завершено', ru: 'Запись завершена' },
+  'specialist.bookings.toast.error': { en: 'Action failed', uk: 'Дію не виконано', ru: 'Действие не выполнено' },
+  'specialist.bookings.placeholder.noBookings': { en: 'No bookings yet', uk: 'Записів поки немає', ru: 'Записей пока нет' },
+
+  // ========================================
+  // Specialist Services
+  // ========================================
+  'specialist.services.deleteConfirm': { en: 'Delete this service?', uk: 'Видалити цю послугу?', ru: 'Удалить эту услугу?' },
+  'specialist.services.confirmCancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+
+  // ========================================
+  // Specialist Dashboard Toast
+  // ========================================
+  'specialist.dashboard.toast.error': { en: 'Failed to load dashboard data', uk: 'Не вдалося завантажити дані', ru: 'Не удалось загрузить данные' },
+
+  // ========================================
+  // Specialist Profile Placeholders
+  // ========================================
+  'specialist.profile.placeholder.businessName': { en: 'Enter business name', uk: 'Введіть назву бізнесу', ru: 'Введите название бизнеса' },
+  'specialist.profile.placeholder.bio': { en: 'Tell clients about yourself...', uk: 'Розкажіть клієнтам про себе...', ru: 'Расскажите клиентам о себе...' },
+  'specialist.profile.placeholder.city': { en: 'Enter city', uk: 'Введіть місто', ru: 'Введите город' },
+  'specialist.profile.placeholder.address': { en: 'Enter address', uk: 'Введіть адресу', ru: 'Введите адрес' },
+
+  // ========================================
+  // Auth Login Toast
+  // ========================================
+  'auth.login.toast.error': { en: 'Login failed', uk: 'Помилка входу', ru: 'Ошибка входа' },
+
+  // ========================================
+  // Customer Payment Placeholder
+  // ========================================
+  'customer.payment.placeholder': { en: 'Payment methods will be available soon', uk: 'Способи оплати будуть доступні незабаром', ru: 'Способы оплаты будут доступны скоро' },
+
+  // ========================================
+  // Reviews Card Toast
+  // ========================================
+  'reviews.card.toast.reported': { en: 'Review reported', uk: 'Відгук повідомлено', ru: 'Отзыв сообщён' },
+  'reviews.card.toast.helpful': { en: 'Marked as helpful', uk: 'Позначено як корисне', ru: 'Отмечено как полезное' },
+  'reviews.card.toast.error': { en: 'Action failed', uk: 'Дію не виконано', ru: 'Действие не выполнено' },
+
   // Admin translations (imported from separate file)
   ...adminTranslations,
 };

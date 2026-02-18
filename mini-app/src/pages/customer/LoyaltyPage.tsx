@@ -122,24 +122,24 @@ export const LoyaltyPage: React.FC = () => {
   const handleRedeem = async (reward: LoyaltyReward) => {
     if ((status?.points || 0) < reward.pointsCost) {
       const needed = reward.pointsCost - (status?.points || 0);
-      const msg = locale === 'uk' ? `Вам потрібно ще ${needed} балів` : locale === 'ru' ? `Вам нужно ещё ${needed} баллов` : `You need ${needed} more points`;
+      const msg = `${s('needMorePoints')} ${needed}`;
       dispatch(addToast({ type: 'warning', title: t(commonStrings, 'error', locale), message: msg }));
       hapticFeedback.notificationWarning();
       return;
     }
 
-    const confirmMsg = locale === 'uk' ? `Обміняти "${reward.title}" за ${reward.pointsCost} балів?` : locale === 'ru' ? `Обменять "${reward.title}" за ${reward.pointsCost} баллов?` : `Redeem "${reward.title}" for ${reward.pointsCost} points?`;
+    const confirmMsg = `${s('redeemConfirm')} "${reward.title}" (${reward.pointsCost})?`;
     const confirmed = await showConfirm(confirmMsg);
     if (!confirmed) return;
 
     try {
       await apiService.redeemReward(reward.id);
-      const successMsg = locale === 'uk' ? 'Обмінено!' : locale === 'ru' ? 'Обменено!' : 'Redeemed!';
+      const successMsg = s('redeemed');
       dispatch(addToast({ type: 'success', title: successMsg, message: reward.title }));
       hapticFeedback.notificationSuccess();
       fetchData();
     } catch {
-      const errorMsg = locale === 'uk' ? 'Не вдалося обміняти винагороду' : locale === 'ru' ? 'Не удалось обменять награду' : 'Failed to redeem reward';
+      const errorMsg = s('redeemFailed');
       dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
       hapticFeedback.notificationError();
     }

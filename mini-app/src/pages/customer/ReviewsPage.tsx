@@ -271,7 +271,7 @@ export const ReviewsPage: React.FC = () => {
                     </div>
                     {review.isVerified && (
                       <span className="px-2 py-0.5 bg-accent-green/15 text-accent-green text-xs rounded-full">
-                        {locale === 'uk' ? 'Підтверджено' : locale === 'ru' ? 'Подтверждено' : 'Verified'}
+                        {c('verified')}
                       </span>
                     )}
                   </div>
@@ -292,7 +292,7 @@ export const ReviewsPage: React.FC = () => {
                       <div className="flex items-center gap-1.5 mb-1">
                         <MessageCircle size={12} className="text-accent-primary" />
                         <span className="text-xs font-medium text-accent-primary">
-                          {locale === 'uk' ? 'Відповідь спеціаліста' : locale === 'ru' ? 'Ответ специалиста' : 'Specialist Response'}
+                          {s('specialistResponse')}
                         </span>
                       </div>
                       <p className="text-xs text-text-primary">{review.response.response}</p>
@@ -339,7 +339,7 @@ export const ReviewsPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchReviews(n, true); }}
                   className="w-full"
                 >
-                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
+                  {c('loadMore')}
                 </Button>
               )}
             </>

@@ -394,7 +394,7 @@ const BookingFlow: React.FC = () => {
     if (environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'payment') {
       // Payment step - user cannot proceed without completing payment
       if (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')) {
-        toast.error('Please complete payment before proceeding to confirmation.');
+        toast.error(t('booking.completePaymentFirst') || 'Please complete payment before proceeding to confirmation.');
         return;
       }
     }
@@ -451,8 +451,8 @@ const BookingFlow: React.FC = () => {
 
         setBookingResult(result);
         toast.success(isRecurring && recurrenceData
-          ? `Recurring booking created! ${(result as any).childrenCount || 0} additional bookings scheduled.`
-          : 'Booking created successfully!');
+          ? `${t('booking.recurringCreated') || 'Recurring booking created!'} ${(result as any).childrenCount || 0} ${t('booking.additionalScheduled') || 'additional bookings scheduled.'}`
+          : (t('booking.manualBookingMessage') || 'Booking created successfully!'));
         fireSuccessConfetti();
         bookingInProgressRef.current = false;
         setPaymentLoading(false);
@@ -469,7 +469,7 @@ const BookingFlow: React.FC = () => {
           return;
         }
 
-        toast.error(error.message || 'Failed to create booking');
+        toast.error(error.message || t('booking.createFailed') || 'Failed to create booking');
         bookingInProgressRef.current = false;
         setPaymentLoading(false);
         return;
@@ -516,7 +516,7 @@ const BookingFlow: React.FC = () => {
       setPaymentTimeRemaining(0);
 
       // Show timeout message
-      toast.error('Payment time expired. Your booking slot has been released. Please start over.');
+      toast.error(t('booking.paymentExpired') || 'Payment time expired. Your booking slot has been released. Please start over.');
 
       // Reset payment states
       setPaymentResult(null);
@@ -730,17 +730,17 @@ const BookingFlow: React.FC = () => {
                   setBookingResult(booking);
                   // Navigate to confirmation
                   setCurrentStep(steps.length - 1);
-                  toast.success('Payment completed! Your booking is confirmed.');
+                  toast.success(t('booking.paymentConfirmed') || 'Payment completed! Your booking is confirmed.');
                   fireSuccessConfetti();
                 })
                 .catch(err => {
                   logger.error('❌ BookingFlow: Error fetching booking after payment:', err);
-                  toast.error('Payment completed but booking details unavailable. Check your bookings page.');
+                  toast.error(t('booking.paymentNoDetails') || 'Payment completed but booking details unavailable. Check your bookings page.');
                 });
             } else {
               // Navigate to confirmation even without booking details
               setCurrentStep(steps.length - 1);
-              toast.success('Payment completed! Your booking is being processed.');
+              toast.success(t('booking.paymentProcessing') || 'Payment completed! Your booking is being processed.');
             }
 
             // Clean up listeners and polling using enhanced cleanup

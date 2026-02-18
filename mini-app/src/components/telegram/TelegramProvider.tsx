@@ -3,6 +3,9 @@ import { useDispatch } from 'react-redux';
 import { useTelegramWebApp, UseTelegramWebAppReturn } from '@/hooks/useTelegramWebApp';
 import { setCredentials } from '@/store/slices/authSlice';
 import { User } from '@/types';
+import { t } from '@/hooks/useLocale';
+import { commonStrings } from '@/utils/translations';
+import type { Locale } from '@/utils/categories';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
@@ -240,7 +243,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       }
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+      setError(err instanceof Error ? err.message : t(commonStrings, 'loginFailed', locale));
       telegramWebApp.hapticFeedback.notificationError();
     } finally {
       setIsLoading(false);
@@ -265,7 +269,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       telegramWebApp.hapticFeedback.impactLight();
     } catch (err) {
       console.error('Logout failed:', err);
-      setError('Failed to logout');
+      const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+      setError(t(commonStrings, 'logoutFailed', locale));
     } finally {
       setIsLoading(false);
     }

@@ -6,6 +6,7 @@ import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { MessageInput } from './MessageInput';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Message {
   id: string;
@@ -54,6 +55,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   isTyping = false,
   userRole = 'customer'
 }) => {
+  const { t } = useLanguage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   const formatDateDivider = (dateString: string) => {
     const date = new Date(dateString);
     if (isToday(date)) {
-      return 'Today';
+      return t('messages.today');
     } else if (isYesterday(date)) {
       return 'Yesterday';
     } else {
@@ -121,10 +123,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             </svg>
           </motion.div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Select a conversation
+            {t('messages.selectConversation')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Choose a conversation from the list to start messaging
+            {t('messages.noMessages')}
           </p>
         </div>
       </div>
@@ -234,7 +236,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         value={newMessage}
         onChange={onNewMessageChange}
         onSubmit={onSendMessage}
-        placeholder={`Message ${otherParty?.name}...`}
+        placeholder={t('messages.typeMessage')}
       />
     </div>
   );

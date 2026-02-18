@@ -132,13 +132,13 @@ export const ProfilePage: React.FC = () => {
           <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-6 text-center max-w-sm w-full">
             <User size={36} className="mx-auto mb-3 text-text-muted" />
             <h2 className="text-lg font-semibold text-text-primary mb-2">
-              {locale === 'uk' ? 'Ви не увійшли' : locale === 'ru' ? 'Вы не вошли' : 'Not logged in'}
+              {t(profileStrings, 'notLoggedIn', locale)}
             </h2>
             <p className="text-sm text-text-secondary mb-4">
-              {locale === 'uk' ? 'Увійдіть, щоб бачити профіль' : locale === 'ru' ? 'Войдите, чтобы видеть профиль' : 'Sign in to view your profile'}
+              {t(profileStrings, 'signInToView', locale)}
             </p>
             <Button onClick={() => navigate('/auth')}>
-              {t(profileStrings, 'signOut', locale) === 'Sign Out' ? 'Sign In' : locale === 'uk' ? 'Увійти' : 'Войти'}
+              {t(profileStrings, 'signInButton', locale)}
             </Button>
           </div>
         </div>
@@ -289,8 +289,8 @@ export const ProfilePage: React.FC = () => {
                   <Gift size={20} className="text-pink-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals'}</h3>
-                  <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Запросіть друзів' : locale === 'ru' ? 'Пригласите друзей' : 'Invite friends'}</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'referrals', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'inviteFriends', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -301,8 +301,8 @@ export const ProfilePage: React.FC = () => {
                   <CreditCard size={20} className="text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Оплата' : locale === 'ru' ? 'Оплата' : 'Payment'}</h3>
-                  <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Методи оплати' : locale === 'ru' ? 'Методы оплаты' : 'Payment methods'}</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'payment', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'paymentMethods', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -312,7 +312,7 @@ export const ProfilePage: React.FC = () => {
         {/* Specialist Section */}
         {isSpecialist && (
           <div className="px-4 py-4">
-            <h2 className="text-lg font-semibold text-text-primary mb-3">{locale === 'uk' ? 'Для спеціаліста' : locale === 'ru' ? 'Для специалиста' : 'Specialist'}</h2>
+            <h2 className="text-lg font-semibold text-text-primary mb-3">{t(profileStrings, 'specialist', locale)}</h2>
             <div className="grid grid-cols-2 gap-3">
               <Card hover onClick={() => navigate('/specialist-dashboard')}>
                 <div className="flex items-center gap-3">
@@ -320,8 +320,8 @@ export const ProfilePage: React.FC = () => {
                     <LayoutDashboard size={20} className="text-accent-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Панель' : locale === 'ru' ? 'Панель' : 'Dashboard'}</h3>
-                    <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Ваш бізнес' : locale === 'ru' ? 'Ваш бизнес' : 'Your business'}</p>
+                    <h3 className="font-medium text-text-primary">{t(profileStrings, 'dashboard', locale)}</h3>
+                    <p className="text-xs text-text-secondary">{t(profileStrings, 'yourBusiness', locale)}</p>
                   </div>
                 </div>
               </Card>
@@ -332,8 +332,8 @@ export const ProfilePage: React.FC = () => {
                     <Briefcase size={20} className="text-accent-purple" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Налаштування' : locale === 'ru' ? 'Настройки' : 'Settings'}</h3>
-                    <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Бізнес профіль' : locale === 'ru' ? 'Бизнес профиль' : 'Business profile'}</p>
+                    <h3 className="font-medium text-text-primary">{t(profileStrings, 'specialistSettings', locale)}</h3>
+                    <p className="text-xs text-text-secondary">{t(profileStrings, 'businessProfile', locale)}</p>
                   </div>
                 </div>
               </Card>
@@ -384,7 +384,7 @@ export const ProfilePage: React.FC = () => {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-text-primary">{booking.service?.name || booking.serviceName || 'Service'}</h3>
+                      <h3 className="font-medium text-text-primary">{booking.service?.name || booking.serviceName || t(commonStrings, 'service', locale)}</h3>
                       <p className="text-sm text-text-secondary">{[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ') || ''}</p>
                       <p className="text-xs text-text-secondary">
                         {new Date(booking.scheduledAt).toLocaleDateString()}
@@ -402,7 +402,7 @@ export const ProfilePage: React.FC = () => {
                             : 'bg-accent-red/15 text-accent-red'
                         }`}
                       >
-                        {booking.status}
+                        {t(commonStrings, booking.status, locale)}
                       </span>
                     </div>
                   </div>
@@ -430,7 +430,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Bell size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">{locale === 'uk' ? 'Сповіщення' : locale === 'ru' ? 'Уведомления' : 'Notifications'}</span>
+                  <span className="text-text-primary">{t(profileStrings, 'notifications', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -440,7 +440,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <LayoutDashboard size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">{locale === 'uk' ? 'Дашборд' : locale === 'ru' ? 'Дашборд' : 'Dashboard'}</span>
+                  <span className="text-text-primary">{t(profileStrings, 'dashboard', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -450,7 +450,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <HelpCircle size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">{locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help & Support'}</span>
+                  <span className="text-text-primary">{t(profileStrings, 'help', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>

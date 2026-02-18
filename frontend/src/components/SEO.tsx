@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SEOProps {
   title?: string;
@@ -15,25 +16,29 @@ const SITE_NAME = 'МійЗапис';
 
 const SEO: React.FC<SEOProps> = ({
   title,
-  description = 'МійЗапис - Професійна платформа бронювання послуг. Знайдіть спеціаліста, забронюйте послугу та керуйте записами онлайн.',
+  description,
   image = DEFAULT_IMAGE,
   url,
   type = 'website',
   locale = 'uk_UA',
 }) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Професійна платформа бронювання послуг`;
+  const { t } = useLanguage();
+  const defaultDescription = t('seo.defaultDescription') || 'МійЗапис - Професійна платформа бронювання послуг. Знайдіть спеціаліста, забронюйте послугу та керуйте записами онлайн.';
+  const defaultSubtitle = t('seo.defaultSubtitle') || 'Професійна платформа бронювання послуг';
+  const resolvedDescription = description || defaultDescription;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - ${defaultSubtitle}`;
   const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
-      <meta name="description" content={description} />
+      <meta name="description" content={resolvedDescription} />
       <link rel="canonical" href={fullUrl} />
 
       {/* Open Graph */}
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
+      <meta property="og:description" content={resolvedDescription} />
       <meta property="og:image" content={image} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:site_name" content={SITE_NAME} />
@@ -43,7 +48,7 @@ const SEO: React.FC<SEOProps> = ({
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:description" content={resolvedDescription} />
       <meta name="twitter:image" content={image} />
 
       {/* Hreflang */}

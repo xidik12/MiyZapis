@@ -77,12 +77,12 @@ export const PaymentComponent: React.FC<PaymentComponentProps> = ({
         onPaymentSuccess(result);
       } else {
         hapticFeedback.notificationError();
-        onPaymentError(result.error || 'Payment failed');
+        onPaymentError(result.error || s('paymentFailed'));
       }
     } catch (error) {
       console.error('Payment error:', error);
       hapticFeedback.notificationError();
-      onPaymentError(error instanceof Error ? error.message : 'Payment failed');
+      onPaymentError(error instanceof Error ? error.message : s('paymentFailed'));
     } finally {
       setIsProcessing(false);
     }

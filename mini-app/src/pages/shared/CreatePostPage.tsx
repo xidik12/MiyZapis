@@ -21,7 +21,7 @@ import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
-import { communityStrings, commonStrings } from '@/utils/translations';
+import { communityStrings, commonStrings, createPostStrings } from '@/utils/translations';
 
 const POST_TYPES = ['DISCUSSION', 'SALE'] as const;
 
@@ -48,6 +48,7 @@ export const CreatePostPage: React.FC = () => {
 
   const cm = (key: string) => t(communityStrings, key, locale);
   const c = (key: string) => t(commonStrings, key, locale);
+  const cp = (key: string) => t(createPostStrings, key, locale);
 
   // Load existing post for editing
   useEffect(() => {
@@ -88,11 +89,11 @@ export const CreatePostPage: React.FC = () => {
       for (const file of files) {
         // Validate
         if (file.size > 10 * 1024 * 1024) {
-          dispatch(addToast({ type: 'error', title: c('error'), message: 'File too large (max 10MB)' }));
+          dispatch(addToast({ type: 'error', title: c('error'), message: cp('fileTooLarge') }));
           continue;
         }
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-          dispatch(addToast({ type: 'error', title: c('error'), message: 'Only JPG, PNG, WebP allowed' }));
+          dispatch(addToast({ type: 'error', title: c('error'), message: cp('invalidFileType') }));
           continue;
         }
 
@@ -101,7 +102,7 @@ export const CreatePostPage: React.FC = () => {
       }
       hapticFeedback.notificationSuccess();
     } catch {
-      dispatch(addToast({ type: 'error', title: c('error'), message: 'Upload failed' }));
+      dispatch(addToast({ type: 'error', title: c('error'), message: cp('uploadFailed') }));
       hapticFeedback.notificationError();
     } finally {
       setUploading(false);
@@ -119,7 +120,7 @@ export const CreatePostPage: React.FC = () => {
       dispatch(addToast({
         type: 'warning',
         title: cm('missingFields'),
-        message: locale === 'uk' ? 'Заголовок має бути від 3 символів' : locale === 'ru' ? 'Заголовок должен быть от 3 символов' : 'Title must be at least 3 characters',
+        message: cp('titleMinLength'),
       }));
       hapticFeedback.notificationError();
       return;
@@ -129,7 +130,7 @@ export const CreatePostPage: React.FC = () => {
       dispatch(addToast({
         type: 'warning',
         title: cm('missingFields'),
-        message: locale === 'uk' ? 'Вміст має бути від 10 символів' : locale === 'ru' ? 'Содержание должно быть от 10 символов' : 'Content must be at least 10 characters',
+        message: cp('contentMinLength'),
       }));
       hapticFeedback.notificationError();
       return;
@@ -139,7 +140,7 @@ export const CreatePostPage: React.FC = () => {
       dispatch(addToast({
         type: 'warning',
         title: c('error'),
-        message: locale === 'uk' ? 'Ціна не може бути від\'ємною' : locale === 'ru' ? 'Цена не может быть отрицательной' : 'Price cannot be negative',
+        message: cp('priceNegative'),
       }));
       return;
     }
@@ -171,14 +172,12 @@ export const CreatePostPage: React.FC = () => {
         await apiService.createCommunityPost(postData);
       }
 
-      const successTitle = isEditing
-        ? (locale === 'uk' ? 'Оновлено!' : locale === 'ru' ? 'Обновлено!' : 'Updated!')
-        : (locale === 'uk' ? 'Опубліковано!' : locale === 'ru' ? 'Опубликовано!' : 'Posted!');
+      const successTitle = isEditing ? cp('updated') : cp('posted');
       dispatch(addToast({ type: 'success', title: successTitle, message: '' }));
       hapticFeedback.notificationSuccess();
       navigate('/community');
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || (locale === 'uk' ? 'Не вдалося опублікувати' : locale === 'ru' ? 'Не удалось опубликовать' : 'Failed to publish');
+      const msg = err?.response?.data?.message || err?.message || cp('failedToPublish');
       dispatch(addToast({ type: 'error', title: c('error'), message: msg }));
       hapticFeedback.notificationError();
     } finally {
@@ -234,7 +233,7 @@ export const CreatePostPage: React.FC = () => {
             label={cm('postTitle')}
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder={locale === 'uk' ? 'Заголовок посту' : locale === 'ru' ? 'Заголовок поста' : 'Post title'}
+            placeholder={cp('titlePlaceholder')}
             icon={<Type size={18} />}
           />
 
@@ -387,7 +386,7 @@ export const CreatePostPage: React.FC = () => {
         >
           <Send size={16} className="mr-2" />
           {submitting
-            ? (locale === 'uk' ? 'Публікація...' : locale === 'ru' ? 'Публикация...' : 'Publishing...')
+            ? cp('publishing')
             : isEditing ? cm('updatePost') : cm('publishPost')
           }
         </Button>

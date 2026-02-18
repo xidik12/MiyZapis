@@ -7,6 +7,7 @@ import {
   SquaresFourIcon
 } from '@/components/icons';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export type ViewMode = 'week' | 'month' | 'day';
 
@@ -23,6 +24,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   onViewModeChange,
   onNavigate
 }) => {
+  const { t } = useLanguage();
   const getDateRange = () => {
     if (viewMode === 'week') {
       const start = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
@@ -44,7 +46,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             onClick={() => onNavigate('today')}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all duration-200 active:scale-95"
           >
-            Today
+            {t('calendar.today')}
           </button>
           <div className="flex items-center gap-2">
             <button
@@ -78,7 +80,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             }`}
           >
             <SquaresFourIcon className="w-4 h-4" />
-            Month
+            {t('calendar.month')}
           </button>
           <button
             onClick={() => onViewModeChange('week')}
@@ -89,7 +91,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             }`}
           >
             <ListBulletsIcon className="w-4 h-4" />
-            Week
+            {t('calendar.back')}
           </button>
           <button
             onClick={() => onViewModeChange('day')}
@@ -100,7 +102,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             }`}
           >
             <CalendarIcon className="w-4 h-4" />
-            Day
+            {t('calendar.next')}
           </button>
         </div>
       </div>

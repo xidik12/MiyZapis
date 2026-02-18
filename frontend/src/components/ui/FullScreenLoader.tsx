@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingAnimation, LoadingAnimationType } from './LoadingAnimation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FullScreenLoaderProps {
   isOpen?: boolean;
@@ -13,12 +14,15 @@ interface FullScreenLoaderProps {
 
 export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
   isOpen = true,
-  title = 'Loading',
+  title,
   subtitle,
   animationType = 'spinner',
   showProgress = false,
   progress = 0,
 }) => {
+  const { t } = useLanguage();
+  const resolvedTitle = title || t('ui.loader.loading');
+  const resolvedSubtitle = subtitle || t('ui.loader.pleaseWait');
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,7 +35,7 @@ export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
           role="dialog"
           aria-busy="true"
           aria-live="polite"
-          aria-label={title}
+          aria-label={resolvedTitle}
         >
           {/* Background decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -74,11 +78,11 @@ export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
               className="mt-8 space-y-2"
             >
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                {title}
+                {resolvedTitle}
               </h2>
-              {subtitle && (
+              {resolvedSubtitle && (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {subtitle.includes('.') ? 'Please wait...' : subtitle}
+                  {resolvedSubtitle}
                 </p>
               )}
             </motion.div>

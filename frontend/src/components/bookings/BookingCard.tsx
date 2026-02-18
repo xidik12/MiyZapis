@@ -9,6 +9,7 @@ import {
   EllipsisVerticalIcon
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface BookingData {
   id: string;
@@ -58,6 +59,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
   onQuickAction,
   isDragging = false
 }) => {
+  const { t } = useLanguage();
   const otherParty = userRole === 'customer' ? booking.specialist : booking.customer;
   const displayName = userRole === 'customer'
     ? booking.specialist?.businessName || `${booking.specialist?.firstName || ''} ${booking.specialist?.lastName || ''}`.trim()
@@ -106,10 +108,10 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
           )}
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate leading-tight">
-              {displayName || 'Unknown'}
+              {displayName || t('messages.unknown')}
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate leading-tight mt-0.5">
-              {booking.service?.name || 'Service'}
+              {booking.service?.name || t('booking.card.service')}
             </p>
           </div>
         </div>

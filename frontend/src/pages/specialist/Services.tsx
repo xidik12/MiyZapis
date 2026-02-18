@@ -387,9 +387,9 @@ const SpecialistServices: React.FC = () => {
     if (!nameTrimmed) {
       errors.name = t('serviceForm.required');
     } else if (nameTrimmed.length < 3) {
-      errors.name = 'Service name must be at least 3 characters';
+      errors.name = t('serviceForm.nameMinLength') || 'Service name must be at least 3 characters';
     } else if (nameTrimmed.length > 100) {
-      errors.name = 'Service name cannot exceed 100 characters';
+      errors.name = t('serviceForm.nameMaxLength') || 'Service name cannot exceed 100 characters';
     }
 
     // Description validation: required, 10-1000 characters
@@ -397,9 +397,9 @@ const SpecialistServices: React.FC = () => {
     if (!descriptionTrimmed) {
       errors.description = t('serviceForm.required');
     } else if (descriptionTrimmed.length < 10) {
-      errors.description = 'Description must be at least 10 characters';
+      errors.description = t('serviceForm.descMinLength') || 'Description must be at least 10 characters';
     } else if (descriptionTrimmed.length > 1000) {
-      errors.description = 'Description cannot exceed 1000 characters';
+      errors.description = t('serviceForm.descMaxLength') || 'Description cannot exceed 1000 characters';
     }
 
     // Check category validation - formData.category should always contain the value (custom or regular)
@@ -432,7 +432,7 @@ const SpecialistServices: React.FC = () => {
     // Loyalty Points validation
     if (formData.loyaltyPointsEnabled) {
       if (!formData.loyaltyPointsPrice || formData.loyaltyPointsPrice < 1) {
-        errors.loyaltyPointsPrice = 'Loyalty points price must be at least 1';
+        errors.loyaltyPointsPrice = t('serviceForm.loyaltyMin') || 'Loyalty points price must be at least 1';
       }
     }
 
@@ -440,9 +440,9 @@ const SpecialistServices: React.FC = () => {
     if (formData.discountEnabled) {
       const discountValue = parseFloat(formData.discountValue);
       if (!formData.discountValue || isNaN(discountValue) || discountValue <= 0) {
-        errors.discountValue = 'Discount value must be greater than 0';
+        errors.discountValue = t('serviceForm.discountMin') || 'Discount value must be greater than 0';
       } else if (formData.discountType === 'PERCENTAGE' && discountValue > 100) {
-        errors.discountValue = 'Percentage discount cannot exceed 100%';
+        errors.discountValue = t('serviceForm.discountMaxPct') || 'Percentage discount cannot exceed 100%';
       }
 
       // Validate dates if provided
@@ -450,7 +450,7 @@ const SpecialistServices: React.FC = () => {
         const fromDate = new Date(formData.discountValidFrom);
         const untilDate = new Date(formData.discountValidUntil);
         if (fromDate >= untilDate) {
-          errors.discountValidUntil = 'End date must be after start date';
+          errors.discountValidUntil = t('serviceForm.discountEndDate') || 'End date must be after start date';
         }
       }
     }
@@ -583,10 +583,10 @@ const SpecialistServices: React.FC = () => {
     
     const { confirm } = await import('../../components/ui/Confirm');
     const ok = await confirm({
-      title: 'Delete service?',
-      message: 'This action cannot be undone.',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      title: t('specialist.services.deleteConfirm') || 'Delete service?',
+      message: t('specialist.services.deleteMessage') || 'This action cannot be undone.',
+      confirmText: t('actions.delete') || 'Delete',
+      cancelText: t('specialist.services.confirmCancel') || 'Cancel',
       variant: 'destructive'
     });
     if (!ok) return;
@@ -1106,7 +1106,7 @@ const SpecialistServices: React.FC = () => {
                     </svg>
                     <div>
                       <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
-                        Please fix the following errors:
+                        {t('serviceForm.fixErrors') || 'Please fix the following errors:'}
                       </h3>
                       <ul className="text-sm text-red-700 dark:text-red-400 list-disc list-inside space-y-1">
                         {Object.entries(formErrors).map(([field, error]) => (
@@ -1134,7 +1134,7 @@ const SpecialistServices: React.FC = () => {
                   {formErrors.name ? (
                     <p className="text-sm text-red-500">{formErrors.name}</p>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Minimum 3 characters</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('serviceForm.min3Chars') || 'Minimum 3 characters'}</p>
                   )}
                   <p className={`text-xs ${formData.name.length > 100 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
                     {formData.name.length}/100
@@ -1158,7 +1158,7 @@ const SpecialistServices: React.FC = () => {
                   {formErrors.description ? (
                     <p className="text-sm text-red-500">{formErrors.description}</p>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Minimum 10 characters</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('serviceForm.min10Chars') || 'Minimum 10 characters'}</p>
                   )}
                   <p className={`text-xs ${formData.description.length > 1000 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
                     {formData.description.length}/1000
@@ -1225,7 +1225,7 @@ const SpecialistServices: React.FC = () => {
               {/* Group Session */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Group Session Settings
+                  {t('serviceForm.groupSettings') || 'Group Session Settings'}
                 </h3>
                 <div className="flex items-center mb-4">
                   <label className="flex items-center cursor-pointer">
@@ -1406,7 +1406,7 @@ const SpecialistServices: React.FC = () => {
                   <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Points Required *
+                        {t('serviceForm.pointsRequired') || 'Points Required'} *
                       </label>
                       <input
                         type="number"
@@ -1417,7 +1417,7 @@ const SpecialistServices: React.FC = () => {
                         }))}
                         min="1"
                         step="1"
-                        placeholder="e.g., 500 points"
+                        placeholder={t('serviceForm.pointsPlaceholder') || 'e.g., 500 points'}
                         className={`w-full px-4 py-3 rounded-xl border ${formErrors.loyaltyPointsPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                       />
                       {formErrors.loyaltyPointsPrice && <p className="mt-1 text-sm text-red-500">{formErrors.loyaltyPointsPrice}</p>}
@@ -1435,7 +1435,7 @@ const SpecialistServices: React.FC = () => {
                           className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                         />
                         <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                          Only bookable with loyalty points (no cash payment option)
+                          {t('serviceForm.pointsOnly') || 'Only bookable with loyalty points (no cash payment option)'}
                         </span>
                       </label>
                     </div>
@@ -1488,7 +1488,7 @@ const SpecialistServices: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Discount Type *
+                          {t('serviceForm.discountType') || 'Discount Type'} *
                         </label>
                         <select
                           value={formData.discountType}
@@ -1499,13 +1499,13 @@ const SpecialistServices: React.FC = () => {
                           }))}
                           className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="PERCENTAGE">Percentage (%) Discount</option>
-                          <option value="FIXED_AMOUNT">Fixed Amount Discount</option>
+                          <option value="PERCENTAGE">{t('serviceForm.percentageDiscount') || 'Percentage (%) Discount'}</option>
+                          <option value="FIXED_AMOUNT">{t('serviceForm.fixedDiscount') || 'Fixed Amount Discount'}</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Discount Value *
+                          {t('serviceForm.discountValue') || 'Discount Value'} *
                         </label>
                         <div className="flex items-center">
                           {formData.discountType === 'PERCENTAGE' && (
@@ -1534,7 +1534,7 @@ const SpecialistServices: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Valid From (Optional)
+                          {t('serviceForm.validFrom') || 'Valid From'} ({t('common.optional') || 'Optional'})
                         </label>
                         <input
                           type="date"
@@ -1545,7 +1545,7 @@ const SpecialistServices: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Valid Until (Optional)
+                          {t('serviceForm.validUntil') || 'Valid Until'} ({t('common.optional') || 'Optional'})
                         </label>
                         <input
                           type="date"
@@ -1561,12 +1561,12 @@ const SpecialistServices: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Discount Description (Optional)
+                        {t('serviceForm.discountDesc') || 'Discount Description'} ({t('common.optional') || 'Optional'})
                       </label>
                       <textarea
                         value={formData.discountDescription}
                         onChange={(e) => setFormData(prev => ({ ...prev, discountDescription: e.target.value }))}
-                        placeholder="e.g., Early bird special, Limited time offer, etc."
+                        placeholder={t('serviceForm.discountPlaceholder') || 'e.g., Early bird special, Limited time offer, etc.'}
                         rows={2}
                         className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                       />
@@ -1633,7 +1633,7 @@ const SpecialistServices: React.FC = () => {
                     </svg>
                   )}
                   {isSubmitting
-                    ? (editingService ? 'Saving...' : 'Creating...')
+                    ? (editingService ? (t('serviceForm.saving') || 'Saving...') : (t('serviceForm.creating') || 'Creating...'))
                     : (editingService ? t('common.save') : t('services.addService'))
                   }
                 </button>

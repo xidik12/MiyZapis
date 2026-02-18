@@ -161,11 +161,7 @@ export const ReferralsPage: React.FC = () => {
     if (!config?.referralLink) return;
     hapticFeedback.impactLight();
 
-    const shareText = locale === 'uk'
-      ? `Приєднуйся до MiyZapis! Зареєструйся за моїм посиланням та отримай бонус!`
-      : locale === 'ru'
-      ? `Присоединяйся к MiyZapis! Зарегистрируйся по моей ссылке и получи бонус!`
-      : `Join MiyZapis! Sign up with my link and get a bonus!`;
+    const shareText = t(referralsStrings, 'shareText', locale);
 
     const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(config.referralLink)}&text=${encodeURIComponent(shareText)}`;
 
@@ -253,7 +249,7 @@ export const ReferralsPage: React.FC = () => {
               >
                 {linkCopied ? <Check size={16} /> : <Copy size={16} />}
                 {linkCopied
-                  ? (locale === 'uk' ? 'Скопійовано!' : locale === 'ru' ? 'Скопировано!' : 'Copied!')
+                  ? t(commonStrings, 'copied', locale)
                   : t(referralsStrings, 'copyLink', locale)}
               </button>
               <button

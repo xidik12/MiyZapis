@@ -1,6 +1,8 @@
 import React from 'react';
 import { User } from 'lucide-react';
 import type { Conversation } from '@/store/slices/messagesSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { commonStrings } from '@/utils/translations';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -15,6 +17,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onSelect,
   formatTime,
 }) => {
+  const locale = useLocale();
+  const c = (key: string) => t(commonStrings, key, locale);
+
   const getOtherParticipant = (conv: Conversation) => {
     if (conv.customer?.id === currentUserId) return conv.specialist;
     return conv.customer;
@@ -51,7 +56,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 <p className={`text-sm font-medium truncate ${
                   hasUnread ? 'text-text-primary' : 'text-text-secondary'
                 }`}>
-                  {other ? `${other.firstName} ${other.lastName}` : 'Unknown'}
+                  {other ? `${other.firstName} ${other.lastName}` : c('unknown')}
                 </p>
                 <span className="text-[10px] text-text-muted flex-shrink-0 ml-2">
                   {conv.lastMessage ? formatTime(conv.lastMessage.createdAt) : ''}

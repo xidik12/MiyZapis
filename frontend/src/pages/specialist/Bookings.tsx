@@ -106,7 +106,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       // Determine the other participant based on current tab
       const participantId = activeTab === 'provider' ? booking.customerId : booking.specialistId;
       if (!participantId) {
-        toast.error('Participant not found for this booking');
+        toast.error(t('specialist.bookings.toast.error'));
         return;
       }
 
@@ -122,7 +122,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         conversationId = conversation.id;
         // Initial message already sent by backend when initialMessage is provided
         setMessage('');
-        toast.success('Message sent');
+        toast.success(t('bookingDetails.messageSent') || 'Message sent');
         return;
       } catch (createErr: any) {
         console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
@@ -150,7 +150,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       toast.success('Message sent');
     } catch (err: any) {
       console.error('Failed to send booking message:', err);
-      toast.error(err?.message || 'Failed to send message');
+      toast.error(err?.message || t('specialist.bookings.toast.error'));
     }
   };
   
@@ -620,12 +620,12 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
           {/* Completion Notes */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Completion Notes (Optional)
+              {t('bookings.completionNotes') || 'Completion Notes (Optional)'}
             </label>
             <textarea
               value={completionNotes}
               onChange={(e) => setCompletionNotes(e.target.value)}
-              placeholder="Add any notes about the completed service..."
+              placeholder={t('specialist.bookings.placeholder.noBookings') || 'Add any notes about the completed service...'}
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={3}
             />
@@ -893,7 +893,7 @@ const SpecialistBookings: React.FC = () => {
     try {
       if (!paymentConfirmed) {
         // Show a message that payment must be received first
-        toast.info('Please ensure payment is received before completing the booking.');
+        toast.info(t('bookings.ensurePayment') || 'Please ensure payment is received before completing the booking.');
         return;
       }
 
@@ -909,7 +909,7 @@ const SpecialistBookings: React.FC = () => {
       
     } catch (error: any) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      toast.error(`Failed to complete booking: ${error.message}`);
+      toast.error(`${t('specialist.bookings.toast.error')}: ${error.message}`);
     }
   };
   
@@ -980,7 +980,7 @@ const SpecialistBookings: React.FC = () => {
       
       // Show user-friendly error message
       const errorMessage = error?.message || 'Failed to submit review. Please try again.';
-      toast.error(`Review submission failed: ${errorMessage}`);
+      toast.error(`${t('specialist.bookings.toast.error')}: ${errorMessage}`);
       
       // Keep the modal open so user can try again
     } finally {
@@ -1006,7 +1006,7 @@ const SpecialistBookings: React.FC = () => {
       }
     } catch (error: any) {
       console.error('❌ Failed to cancel booking:', error);
-      toast.error('Failed to cancel booking. Please try again.');
+      toast.error(t('specialist.bookings.toast.error'));
     }
     setCancelTarget(null);
   };

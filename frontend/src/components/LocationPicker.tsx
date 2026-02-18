@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, X, Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Location {
   address: string;
@@ -28,6 +29,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   onLocationChange,
   className = ''
 }) => {
+  const { t } = useLanguage();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
@@ -361,7 +363,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     if (location.city) parts.push(location.city);
     if (location.region) parts.push(location.region);
     if (location.country) parts.push(location.country);
-    return parts.join(', ') || 'Click to select location';
+    return parts.join(', ') || t('location.selectOnMap');
   };
 
   return (
@@ -387,7 +389,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           <div className="bg-white dark:bg-gray-800 rounded-t-lg sm:rounded-xl shadow-xl w-full sm:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10 rounded-t-lg sm:rounded-none">
-              <h3 className="text-lg font-semibold truncate text-gray-900 dark:text-white">Select Your Location</h3>
+              <h3 className="text-lg font-semibold truncate text-gray-900 dark:text-white">{t('location.title')}</h3>
               <button
                 onClick={handleCloseMap}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex-shrink-0 text-gray-500 dark:text-gray-400"
@@ -406,7 +408,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search for an address or place..."
+                    placeholder={t('location.search')}
                     value={searchQuery}
                     onChange={handleSearchInputChange}
                     className="block w-full pl-10 pr-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-xl leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
@@ -454,9 +456,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                       <div className="text-red-600 dark:text-red-400 mb-2">
                         <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       </div>
-                      <p className="text-red-800 dark:text-red-300 font-medium mb-1">Google Maps Not Available</p>
-                      <p className="text-red-600 dark:text-red-400 text-sm mb-3">Map functionality requires an API key configuration.</p>
-                      <p className="text-xs text-red-500 dark:text-red-400">You can still enter your address manually in the text fields when editing.</p>
+                      <p className="text-red-800 dark:text-red-300 font-medium mb-1">{t('location.error')}</p>
+                      <p className="text-red-600 dark:text-red-400 text-sm mb-3">{t('location.error')}</p>
+                      <p className="text-xs text-red-500 dark:text-red-400">{t('location.address')}</p>
                     </div>
                   </div>
                 ) : mapLoaded ? (
@@ -465,7 +467,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   <div className="h-full w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-                      <p className="text-gray-600 dark:text-gray-300">Loading map...</p>
+                      <p className="text-gray-600 dark:text-gray-300">{t('location.loading')}</p>
                     </div>
                   </div>
                 )}
@@ -482,7 +484,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               {/* Selected Location Display */}
               {location.address && (
                 <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                  <h4 className="font-medium text-green-800 dark:text-green-300 mb-2">Selected Location:</h4>
+                  <h4 className="font-medium text-green-800 dark:text-green-300 mb-2">{t('location.currentLocation')}:</h4>
                   <p className="text-green-700 dark:text-green-400">{displayAddress()}</p>
                   {location.latitude && location.longitude && (
                     <p className="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -499,14 +501,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 onClick={handleCloseMap}
                 className="px-4 py-3 sm:py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex-1 sm:flex-none"
               >
-                Cancel
+                {t('location.cancel')}
               </button>
               <button
                 onClick={handleCloseMap}
                 disabled={!location.address}
                 className="px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
               >
-                Confirm Location
+                {t('location.confirm')}
               </button>
             </div>
           </div>

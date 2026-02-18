@@ -204,13 +204,7 @@ export const SpecialistProfileEditPage: React.FC = () => {
                 setProfile((prev) => ({ ...prev, businessName: e.target.value }))
               }
               icon={<Briefcase size={16} />}
-              placeholder={
-                locale === 'uk'
-                  ? 'Назва вашого бізнесу'
-                  : locale === 'ru'
-                  ? 'Название вашего бизнеса'
-                  : 'Your business name'
-              }
+              placeholder={s('businessNamePlaceholder')}
             />
           </Card>
 
@@ -310,9 +304,7 @@ export const SpecialistProfileEditPage: React.FC = () => {
                 onChange={(e) =>
                   setProfile((prev) => ({ ...prev, city: e.target.value }))
                 }
-                placeholder={
-                  locale === 'uk' ? 'Київ' : locale === 'ru' ? 'Киев' : 'Kyiv'
-                }
+                placeholder={s('cityPlaceholder')}
               />
               <Input
                 label={s('address')}
@@ -320,13 +312,7 @@ export const SpecialistProfileEditPage: React.FC = () => {
                 onChange={(e) =>
                   setProfile((prev) => ({ ...prev, address: e.target.value }))
                 }
-                placeholder={
-                  locale === 'uk'
-                    ? 'Вулиця, будинок, офіс'
-                    : locale === 'ru'
-                    ? 'Улица, дом, офис'
-                    : 'Street, building, office'
-                }
+                placeholder={s('addressPlaceholder')}
               />
             </div>
           </Card>

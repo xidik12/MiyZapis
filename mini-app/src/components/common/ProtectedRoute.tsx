@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RootState } from '@/store';
+import { useLocale, t } from '@/hooks/useLocale';
+import { commonStrings } from '@/utils/translations';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,6 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
   requiredRole
 }) => {
+  const locale = useLocale();
   const { isAuthenticated: tgAuth, isLoading: tgLoading, user: tgUser } = useTelegram();
   const { isAuthenticated: reduxAuth, isLoading: reduxLoading, user: reduxUser } = useSelector(
     (state: RootState) => state.auth
@@ -34,7 +37,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <div className="flex items-center justify-center min-h-screen bg-bg-primary">
         <div className="text-center">
           <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-          <p className="text-text-secondary">Loading...</p>
+          <p className="text-text-secondary">{t(commonStrings, 'loading', locale)}</p>
         </div>
       </div>
     );

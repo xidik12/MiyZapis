@@ -162,15 +162,13 @@ export const SpecialistServicesPage: React.FC = () => {
   };
 
   const handleDelete = async (service: SpecialistService) => {
-    const confirmMsg = locale === 'uk' ? `Видалити "${service.name}"?` : locale === 'ru' ? `Удалить "${service.name}"?` : `Delete "${service.name}"?`;
-    const confirmed = await showConfirm(confirmMsg);
+    const confirmed = await showConfirm(`${t(specialistServicesStrings, 'deleteConfirm', locale)} "${service.name}"`);
     if (!confirmed) return;
 
     try {
       await apiService.deleteService(service.id);
       setServices(prev => prev.filter(s => s.id !== service.id));
-      const successMsg = locale === 'uk' ? 'Видалено' : locale === 'ru' ? 'Удалено' : 'Deleted';
-      dispatch(addToast({ type: 'success', title: successMsg, message: t(specialistServicesStrings, 'serviceDeleted', locale) }));
+      dispatch(addToast({ type: 'success', title: t(specialistServicesStrings, 'deleted', locale), message: t(specialistServicesStrings, 'serviceDeleted', locale) }));
       hapticFeedback.notificationSuccess();
     } catch {
       dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'deleteFailed', locale) }));
@@ -187,8 +185,7 @@ export const SpecialistServicesPage: React.FC = () => {
       await apiService.updateService(service.id, { isActive: !service.isActive });
     } catch {
       setServices(prev => prev.map(s => s.id === service.id ? service : s));
-      const errorMsg = locale === 'uk' ? 'Не вдалося оновити послугу' : locale === 'ru' ? 'Не удалось обновить услугу' : 'Failed to update service';
-      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'updateFailed', locale) }));
     }
   };
 
@@ -199,7 +196,7 @@ export const SpecialistServicesPage: React.FC = () => {
     try {
       for (const file of files) {
         if (file.size > 10 * 1024 * 1024) {
-          dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Max 10MB' }));
+          dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'maxFileSize', locale) }));
           continue;
         }
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) continue;
@@ -208,7 +205,7 @@ export const SpecialistServicesPage: React.FC = () => {
       }
       hapticFeedback.notificationSuccess();
     } catch {
-      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Upload failed' }));
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'uploadFailed', locale) }));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -330,7 +327,7 @@ export const SpecialistServicesPage: React.FC = () => {
             label={t(specialistServicesStrings, 'serviceName', locale) + ' *'}
             value={formData.name}
             onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-            placeholder={locale === 'uk' ? 'напр. Стрижка, Масаж, Консультація' : locale === 'ru' ? 'напр. Стрижка, Массаж, Консультация' : 'e.g. Haircut, Massage, Consultation'}
+            placeholder={t(specialistServicesStrings, 'namePlaceholder', locale)}
           />
 
           <div>
@@ -340,7 +337,7 @@ export const SpecialistServicesPage: React.FC = () => {
               onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
               rows={3}
               className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder={locale === 'uk' ? 'Опишіть вашу послугу...' : locale === 'ru' ? 'Опишите вашу услугу...' : 'Describe your service...'}
+              placeholder={t(specialistServicesStrings, 'descriptionPlaceholder', locale)}
             />
           </div>
 
@@ -378,7 +375,7 @@ export const SpecialistServicesPage: React.FC = () => {
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1.5">
-              {locale === 'uk' ? 'Фото послуги' : locale === 'ru' ? 'Фото услуги' : 'Service Photos'}
+              {t(specialistServicesStrings, 'servicePhotos', locale)}
             </label>
             <input
               ref={fileInputRef}
@@ -398,9 +395,9 @@ export const SpecialistServicesPage: React.FC = () => {
               }`}
             >
               {uploading ? (
-                <><LoadingSpinner size="sm" /><span className="text-sm">{locale === 'uk' ? 'Завантаження...' : locale === 'ru' ? 'Загрузка...' : 'Uploading...'}</span></>
+                <><LoadingSpinner size="sm" /><span className="text-sm">{t(specialistServicesStrings, 'uploading', locale)}</span></>
               ) : (
-                <><Camera size={18} /><span className="text-sm font-medium">{locale === 'uk' ? 'Додати фото' : locale === 'ru' ? 'Добавить фото' : 'Add Photos'}</span></>
+                <><Camera size={18} /><span className="text-sm font-medium">{t(specialistServicesStrings, 'addPhotos', locale)}</span></>
               )}
             </button>
             {formData.images.length > 0 && (

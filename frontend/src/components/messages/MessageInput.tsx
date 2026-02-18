@@ -2,6 +2,7 @@ import React, { useState, useRef, KeyboardEvent } from 'react';
 import { PaperAirplaneIcon, PaperClipIcon } from '@/components/icons';
 import { Smile } from 'lucide-react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MessageInputProps {
   value: string;
@@ -16,8 +17,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   onChange,
   onSubmit,
   disabled = false,
-  placeholder = 'Type a message...'
+  placeholder
 }) => {
+  const { t } = useLanguage();
+  const resolvedPlaceholder = placeholder || t('messages.typeMessage');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -79,7 +82,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <button
           type="button"
           className="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
-          title="Attach file"
+          title={t('messages.attachFile')}
         >
           <PaperClipIcon className="w-5 h-5" />
         </button>
@@ -91,7 +94,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             disabled={disabled}
             rows={1}
             className="w-full px-4 py-2.5 pr-10 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-2xl border border-transparent focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none resize-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"

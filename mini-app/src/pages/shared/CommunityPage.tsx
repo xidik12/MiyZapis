@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
-import { communityStrings } from '@/utils/translations';
+import { communityStrings, commonStrings } from '@/utils/translations';
 
 interface CommunityPost {
   id: string;
@@ -64,6 +64,7 @@ export const CommunityPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
 
   const cm = (key: string) => t(communityStrings, key, locale);
+  const c = (key: string) => t(commonStrings, key, locale);
 
   const fetchPosts = useCallback(async (pageNum: number, append = false) => {
     try {
@@ -151,14 +152,14 @@ export const CommunityPage: React.FC = () => {
     const diffHrs = diffMs / (1000 * 60 * 60);
 
     if (diffHrs < 1) {
-      return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
+      return c('justNow');
     }
     if (diffHrs < 24) {
       const hrs = Math.floor(diffHrs);
-      return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
+      return `${hrs}${c('hoursAgo')}`;
     }
     if (diffHrs < 48) {
-      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+      return c('yesterday');
     }
     return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };
@@ -333,7 +334,7 @@ export const CommunityPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchPosts(n, true); }}
                   className="w-full"
                 >
-                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
+                  {c('loadMore')}
                 </Button>
               )}
             </>

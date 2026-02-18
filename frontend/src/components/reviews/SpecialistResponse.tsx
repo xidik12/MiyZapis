@@ -9,6 +9,7 @@ import {
   BriefcaseIcon
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SpecialistResponseData {
   id: string;
@@ -39,6 +40,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
   isExpanded = true,
   onToggle
 }) => {
+  const { t } = useLanguage();
   const businessName = response.respondedBy.businessName || `${response.respondedBy.firstName} ${response.respondedBy.lastName}`;
   const initial = response.respondedBy.firstName.charAt(0).toUpperCase();
   const hasAvatar = response.respondedBy.avatar;
@@ -65,7 +67,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
         <div className="flex items-center gap-2">
           <BriefcaseIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            SPECIALIST RESPONSE
+            {t('reviews.specialist.response')}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
             • {formatDistanceToNow(new Date(response.createdAt), { addSuffix: true })}
@@ -110,7 +112,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                     {businessName}
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Specialist
+                    {t('reviews.specialist.responded')}
                   </p>
                 </div>
               </div>

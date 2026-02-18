@@ -312,7 +312,7 @@ const PaymentMethods: React.FC = () => {
                     type="text"
                     name="cardName"
                     defaultValue={editingMethod?.nickname || ''}
-                    placeholder="Visa •••• 4242"
+                    placeholder={t('payments.cardNamePlaceholder') || 'Visa •••• 4242'}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
@@ -325,7 +325,7 @@ const PaymentMethods: React.FC = () => {
                     <input
                       type="text"
                       name="cardNumber"
-                      placeholder="1234 5678 9012 3456"
+                      placeholder={t('payments.cardNumberPlaceholder') || '1234 5678 9012 3456'}
                       maxLength={19}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                       onChange={(e) => {
