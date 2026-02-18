@@ -16,7 +16,7 @@ export interface ValidateInitDataResponse {
 }
 
 class TelegramAuthService {
-  private readonly API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  private readonly API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
   /**
    * Validate Telegram Web App init data
@@ -257,7 +257,7 @@ class TelegramAuthService {
    */
   getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('booking_app_token');
+      return localStorage.getItem('authToken') || localStorage.getItem('booking_app_token');
     }
     return null;
   }
@@ -277,6 +277,7 @@ class TelegramAuthService {
    */
   private setTokens(token: string, refreshToken: string): void {
     if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
       localStorage.setItem('booking_app_token', token);
       localStorage.setItem('booking_app_refresh_token', refreshToken);
     }
@@ -287,6 +288,7 @@ class TelegramAuthService {
    */
   private clearTokens(): void {
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
       localStorage.removeItem('booking_app_token');
       localStorage.removeItem('booking_app_refresh_token');
     }

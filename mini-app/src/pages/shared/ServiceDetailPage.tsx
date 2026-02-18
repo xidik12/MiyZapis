@@ -26,7 +26,7 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchServiceAsync } from '@/store/slices/servicesSlice';
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { serviceDetailStrings, commonStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
 
@@ -204,12 +204,20 @@ export const ServiceDetailPage: React.FC = () => {
                 </>
               )}
             </>
+          ) : selectedService.specialist?.avatar ? (
+            <img
+              src={selectedService.specialist.avatar}
+              alt={specialistName}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div
               className="w-full h-full flex items-center justify-center"
               style={{ background: `linear-gradient(135deg, ${getCategoryInfo(selectedService.category).color}33, ${getCategoryInfo(selectedService.category).color}11)` }}
             >
-              <span className="text-6xl">{getCategoryInfo(selectedService.category).icon}</span>
+              <span className="text-4xl font-bold text-white/80">
+                {(specialistName || '?')[0].toUpperCase()}
+              </span>
             </div>
           )}
         </div>
@@ -228,7 +236,7 @@ export const ServiceDetailPage: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-accent-primary">
-                  ${selectedService.price}
+                  {formatCurrency(selectedService.price, undefined, locale)}
                 </div>
                 <div className="flex items-center gap-1 text-sm text-text-secondary">
                   <Clock size={14} />
@@ -417,7 +425,7 @@ export const ServiceDetailPage: React.FC = () => {
       <div className="fixed bottom-14 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4 z-40">
         <Button onClick={handleBookNow} size="lg" className="w-full">
           <Calendar size={18} className="mr-2" />
-          {s('bookNow')} - ${selectedService.price}
+          {s('bookNow')} - {formatCurrency(selectedService.price, undefined, locale)}
         </Button>
       </div>
 

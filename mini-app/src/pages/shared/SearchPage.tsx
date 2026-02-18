@@ -29,15 +29,17 @@ import {
   clearFilters,
 } from '@/store/slices/servicesSlice';
 import { addToast } from '@/store/slices/uiSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { searchStrings, commonStrings, serviceDetailStrings, specialistServicesStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
+import apiService from '@/services/api.service';
 
 interface SavedPreset {
   name: string;
   data: {
     searchQuery: string;
     category: string;
+    city: string;
     minPrice: string;
     maxPrice: string;
     sort: string;
@@ -89,17 +91,20 @@ export const SearchPage: React.FC = () => {
   const [savedPresets, setSavedPresets] = useState<SavedPreset[]>(loadPresets);
   const [localFilters, setLocalFilters] = useState({
     category: searchParams.get('category') || '',
+    city: searchParams.get('city') || '',
     minPrice: '',
     maxPrice: '',
     sort: searchParams.get('sort') || 'popular',
     rating: '',
   });
+  const [cities, setCities] = useState<{ city: string; state?: string; count: number }[]>([]);
 
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     dispatch(fetchCategoriesAsync());
     performSearch();
+    apiService.getCities().then(setCities).catch(() => {});
   }, []);
 
   // Saved presets
@@ -122,6 +127,7 @@ export const SearchPage: React.FC = () => {
     setSearchQuery(preset.data.searchQuery || '');
     setLocalFilters({
       category: preset.data.category || '',
+      city: preset.data.city || '',
       minPrice: preset.data.minPrice || '',
       maxPrice: preset.data.maxPrice || '',
       sort: preset.data.sort || 'popular',
@@ -130,6 +136,7 @@ export const SearchPage: React.FC = () => {
     // Apply the preset filters immediately
     const newFilters: any = {};
     if (preset.data.category) newFilters.category = preset.data.category;
+    if (preset.data.city) newFilters.city = preset.data.city;
     if (preset.data.minPrice) newFilters.minPrice = Number(preset.data.minPrice);
     if (preset.data.maxPrice) newFilters.maxPrice = Number(preset.data.maxPrice);
     if (preset.data.sort) newFilters.sort = preset.data.sort;
@@ -186,6 +193,7 @@ export const SearchPage: React.FC = () => {
     const newFilters: any = {};
 
     if (localFilters.category) newFilters.category = localFilters.category;
+    if (localFilters.city) newFilters.city = localFilters.city;
     if (localFilters.minPrice) newFilters.minPrice = Number(localFilters.minPrice);
     if (localFilters.maxPrice) newFilters.maxPrice = Number(localFilters.maxPrice);
     if (localFilters.sort) newFilters.sort = localFilters.sort;
@@ -199,6 +207,7 @@ export const SearchPage: React.FC = () => {
   const handleClearFilters = () => {
     setLocalFilters({
       category: '',
+      city: '',
       minPrice: '',
       maxPrice: '',
       sort: 'popular',
@@ -236,12 +245,20 @@ export const SearchPage: React.FC = () => {
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />
+              ) : service.specialist?.avatar ? (
+                <img
+                  src={service.specialist.avatar}
+                  alt={service.specialist?.name || ''}
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div
                   className="w-full h-full flex items-center justify-center"
                   style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}
                 >
-                  <span className="text-2xl">{getCategoryInfo(service.category).icon}</span>
+                  <span className="text-2xl font-bold text-white/80">
+                    {(service.specialist?.name || '?')[0].toUpperCase()}
+                  </span>
                 </div>
               )}
             </div>
@@ -259,7 +276,7 @@ export const SearchPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-accent-primary">${service.price}</span>
+                <span className="text-lg font-bold text-accent-primary">{formatCurrency(service.price, undefined, locale)}</span>
                 <Button size="sm">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
               </div>
             </div>
@@ -281,12 +298,20 @@ export const SearchPage: React.FC = () => {
               alt={service.name}
               className="w-full h-full object-cover"
             />
+          ) : service.specialist?.avatar ? (
+            <img
+              src={service.specialist.avatar}
+              alt={service.specialist?.name || ''}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div
               className="w-full h-full flex items-center justify-center"
               style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}
             >
-              <span className="text-4xl">{getCategoryInfo(service.category).icon}</span>
+              <span className="text-2xl font-bold text-white/80">
+                {(service.specialist?.name || '?')[0].toUpperCase()}
+              </span>
             </div>
           )}
         </div>
@@ -306,7 +331,7 @@ export const SearchPage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-accent-primary">${service.price}</span>
+            <span className="text-sm font-bold text-accent-primary">{formatCurrency(service.price, undefined, locale)}</span>
             <Button size="sm" className="text-xs px-2 py-1">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
           </div>
         </div>
@@ -484,6 +509,38 @@ export const SearchPage: React.FC = () => {
         title={t(searchStrings, 'filters', locale)}
       >
         <div className="space-y-6">
+          {/* City Filter */}
+          {cities.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3">{t(searchStrings, 'city', locale)}</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setLocalFilters(prev => ({ ...prev, city: '' }))}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    !localFilters.city
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-bg-secondary text-text-secondary'
+                  }`}
+                >
+                  {t(searchStrings, 'allCities', locale)}
+                </button>
+                {cities.map(c => (
+                  <button
+                    key={c.city}
+                    onClick={() => setLocalFilters(prev => ({ ...prev, city: c.city }))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      localFilters.city === c.city
+                        ? 'bg-accent-primary text-white'
+                        : 'bg-bg-secondary text-text-secondary'
+                    }`}
+                  >
+                    {c.city} ({c.count})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Categories */}
           <div>
             <h3 className="font-semibold mb-3">{t(searchStrings, 'category', locale)}</h3>

@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { favoritesStrings, commonStrings } from '@/utils/translations';
 
 interface FavoriteItem {
@@ -259,7 +259,7 @@ export const FavoritesPage: React.FC = () => {
                             <Clock size={12} className="text-text-secondary" />
                             <span className="text-xs text-text-secondary">{fav.service.duration} min</span>
                             <span className="text-xs font-medium text-accent-primary">
-                              ₴{fav.service.price}
+                              {formatCurrency(fav.service.price, fav.service.currency, locale)}
                             </span>
                           </div>
                           {fav.service.specialist && (

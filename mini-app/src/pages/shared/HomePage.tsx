@@ -36,7 +36,7 @@ import { RootState, AppDispatch } from '@/store';
 import { fetchServicesAsync, fetchCategoriesAsync } from '@/store/slices/servicesSlice';
 import { fetchSpecialistsAsync } from '@/store/slices/specialistsSlice';
 import { processCategories, homeStrings, getCategoryInfo } from '@/utils/categories';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -368,9 +368,17 @@ export const HomePage: React.FC = () => {
                         alt={service.name}
                         className="w-full h-full object-cover"
                       />
+                    ) : service.specialist?.avatar || service.specialist?.user?.avatar ? (
+                      <img
+                        src={service.specialist?.avatar || service.specialist?.user?.avatar}
+                        alt={service.specialist?.name || ''}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-4xl">{getCategoryInfo(service.category).icon}</span>
+                      <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}>
+                        <span className="text-2xl font-bold text-white/80">
+                          {(service.specialist?.name || service.specialist?.user?.firstName || '?')[0].toUpperCase()}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -403,7 +411,7 @@ export const HomePage: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-accent-primary">
-                        {service.price} {service.currency || 'UAH'}
+                        {formatCurrency(service.price, service.currency, locale)}
                       </span>
                       <Button size="sm" onClick={handleBookNowPress}>
                         {s('bookNow')}

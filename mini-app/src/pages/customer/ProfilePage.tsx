@@ -155,12 +155,16 @@ export const ProfilePage: React.FC = () => {
         <div className="px-4 py-6 bg-gradient-to-b from-accent-primary to-accent-primary/80 text-white">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20">
-                <img
-                  src={user.avatar || '/api/placeholder/80/80'}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={32} className="text-white/60" />
+                )}
               </div>
               <button
                 onClick={handleAvatarUpload}
@@ -368,12 +372,16 @@ export const ProfilePage: React.FC = () => {
               {bookings.slice(0, 3).map((booking) => (
                 <Card key={booking.id} hover>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover">
-                      <img
-                        src={booking.specialist?.avatar || '/api/placeholder/48/48'}
-                        alt={[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ')}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover flex items-center justify-center">
+                      {booking.specialist?.avatar ? (
+                        <img
+                          src={booking.specialist.avatar}
+                          alt={[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ')}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={20} className="text-text-muted" />
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-text-primary">{booking.service?.name || booking.serviceName || 'Service'}</h3>

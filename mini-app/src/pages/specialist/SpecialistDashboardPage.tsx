@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Calendar, DollarSign, Star, TrendingUp, Clock,
   Briefcase, BarChart3, Users, Wallet, MessageCircle,
-  Bell, Gift, User, Settings, HelpCircle, Heart,
+  Bell, Gift, User, Settings, HelpCircle, Heart, Receipt,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -290,6 +290,8 @@ export const SpecialistDashboardPage: React.FC = () => {
               { icon: <Users size={20} />, label: locale === 'uk' ? 'Клієнти' : locale === 'ru' ? 'Клиенты' : 'Clients', path: '/specialist/clients', color: 'text-orange-400' },
               { icon: <Wallet size={20} />, label: locale === 'uk' ? 'Гаманець' : locale === 'ru' ? 'Кошелёк' : 'Wallet', path: '/specialist/wallet', color: 'text-teal-400' },
               { icon: <Star size={20} />, label: c('reviews'), path: '/specialist/reviews', color: 'text-accent-yellow' },
+              { icon: <Receipt size={20} />, label: locale === 'uk' ? 'Фінанси' : locale === 'ru' ? 'Финансы' : 'Finances', path: '/specialist/finances', color: 'text-rose-400' },
+              { icon: <Gift size={20} />, label: locale === 'uk' ? 'Лояльність' : locale === 'ru' ? 'Лояльность' : 'Loyalty', path: '/specialist/loyalty', color: 'text-amber-400' },
             ] as const).map((item) => (
               <button
                 key={item.path}

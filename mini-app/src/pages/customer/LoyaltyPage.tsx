@@ -48,17 +48,30 @@ interface LoyaltyReward {
   isAvailable: boolean;
 }
 
-const TIERS = [
-  { name: 'Bronze', key: 'BRONZE', min: 0, max: 499, color: 'from-amber-700 to-amber-900', textColor: 'text-amber-700', icon: Shield, benefits: ['Basic support', 'Standard booking', 'Point earning'] },
-  { name: 'Silver', key: 'SILVER', min: 500, max: 999, color: 'from-gray-400 to-gray-600', textColor: 'text-text-secondary', icon: Star, benefits: ['Priority support', 'Early booking access', '2% bonus points'] },
-  { name: 'Gold', key: 'GOLD', min: 1000, max: 1999, color: 'from-yellow-500 to-yellow-700', textColor: 'text-yellow-600', icon: Crown, benefits: ['5% bonus points', 'Priority support', 'Early access', 'Exclusive discounts'] },
-  { name: 'Platinum', key: 'PLATINUM', min: 2000, max: Infinity, color: 'from-indigo-500 to-indigo-700', textColor: 'text-indigo-600', icon: Crown, benefits: ['10% bonus points', 'VIP support', 'Exclusive services', 'Free cancellation'] },
+interface TierDef {
+  nameKey: string;
+  key: string;
+  min: number;
+  max: number;
+  color: string;
+  textColor: string;
+  icon: React.ElementType;
+  benefitKeys: string[];
+}
+
+const TIERS: TierDef[] = [
+  { nameKey: 'bronze', key: 'BRONZE', min: 0, max: 499, color: 'from-amber-700 to-amber-900', textColor: 'text-amber-700', icon: Shield, benefitKeys: ['basicSupport', 'standardBooking', 'pointEarning'] },
+  { nameKey: 'silver', key: 'SILVER', min: 500, max: 999, color: 'from-gray-400 to-gray-600', textColor: 'text-text-secondary', icon: Star, benefitKeys: ['prioritySupport', 'earlyBookingAccess', 'bonusPoints2'] },
+  { nameKey: 'gold', key: 'GOLD', min: 1000, max: 1999, color: 'from-yellow-500 to-yellow-700', textColor: 'text-yellow-600', icon: Crown, benefitKeys: ['bonusPoints5', 'prioritySupport', 'earlyAccess', 'exclusiveDiscounts'] },
+  { nameKey: 'platinum', key: 'PLATINUM', min: 2000, max: Infinity, color: 'from-indigo-500 to-indigo-700', textColor: 'text-indigo-600', icon: Crown, benefitKeys: ['bonusPoints10', 'vipSupport', 'exclusiveServices', 'freeCancellation'] },
 ];
 
 export const LoyaltyPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showConfirm } = useTelegram();
   const locale = useLocale();
+
+  const s = (key: string) => t(loyaltyStrings, key, locale);
 
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
   const [history, setHistory] = useState<LoyaltyTransaction[]>([]);
@@ -103,6 +116,9 @@ export const LoyaltyPage: React.FC = () => {
     ? ((status?.points || 0) - currentTier.min) / (nextTier.min - currentTier.min) * 100
     : 100;
 
+  const tierName = (tier: TierDef) => s(tier.nameKey);
+  const tierBenefit = (key: string) => s(key);
+
   const handleRedeem = async (reward: LoyaltyReward) => {
     if ((status?.points || 0) < reward.pointsCost) {
       const needed = reward.pointsCost - (status?.points || 0);
@@ -139,13 +155,20 @@ export const LoyaltyPage: React.FC = () => {
     }
   };
 
+  const TAB_LABELS: Record<string, string> = {
+    overview: s('overview'),
+    history: s('history'),
+    tiers: s('tiers'),
+    rewards: s('rewards'),
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title={t(loyaltyStrings, 'title', locale)} />
+      <Header title={s('title')} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Points Banner */}
@@ -154,18 +177,18 @@ export const LoyaltyPage: React.FC = () => {
             <div className="flex items-center gap-2 mb-1">
               <currentTier.icon size={20} />
               <span className="text-sm font-medium opacity-90">
-                {currentTier.name} {locale === 'uk' ? 'Учасник' : locale === 'ru' ? 'Участник' : 'Member'}
+                {tierName(currentTier)} {s('member')}
               </span>
             </div>
             <div className="text-3xl font-bold">
-              {(status?.points || 0).toLocaleString()} {locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts'}
+              {(status?.points || 0).toLocaleString()} {s('pts')}
             </div>
             {nextTier && (
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs opacity-80 mb-1">
-                  <span>{currentTier.name}</span>
+                  <span>{tierName(currentTier)}</span>
                   <span>
-                    {status?.pointsToNextTier || 0} {locale === 'uk' ? 'балів до' : locale === 'ru' ? 'баллов до' : 'pts to'} {nextTier.name}
+                    {status?.pointsToNextTier || 0} {s('ptsTo')} {tierName(nextTier)}
                   </span>
                 </div>
                 <div className="h-2 bg-white/20 rounded-full overflow-hidden">
@@ -192,7 +215,7 @@ export const LoyaltyPage: React.FC = () => {
                     : 'text-text-secondary'
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {TAB_LABELS[tab]}
               </button>
             ))}
           </div>
@@ -205,22 +228,22 @@ export const LoyaltyPage: React.FC = () => {
                 <Card className="text-center py-4">
                   <Zap size={24} className="text-accent-yellow mx-auto mb-1" />
                   <div className="text-lg font-bold text-text-primary">{status?.points || 0}</div>
-                  <div className="text-xs text-text-secondary">{t(loyaltyStrings, 'currentPoints', locale)}</div>
+                  <div className="text-xs text-text-secondary">{s('currentPoints')}</div>
                 </Card>
                 <Card className="text-center py-4">
                   <Award size={24} className={`${currentTier.textColor} mx-auto mb-1`} />
-                  <div className="text-lg font-bold text-text-primary">{currentTier.name}</div>
-                  <div className="text-xs text-text-secondary">{t(loyaltyStrings, 'currentTier', locale)}</div>
+                  <div className="text-lg font-bold text-text-primary">{tierName(currentTier)}</div>
+                  <div className="text-xs text-text-secondary">{s('currentTier')}</div>
                 </Card>
               </div>
 
               <Card>
-                <h3 className="font-semibold text-text-primary mb-3">{t(loyaltyStrings, 'howToEarn', locale)}</h3>
+                <h3 className="font-semibold text-text-primary mb-3">{s('howToEarn')}</h3>
                 <div className="space-y-2.5">
                   {[
-                    { icon: <Star size={16} className="text-accent-yellow" />, text: t(loyaltyStrings, 'completeBooking', locale), pts: '+10 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
-                    { icon: <Users size={16} className="text-accent-primary" />, text: t(loyaltyStrings, 'referFriend', locale), pts: '+50 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
-                    { icon: <TrendingUp size={16} className="text-accent-green" />, text: t(loyaltyStrings, 'leaveReview', locale), pts: '+5 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
+                    { icon: <Star size={16} className="text-accent-yellow" />, text: s('completeBooking'), pts: '+10 ' + s('pts') },
+                    { icon: <Users size={16} className="text-accent-primary" />, text: s('referFriend'), pts: '+50 ' + s('pts') },
+                    { icon: <TrendingUp size={16} className="text-accent-green" />, text: s('leaveReview'), pts: '+5 ' + s('pts') },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-bg-secondary rounded-lg flex items-center justify-center">{item.icon}</div>
@@ -233,7 +256,7 @@ export const LoyaltyPage: React.FC = () => {
 
               {history.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-text-primary mb-2">{t(loyaltyStrings, 'recentActivity', locale)}</h3>
+                  <h3 className="font-semibold text-text-primary mb-2">{s('recentActivity')}</h3>
                   {history.slice(0, 5).map(tx => (
                     <Card key={tx.id} className="mb-2">
                       <div className="flex items-center gap-3">
@@ -259,7 +282,7 @@ export const LoyaltyPage: React.FC = () => {
             history.length === 0 ? (
               <Card className="text-center py-12">
                 <Clock size={40} className="text-text-secondary mx-auto mb-3" />
-                <p className="text-text-secondary">{t(loyaltyStrings, 'noActivity', locale)}</p>
+                <p className="text-text-secondary">{s('noActivity')}</p>
               </Card>
             ) : (
               history.map(tx => (
@@ -274,7 +297,7 @@ export const LoyaltyPage: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <span className={`text-sm font-bold ${tx.type === 'REDEEMED' ? 'text-accent-red' : 'text-accent-green'}`}>
-                        {tx.type === 'REDEEMED' ? '-' : '+'}{tx.points} pts
+                        {tx.type === 'REDEEMED' ? '-' : '+'}{tx.points} {s('pts')}
                       </span>
                       <p className="text-xs text-text-secondary capitalize">{tx.type.toLowerCase()}</p>
                     </div>
@@ -295,21 +318,21 @@ export const LoyaltyPage: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-text-primary">{tier.name}</h3>
+                        <h3 className="font-semibold text-text-primary">{tierName(tier)}</h3>
                         {isCurrent && (
-                          <span className="px-2 py-0.5 bg-accent-primary/10 text-accent-primary text-xs rounded-full font-medium">Current</span>
+                          <span className="px-2 py-0.5 bg-accent-primary/10 text-accent-primary text-xs rounded-full font-medium">{t(commonStrings, 'current' as any, locale) || s('overview')}</span>
                         )}
                       </div>
                       <p className="text-xs text-text-secondary">
-                        {tier.max === Infinity ? `${tier.min}+ points` : `${tier.min} - ${tier.max} points`}
+                        {tier.max === Infinity ? `${tier.min}+ ${s('points')}` : `${tier.min} - ${tier.max} ${s('points')}`}
                       </p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    {tier.benefits.map((benefit, i) => (
+                    {tier.benefitKeys.map((benefitKey, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <Check size={14} className="text-accent-green flex-shrink-0" />
-                        <span className="text-sm text-text-secondary">{benefit}</span>
+                        <span className="text-sm text-text-secondary">{tierBenefit(benefitKey)}</span>
                       </div>
                     ))}
                   </div>
@@ -322,8 +345,8 @@ export const LoyaltyPage: React.FC = () => {
             rewards.length === 0 ? (
               <Card className="text-center py-12">
                 <Gift size={40} className="text-text-secondary mx-auto mb-3" />
-                <p className="text-text-primary font-medium">{t(loyaltyStrings, 'noRewards', locale)}</p>
-                <p className="text-text-secondary text-sm mt-1">{t(loyaltyStrings, 'keepEarning', locale)}</p>
+                <p className="text-text-primary font-medium">{s('noRewards')}</p>
+                <p className="text-text-secondary text-sm mt-1">{s('keepEarning')}</p>
               </Card>
             ) : (
               rewards.map(reward => (
@@ -335,14 +358,14 @@ export const LoyaltyPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-text-primary">{reward.title}</h3>
                       <p className="text-xs text-text-secondary truncate">{reward.description}</p>
-                      <p className="text-xs font-medium text-accent-primary mt-0.5">{reward.pointsCost} pts</p>
+                      <p className="text-xs font-medium text-accent-primary mt-0.5">{reward.pointsCost} {s('pts')}</p>
                     </div>
                     <Button
                       size="sm"
                       onClick={() => handleRedeem(reward)}
                       disabled={!reward.isAvailable || (status?.points || 0) < reward.pointsCost}
                     >
-                      {locale === 'uk' ? 'Обміняти' : locale === 'ru' ? 'Обменять' : 'Redeem'}
+                      {s('redeem')}
                     </Button>
                   </div>
                 </Card>

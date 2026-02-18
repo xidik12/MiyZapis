@@ -24,7 +24,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistServicesStrings, commonStrings } from '@/utils/translations';
 
 interface SpecialistService {
@@ -281,7 +281,7 @@ export const SpecialistServicesPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <DollarSign size={12} className="text-text-secondary" />
                         <span className="text-xs font-medium text-accent-primary">
-                          &#8372;{service.price}
+                          {formatCurrency(service.price, service.currency, locale)}
                         </span>
                       </div>
                       <span className="text-xs text-text-secondary">{service.category}</span>
@@ -367,7 +367,7 @@ export const SpecialistServicesPage: React.FC = () => {
               icon={<Clock size={16} />}
             />
             <Input
-              label={t(specialistServicesStrings, 'price', locale) + ' (₴) *'}
+              label={t(specialistServicesStrings, 'price', locale) + ' *'}
               type="number"
               value={formData.price.toString()}
               onChange={e => setFormData(p => ({ ...p, price: parseFloat(e.target.value) || 0 }))}

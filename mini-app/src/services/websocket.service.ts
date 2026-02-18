@@ -67,7 +67,7 @@ class WebSocketService {
     this.userId = userId;
     this.token = token;
 
-    const socketUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:5000';
+    const socketUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
 
     this.socket = io(socketUrl, {
       auth: {
@@ -150,32 +150,52 @@ class WebSocketService {
     this.socket.on('booking_confirmed', (data: BookingUpdate) => {
       log('Booking confirmed:', data);
       this.emit('booking_confirmed', data);
-      this.showTelegramNotification('Booking Confirmed', `Your booking has been confirmed!`);
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Запис підтверджено' : l === 'ru' ? 'Запись подтверждена' : 'Booking Confirmed',
+        l === 'uk' ? 'Ваш запис підтверджено!' : l === 'ru' ? 'Ваша запись подтверждена!' : 'Your booking has been confirmed!'
+      );
     });
 
     this.socket.on('booking_cancelled', (data: BookingUpdate) => {
       log('Booking cancelled:', data);
       this.emit('booking_cancelled', data);
-      this.showTelegramNotification('Booking Cancelled', 'A booking has been cancelled.');
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Запис скасовано' : l === 'ru' ? 'Запись отменена' : 'Booking Cancelled',
+        l === 'uk' ? 'Запис було скасовано.' : l === 'ru' ? 'Запись была отменена.' : 'A booking has been cancelled.'
+      );
     });
 
     this.socket.on('booking_reminder', (data: any) => {
       log('Booking reminder:', data);
       this.emit('booking_reminder', data);
-      this.showTelegramNotification('Booking Reminder', `You have an upcoming appointment in ${data.timeUntil}.`);
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Нагадування' : l === 'ru' ? 'Напоминание' : 'Booking Reminder',
+        l === 'uk' ? `У вас запис через ${data.timeUntil}.` : l === 'ru' ? `У вас запись через ${data.timeUntil}.` : `You have an upcoming appointment in ${data.timeUntil}.`
+      );
     });
 
     // Payment events
     this.socket.on('payment_completed', (data: any) => {
       log('Payment completed:', data);
       this.emit('payment_completed', data);
-      this.showTelegramNotification('Payment Successful', 'Your payment has been processed successfully.');
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Оплата успішна' : l === 'ru' ? 'Оплата успешна' : 'Payment Successful',
+        l === 'uk' ? 'Ваш платіж оброблено успішно.' : l === 'ru' ? 'Ваш платёж обработан успешно.' : 'Your payment has been processed successfully.'
+      );
     });
 
     this.socket.on('payment_failed', (data: any) => {
       log('Payment failed:', data);
       this.emit('payment_failed', data);
-      this.showTelegramNotification('Payment Failed', 'There was an issue processing your payment.');
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Помилка оплати' : l === 'ru' ? 'Ошибка оплаты' : 'Payment Failed',
+        l === 'uk' ? 'Виникла проблема з обробкою платежу.' : l === 'ru' ? 'Возникла проблема с обработкой платежа.' : 'There was an issue processing your payment.'
+      );
     });
 
     // Specialist status events
@@ -193,7 +213,11 @@ class WebSocketService {
     this.socket.on('new_message', (data: any) => {
       log('New message:', data);
       this.emit('new_message', data);
-      this.showTelegramNotification('New Message', `You have a new message from ${data.senderName}.`);
+      const l = this.getLocale();
+      this.showTelegramNotification(
+        l === 'uk' ? 'Нове повідомлення' : l === 'ru' ? 'Новое сообщение' : 'New Message',
+        l === 'uk' ? `У вас нове повідомлення від ${data.senderName}.` : l === 'ru' ? `У вас новое сообщение от ${data.senderName}.` : `You have a new message from ${data.senderName}.`
+      );
     });
 
     // System notifications
@@ -208,6 +232,20 @@ class WebSocketService {
       log('Message:', message);
       this.emit(message.type, message.data);
     });
+  }
+
+  /**
+   * Get current locale from storage
+   */
+  private getLocale(): 'en' | 'uk' | 'ru' {
+    try {
+      const stored = localStorage.getItem('miyzapis_locale');
+      if (stored === 'uk' || stored === 'ru') return stored;
+      const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
+      if (tgLang?.startsWith('uk')) return 'uk';
+      if (tgLang?.startsWith('ru')) return 'ru';
+    } catch {}
+    return 'en';
   }
 
   /**

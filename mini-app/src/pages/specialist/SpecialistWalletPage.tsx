@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistWalletStrings, commonStrings } from '@/utils/translations';
 
 interface WalletData {
@@ -218,14 +218,14 @@ export const SpecialistWalletPage: React.FC = () => {
               <Wallet size={20} className="opacity-80" />
             </div>
             <div className="text-3xl font-bold mb-3">
-              {'\u20B4'}{(wallet?.balance || 0).toLocaleString('uk-UA')}
+              {formatCurrency(wallet?.balance || 0, wallet?.currency, locale)}
             </div>
 
             {/* Pending Balance */}
             <div className="flex items-center gap-2 text-sm opacity-80">
               <Clock size={14} />
               <span>
-                {t(specialistWalletStrings, 'pendingBalance', locale)}: {'\u20B4'}{(wallet?.pendingBalance || 0).toLocaleString('uk-UA')}
+                {t(specialistWalletStrings, 'pendingBalance', locale)}: {formatCurrency(wallet?.pendingBalance || 0, wallet?.currency, locale)}
               </span>
             </div>
           </div>
@@ -275,7 +275,7 @@ export const SpecialistWalletPage: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-text-primary">
-                      {'\u20B4'}{payout.amount.toLocaleString('uk-UA')}
+                      {formatCurrency(payout.amount, payout.currency, locale)}
                     </p>
                     <p className="text-xs text-text-secondary">
                       {new Date(payout.createdAt).toLocaleDateString(
@@ -304,12 +304,12 @@ export const SpecialistWalletPage: React.FC = () => {
           <div className="bg-bg-secondary rounded-xl p-4 text-center">
             <p className="text-xs text-text-secondary mb-1">{t(specialistWalletStrings, 'balance', locale)}</p>
             <p className="text-2xl font-bold text-text-primary">
-              {'\u20B4'}{(wallet?.balance || 0).toLocaleString('uk-UA')}
+              {formatCurrency(wallet?.balance || 0, wallet?.currency, locale)}
             </p>
           </div>
 
           <Input
-            label={t(specialistWalletStrings, 'amount', locale) + ' (\u20B4)'}
+            label={t(specialistWalletStrings, 'amount', locale)}
             type="number"
             value={payoutAmount}
             onChange={e => setPayoutAmount(e.target.value)}

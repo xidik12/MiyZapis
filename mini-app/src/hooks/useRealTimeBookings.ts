@@ -90,10 +90,10 @@ export const useRealTimeBookings = () => {
     try {
       const response = await fetch(`/api/bookings/user/${user.id}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('booking_app_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('booking_app_token')}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setBookings(data.bookings || []);
@@ -156,7 +156,7 @@ export const useRealTimeBookings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('booking_app_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('booking_app_token')}`
         },
         body: JSON.stringify({ reason })
       });

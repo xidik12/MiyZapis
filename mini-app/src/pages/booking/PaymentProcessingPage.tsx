@@ -21,7 +21,7 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { paymentProcessingStrings, commonStrings } from '@/utils/translations';
 
 type PaymentMethod = 'telegram' | 'card' | 'wallet' | 'cash';
@@ -250,7 +250,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{p('total')}</span>
-                  <span className="text-accent-primary text-sm font-bold">${booking.service.price}</span>
+                  <span className="text-accent-primary text-sm font-bold">{formatCurrency(booking.service.price, booking.service.currency, locale)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary text-sm">{locale === 'uk' ? 'Метод' : locale === 'ru' ? 'Метод' : 'Method'}</span>
@@ -361,7 +361,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">{p('total')}</span>
                   <span className="text-xl font-bold text-accent-primary">
-                    ${booking.service.price}
+                    {formatCurrency(booking.service.price, booking.service.currency, locale)}
                   </span>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export const PaymentProcessingPage: React.FC = () => {
       {/* Fixed Bottom Pay Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary/95 backdrop-blur-xl border-t border-white/5 p-4 z-20">
         <Button onClick={handlePayment} size="lg" className="w-full">
-          {p('payNow')} - ${booking.service.price}
+          {p('payNow')} - {formatCurrency(booking.service.price, booking.service.currency, locale)}
         </Button>
       </div>
     </div>

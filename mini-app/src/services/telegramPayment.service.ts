@@ -219,7 +219,7 @@ class TelegramPaymentService {
       providerToken: import.meta.env.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN || '',
       currency: bookingData.currency,
       amount: Math.round(bookingData.amount * 100), // Convert to cents
-      photoUrl: '/api/placeholder/400/300',
+      photoUrl: undefined,
       needName: true,
       needPhoneNumber: true,
       needEmail: false,
@@ -335,7 +335,7 @@ class TelegramPaymentService {
    * Get auth token from storage
    */
   private getAuthToken(): string {
-    return localStorage.getItem('booking_app_token') || '';
+    return localStorage.getItem('authToken') || localStorage.getItem('booking_app_token') || '';
   }
 
   /**

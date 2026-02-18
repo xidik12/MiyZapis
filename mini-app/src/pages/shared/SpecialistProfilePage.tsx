@@ -30,7 +30,7 @@ import {
   fetchSpecialistServicesAsync,
 } from '@/store/slices/specialistsSlice';
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistProfileStrings, commonStrings } from '@/utils/translations';
 
 export const SpecialistProfilePage: React.FC = () => {
@@ -166,12 +166,16 @@ export const SpecialistProfilePage: React.FC = () => {
         {/* Profile Header */}
         <div className="px-4 py-6 bg-gradient-to-b from-accent-primary to-accent-primary/80 text-white">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20">
-              <img
-                src={selectedSpecialist.avatar || '/api/placeholder/80/80'}
-                alt={selectedSpecialist.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
+              {selectedSpecialist.avatar ? (
+                <img
+                  src={selectedSpecialist.avatar}
+                  alt={selectedSpecialist.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User size={32} className="text-white/60" />
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -356,7 +360,7 @@ export const SpecialistProfilePage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <DollarSign size={14} />
-                          ${service.price}
+                          {formatCurrency(service.price, undefined, locale)}
                         </div>
                       </div>
                     </div>
@@ -428,12 +432,16 @@ export const SpecialistProfilePage: React.FC = () => {
                   {reviews.map((review) => (
                     <Card key={review.id}>
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden">
-                          <img
-                            src={review.customer.avatar || '/api/placeholder/40/40'}
-                            alt={`${review.customer.firstName} ${review.customer.lastName}`}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
+                          {review.customer.avatar ? (
+                            <img
+                              src={review.customer.avatar}
+                              alt={`${review.customer.firstName} ${review.customer.lastName}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User size={18} className="text-text-muted" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">

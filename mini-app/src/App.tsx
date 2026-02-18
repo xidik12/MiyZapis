@@ -75,6 +75,10 @@ const SpecialistWalletPage = lazy(() => import('@/pages/specialist/SpecialistWal
 // Phase 6: Specialist Onboarding
 const OnboardingPage = lazy(() => import('@/pages/specialist/OnboardingPage'), 'OnboardingPage');
 
+// Phase 7: Specialist Finances & Loyalty
+const SpecialistFinancesPage = lazy(() => import('@/pages/specialist/SpecialistFinancesPage'), 'SpecialistFinancesPage');
+const SpecialistLoyaltyPage = lazy(() => import('@/pages/specialist/SpecialistLoyaltyPage'), 'SpecialistLoyaltyPage');
+
 // Wraps lazy page with Suspense + per-page error boundary
 const Page: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <PageErrorBoundary>
@@ -387,6 +391,24 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="specialist">
                       <Page><OnboardingPage /></Page>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 7: Specialist Finances & Loyalty */}
+                <Route
+                  path="/specialist/finances"
+                  element={
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistFinancesPage /></Page>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/loyalty"
+                  element={
+                    <ProtectedRoute requiredRole="specialist">
+                      <Page><SpecialistLoyaltyPage /></Page>
                     </ProtectedRoute>
                   }
                 />

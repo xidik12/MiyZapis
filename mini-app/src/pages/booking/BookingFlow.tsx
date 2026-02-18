@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { bookingFlowStrings, commonStrings } from '@/utils/translations';
 import { createBookingAsync } from '@/store/slices/bookingsSlice';
 import { fetchServiceAsync } from '@/store/slices/servicesSlice';
@@ -358,7 +358,7 @@ export const BookingFlow: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold text-accent-primary">${selectedService.price}</span>
+                  <span className="font-semibold text-accent-primary">{formatCurrency(selectedService.price, undefined, locale)}</span>
                 </div>
               </div>
             </div>
@@ -583,7 +583,7 @@ export const BookingFlow: React.FC = () => {
             <div className="border-t border-white/5 pt-3 mt-3">
               <div className="flex justify-between text-lg font-semibold">
                 <span className="text-text-primary">{t(bookingFlowStrings, 'total', locale)}:</span>
-                <span className="text-accent-primary">${selectedService.price}</span>
+                <span className="text-accent-primary">{formatCurrency(selectedService.price, undefined, locale)}</span>
               </div>
             </div>
           </div>

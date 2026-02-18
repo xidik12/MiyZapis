@@ -68,6 +68,7 @@ interface ServicesState {
     sort?: string;
     minPrice?: number;
     maxPrice?: number;
+    city?: string;
   };
 }
 
@@ -96,6 +97,7 @@ export const fetchServicesAsync = createAsyncThunk(
     category?: string;
     search?: string;
     sort?: string;
+    city?: string;
   }) => {
     const response: any = await apiService.getServices(params);
     // API returns { services: [...], total, page, totalPages }

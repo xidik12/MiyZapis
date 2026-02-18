@@ -117,8 +117,14 @@ class ApiService {
     category?: string;
     search?: string;
     sort?: string;
+    city?: string;
   }): Promise<PaginatedResponse<any>> {
     return this.get('/services', params);
+  }
+
+  async getCities(params?: { search?: string }): Promise<{ city: string; state?: string; count: number }[]> {
+    const response: any = await this.get('/locations/cities', params);
+    return response?.cities || response || [];
   }
 
   async getService(id: string) {
@@ -605,7 +611,7 @@ class ApiService {
   }
 
   async requestPayout(data: { amount: number; method?: string }) {
-    return this.post('/payments/wallet/balance', data);
+    return this.post('/payments/wallet/payout', data);
   }
 
   // ==================== Onboarding ====================
@@ -642,6 +648,68 @@ class ApiService {
   // ==================== Help Contact Methods ====================
   async getContactMethods() {
     return this.get('/help/contact-methods');
+  }
+
+  // ==================== Expenses ====================
+  async getExpenses(params?: {
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }) {
+    return this.get('/expenses', params);
+  }
+
+  async getExpenseSummary(params?: { startDate?: string; endDate?: string }) {
+    return this.get('/expenses/summary', params);
+  }
+
+  async createExpense(data: {
+    category: string;
+    amount: number;
+    description?: string;
+    date?: string;
+    recurring?: boolean;
+    frequency?: string;
+    notes?: string;
+  }) {
+    return this.post('/expenses', data);
+  }
+
+  async updateExpense(id: string, data: {
+    category?: string;
+    amount?: number;
+    description?: string;
+    date?: string;
+    recurring?: boolean;
+    frequency?: string;
+    notes?: string;
+  }) {
+    return this.put(`/expenses/${id}`, data);
+  }
+
+  async deleteExpense(id: string) {
+    return this.delete(`/expenses/${id}`);
+  }
+
+  // ==================== Loyalty (extended) ====================
+  async getLoyaltyProfile() {
+    return this.get('/loyalty/profile');
+  }
+
+  async getLoyaltyTiers() {
+    return this.get('/loyalty/tiers');
+  }
+
+  async getLoyaltyBadges() {
+    return this.get('/loyalty/badges');
+  }
+
+  async getLoyaltyConfig() {
+    return this.get('/loyalty/config');
   }
 
   // Health check
