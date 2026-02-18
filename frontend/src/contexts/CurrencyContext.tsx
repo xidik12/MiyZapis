@@ -46,10 +46,12 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
   // Backend stores prices in USD, so default fromCurrency is 'USD'
   const convertPrice = (price: number, fromCurrency: Currency = 'USD'): number => {
-    if (fromCurrency === currency) return price;
+    const num = Number(price);
+    if (isNaN(num)) return 0;
+    if (fromCurrency === currency) return num;
 
     // Convert to UAH first (base currency)
-    const priceInUAH = fromCurrency === 'UAH' ? price : price * EXCHANGE_RATES[fromCurrency];
+    const priceInUAH = fromCurrency === 'UAH' ? num : num * EXCHANGE_RATES[fromCurrency];
 
     // Convert from UAH to target currency
     if (currency === 'UAH') return Math.round(priceInUAH * 100) / 100;
@@ -59,12 +61,13 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Format price with currency symbol
   // Changed default fromCurrency to 'USD' because backend stores prices in USD
   const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'USD'): string => {
-    // Handle undefined/null prices
-    if (price == null || isNaN(price)) {
+    // Coerce to number — API may return string amounts like "50.00"
+    const numPrice = Number(price);
+    if (price == null || isNaN(numPrice)) {
       return `${getCurrencySymbol(currency)}0`;
     }
 
-    const convertedPrice = convertPrice(price, fromCurrency);
+    const convertedPrice = convertPrice(numPrice, fromCurrency);
     const symbol = getCurrencySymbol(currency);
 
     // Smart formatting: whole numbers when no cents, .XX only when there are real cents
