@@ -119,12 +119,24 @@ class ApiService {
     sort?: string;
     city?: string;
   }): Promise<PaginatedResponse<any>> {
-    return this.get('/services', params);
+    // Backend expects 'query' not 'search'
+    const apiParams: any = { ...params };
+    if (apiParams.search) {
+      apiParams.query = apiParams.search;
+      delete apiParams.search;
+    }
+    return this.get('/services', apiParams);
   }
 
   async getCities(params?: { search?: string }): Promise<{ city: string; state?: string; count: number }[]> {
     const response: any = await this.get('/locations/cities', params);
-    return response?.cities || response || [];
+    const cities = response?.cities || response || [];
+    // Backend returns specialistsCount, normalize to count
+    return cities.map((c: any) => ({
+      city: c.city,
+      state: c.state,
+      count: c.specialistsCount ?? c.count ?? 0,
+    }));
   }
 
   async getService(id: string) {

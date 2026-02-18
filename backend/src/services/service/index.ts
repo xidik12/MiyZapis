@@ -589,7 +589,8 @@ export class ServiceService {
     maxPrice?: number,
     sortBy: 'price' | 'rating' | 'newest' = 'newest',
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    city?: string
   ): Promise<{
     services: ServiceWithDetails[];
     total: number;
@@ -619,6 +620,13 @@ export class ServiceService {
 
       if (category) {
         where.category = category;
+      }
+
+      if (city) {
+        where.specialist = {
+          ...where.specialist,
+          city: { equals: city, mode: 'insensitive' },
+        };
       }
 
       if (minPrice !== undefined || maxPrice !== undefined) {

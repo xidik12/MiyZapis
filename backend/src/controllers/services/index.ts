@@ -424,6 +424,7 @@ export class ServiceController {
       const {
         query,
         category,
+        city,
         minPrice,
         maxPrice,
         sortBy = 'newest',
@@ -438,7 +439,8 @@ export class ServiceController {
         maxPrice ? parseFloat(maxPrice as string) : undefined,
         sortBy as 'price' | 'rating' | 'newest',
         parseInt(page as string, 10),
-        parseInt(limit as string, 10)
+        parseInt(limit as string, 10),
+        city as string
       );
 
       res.json(
