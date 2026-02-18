@@ -1,4 +1,5 @@
 import { TelegramPaymentData } from '@/types';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 export interface PaymentParams {
   title: string;
@@ -33,6 +34,7 @@ export interface PaymentResult {
 
 class TelegramPaymentService {
   private readonly webApp = window.Telegram?.WebApp;
+  private readonly apiBaseUrl = import.meta.env.VITE_API_URL || '/api/v1';
 
   /**
    * Check if Telegram Payments is available
@@ -94,7 +96,7 @@ class TelegramPaymentService {
    * Create invoice URL via backend API
    */
   private async createInvoiceUrl(params: any): Promise<string> {
-    const response = await fetch('/api/payments/create-invoice', {
+    const response = await fetch(`${this.apiBaseUrl}/payments/create-invoice`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,7 +153,7 @@ class TelegramPaymentService {
    */
   async validatePreCheckout(preCheckoutQueryId: string, payload: string): Promise<boolean> {
     try {
-      const response = await fetch('/api/payments/validate-precheckout', {
+      const response = await fetch(`${this.apiBaseUrl}/payments/validate-precheckout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +177,7 @@ class TelegramPaymentService {
    */
   async processSuccessfulPayment(paymentData: any): Promise<boolean> {
     try {
-      const response = await fetch('/api/payments/process-payment', {
+      const response = await fetch(`${this.apiBaseUrl}/payments/process-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -268,7 +270,7 @@ class TelegramPaymentService {
     reason: string;
   }): Promise<boolean> {
     try {
-      const response = await fetch('/api/payments/refund', {
+      const response = await fetch(`${this.apiBaseUrl}/payments/refund`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -289,7 +291,7 @@ class TelegramPaymentService {
    */
   async getPaymentHistory(userId: string): Promise<any[]> {
     try {
-      const response = await fetch(`/api/payments/history/${userId}`, {
+      const response = await fetch(`${this.apiBaseUrl}/payments/history/${userId}`, {
         headers: {
           Authorization: `Bearer ${this.getAuthToken()}`
         }
@@ -335,7 +337,7 @@ class TelegramPaymentService {
    * Get auth token from storage
    */
   private getAuthToken(): string {
-    return localStorage.getItem('authToken') || localStorage.getItem('booking_app_token') || '';
+    return telegramAuthService.getToken() || '';
   }
 
   /**

@@ -15,8 +15,6 @@ export const securityHeaders = helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'", // Allow eval for Stripe and Google OAuth
         "https://accounts.google.com",
         "https://*.google.com",
         "https://apis.google.com",

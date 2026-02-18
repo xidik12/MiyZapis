@@ -15,6 +15,7 @@ import { ConditionalLayout } from './components/layout/ConditionalLayout';
 import SpecialistLayout from './components/layout/SpecialistLayout';
 import CustomerLayout from './components/layout/CustomerLayout';
 import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
+import { SocketProvider } from './providers/SocketProvider';
 
 // Lazy load pages for better performance
 const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
@@ -167,16 +168,14 @@ function App() {
     initializeAuth();
   }, [dispatch, isAuthenticated]);
 
-  // Show loading screen while initializing
-  if (isInitializing) {
-    return <SuspenseLoader />;
-  }
-
   return (
     <ThemeProvider>
       <LanguageProvider>
         <CurrencyProvider>
-          {/* <SocketProvider> */}
+          <SocketProvider>
+            {isInitializing ? (
+              <SuspenseLoader />
+            ) : (
             <div className="App min-h-screen transition-colors duration-300 relative prevent-overflow">
               {/* <FloatingElements /> */}
               <Routes>
@@ -728,7 +727,8 @@ function App() {
           } />
             </Routes>
           </div>
-          {/* </SocketProvider> */}
+            )}
+          </SocketProvider>
         </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>

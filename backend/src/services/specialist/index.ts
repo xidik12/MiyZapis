@@ -2,6 +2,7 @@ import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { Specialist, User, Service } from '@prisma/client';
 import { convertCurrency } from '@/utils/currency';
+import { encryptField, decryptField } from '@/utils/encryption';
 
 interface CreateSpecialistData {
   businessName?: string;
@@ -169,7 +170,7 @@ export class SpecialistService {
           parkingInfo: data.parkingInfo,
           accessInstructions: data.accessInstructions,
           paymentMethods: JSON.stringify(data.paymentMethods || []),
-          bankDetails: JSON.stringify(data.bankDetails || {}),
+          bankDetails: encryptField(JSON.stringify(data.bankDetails || {})),
           paymentQrCodeUrl: data.paymentQrCodeUrl ?? null,
           serviceArea: JSON.stringify(data.serviceArea || {}),
           notifications: JSON.stringify(data.notifications || {}),
@@ -337,7 +338,7 @@ export class SpecialistService {
           ...(data.parkingInfo !== undefined && { parkingInfo: data.parkingInfo }),
           ...(data.accessInstructions !== undefined && { accessInstructions: data.accessInstructions }),
           ...(data.paymentMethods && { paymentMethods: JSON.stringify(data.paymentMethods) }),
-          ...(data.bankDetails !== undefined && { bankDetails: data.bankDetails ? JSON.stringify(data.bankDetails) : null }),
+          ...(data.bankDetails !== undefined && { bankDetails: data.bankDetails ? encryptField(JSON.stringify(data.bankDetails)) : null }),
           ...(data.paymentQrCodeUrl !== undefined && { paymentQrCodeUrl: data.paymentQrCodeUrl }),
           ...(data.serviceArea && { serviceArea: JSON.stringify(data.serviceArea) }),
           ...(data.notifications && { notifications: JSON.stringify(data.notifications) }),
@@ -473,7 +474,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
-        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails, {}),
+        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails ? decryptField(specialist.bankDetails) : null, {}),
         paymentQrCodeUrl: specialist.paymentQrCodeUrl,
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
@@ -539,7 +540,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
-        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails, {}),
+        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails ? decryptField(specialist.bankDetails) : null, {}),
         paymentQrCodeUrl: specialist.paymentQrCodeUrl,
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
@@ -675,7 +676,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
-        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails, {}),
+        bankDetails: SpecialistService.parseJsonField(specialist.bankDetails ? decryptField(specialist.bankDetails) : null, {}),
         paymentQrCodeUrl: specialist.paymentQrCodeUrl,
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),

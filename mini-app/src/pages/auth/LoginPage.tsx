@@ -13,6 +13,7 @@ import { telegramAuthAsync, registerAsync, clearError, setCredentials } from '@/
 import { addToast } from '@/store/slices/uiSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { loginStrings, commonStrings } from '@/utils/translations';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
@@ -131,8 +132,7 @@ export const LoginPage: React.FC = () => {
         const { tokens, user: rawUser } = data.data;
         const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || '';
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('booking_app_token', authToken);
+        telegramAuthService.setTokens(authToken);
         dispatch(setCredentials({ user, token: authToken }));
 
         // Auto-link Telegram if inside Telegram
@@ -190,8 +190,7 @@ export const LoginPage: React.FC = () => {
         const { tokens, user: rawUser, token } = data.data;
         const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('booking_app_token', authToken);
+        telegramAuthService.setTokens(authToken);
         dispatch(setCredentials({ user, token: authToken }));
         dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));
         hapticFeedback.notificationSuccess();
@@ -229,8 +228,7 @@ export const LoginPage: React.FC = () => {
         const { tokens, user: rawUser, token } = data.data;
         const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('booking_app_token', authToken);
+        telegramAuthService.setTokens(authToken);
         dispatch(setCredentials({ user, token: authToken }));
 
         // Auto-link Telegram if inside Telegram
@@ -297,8 +295,7 @@ export const LoginPage: React.FC = () => {
         const { tokens, user: rawUser, token } = data.data;
         const user = normalizeUser(rawUser);
         const authToken = tokens?.accessToken || tokens?.token || token || '';
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('booking_app_token', authToken);
+        telegramAuthService.setTokens(authToken);
         dispatch(setCredentials({ user, token: authToken }));
         dispatch(addToast({ type: 'success', title: s('regComplete'), message: s('regSuccess') }));
         hapticFeedback.notificationSuccess();

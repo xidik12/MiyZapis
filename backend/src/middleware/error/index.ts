@@ -4,6 +4,42 @@ import { logger } from '@/utils/logger';
 import { createErrorResponse } from '@/utils/response';
 import { ErrorCodes } from '@/types';
 
+// Fields to redact from logged request bodies
+const SENSITIVE_FIELDS = new Set([
+  'password', 'newPassword', 'oldPassword', 'currentPassword', 'confirmPassword',
+  'token', 'refreshToken', 'accessToken', 'authToken',
+  'secret', 'apiKey', 'apiSecret',
+  'creditCard', 'cardNumber', 'cvv', 'cvc', 'expiryDate',
+  'bankDetails', 'accountNumber', 'routingNumber', 'iban', 'swiftCode',
+  'ssn', 'socialSecurityNumber',
+  'providerToken', 'stripeToken', 'paypalToken',
+]);
+
+// Redact sensitive fields from an object (shallow + nested)
+const redactSensitiveFields = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') return obj;
+  const redacted: any = Array.isArray(obj) ? [] : {};
+  for (const key of Object.keys(obj)) {
+    if (SENSITIVE_FIELDS.has(key)) {
+      redacted[key] = '[REDACTED]';
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      redacted[key] = redactSensitiveFields(obj[key]);
+    } else {
+      redacted[key] = obj[key];
+    }
+  }
+  return redacted;
+};
+
+// Redact authorization header
+const redactHeaders = (headers: any): any => {
+  if (!headers) return headers;
+  const redacted = { ...headers };
+  if (redacted.authorization) redacted.authorization = '[REDACTED]';
+  if (redacted.cookie) redacted.cookie = '[REDACTED]';
+  return redacted;
+};
+
 // Global error handler
 export const errorHandler = (
   error: any,
@@ -20,8 +56,8 @@ export const errorHandler = (
     request: {
       method: req.method,
       url: req.originalUrl,
-      headers: req.headers,
-      body: req.body,
+      headers: redactHeaders(req.headers),
+      body: redactSensitiveFields(req.body),
       params: req.params,
       query: req.query,
       ip: req.ip,

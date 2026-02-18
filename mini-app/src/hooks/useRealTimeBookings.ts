@@ -5,6 +5,7 @@ import { Booking } from '@/types';
 import { t } from '@/hooks/useLocale';
 import { realTimeBookingStrings } from '@/utils/translations';
 import type { Locale } from '@/utils/categories';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 interface BookingUpdate {
   id: string;
@@ -18,50 +19,6 @@ export const useRealTimeBookings = () => {
   const { user, hapticFeedback, showAlert } = useTelegram();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Handle booking updates
-  const handleBookingUpdate = useCallback((update: BookingUpdate) => {
-    setBookings(prevBookings => {
-      return prevBookings.map(booking => {
-        if (booking.id === update.id) {
-          const updatedBooking = {
-            ...booking,
-            ...update.changes,
-            status: update.status as any,
-            updatedAt: new Date().toISOString()
-          };
-          
-          // Show notification for significant changes
-          if (update.updatedBy !== 'customer') {
-            showNotificationForBookingUpdate(updatedBooking, update);
-          }
-          
-          return updatedBooking;
-        }
-        return booking;
-      });
-    });
-  }, [hapticFeedback, showAlert]);
-
-  // Handle booking confirmation
-  const handleBookingConfirmed = useCallback((update: BookingUpdate) => {
-    hapticFeedback.notificationSuccess();
-    handleBookingUpdate(update);
-  }, [handleBookingUpdate, hapticFeedback]);
-
-  // Handle booking cancellation
-  const handleBookingCancelled = useCallback((update: BookingUpdate) => {
-    hapticFeedback.notificationError();
-    handleBookingUpdate(update);
-  }, [handleBookingUpdate, hapticFeedback]);
-
-  // Handle booking reminders
-  const handleBookingReminder = useCallback((data: any) => {
-    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
-    const rt = (key: string) => t(realTimeBookingStrings, key, locale);
-    hapticFeedback.notificationWarning();
-    showAlert(`${rt('appointmentReminder')}: ${data.timeUntil}`);
-  }, [hapticFeedback, showAlert]);
 
   // Show notification for booking updates
   const showNotificationForBookingUpdate = useCallback(async (booking: Booking, update: BookingUpdate) => {
@@ -89,6 +46,50 @@ export const useRealTimeBookings = () => {
     await showAlert(message);
   }, [showAlert]);
 
+  // Handle booking updates
+  const handleBookingUpdate = useCallback((update: BookingUpdate) => {
+    setBookings(prevBookings => {
+      return prevBookings.map(booking => {
+        if (booking.id === update.id) {
+          const updatedBooking = {
+            ...booking,
+            ...update.changes,
+            status: update.status as any,
+            updatedAt: new Date().toISOString()
+          };
+
+          // Show notification for significant changes
+          if (update.updatedBy !== 'customer') {
+            showNotificationForBookingUpdate(updatedBooking, update);
+          }
+
+          return updatedBooking;
+        }
+        return booking;
+      });
+    });
+  }, [showNotificationForBookingUpdate]);
+
+  // Handle booking confirmation
+  const handleBookingConfirmed = useCallback((update: BookingUpdate) => {
+    hapticFeedback.notificationSuccess();
+    handleBookingUpdate(update);
+  }, [handleBookingUpdate, hapticFeedback]);
+
+  // Handle booking cancellation
+  const handleBookingCancelled = useCallback((update: BookingUpdate) => {
+    hapticFeedback.notificationError();
+    handleBookingUpdate(update);
+  }, [handleBookingUpdate, hapticFeedback]);
+
+  // Handle booking reminders
+  const handleBookingReminder = useCallback((data: any) => {
+    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+    const rt = (key: string) => t(realTimeBookingStrings, key, locale);
+    hapticFeedback.notificationWarning();
+    showAlert(`${rt('appointmentReminder')}: ${data.timeUntil}`);
+  }, [hapticFeedback, showAlert]);
+
   // Fetch initial bookings
   const fetchBookings = useCallback(async () => {
     if (!user) return;
@@ -97,7 +98,7 @@ export const useRealTimeBookings = () => {
     try {
       const response = await fetch(`/api/bookings/user/${user.id}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('booking_app_token')}`
+          'Authorization': `Bearer ${telegramAuthService.getToken()}`
         }
       });
 
@@ -163,7 +164,7 @@ export const useRealTimeBookings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('booking_app_token')}`
+          'Authorization': `Bearer ${telegramAuthService.getToken()}`
         },
         body: JSON.stringify({ reason })
       });
@@ -187,7 +188,7 @@ export const useRealTimeBookings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('booking_app_token')}`
+          'Authorization': `Bearer ${telegramAuthService.getToken()}`
         },
         body: JSON.stringify({ 
           newDate, 

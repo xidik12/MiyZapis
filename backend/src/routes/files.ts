@@ -79,42 +79,7 @@ router.get('/test-notifications', authMiddleware, async (req, res) => {
   }
 });
 
-// Database test endpoint
-router.get('/test-db', authMiddleware, async (req, res) => {
-  try {
-    const { prisma } = require('@/config/database');
-    
-    // Test database connection
-    const userCount = await prisma.user.count();
-    
-    // Try to access notification table
-    let notificationCount = 0;
-    let notificationError = null;
-    try {
-      notificationCount = await prisma.notification.count();
-    } catch (error) {
-      notificationError = error instanceof Error ? error.message : String(error);
-    }
-    
-    res.json({ 
-      success: true, 
-      message: 'Database connection test',
-      data: {
-        userCount,
-        notificationCount,
-        notificationError,
-        hasNotificationTable: !notificationError
-      }
-    });
-  } catch (error) {
-    logger.error('Database test error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Database connection failed',
-      details: error instanceof Error ? error.message : String(error)
-    });
-  }
-});
+// Database test endpoint removed for security — was leaking internal info to any authenticated user
 
 // Robust file upload that works on Railway
 router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, async (req, res) => {

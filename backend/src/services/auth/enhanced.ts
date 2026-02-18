@@ -503,7 +503,7 @@ export class EnhancedAuthService {
       }
 
       // ADMIN users should always keep their admin role
-      if (user.userType === 'admin' || user.userType === 'ADMIN') {
+      if (user.userType === 'ADMIN') {
         // Update only last login, preserve admin userType
         await prisma.user.update({
           where: { id: user.id },
@@ -515,7 +515,6 @@ export class EnhancedAuthService {
 
         // Remove password from user object
         const { password, ...userWithoutPassword } = user;
-        userWithoutPassword.userType = 'admin'; // Ensure lowercase admin
 
         // Create tokens
         const tokens = await this.createTokens(userWithoutPassword);
@@ -739,7 +738,7 @@ export class EnhancedAuthService {
         await emailService.sendWelcomeEmail(user.id, user.language || 'en');
       } else {
         // Existing user - ADMIN users should always keep their admin role
-        if (user.userType === 'admin' || user.userType === 'ADMIN') {
+        if (user.userType === 'ADMIN') {
           // Update only last login, preserve admin userType
           await prisma.user.update({
             where: { id: user.id },
@@ -750,8 +749,6 @@ export class EnhancedAuthService {
               // Don't update userType for admin users
             },
           });
-
-          user.userType = 'admin'; // Ensure lowercase admin
         } else {
           // Non-admin existing user - check available roles
           const hasCustomerRole = user.userType === 'CUSTOMER';

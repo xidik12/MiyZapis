@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTelegramWebApp, UseTelegramWebAppReturn } from '@/hooks/useTelegramWebApp';
 import { setCredentials } from '@/store/slices/authSlice';
@@ -6,6 +6,7 @@ import { User } from '@/types';
 import { t } from '@/hooks/useLocale';
 import { commonStrings } from '@/utils/translations';
 import type { Locale } from '@/utils/categories';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
@@ -42,37 +43,6 @@ function parseInitData(initData: string): { authDate: number; hash: string } | n
   }
 }
 
-/** Store auth tokens in both localStorage keys for compatibility */
-function storeTokens(token: string, refreshToken?: string) {
-  localStorage.setItem('authToken', token);
-  localStorage.setItem('booking_app_token', token);
-  if (refreshToken) {
-    localStorage.setItem('booking_app_refresh_token', refreshToken);
-  }
-}
-
-/** Get stored auth token */
-function getStoredToken(): string | null {
-  return localStorage.getItem('authToken') || localStorage.getItem('booking_app_token');
-}
-
-/** Check if stored token is still valid (not expired) */
-function isTokenValid(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp > Date.now() / 1000;
-  } catch {
-    return false;
-  }
-}
-
-/** Clear all auth tokens */
-function clearTokens() {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('booking_app_token');
-  localStorage.removeItem('booking_app_refresh_token');
-}
-
 interface TelegramProviderProps {
   children: React.ReactNode;
 }
@@ -84,6 +54,15 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const interceptorsSetup = useRef(false);
+
+  // Setup axios interceptors once on mount
+  useEffect(() => {
+    if (!interceptorsSetup.current) {
+      telegramAuthService.setupAxiosInterceptors();
+      interceptorsSetup.current = true;
+    }
+  }, []);
 
   // Authenticate via /auth-enhanced/telegram/webapp endpoint (WebApp initData)
   const authenticateWithTelegram = useCallback(async (): Promise<boolean> => {
@@ -106,7 +85,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         const { tokens, user: authUser, token } = data.data;
         const authToken = tokens?.accessToken || tokens?.token || token || '';
         if (authToken) {
-          storeTokens(authToken, tokens?.refreshToken);
+          telegramAuthService.setTokens(authToken, tokens?.refreshToken);
         }
         // Map backend userType to role for mini-app compatibility
         if (authUser && !authUser.role && authUser.userType) {
@@ -161,8 +140,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         setError(null);
 
         // 1. Check for existing valid token
-        const existingToken = getStoredToken();
-        if (existingToken && isTokenValid(existingToken)) {
+        const existingToken = telegramAuthService.getToken();
+        if (existingToken && telegramAuthService.isAuthenticated()) {
           const restored = await fetchCurrentUser(existingToken);
           if (restored) {
             setIsLoading(false);
@@ -218,7 +197,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
         if (data.success && data.data) {
           const { tokens, user: authUser, token } = data.data;
           const authToken = tokens?.accessToken || tokens?.token || token || '';
-          if (authToken) storeTokens(authToken, tokens?.refreshToken);
+          if (authToken) telegramAuthService.setTokens(authToken, tokens?.refreshToken);
           // Map backend userType to role for mini-app compatibility
           if (authUser && !authUser.role && authUser.userType) {
             authUser.role = authUser.userType.toLowerCase();
@@ -254,7 +233,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
   const logout = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
-      const token = getStoredToken();
+      const token = telegramAuthService.getToken();
       if (token) {
         try {
           await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -263,7 +242,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
           });
         } catch { /* ignore logout API errors */ }
       }
-      clearTokens();
+      telegramAuthService.clearTokens();
       setUser(null);
       setIsAuthenticated(false);
       telegramWebApp.hapticFeedback.impactLight();

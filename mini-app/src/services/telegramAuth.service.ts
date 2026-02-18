@@ -253,44 +253,50 @@ class TelegramAuthService {
   }
 
   /**
-   * Get stored authentication token
+   * Get stored authentication token (single canonical key: authToken)
    */
   getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken') || localStorage.getItem('booking_app_token');
+      return localStorage.getItem('authToken');
     }
     return null;
   }
 
   /**
-   * Get stored refresh token
+   * Get stored refresh token (single canonical key: refresh_token)
    */
   getRefreshToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('booking_app_refresh_token');
+      return localStorage.getItem('refresh_token');
     }
     return null;
   }
 
   /**
-   * Store authentication tokens
+   * Store authentication tokens using canonical keys only.
+   * refreshToken is optional (e.g. some login flows may not return one).
    */
-  private setTokens(token: string, refreshToken: string): void {
+  setTokens(token: string, refreshToken?: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
-      localStorage.setItem('booking_app_token', token);
-      localStorage.setItem('booking_app_refresh_token', refreshToken);
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
     }
   }
 
   /**
-   * Clear stored tokens
+   * Clear stored tokens — removes canonical keys AND legacy keys for migration.
    */
-  private clearTokens(): void {
+  clearTokens(): void {
     if (typeof window !== 'undefined') {
+      // Canonical keys
       localStorage.removeItem('authToken');
+      localStorage.removeItem('refresh_token');
+      // Legacy keys (migration cleanup)
       localStorage.removeItem('booking_app_token');
       localStorage.removeItem('booking_app_refresh_token');
+      localStorage.removeItem('user');
     }
   }
 
@@ -325,8 +331,10 @@ class TelegramAuthService {
             return axios(originalRequest);
           } catch (refreshError) {
             this.clearTokens();
-            // Redirect to login or handle authentication error
-            window.location.reload();
+            // Redirect to login instead of reload to prevent infinite loop
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth';
+            }
             return Promise.reject(refreshError);
           }
         }

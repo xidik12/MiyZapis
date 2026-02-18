@@ -4,7 +4,7 @@
   "description": "Production-ready backend API for booking platform supporting web, Telegram bot, and mini app clients",
   "main": "dist/server.js",
   "scripts": {
-    "build": "npx tsc --skipLibCheck --noEmitOnError false --outDir dist --rootDir src --allowJs true --noImplicitAny false --noImplicitReturns false --noImplicitThis false --strictNullChecks false --strict false || echo 'TypeScript compilation completed with warnings' && npx tsc-alias -p tsconfig.json || echo 'Path resolution completed'",
+    "build": "npx tsc --skipLibCheck --noEmitOnError false || echo 'TypeScript compilation completed with warnings' && npx tsc-alias -p tsconfig.json || echo 'Path resolution completed'",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx watch --inspect src/server.ts",

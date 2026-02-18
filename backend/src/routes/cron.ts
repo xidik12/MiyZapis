@@ -1,8 +1,17 @@
 import express from 'express';
+import crypto from 'crypto';
 import { logger } from '@/utils/logger';
 import { trialExpirationService } from '@/services/trial-expiration.service';
 
 const router = express.Router();
+
+// Timing-safe cron secret verification
+const verifyCronSecret = (provided: string | string[] | undefined): boolean => {
+  const expected = process.env.CRON_SECRET;
+  if (!expected || !provided || typeof provided !== 'string') return false;
+  if (expected.length !== provided.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
+};
 
 /**
  * @route   POST /api/v1/cron/trial-expiration-check
@@ -16,7 +25,7 @@ router.post('/trial-expiration-check', async (req, res) => {
     // In production, you should verify this request is from a trusted source
     // For example, check an API key or IP whitelist
     const cronSecret = req.headers['x-cron-secret'];
-    if (cronSecret !== process.env.CRON_SECRET) {
+    if (!verifyCronSecret(cronSecret)) {
       logger.warn('Unauthorized cron job attempt');
       return res.status(401).json({
         success: false,
@@ -52,7 +61,7 @@ router.post('/trial-expiration-check', async (req, res) => {
 router.post('/seven-day-warnings', async (req, res) => {
   try {
     const cronSecret = req.headers['x-cron-secret'];
-    if (cronSecret !== process.env.CRON_SECRET) {
+    if (!verifyCronSecret(cronSecret)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -80,7 +89,7 @@ router.post('/seven-day-warnings', async (req, res) => {
 router.post('/three-day-warnings', async (req, res) => {
   try {
     const cronSecret = req.headers['x-cron-secret'];
-    if (cronSecret !== process.env.CRON_SECRET) {
+    if (!verifyCronSecret(cronSecret)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -108,7 +117,7 @@ router.post('/three-day-warnings', async (req, res) => {
 router.post('/expire-trials', async (req, res) => {
   try {
     const cronSecret = req.headers['x-cron-secret'];
-    if (cronSecret !== process.env.CRON_SECRET) {
+    if (!verifyCronSecret(cronSecret)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -126,19 +135,6 @@ router.post('/expire-trials', async (req, res) => {
       error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
-});
-
-/**
- * @route   GET /api/v1/cron/health
- * @desc    Health check for cron service
- * @access  Public
- */
-router.get('/health', (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: 'Cron service is healthy',
-    timestamp: new Date().toISOString(),
-  });
 });
 
 export default router;

@@ -10,6 +10,7 @@ import { addMessage, fetchMessageUnreadCountAsync } from '@/store/slices/message
 import { t } from '@/hooks/useLocale';
 import { webSocketNotificationStrings } from '@/utils/translations';
 import type { Locale } from '@/utils/categories';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -46,7 +47,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   // Initialize WebSocket connection when user is authenticated
   useEffect(() => {
     if ((isAuthenticated || telegramAuth) && (user || telegramUser)) {
-      const authToken = token || localStorage.getItem('authToken');
+      const authToken = token || telegramAuthService.getToken();
       if (authToken) {
         setConnectionStatus('connecting');
         webSocketService.connect(user?.id || telegramUser?.id.toString() || '', authToken);

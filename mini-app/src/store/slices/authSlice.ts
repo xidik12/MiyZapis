@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiService } from '../../services/api.service';
+import { telegramAuthService } from '../../services/telegramAuth.service';
 
 export interface User {
   id: string;
@@ -35,7 +36,7 @@ export const loginAsync = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }) => {
     const response = await apiService.login(credentials) as any;
-    localStorage.setItem('authToken', response.token);
+    telegramAuthService.setTokens(response.token, response.refreshToken);
     return response;
   }
 );
@@ -49,8 +50,8 @@ export const registerAsync = createAsyncThunk(
     lastName: string;
     phone?: string;
   }) => {
-    const response = await apiService.register(userData);
-    localStorage.setItem('authToken', response.token);
+    const response = await apiService.register(userData) as any;
+    telegramAuthService.setTokens(response.token, response.refreshToken);
     return response;
   }
 );
@@ -58,8 +59,8 @@ export const registerAsync = createAsyncThunk(
 export const telegramAuthAsync = createAsyncThunk(
   'auth/telegramAuth',
   async (telegramData: any) => {
-    const response = await apiService.telegramAuth(telegramData);
-    localStorage.setItem('authToken', response.token);
+    const response = await apiService.telegramAuth(telegramData) as any;
+    telegramAuthService.setTokens(response.token, response.refreshToken);
     return response;
   }
 );
@@ -69,8 +70,8 @@ export const getMeAsync = createAsyncThunk('auth/getMe', async () => {
 });
 
 export const refreshTokenAsync = createAsyncThunk('auth/refreshToken', async () => {
-  const response = await apiService.refreshToken();
-  localStorage.setItem('authToken', response.token);
+  const response = await apiService.refreshToken() as any;
+  telegramAuthService.setTokens(response.token, response.refreshToken);
   return response;
 });
 
@@ -95,8 +96,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      telegramAuthService.clearTokens();
     },
     clearError: (state) => {
       state.error = null;

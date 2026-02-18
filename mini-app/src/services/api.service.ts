@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { telegramAuthService } from '@/services/telegramAuth.service';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
@@ -31,10 +32,10 @@ class ApiService {
       },
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token (reads from canonical telegramAuthService)
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('authToken');
+        const token = telegramAuthService.getToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -52,8 +53,7 @@ class ApiService {
           // Don't clear for other endpoints that may return 401 for other reasons
           const url = error.config?.url || '';
           if (url.includes('/auth/me') || url.includes('/auth/refresh')) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
+            telegramAuthService.clearTokens();
             window.dispatchEvent(new CustomEvent('auth:logout'));
           }
         }
