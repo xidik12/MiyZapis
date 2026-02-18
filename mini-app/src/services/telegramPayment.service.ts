@@ -33,7 +33,7 @@ export interface PaymentResult {
 }
 
 class TelegramPaymentService {
-  private readonly webApp = window.Telegram?.WebApp;
+  private get webApp() { return window.Telegram?.WebApp; }
   private readonly apiBaseUrl = import.meta.env.VITE_API_URL || '/api/v1';
 
   /**

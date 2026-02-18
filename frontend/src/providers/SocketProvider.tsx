@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { addNotification } from '@/store/slices/notificationSlice';
-import { updateBookingStatus } from '@/store/slices/bookingSlice';
+import { updateBookingLocal } from '@/store/slices/bookingSlice';
 import { socketService } from '@/services/socket.service';
 import { environment } from '@/config/environment';
 import { notificationService } from '@/services/notification.service';
@@ -127,7 +127,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         console.log('Booking status changed:', event);
       }
 
-      dispatch(updateBookingStatus({
+      dispatch(updateBookingLocal({
         bookingId: event.data.bookingId,
         status: event.data.newStatus!,
         booking: event.data.booking,

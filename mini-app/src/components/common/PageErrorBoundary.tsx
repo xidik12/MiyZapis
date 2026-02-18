@@ -5,7 +5,7 @@ import { errorBoundaryStrings, commonStrings } from '@/utils/translations';
 import type { Locale } from '@/utils/categories';
 
 const ErrorFallback: React.FC<{ onRetry: () => void }> = ({ onRetry }) => {
-  const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+  const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
   const s = (key: string) => t(errorBoundaryStrings, key, locale);
   const c = (key: string) => t(commonStrings, key, locale);
   return (

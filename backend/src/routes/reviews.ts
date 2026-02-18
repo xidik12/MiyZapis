@@ -943,72 +943,13 @@ router.post('/:id/helpful', authenticateToken, validateMarkReviewHelpful, async 
   }
 });
 
-// Report review
-router.post('/:id/report', authenticateToken, validateReportReview, async (req: Request, res: Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(
-        createErrorResponse(
-          ErrorCodes.VALIDATION_ERROR,
-          'Invalid report data',
-          req.headers['x-request-id'] as string,
-          formatValidationErrors(errors.array())
-        )
-      );
-    }
-
-    const userId = (req as AuthenticatedRequest).user?.id;
-    const { id } = req.params;
-    const { reason, description } = req.body;
-
-    // Find an admin user to send the notification to
-    const adminUser = await prisma.user.findFirst({
-      where: { userType: 'ADMIN', isActive: true },
-      select: { id: true }
-    });
-
-    if (adminUser) {
-      await prisma.notification.create({
-        data: {
-          userId: adminUser.id,
-          type: 'REVIEW_REPORTED',
-          title: 'Review Reported',
-          message: `Review ${id} has been reported for: ${reason}`,
-          data: JSON.stringify({
-            reviewId: id,
-            reportedBy: userId,
-            reason,
-            description
-          })
-        }
-      });
-    }
-
-    return res.json(createSuccessResponse({
-      message: 'Review report submitted successfully',
-      reviewId: id,
-      reason
-    }));
-  } catch (error) {
-    logger.error('Report review error:', error);
-    return res.status(500).json(
-      createErrorResponse(
-        ErrorCodes.INTERNAL_SERVER_ERROR,
-        'Failed to report review',
-        req.headers['x-request-id'] as string
-      )
-    );
-  }
-});
-
 // Specialist response to review
 router.post('/:id/response', authenticateToken, validateRespondToReview, ReviewController.addSpecialistResponse);
 
 // Review engagement endpoints
 router.post('/:id/react', authenticateToken, ReviewController.reactToReview);
 router.post('/:reviewId/response/react', authenticateToken, ReviewController.reactToResponse);
-router.post('/:id/report', authenticateToken, ReviewController.reportReview);
+router.post('/:id/report', authenticateToken, validateReportReview, ReviewController.reportReview);
 
 // Review comments endpoints (Reddit-style threading)
 router.get('/:reviewId/comments', ReviewController.getReviewComments);

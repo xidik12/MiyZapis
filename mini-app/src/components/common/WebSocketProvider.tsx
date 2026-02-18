@@ -87,7 +87,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       });
     };
 
-    const getLocale = (): Locale => (localStorage.getItem('locale') || 'uk') as Locale;
+    const getLocale = (): Locale => (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
     const ws = (key: string) => t(webSocketNotificationStrings, key, getLocale());
 
     const handleBookingUpdate = (data: any) => {
@@ -154,7 +154,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       handleMessage(data);
     };
 
-    webSocketService.on('notification', handleNotification);
+    webSocketService.on('system_notification', handleNotification);
     webSocketService.on('new_message', handleNewMessage);
 
     // Subscribe to other message types for general handling
@@ -181,7 +181,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       webSocketService.off('booking_updated', handleBookingUpdate);
       webSocketService.off('booking_confirmed', handleBookingConfirmed);
       webSocketService.off('booking_cancelled', handleBookingCancelled);
-      webSocketService.off('notification', handleNotification);
+      webSocketService.off('system_notification', handleNotification);
       webSocketService.off('new_message', handleNewMessage);
 
       generalMessageTypes.forEach(type => {

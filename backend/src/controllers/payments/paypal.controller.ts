@@ -519,12 +519,15 @@ export class PayPalController {
 
             // Emit socket event to notify frontend
             const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
-            const wsManager = WebSocketManager.getInstance();
-            wsManager.emitToUser(paymentRecord.userId, 'payment:completed', {
-              paymentId: paymentRecord.id,
-              bookingId: booking.id,
-              status: 'COMPLETED'
-            });
+            if (WebSocketManager.isInitialized()) {
+              const wsInstance = WebSocketManager.getInstance();
+              wsInstance.sendNotification(paymentRecord.userId, {
+                type: 'PAYMENT_COMPLETED',
+                title: 'Payment Completed',
+                message: 'Your PayPal payment has been processed successfully',
+                data: { paymentId: paymentRecord.id, bookingId: booking.id, status: 'COMPLETED' }
+              });
+            }
 
           } catch (error) {
             logger.error('[PayPal] Error processing payment webhook', {

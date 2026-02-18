@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+      const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
       const s = (key: string) => t(errorBoundaryStrings, key, locale);
       return (
         <div className="flex items-center justify-center min-h-screen bg-bg-primary p-6">

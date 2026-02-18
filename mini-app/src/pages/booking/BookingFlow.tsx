@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Calendar,
@@ -55,6 +55,10 @@ export const BookingFlow: React.FC = () => {
   // Redux state
   const { selectedService, isLoading: serviceLoading } = useAppSelector((state) => state.services);
   const { isCreating } = useAppSelector((state) => state.bookings);
+
+  // Refs for button handler cleanup
+  const mainButtonHandlerRef = useRef<(() => void) | null>(null);
+  const currentStepRef = useRef(0);
 
   // Component state
   const [currentStep, setCurrentStep] = useState(0);
@@ -139,6 +143,20 @@ export const BookingFlow: React.FC = () => {
     }
   };
 
+  // Keep currentStepRef in sync so back handler always sees latest step
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
+  const handleBack = useCallback(() => {
+    if (currentStepRef.current > 0) {
+      setCurrentStep(prev => prev - 1);
+      hapticFeedback.impactLight();
+    } else {
+      navigate(-1);
+    }
+  }, [hapticFeedback, navigate]);
+
   // Configure Telegram UI
   useEffect(() => {
     backButton.show();
@@ -148,38 +166,39 @@ export const BookingFlow: React.FC = () => {
       backButton.hide();
       backButton.offClick(handleBack);
       mainButton.hide();
+      // Clean up any remaining main button handler
+      if (mainButtonHandlerRef.current) {
+        mainButton.offClick(mainButtonHandlerRef.current);
+        mainButtonHandlerRef.current = null;
+      }
     };
-  }, []);
+  }, [handleBack]);
+
+  // Helper to swap the main button handler without accumulating listeners
+  const setMainButtonHandler = useCallback((handler: () => void) => {
+    if (mainButtonHandlerRef.current) {
+      mainButton.offClick(mainButtonHandlerRef.current);
+    }
+    mainButtonHandlerRef.current = handler;
+    mainButton.onClick(handler);
+  }, [mainButton]);
 
   // Update main button based on current step
   useEffect(() => {
-    updateMainButton();
-  }, [currentStep, selectedDate, selectedTime, bookingDetails, locale]);
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-      hapticFeedback.impactLight();
-    } else {
-      navigate(-1);
-    }
-  };
-
-  const updateMainButton = () => {
     const step = bookingSteps[currentStep];
 
     switch (step.id) {
       case 'service':
         mainButton.setText(t(commonStrings, 'continue', locale));
         mainButton.show();
-        mainButton.onClick(handleServiceNext);
+        setMainButtonHandler(handleServiceNext);
         break;
 
       case 'datetime':
         if (selectedDate && selectedTime) {
           mainButton.setText(t(commonStrings, 'continue', locale));
           mainButton.show();
-          mainButton.onClick(handleDateTimeNext);
+          setMainButtonHandler(handleDateTimeNext);
         } else {
           mainButton.hide();
         }
@@ -189,7 +208,7 @@ export const BookingFlow: React.FC = () => {
         if (bookingDetails.firstName && bookingDetails.phone) {
           mainButton.setText(t(commonStrings, 'continue', locale));
           mainButton.show();
-          mainButton.onClick(handleDetailsNext);
+          setMainButtonHandler(handleDetailsNext);
         } else {
           mainButton.hide();
         }
@@ -198,10 +217,10 @@ export const BookingFlow: React.FC = () => {
       case 'payment':
         mainButton.setText(t(bookingFlowStrings, 'bookAndPay', locale));
         mainButton.show();
-        mainButton.onClick(handlePayment);
+        setMainButtonHandler(handlePayment);
         break;
     }
-  };
+  }, [currentStep, selectedDate, selectedTime, bookingDetails, locale]);
 
   const handleServiceNext = () => {
     setCurrentStep(1);

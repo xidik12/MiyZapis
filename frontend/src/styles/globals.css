@@ -734,6 +734,11 @@
   }
 
   /* Dark Theme Utilities */
+  /* Text color utilities for shadcn-style theming */
+  .text-muted-foreground {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+
   .bg-surface {
     @apply bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-white/20 dark:border-gray-700/50;
   }

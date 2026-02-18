@@ -3,6 +3,8 @@ import { adminTranslations } from '../i18n/locales/admin';
 
 type Language = 'uk' | 'ru' | 'en';
 
+export type TFunction = (key: string) => string;
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;

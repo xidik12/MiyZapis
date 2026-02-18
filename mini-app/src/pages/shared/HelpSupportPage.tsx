@@ -52,7 +52,7 @@ interface ContactMethod {
 
 export const HelpSupportPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { hapticFeedback } = useTelegram();
+  const { hapticFeedback, user: telegramUser } = useTelegram();
   const locale = useLocale();
 
   const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -161,8 +161,7 @@ export const HelpSupportPage: React.FC = () => {
 
     try {
       setSubmitting(true);
-      const userStr = localStorage.getItem('user');
-      const userEmail = userStr ? JSON.parse(userStr)?.email : '';
+      const userEmail = telegramUser?.email || '';
       await apiService.submitFeedback({ subject, message, email: userEmail || 'user@miyzapis.app', category: 'general' });
       dispatch(addToast({
         type: 'success',

@@ -77,15 +77,15 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
   const getTransactionColor = (type: WalletTransaction['type']) => {
     switch (type) {
       case 'CREDIT':
-        return 'text-green-600';
+        return 'text-green-600 dark:text-green-400';
       case 'DEBIT':
-        return 'text-red-600';
+        return 'text-red-600 dark:text-red-400';
       case 'REFUND':
-        return 'text-blue-600';
+        return 'text-blue-600 dark:text-blue-400';
       case 'FORFEITURE_SPLIT':
-        return 'text-purple-600';
+        return 'text-purple-600 dark:text-purple-400';
       default:
-        return 'text-gray-600';
+        return 'text-gray-600 dark:text-gray-400';
     }
   };
 
@@ -111,7 +111,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
     <Card className="w-full">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
             {t('wallet.transactions.title')} {total > 0 && `(${total})`}
           </h3>
         <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
 
         {/* Current Balance */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-          <div className="text-2xl font-bold">{formatPrice(balance)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(balance)}</div>
           <div className="text-sm text-muted-foreground">{t('wallet.transactions.currentBalance')}</div>
         </div>
 
@@ -196,7 +196,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                 <div className="flex items-center gap-3">
                   {getTransactionIcon(transaction.type)}
                   <div className={compact ? 'space-y-0' : 'space-y-1'}>
-                    <div className="font-medium text-sm">
+                    <div className="font-medium text-sm text-gray-900 dark:text-white">
                       {formatTransactionReason(transaction.reason)}
                     </div>
                     {!compact && transaction.description && (
@@ -207,11 +207,11 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                     <div className="text-xs text-muted-foreground">
                       {new Date(transaction.createdAt).toLocaleString()}
                       {transaction.status === 'PENDING' && (
-                        <span className="ml-2 text-yellow-600">{t('wallet.transactions.pending')}</span>
+                        <span className="ml-2 text-yellow-600 dark:text-yellow-400">{t('wallet.transactions.pending')}</span>
                       )}
                     </div>
                     {transaction.booking && !compact && (
-                      <div className="text-xs text-blue-600">
+                      <div className="text-xs text-blue-600 dark:text-blue-400">
                         {t('wallet.transactions.booking')}: {transaction.booking.service.name}
                       </div>
                     )}

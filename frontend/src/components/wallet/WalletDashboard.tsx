@@ -46,7 +46,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('wallet.title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{t('wallet.title')}</h1>
           <p className="text-muted-foreground">
             {t('wallet.subtitle')}
           </p>
@@ -116,7 +116,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               {/* Recent Activity */}
               <Card>
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.recentActivity.title')}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 dark:text-white">{t('wallet.recentActivity.title')}</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     {t('wallet.recentActivity.subtitle')}
                   </p>
@@ -131,7 +131,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               {/* Quick Actions */}
               <Card>
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.quickActions.title')}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 dark:text-white">{t('wallet.quickActions.title')}</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     {t('wallet.quickActions.subtitle')}
                   </p>
@@ -224,17 +224,17 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">{t('wallet.earnings.totalEarnings')}</h3>
-            <CreditCard className="h-4 w-4 text-gray-500" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.totalEarnings')}</h3>
+            <CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{formatPrice(earnings.totalEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.totalEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromReferralsRewards')}
           </p>
           {earnings.totalEarnings > 0 && (
             <div className="flex items-center mt-2">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              <span className="text-xs text-green-600">{t('wallet.earnings.activeEarnings')}</span>
+              <span className="text-xs text-green-600 dark:text-green-400">{t('wallet.earnings.activeEarnings')}</span>
             </div>
           )}
         </div>
@@ -244,15 +244,15 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">{t('wallet.earnings.referralEarnings')}</h3>
-            <Users className="h-4 w-4 text-gray-500" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.referralEarnings')}</h3>
+            <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{formatPrice(earnings.referralEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.referralEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromSuccessfulReferrals')}
           </p>
           {referralAnalytics && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {referralAnalytics.overview.completedReferrals} {t('wallet.earnings.completedReferrals')}
             </div>
           )}
@@ -263,15 +263,15 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">{t('wallet.earnings.rewardEarnings')}</h3>
-            <Gift className="h-4 w-4 text-gray-500" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.rewardEarnings')}</h3>
+            <Gift className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold">{formatPrice(earnings.loyaltyEarnings + earnings.forfeitureEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.loyaltyEarnings + earnings.forfeitureEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromLoyaltyForfeiture')}
           </p>
           {(earnings.loyaltyEarnings > 0 || earnings.forfeitureEarnings > 0) && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {earnings.loyaltyEarnings > 0 && `${t('wallet.earnings.loyalty')}: ${formatPrice(earnings.loyaltyEarnings)}`}
               {earnings.forfeitureEarnings > 0 && ` ${t('wallet.earnings.forfeiture')}: ${formatPrice(earnings.forfeitureEarnings)}`}
             </div>
@@ -282,7 +282,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       {/* Earnings Breakdown */}
       <Card className="md:col-span-2 lg:col-span-3">
         <div className="p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.earnings.breakdown')}</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 dark:text-white">{t('wallet.earnings.breakdown')}</h3>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
             {t('wallet.earnings.breakdownSubtitle')}
           </p>
@@ -296,15 +296,15 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('wallet.earnings.recentEarnings')}</h4>
                 {walletTransactions.slice(0, 5).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-2 rounded border">
+                  <div key={transaction.id} className="flex items-center justify-between p-2 rounded border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
                         transaction.reason === 'REFERRAL_REWARD' ? 'bg-blue-500' :
                         transaction.reason === 'LOYALTY_POINTS_CONVERTED' ? 'bg-green-500' : 'bg-purple-500'
                       }`}></div>
-                      <span className="text-sm">{transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
                     </div>
-                    <div className="text-sm font-medium">+{formatPrice(transaction.amount)}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">+{formatPrice(transaction.amount)}</div>
                   </div>
                 ))}
               </div>
@@ -316,24 +316,24 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
 
             {/* Earnings Categories */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.referralBonuses')}</span>
+                  <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.referralBonuses')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.referralEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.loyaltyRewards')}</span>
+                  <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.loyaltyRewards')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.loyaltyEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border sm:col-span-2 md:col-span-1">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700 sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.forfeitureShare')}</span>
+                  <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.forfeitureShare')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.forfeitureEarnings)}</span>
               </div>

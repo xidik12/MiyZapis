@@ -539,7 +539,7 @@ const CustomerDashboard: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('wallet.title')}</h3>
                 <Link
                   to="/customer/wallet"
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
@@ -555,7 +555,7 @@ const CustomerDashboard: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
                 <Link
                   to="/customer/bookings"
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
@@ -611,7 +611,7 @@ const CustomerDashboard: React.FC = () => {
                 <button
                   onClick={handleLoadMoreFavorites}
                   disabled={favoritesLoading}
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium disabled:opacity-50"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium disabled:opacity-50"
                 >
                   {t('dashboard.viewAll')}
                 </button>

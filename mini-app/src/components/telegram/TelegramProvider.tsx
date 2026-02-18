@@ -222,7 +222,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       }
     } catch (err) {
       console.error('Login failed:', err);
-      const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+      const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
       setError(err instanceof Error ? err.message : t(commonStrings, 'loginFailed', locale));
       telegramWebApp.hapticFeedback.notificationError();
     } finally {
@@ -248,7 +248,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
       telegramWebApp.hapticFeedback.impactLight();
     } catch (err) {
       console.error('Logout failed:', err);
-      const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+      const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
       setError(t(commonStrings, 'logoutFailed', locale));
     } finally {
       setIsLoading(false);

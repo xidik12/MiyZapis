@@ -22,7 +22,7 @@ export const useRealTimeBookings = () => {
 
   // Show notification for booking updates
   const showNotificationForBookingUpdate = useCallback(async (booking: Booking, update: BookingUpdate) => {
-    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+    const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
     const rt = (key: string) => t(realTimeBookingStrings, key, locale);
     let message = '';
 
@@ -84,7 +84,7 @@ export const useRealTimeBookings = () => {
 
   // Handle booking reminders
   const handleBookingReminder = useCallback((data: any) => {
-    const locale = (localStorage.getItem('locale') || 'uk') as Locale;
+    const locale = (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
     const rt = (key: string) => t(realTimeBookingStrings, key, locale);
     hapticFeedback.notificationWarning();
     showAlert(`${rt('appointmentReminder')}: ${data.timeUntil}`);

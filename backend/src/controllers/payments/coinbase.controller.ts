@@ -349,12 +349,15 @@ export class CoinbaseController {
             });
 
             const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
-            const wsManager = WebSocketManager.getInstance();
-            wsManager.emitToUser(paymentRecord.userId, 'payment:completed', {
-              paymentId: paymentRecord.id,
-              bookingId: booking.id,
-              status: 'COMPLETED'
-            });
+            if (WebSocketManager.isInitialized()) {
+              const wsInstance = WebSocketManager.getInstance();
+              wsInstance.sendNotification(paymentRecord.userId, {
+                type: 'PAYMENT_COMPLETED',
+                title: 'Payment Completed',
+                message: 'Your crypto payment has been confirmed successfully',
+                data: { paymentId: paymentRecord.id, bookingId: booking.id, status: 'COMPLETED' }
+              });
+            }
           } catch (error) {
             logger.error('[Coinbase] Error creating booking from confirmed payment', {
               error: error instanceof Error ? error.message : error,
