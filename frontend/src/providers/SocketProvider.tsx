@@ -48,7 +48,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated || !user) {
       // Disconnect socket if user is not authenticated
-      if (socketService.isConnected()) {
+      if (socketService.isSocketConnected()) {
         socketService.disconnect();
         setIsConnected(false);
       }
@@ -56,9 +56,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
 
     // Connect socket when user is authenticated
-    const connectSocket = async () => {
+    const connectSocket = () => {
       try {
-        await socketService.connect();
+        socketService.connect();
         setIsConnected(true);
 
         // Join user-specific room
@@ -84,7 +84,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     // Cleanup on unmount
     return () => {
-      if (socketService.isConnected()) {
+      if (socketService.isSocketConnected()) {
         socketService.disconnect();
         setIsConnected(false);
       }
