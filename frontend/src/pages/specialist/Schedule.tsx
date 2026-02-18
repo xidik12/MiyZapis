@@ -666,24 +666,25 @@ const SpecialistSchedule: React.FC = () => {
     setShowAddModal(true);
   };
 
+  // Backend stores local display times with UTC "Z" suffix, so use UTC methods
+  // to read them back correctly. The `date` param is a local Date from getWeekDays.
   const getBlocksForCell = (date: Date, hour: number): CalendarBlock[] => {
     return availabilityBlocks.filter(block => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using local date components consistently
+      // Compare UTC date of block with local date of the week column
       if (
-        blockStart.getFullYear() !== date.getFullYear() ||
-        blockStart.getMonth() !== date.getMonth() ||
-        blockStart.getDate() !== date.getDate()
+        blockStart.getUTCFullYear() !== date.getFullYear() ||
+        blockStart.getUTCMonth() !== date.getMonth() ||
+        blockStart.getUTCDate() !== date.getDate()
       ) {
         return false;
       }
 
-      // Check if the block overlaps with this hour (using local time)
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
+      const blockHour = blockStart.getUTCHours();
+      const blockEndHour = blockEnd.getUTCHours();
+      const blockEndMinute = blockEnd.getUTCMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -701,10 +702,10 @@ const SpecialistSchedule: React.FC = () => {
       const bookingStart = new Date(booking.scheduledAt);
       if (Number.isNaN(bookingStart.getTime())) return false;
       return (
-        bookingStart.getFullYear() === date.getFullYear() &&
-        bookingStart.getMonth() === date.getMonth() &&
-        bookingStart.getDate() === date.getDate() &&
-        bookingStart.getHours() === hour
+        bookingStart.getUTCFullYear() === date.getFullYear() &&
+        bookingStart.getUTCMonth() === date.getMonth() &&
+        bookingStart.getUTCDate() === date.getDate() &&
+        bookingStart.getUTCHours() === hour
       );
     });
   };

@@ -129,11 +129,15 @@ export class AvailabilityService {
       // Instead, we'll only create blocks for dates that don't have any blocks yet
 
       // Get existing availability blocks to avoid duplicates
+      // Use start of today (not "now") so morning blocks on the current day are included
+      const startOfToday = new Date(startDate);
+      startOfToday.setUTCHours(0, 0, 0, 0);
+
       const existingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId,
           startDateTime: {
-            gte: startDate,
+            gte: startOfToday,
             lte: endDate
           }
         },
@@ -514,21 +518,16 @@ export class AvailabilityService {
         where.specialistId = filters.specialistId;
       }
 
-      if (filters.startDate || filters.endDate) {
-        where.OR = [
-          {
-            startDateTime: {
-              ...(filters.startDate && { gte: filters.startDate }),
-              ...(filters.endDate && { lte: filters.endDate }),
-            },
-          },
-          {
-            endDateTime: {
-              ...(filters.startDate && { gte: filters.startDate }),
-              ...(filters.endDate && { lte: filters.endDate }),
-            },
-          },
+      // Proper overlap check: block starts before range ends AND block ends after range starts
+      if (filters.startDate && filters.endDate) {
+        where.AND = [
+          { startDateTime: { lte: filters.endDate } },
+          { endDateTime: { gte: filters.startDate } },
         ];
+      } else if (filters.startDate) {
+        where.endDateTime = { gte: filters.startDate };
+      } else if (filters.endDate) {
+        where.startDateTime = { lte: filters.endDate };
       }
 
       if (filters.isAvailable !== undefined) {

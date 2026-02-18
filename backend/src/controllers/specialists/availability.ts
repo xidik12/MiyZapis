@@ -610,7 +610,13 @@ export class AvailabilityController {
       }
 
       if (startDate) filters.startDate = new Date(startDate as string);
-      if (endDate) filters.endDate = new Date(endDate as string);
+      if (endDate) {
+        // Frontend sends endDate as YYYY-MM-DD which parses as midnight UTC.
+        // Set to end of day so blocks on the last day are included.
+        const end = new Date(endDate as string);
+        end.setUTCHours(23, 59, 59, 999);
+        filters.endDate = end;
+      }
       if (isAvailable !== undefined) filters.isAvailable = isAvailable === 'true';
       if (isRecurring !== undefined) filters.isRecurring = isRecurring === 'true';
 
