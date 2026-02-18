@@ -127,25 +127,10 @@ export default defineConfig({
           }
           return `assets/[name]-[hash].[ext]`;
         },
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // React core must stay together to prevent hook errors
-            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) {
-              return 'vendor-react';
-            }
-            if (id.includes('react-router')) return 'vendor-router';
-            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux') || id.includes('redux-persist') || id.includes('immer')) {
-              return 'vendor-state';
-            }
-            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'vendor-charts';
-            if (id.includes('date-fns')) return 'vendor-date';
-            if (id.includes('framer-motion')) return 'vendor-framer';
-            if (id.includes('@stripe')) return 'vendor-stripe';
-            if (id.includes('socket.io')) return 'vendor-socket';
-            if (id.includes('i18next')) return 'vendor-i18n';
-            return 'vendor';
-          }
-        }
+        // No manualChunks — Vite handles code splitting automatically.
+        // Manual chunking breaks React CJS-to-ESM interop, causing
+        // "Cannot read properties of undefined (reading 'useSyncExternalStore')"
+        // when packages like use-sync-external-store are in a different chunk than React.
       }
     },
     chunkSizeWarningLimit: 1000
