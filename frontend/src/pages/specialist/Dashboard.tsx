@@ -187,7 +187,7 @@ const SpecialistDashboard: React.FC = () => {
                 const dayName = dayNames[cursor.getDay()];
                 const daySchedule = workingHoursMap![dayName];
 
-                if (daySchedule && daySchedule.isWorking) {
+                if (daySchedule && daySchedule.isWorking && daySchedule.start && daySchedule.end) {
                   const [startH, startM] = daySchedule.start.split(':').map(Number);
                   const [endH, endM] = daySchedule.end.split(':').map(Number);
 
@@ -325,7 +325,7 @@ const SpecialistDashboard: React.FC = () => {
                 
                 const processedBooking = {
                   id: booking.id,
-                  customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
+                  customerName: booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Customer' : 'Customer',
                   serviceName: booking.service?.name || 'Service',
                   date: formattedDate, // Now properly formatted
                   status: 'completed',
@@ -358,11 +358,11 @@ const SpecialistDashboard: React.FC = () => {
               })
               .map(booking => ({
                 id: booking.id,
-                customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
+                customerName: booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Customer' : 'Customer',
                 serviceName: booking.service?.name || 'Service',
-                time: new Date(booking.scheduledAt).toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
+                time: new Date(booking.scheduledAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit'
                 }),
                 duration: '60 min', // Default duration
                 type: 'offline' // Default type
@@ -687,7 +687,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                     <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
                     <p className="text-xs text-gray-400">
-                      {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
+                      {booking.date}
                     </p>
                   </div>
                 </div>

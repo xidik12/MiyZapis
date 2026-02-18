@@ -177,7 +177,8 @@ const CustomerDashboard: React.FC = () => {
         setLoyaltyStats(loyaltyStatsData);
 
         // Next appointment (earliest upcoming)
-        const upcomingSorted = [...upcomingRes.bookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+        const upcomingBookings = Array.isArray(upcomingRes.bookings) ? upcomingRes.bookings : [];
+        const upcomingSorted = [...upcomingBookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
         const next = upcomingSorted[0];
         setNextAppointment(next ? {
           serviceName: next.service?.name || next.serviceName || 'Service',
@@ -189,7 +190,8 @@ const CustomerDashboard: React.FC = () => {
         } : null);
 
         // Recent completed bookings
-        const recent = completedRes.bookings.map((b) => ({
+        const completedBookings = Array.isArray(completedRes.bookings) ? completedRes.bookings : [];
+        const recent = completedBookings.map((b) => ({
           id: b.id,
           specialistName: b.specialist ? `${b.specialist.firstName || ''} ${b.specialist.lastName || ''}`.trim() : b.specialistName || 'Specialist',
           serviceName: b.service?.name || b.serviceName || 'Service',
@@ -202,8 +204,8 @@ const CustomerDashboard: React.FC = () => {
         setRecentBookings(recent);
 
         // Stats (basic derived)
-        const totalSpent = completedRes.bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        const servicesUsed = new Set(completedRes.bookings.map((b) => b.service?.id || b.serviceId)).size;
+        const totalSpent = completedBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        const servicesUsed = new Set(completedBookings.map((b) => b.service?.id || b.serviceId)).size;
         // Reviews written and average rating from my reviews endpoint
         const myReviewsList = (myReviews as any)?.reviews || [];
         const reviewsWritten = myReviewsList.length;
@@ -217,8 +219,8 @@ const CustomerDashboard: React.FC = () => {
           monthlyPoints: loyaltyStatsData?.monthlyPoints || 0,
           savedAmount: 0,
           servicesUsed,
-          completedBookings: completedRes.bookings.length,
-          totalBookings: allRes.pagination?.total || completedRes.bookings.length + upcomingRes.bookings.length,
+          completedBookings: completedBookings.length,
+          totalBookings: allRes.pagination?.total || completedBookings.length + upcomingBookings.length,
           averageRating,
           favoriteSpecialists: (favoritesCount as any).specialists || 0,
           reviewsWritten,
@@ -730,9 +732,15 @@ const CustomerDashboard: React.FC = () => {
                     </span>
                   </div>
                   <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">
-                    <div 
-                      style={{ 
-                        width: `${Math.min(100, (((loyaltyData?.profile?.totalPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0)) / ((loyaltyStats?.nextTier?.minPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0))) * 100)}%` 
+                    <div
+                      style={{
+                        width: `${(() => {
+                          const pts = loyaltyData?.currentPoints || 0;
+                          const curMin = loyaltyStats?.currentTier?.minPoints || 0;
+                          const nextMin = loyaltyStats?.nextTier?.minPoints || 0;
+                          const range = nextMin - curMin;
+                          return range > 0 ? Math.min(100, Math.max(0, ((pts - curMin) / range) * 100)) : 0;
+                        })()}%`
                       }}
                       className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
                     ></div>
