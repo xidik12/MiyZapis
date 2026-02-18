@@ -260,10 +260,15 @@ if (fs.existsSync(frontendDist)) {
     etag: true,
     index: 'index.html',
   }));
-  // SPA catch-all: any non-API, non-upload route → index.html
+  // SPA catch-all: any non-API, non-upload, non-asset route → index.html
+  // Don't return index.html for missing static assets (prevents blank pages
+  // when stale service workers reference old hashed filenames)
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
       return next();
+    }
+    if (req.path.startsWith('/assets/') || /\.(js|css|map|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$/.test(req.path)) {
+      return next(); // Let 404 handler respond for missing static assets
     }
     res.sendFile(path.join(frontendDist, 'index.html'));
   });

@@ -58,6 +58,15 @@ class ErrorBoundary extends React.Component<
       msg.includes('loading chunk');
 
     if (isChunkLoadError) {
+      // Prevent infinite reload loops: only retry once
+      const reloadKey = 'chunk_error_reload';
+      const lastReload = sessionStorage.getItem(reloadKey);
+      if (lastReload && Date.now() - Number(lastReload) < 30000) {
+        // Already reloaded within 30s — stop retrying to prevent infinite loop
+        return;
+      }
+      sessionStorage.setItem(reloadKey, String(Date.now()));
+
       // Attempt to unregister service workers and clear caches, then hard-reload
       (async () => {
         try {
@@ -72,9 +81,7 @@ class ErrorBoundary extends React.Component<
         } catch (e) {
           console.warn('Chunk error recovery encountered an issue:', e);
         } finally {
-          const url = new URL(window.location.href);
-          url.searchParams.set('v', Date.now().toString());
-          window.location.replace(url.toString());
+          window.location.reload();
         }
       })();
     }
@@ -173,42 +180,9 @@ if (environment.DEBUG) {
   console.log('Environment:', environment);
 }
 
-// Service worker registration for PWA (only in production)
-if (environment.ENABLE_PWA && 'serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then((registration) => {
-        if (environment.DEBUG) {
-          console.log('SW registered: ', registration);
-        }
-      })
-      .catch((registrationError) => {
-        if (environment.DEBUG) {
-          console.log('SW registration failed: ', registrationError);
-        }
-      });
-  });
-}
-
-// Register Push Notification service worker (separate from PWA SW)
-// This runs in both dev and prod so push can be tested locally
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((registration) => {
-        if (environment.DEBUG) {
-          console.log('[Push SW] registered:', registration.scope);
-        }
-      })
-      .catch((error) => {
-        if (environment.DEBUG) {
-          console.log('[Push SW] registration failed:', error);
-        }
-      });
-  });
-}
+// Service worker is registered automatically by vite-plugin-pwa via registerSW.js
+// (injected into index.html at build time). No manual registration needed here.
+// The PWA service worker (sw.js) handles both precaching and offline support.
 
 // Initialize the application
 initializeApp();

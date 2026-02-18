@@ -21,8 +21,16 @@ app.use(express.static(path.join(__dirname, 'dist'), {
   }
 }));
 
-// Handle React Router - send all requests to index.html
+// Handle React Router SPA fallback
+// IMPORTANT: Only serve index.html for navigation requests, NOT for missing assets.
+// If a stale service worker or cached HTML references old hashed filenames,
+// returning index.html for .js/.css requests causes blank pages because the
+// browser silently fails to parse HTML as JavaScript.
 app.get('*', (req, res) => {
+  // Return 404 for missing static asset requests (hashed filenames, fonts, images)
+  if (req.path.startsWith('/assets/') || req.path.match(/\.(js|css|map|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$/)) {
+    return res.status(404).send('Not found');
+  }
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
