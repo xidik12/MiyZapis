@@ -109,10 +109,12 @@ class ErrorBoundary extends React.Component<
             >
               Refresh Page
             </button>
-            {environment.DEBUG && this.state.error && (
-              <details className="mt-4 text-left">
+            {this.state.error && (
+              <details className="mt-4 text-left" open>
                 <summary className="text-sm text-gray-500 cursor-pointer">Error Details</summary>
-                <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
+                <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto max-h-40">
+                  {this.state.error.message}
+                  {'\n\n'}
                   {this.state.error.stack}
                 </pre>
               </details>
