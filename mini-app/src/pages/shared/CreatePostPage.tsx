@@ -168,14 +168,20 @@ export const CreatePostPage: React.FC = () => {
 
       if (isEditing) {
         await apiService.updateCommunityPost(postId!, postData);
+        dispatch(addToast({ type: 'success', title: cp('updated'), message: '' }));
+        hapticFeedback.notificationSuccess();
+        navigate(`/community/post/${postId}`);
       } else {
-        await apiService.createCommunityPost(postData);
+        const newPost = await apiService.createCommunityPost(postData) as any;
+        dispatch(addToast({ type: 'success', title: cp('posted'), message: '' }));
+        hapticFeedback.notificationSuccess();
+        // Navigate to the newly created post if we got an ID back, otherwise to the list
+        if (newPost?.id) {
+          navigate(`/community/post/${newPost.id}`, { replace: true });
+        } else {
+          navigate('/community');
+        }
       }
-
-      const successTitle = isEditing ? cp('updated') : cp('posted');
-      dispatch(addToast({ type: 'success', title: successTitle, message: '' }));
-      hapticFeedback.notificationSuccess();
-      navigate('/community');
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || cp('failedToPublish');
       dispatch(addToast({ type: 'error', title: c('error'), message: msg }));

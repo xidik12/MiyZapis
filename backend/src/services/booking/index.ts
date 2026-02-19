@@ -1004,29 +1004,32 @@ export class BookingService {
         throw new Error('BOOKING_NOT_FOUND');
       }
 
-      // Look up the specialist's cancellation window setting
-      const specialist = await prisma.specialist.findUnique({
-        where: { userId: booking.specialistId },
-        select: { cancellationWindowHours: true },
-      });
-      const cancellationWindowHours = specialist?.cancellationWindowHours ?? 24;
-
-      // Check if cancellation is allowed
-      const now = new Date();
-      const scheduledTime = new Date(booking.scheduledAt);
-      const hoursUntilBooking = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-      if (hoursUntilBooking < cancellationWindowHours) {
-        throw new Error('CANCELLATION_TOO_LATE');
-      }
-
       if (!['PENDING', 'PENDING_PAYMENT', 'CONFIRMED'].includes(booking.status)) {
         throw new Error('CANCELLATION_NOT_ALLOWED');
       }
 
+      // Determine who is cancelling before applying time restrictions
+      const isSpecialistCancellation = cancelledBy === booking.specialistId;
+
+      // Only apply the cancellation window restriction for customers — specialists can cancel anytime
+      if (!isSpecialistCancellation) {
+        const specialist = await prisma.specialist.findUnique({
+          where: { userId: booking.specialistId },
+          select: { cancellationWindowHours: true },
+        });
+        const cancellationWindowHours = specialist?.cancellationWindowHours ?? 24;
+
+        const now = new Date();
+        const scheduledTime = new Date(booking.scheduledAt);
+        const hoursUntilBooking = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        if (hoursUntilBooking < cancellationWindowHours) {
+          throw new Error('CANCELLATION_TOO_LATE');
+        }
+      }
+
       // Calculate refund amount
       let refundAmount = 0;
-      const isSpecialistCancellation = cancelledBy === booking.specialistId;
 
       if (isSpecialistCancellation) {
         // If specialist cancels, customer gets FULL refund ($1) to wallet

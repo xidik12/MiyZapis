@@ -86,12 +86,12 @@ export const BookingFlow: React.FC = () => {
     { id: 'payment', title: t(bookingFlowStrings, 'payment', locale), completed: false }
   ];
 
-  // Load service data on mount
+  // Load service data on mount — always fetch to avoid stale Redux state from previous specialist
   useEffect(() => {
-    if (serviceId && !selectedService) {
+    if (serviceId) {
       dispatch(fetchServiceAsync(serviceId));
     }
-  }, [serviceId, selectedService, dispatch]);
+  }, [serviceId, dispatch]);
 
   // Load availability when service is loaded
   useEffect(() => {

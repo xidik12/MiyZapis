@@ -61,6 +61,7 @@ export const HelpSupportPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedGuide, setExpandedGuide] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Feedback form
@@ -191,10 +192,28 @@ export const HelpSupportPage: React.FC = () => {
       )
     : faqs;
 
+  const guideContent = {
+    booking: locale === 'uk'
+      ? '1. Знайдіть спеціаліста через пошук або категорії\n2. Оберіть послугу та зручний час\n3. Заповніть контактні дані\n4. Підтвердіть бронювання\n5. Отримайте підтвердження в Telegram'
+      : locale === 'ru'
+      ? '1. Найдите специалиста через поиск или категории\n2. Выберите услугу и удобное время\n3. Заполните контактные данные\n4. Подтвердите бронирование\n5. Получите подтверждение в Telegram'
+      : '1. Find a specialist via search or categories\n2. Choose a service and convenient time\n3. Fill in your contact details\n4. Confirm the booking\n5. Receive confirmation in Telegram',
+    payments: locale === 'uk'
+      ? '• Оплата через Telegram Payments\n• Депозит $1 при бронюванні\n• Повернення при скасуванні спеціалістом\n• Безпечна обробка платежів\n• Історія транзакцій у гаманці'
+      : locale === 'ru'
+      ? '• Оплата через Telegram Payments\n• Депозит $1 при бронировании\n• Возврат при отмене специалистом\n• Безопасная обработка платежей\n• История транзакций в кошельке'
+      : '• Payment via Telegram Payments\n• $1 deposit when booking\n• Refund if specialist cancels\n• Secure payment processing\n• Transaction history in wallet',
+    security: locale === 'uk'
+      ? '• Авторизація через Telegram\n• Шифрування особистих даних\n• Ми не зберігаємо дані карток\n• Безпечне з\'єднання (HTTPS)\n• Контроль конфіденційності в налаштуваннях'
+      : locale === 'ru'
+      ? '• Авторизация через Telegram\n• Шифрование личных данных\n• Мы не храним данные карт\n• Безопасное соединение (HTTPS)\n• Контроль конфиденциальности в настройках'
+      : '• Authentication via Telegram\n• Personal data encryption\n• We do not store card details\n• Secure connection (HTTPS)\n• Privacy controls in settings',
+  };
+
   const userGuides = [
-    { icon: BookOpen, title: hs('guideBooking'), desc: hs('guideBookingDesc'), color: 'text-accent-primary bg-accent-primary/10' },
-    { icon: CreditCard, title: hs('guidePayments'), desc: hs('guidePaymentsDesc'), color: 'text-accent-green bg-accent-green/10' },
-    { icon: Shield, title: hs('guideSecurity'), desc: hs('guideSecurityDesc'), color: 'text-blue-400 bg-blue-400/10' },
+    { icon: BookOpen, title: hs('guideBooking'), desc: hs('guideBookingDesc'), color: 'text-accent-primary bg-accent-primary/10', content: guideContent.booking },
+    { icon: CreditCard, title: hs('guidePayments'), desc: hs('guidePaymentsDesc'), color: 'text-accent-green bg-accent-green/10', content: guideContent.payments },
+    { icon: Shield, title: hs('guideSecurity'), desc: hs('guideSecurityDesc'), color: 'text-blue-400 bg-blue-400/10', content: guideContent.security },
   ];
 
   if (loading) {
@@ -257,7 +276,7 @@ export const HelpSupportPage: React.FC = () => {
           </h3>
           <div className="space-y-2">
             {userGuides.map((guide, i) => (
-              <Card key={i}>
+              <Card key={i} hover onClick={() => { hapticFeedback.impactLight(); setExpandedGuide(prev => prev === i ? null : i); }}>
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${guide.color}`}>
                     <guide.icon size={18} />
@@ -266,7 +285,21 @@ export const HelpSupportPage: React.FC = () => {
                     <h4 className="text-sm font-medium text-text-primary">{guide.title}</h4>
                     <p className="text-xs text-text-secondary">{guide.desc}</p>
                   </div>
+                  <div className="flex-shrink-0">
+                    {expandedGuide === i ? (
+                      <ChevronUp size={16} className="text-text-secondary" />
+                    ) : (
+                      <ChevronDown size={16} className="text-text-secondary" />
+                    )}
+                  </div>
                 </div>
+                {expandedGuide === i && (
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    <p className="text-sm text-text-secondary whitespace-pre-line leading-relaxed">
+                      {guide.content}
+                    </p>
+                  </div>
+                )}
               </Card>
             ))}
           </div>

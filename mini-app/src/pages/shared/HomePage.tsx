@@ -90,12 +90,21 @@ export const HomePage: React.FC = () => {
     hapticFeedback.impactLight();
   };
 
-  const handleBookNowPress = (e: React.MouseEvent) => {
+  const handleBookNowPress = (e: React.MouseEvent, service?: any) => {
     e.stopPropagation();
     if (!isAuthenticated && !authState) {
       navigate('/auth');
+    } else if (service?.id && service?.specialistId) {
+      navigate('/booking', {
+        state: {
+          serviceId: service.id,
+          specialistId: service.specialistId,
+        },
+      });
+    } else if (service?.id) {
+      navigate(`/service/${service.id}`);
     } else {
-      navigate('/booking');
+      navigate('/search');
     }
     hapticFeedback.impactMedium();
   };
@@ -413,7 +422,7 @@ export const HomePage: React.FC = () => {
                       <span className="text-lg font-bold text-accent-primary">
                         {formatCurrency(service.price, service.currency, locale)}
                       </span>
-                      <Button size="sm" onClick={handleBookNowPress}>
+                      <Button size="sm" onClick={(e) => handleBookNowPress(e, service)}>
                         {s('bookNow')}
                       </Button>
                     </div>

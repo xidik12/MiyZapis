@@ -55,6 +55,7 @@ export const SettingsPage: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showCurrency, setShowCurrency] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [language, setLanguage] = useState(locale);
   const [currency, setCurrency] = useCurrency();
   const [profileData, setProfileData] = useState({
@@ -250,7 +251,7 @@ export const SettingsPage: React.FC = () => {
         <div className="px-4 py-2">
           <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">{t(settingsStrings, 'support', locale)}</h3>
           <div className="space-y-1">
-            <Card hover>
+            <Card hover onClick={() => { hapticFeedback.impactLight(); setShowPrivacy(true); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-accent-green/15 rounded-lg flex items-center justify-center">
@@ -458,6 +459,59 @@ export const SettingsPage: React.FC = () => {
               )}
             </button>
           ))}
+        </div>
+      </Sheet>
+
+      {/* Privacy & Security Sheet */}
+      <Sheet isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} title={t(settingsStrings, 'privacySecurity', locale)}>
+        <div className="space-y-4">
+          <div className="p-3 bg-bg-secondary rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield size={16} className="text-accent-green" />
+              <span className="text-sm font-semibold text-text-primary">
+                {locale === 'uk' ? 'Захист даних' : locale === 'ru' ? 'Защита данных' : 'Data Protection'}
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {locale === 'uk'
+                ? 'Ваші особисті дані зашифровані та зберігаються безпечно. Ми не передаємо ваші дані третім особам без вашої згоди.'
+                : locale === 'ru'
+                ? 'Ваши личные данные зашифрованы и хранятся безопасно. Мы не передаём ваши данные третьим лицам без вашего согласия.'
+                : 'Your personal data is encrypted and stored securely. We do not share your data with third parties without your consent.'}
+            </p>
+          </div>
+
+          <div className="p-3 bg-bg-secondary rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield size={16} className="text-accent-primary" />
+              <span className="text-sm font-semibold text-text-primary">
+                {locale === 'uk' ? 'Безпека акаунту' : locale === 'ru' ? 'Безопасность аккаунта' : 'Account Security'}
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {locale === 'uk'
+                ? 'Ваш акаунт захищений через Telegram авторизацію. Ніхто не може отримати доступ до вашого акаунту без доступу до вашого Telegram.'
+                : locale === 'ru'
+                ? 'Ваш аккаунт защищён через Telegram авторизацию. Никто не может получить доступ к вашему аккаунту без доступа к вашему Telegram.'
+                : 'Your account is secured via Telegram authentication. No one can access your account without access to your Telegram.'}
+            </p>
+          </div>
+
+          <div className="p-3 bg-bg-secondary rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield size={16} className="text-accent-yellow" />
+              <span className="text-sm font-semibold text-text-primary">
+                {locale === 'uk' ? 'Платежі' : locale === 'ru' ? 'Платежи' : 'Payments'}
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {locale === 'uk'
+                ? 'Всі платежі обробляються через захищені платіжні системи. Ми не зберігаємо дані ваших карток.'
+                : locale === 'ru'
+                ? 'Все платежи обрабатываются через защищённые платёжные системы. Мы не храним данные ваших карт.'
+                : 'All payments are processed through secure payment systems. We do not store your card details.'}
+            </p>
+          </div>
         </div>
       </Sheet>
     </div>
