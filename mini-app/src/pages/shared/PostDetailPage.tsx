@@ -99,14 +99,16 @@ export const PostDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await apiService.getCommunityPost(id) as any;
+      // Backend wraps in { post: {...} } — unwrap it
+      const raw = data?.post || data;
       // Parse images
       let parsedImages: string[] = [];
-      if (Array.isArray(data.images)) {
-        parsedImages = data.images;
-      } else if (typeof data.images === 'string') {
-        try { parsedImages = JSON.parse(data.images); } catch { parsedImages = []; }
+      if (Array.isArray(raw.images)) {
+        parsedImages = raw.images;
+      } else if (typeof raw.images === 'string') {
+        try { parsedImages = JSON.parse(raw.images); } catch { parsedImages = []; }
       }
-      setPost({ ...data, images: parsedImages });
+      setPost({ ...raw, images: parsedImages });
     } catch {
       setError(c('error'));
     } finally {

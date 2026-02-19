@@ -100,6 +100,13 @@ export const BookingFlow: React.FC = () => {
   const serviceId = searchParams.get('serviceId') || location.state?.serviceId;
   const specialistId = searchParams.get('specialistId') || location.state?.specialistId;
 
+  // Guard: redirect back if required params are missing
+  useEffect(() => {
+    if (!serviceId || !specialistId) {
+      navigate(-1);
+    }
+  }, []);
+
   // 3 steps: datetime, details, payment (service review is now a persistent banner)
   const bookingSteps: BookingStep[] = [
     { id: 'datetime', title: t(bookingFlowStrings, 'dateTime', locale), completed: false },

@@ -153,7 +153,7 @@ export const DashboardPage: React.FC = () => {
             <Card
               hover
               className="bg-gradient-to-r from-accent-primary/10 to-accent-primary/5 border-accent-primary/20"
-              onClick={() => { hapticFeedback.impactLight(); navigate(`/booking/${nextBooking.id}`); }}
+              onClick={() => { hapticFeedback.impactLight(); navigate('/bookings'); }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <Clock size={16} className="text-accent-primary" />
@@ -186,7 +186,7 @@ export const DashboardPage: React.FC = () => {
                   <div
                     key={b.id}
                     className="flex items-center justify-between p-3 bg-bg-secondary/50 rounded-xl cursor-pointer hover:bg-bg-hover/50 transition-all"
-                    onClick={() => { hapticFeedback.impactLight(); navigate(`/booking/${b.id}`); }}
+                    onClick={() => { hapticFeedback.impactLight(); navigate('/bookings'); }}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text-primary truncate">{b.service?.name || b.serviceName || c('service')}</p>

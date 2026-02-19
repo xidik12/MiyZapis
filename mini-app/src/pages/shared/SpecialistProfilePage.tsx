@@ -172,7 +172,7 @@ export const SpecialistProfilePage: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
+      <div className="flex-1 overflow-y-auto pb-36 page-stagger">
         {/* Profile Header */}
         <div className="px-4 py-6 bg-gradient-to-b from-accent-primary to-accent-primary/80 text-white">
           <div className="flex items-center gap-4">
@@ -534,8 +534,8 @@ export const SpecialistProfilePage: React.FC = () => {
         )}
       </Sheet>
 
-      {/* Fixed Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
+      {/* Fixed Bottom Action — above bottom nav (h-14) */}
+      <div className="fixed bottom-14 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4 z-40">
         {isOwnProfile ? (
           <Button
             size="lg"
