@@ -468,6 +468,7 @@ export const specialistProfileStrings: Record<string, Record<Locale, string>> = 
   noReviewsYet: { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Отзывов пока нет' },
   viewAllReviews: { en: 'View all reviews', uk: 'Переглянути всі відгуки', ru: 'Посмотреть все отзывы' },
   bookAppointment: { en: 'Book Appointment', uk: 'Забронювати', ru: 'Забронировать' },
+  cannotBookOwn: { en: "You can't book your own service", uk: 'Ви не можете записатися на свою послугу', ru: 'Вы не можете записаться на свою услугу' },
 };
 
 // Specialist services page

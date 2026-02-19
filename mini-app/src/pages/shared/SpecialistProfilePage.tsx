@@ -50,6 +50,16 @@ export const SpecialistProfilePage: React.FC = () => {
   const [showPortfolioItem, setShowPortfolioItem] = useState<any>(null);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Prevent specialists from booking their own services
+  const userRole = (user?.role || (user as any)?.userType || '').toLowerCase();
+  const isOwnProfile = Boolean(
+    isAuthenticated &&
+    user?.id &&
+    userRole === 'specialist' &&
+    selectedSpecialist &&
+    ((selectedSpecialist as any)?.userId === user.id || (selectedSpecialist as any)?.user?.id === user.id)
+  );
+
   useEffect(() => {
     if (id) {
       dispatch(fetchSpecialistAsync(id));
@@ -364,12 +374,24 @@ export const SpecialistProfilePage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleBookService(service)}
-                    >
-                      {t(specialistProfileStrings, 'book', locale)}
-                    </Button>
+                    {isOwnProfile ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled
+                        className="opacity-50 cursor-not-allowed"
+                        title={t(specialistProfileStrings, 'cannotBookOwn', locale)}
+                      >
+                        {t(specialistProfileStrings, 'book', locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleBookService(service)}
+                      >
+                        {t(specialistProfileStrings, 'book', locale)}
+                      </Button>
+                    )}
                   </div>
                 </Card>
               )) || (
@@ -514,26 +536,38 @@ export const SpecialistProfilePage: React.FC = () => {
 
       {/* Fixed Bottom Action */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
-        <Button
-          onClick={() => {
-            if (selectedSpecialist.services && selectedSpecialist.services.length === 1) {
-              handleBookService(selectedSpecialist.services[0]);
-            } else if (selectedSpecialist.services && selectedSpecialist.services.length > 1) {
-              // Multiple services — switch to services tab so user can pick
-              setActiveTab('services');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              hapticFeedback.impactLight();
-            }
-          }}
-          size="lg"
-          className="w-full"
-          disabled={!selectedSpecialist.services || selectedSpecialist.services.length === 0}
-        >
-          <Calendar size={18} className="mr-2" />
-          {selectedSpecialist.services && selectedSpecialist.services.length > 1
-            ? t(specialistProfileStrings, 'services', locale)
-            : t(specialistProfileStrings, 'bookAppointment', locale)}
-        </Button>
+        {isOwnProfile ? (
+          <Button
+            size="lg"
+            className="w-full opacity-50 cursor-not-allowed"
+            disabled
+            variant="secondary"
+          >
+            <Calendar size={18} className="mr-2" />
+            {t(specialistProfileStrings, 'cannotBookOwn', locale)}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              if (selectedSpecialist.services && selectedSpecialist.services.length === 1) {
+                handleBookService(selectedSpecialist.services[0]);
+              } else if (selectedSpecialist.services && selectedSpecialist.services.length > 1) {
+                // Multiple services — switch to services tab so user can pick
+                setActiveTab('services');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                hapticFeedback.impactLight();
+              }
+            }}
+            size="lg"
+            className="w-full"
+            disabled={!selectedSpecialist.services || selectedSpecialist.services.length === 0}
+          >
+            <Calendar size={18} className="mr-2" />
+            {selectedSpecialist.services && selectedSpecialist.services.length > 1
+              ? t(specialistProfileStrings, 'services', locale)
+              : t(specialistProfileStrings, 'bookAppointment', locale)}
+          </Button>
+        )}
       </div>
     </div>
   );

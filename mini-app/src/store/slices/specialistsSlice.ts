@@ -3,6 +3,7 @@ import { apiService } from '../../services/api.service';
 
 export interface Specialist {
   id: string;
+  userId?: string;
   name: string;
   email: string;
   phone: string;
@@ -118,6 +119,7 @@ export const fetchSpecialistAsync = createAsyncThunk(
     const raw: any = await apiService.getSpecialist(id);
     return {
       ...raw,
+      userId: raw.userId || raw.user?.id || '',
       name: raw.user ? `${raw.user.firstName} ${raw.user.lastName}`.trim() : raw.name || '',
       avatar: raw.user?.avatar || raw.avatar,
       phone: raw.user?.phoneNumber || raw.phoneNumber || raw.phone || '',

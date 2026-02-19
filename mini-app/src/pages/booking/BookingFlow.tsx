@@ -21,7 +21,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
-import { bookingFlowStrings, commonStrings } from '@/utils/translations';
+import { bookingFlowStrings, commonStrings, specialistProfileStrings } from '@/utils/translations';
 import { createBookingAsync } from '@/store/slices/bookingsSlice';
 import { fetchServiceAsync } from '@/store/slices/servicesSlice';
 import { apiService } from '@/services/api.service';
@@ -301,8 +301,13 @@ export const BookingFlow: React.FC = () => {
         await showAlert(t(bookingFlowStrings, 'bookingSuccess', locale));
         hapticFeedback.notificationSuccess();
         navigate('/bookings');
-      } catch (error) {
-        await showAlert(t(bookingFlowStrings, 'bookingFailed', locale));
+      } catch (error: any) {
+        const errorMsg = error?.message || error?.response?.data?.message || '';
+        if (errorMsg.includes('CANNOT_BOOK_OWN_SERVICE')) {
+          await showAlert(t(specialistProfileStrings, 'cannotBookOwn', locale));
+        } else {
+          await showAlert(t(bookingFlowStrings, 'bookingFailed', locale));
+        }
         hapticFeedback.notificationError();
       } finally {
         mainButton.hideProgress();

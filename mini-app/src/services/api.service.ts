@@ -166,8 +166,9 @@ class ApiService {
     return this.get(`/specialists/${id}/services`);
   }
 
-  async getSpecialistAvailability(id: string, date: string) {
-    return this.get(`/specialists/${id}/availability`, { date });
+  async getSpecialistAvailability(id: string, date: string): Promise<string[]> {
+    const result = await this.get<{ availableSlots: string[] }>(`/specialists/${id}/slots`, { date });
+    return (result as any)?.availableSlots || [];
   }
 
   // Bookings endpoints
