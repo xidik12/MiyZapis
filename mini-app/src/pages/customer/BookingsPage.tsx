@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Calendar, Clock, MapPin, Phone, MessageCircle, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, MessageCircle, X, Star } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Sheet } from '@/components/ui/Sheet';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
@@ -20,10 +21,11 @@ export const BookingsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const locale = useLocale();
-  const { hapticFeedback } = useTelegram();
+  const { hapticFeedback, showConfirm, showAlert } = useTelegram();
 
   const [activeTab, setActiveTab] = useState<BookingTab>('upcoming');
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
   const { bookings, isLoading, error } = useSelector((state: RootState) => state.bookings);
 
@@ -45,20 +47,39 @@ export const BookingsPage: React.FC = () => {
   const displayBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm(s('confirmCancel'))) return;
+    const confirmed = await showConfirm(s('confirmCancel'));
+    if (!confirmed) return;
 
-    hapticFeedback.notificationOccurred('warning');
+    hapticFeedback.notificationWarning();
     setCancellingId(bookingId);
 
     try {
       await dispatch(cancelBookingAsync({ id: bookingId })).unwrap();
-      alert(s('cancelled'));
-      hapticFeedback.notificationOccurred('success');
+      await showAlert(s('cancelled'));
+      hapticFeedback.notificationSuccess();
+      setSelectedBooking(null);
     } catch (error) {
-      alert(s('cancelFailed'));
-      hapticFeedback.notificationOccurred('error');
+      await showAlert(s('cancelFailed'));
+      hapticFeedback.notificationError();
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const handleReschedule = (booking: any) => {
+    const serviceId = booking.service?.id || booking.serviceId;
+    const specialistId = booking.specialist?.id || booking.specialistId;
+    if (serviceId && specialistId) {
+      navigate('/booking', {
+        state: { serviceId, specialistId },
+      });
+    }
+  };
+
+  const handleLeaveReview = (booking: any) => {
+    const specialistId = booking.specialist?.id || booking.specialistId;
+    if (specialistId) {
+      navigate(`/specialist/${specialistId}`);
     }
   };
 
@@ -81,7 +102,7 @@ export const BookingsPage: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         title={s('title')}
-        showBack
+        showBackButton
         rightContent={
           <Button
             size="sm"
@@ -161,7 +182,7 @@ export const BookingsPage: React.FC = () => {
                 hover
                 onClick={() => {
                   hapticFeedback.impactLight();
-                  navigate(`/booking/${booking.id}`);
+                  setSelectedBooking(booking);
                 }}
               >
                 <div className="space-y-3">
@@ -215,8 +236,7 @@ export const BookingsPage: React.FC = () => {
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Navigate to booking detail for reschedule options
-                          navigate(`/booking/${booking.id}`);
+                          handleReschedule(booking);
                         }}
                       >
                         {s('reschedule')}
@@ -229,7 +249,7 @@ export const BookingsPage: React.FC = () => {
                           hapticFeedback.impactLight();
                           try {
                             // Create or get conversation with specialist
-                            const specialistUserId = booking.specialist?.userId || booking.specialist?.id;
+                            const specialistUserId = booking.specialist?.id;
                             if (specialistUserId) {
                               const conv = await apiService.createConversation(specialistUserId) as any;
                               const convId = conv?.id || conv?.conversationId;
@@ -286,9 +306,10 @@ export const BookingsPage: React.FC = () => {
                         className="w-full"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/booking/${booking.id}/review`);
+                          handleLeaveReview(booking);
                         }}
                       >
+                        <Star size={14} className="mr-1" />
                         {s('leaveReview')}
                       </Button>
                     </div>
@@ -299,6 +320,108 @@ export const BookingsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Booking Detail Sheet */}
+      <Sheet
+        isOpen={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        title={s('viewDetails')}
+      >
+        {selectedBooking && (
+          <div className="space-y-4">
+            {/* Service Info */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-semibold text-text-primary text-lg">
+                  {selectedBooking.service?.name || selectedBooking.serviceName || c('service')}
+                </h3>
+                <p className="text-sm text-text-secondary">
+                  {[selectedBooking.specialist?.firstName, selectedBooking.specialist?.lastName].filter(Boolean).join(' ') || ''}
+                </p>
+              </div>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedBooking.status)}`}
+              >
+                {c(selectedBooking.status)}
+              </span>
+            </div>
+
+            {/* Date & Time */}
+            <div className="bg-bg-secondary rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <Calendar size={18} className="text-accent-primary" />
+                <span className="text-text-primary font-medium">
+                  {format(parseISO(selectedBooking.scheduledAt), 'PPP')}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock size={18} className="text-accent-primary" />
+                <span className="text-text-primary font-medium">
+                  {format(parseISO(selectedBooking.scheduledAt), 'p')}
+                </span>
+              </div>
+            </div>
+
+            {/* Price & Duration */}
+            <div className="flex justify-between items-center">
+              <span className="text-2xl font-bold text-accent-primary">
+                {formatCurrency(selectedBooking.totalAmount, undefined, locale)}
+              </span>
+              <span className="text-text-muted">
+                {selectedBooking.service?.duration || 0} {c('min')}
+              </span>
+            </div>
+
+            {/* Notes */}
+            {selectedBooking.notes && (
+              <div className="bg-bg-secondary rounded-xl p-4">
+                <p className="text-sm text-text-secondary">{selectedBooking.notes}</p>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-2 pt-2">
+              {selectedBooking.status !== 'cancelled' && selectedBooking.status !== 'completed' && (
+                <>
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedBooking(null);
+                      handleReschedule(selectedBooking);
+                    }}
+                  >
+                    {s('reschedule')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => handleCancelBooking(selectedBooking.id)}
+                    disabled={cancellingId === selectedBooking.id}
+                  >
+                    {cancellingId === selectedBooking.id ? (
+                      <LoadingSpinner size="sm" className="mr-2" />
+                    ) : null}
+                    {s('cancelBooking')}
+                  </Button>
+                </>
+              )}
+
+              {selectedBooking.status === 'completed' && !selectedBooking.review && (
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedBooking(null);
+                    handleLeaveReview(selectedBooking);
+                  }}
+                >
+                  <Star size={16} className="mr-2" />
+                  {s('leaveReview')}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </Sheet>
     </div>
   );
 };

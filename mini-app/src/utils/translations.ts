@@ -118,6 +118,8 @@ export const bookingFlowStrings: Record<string, Record<Locale, string>> = {
   bookingSuccess: { en: 'Booking created successfully!', uk: 'Запис успішно створено!', ru: 'Запись успешно создана!' },
   bookingFailed: { en: 'Failed to create booking', uk: 'Не вдалося створити запис', ru: 'Не удалось создать запись' },
   securePaymentViaTelegram: { en: 'Secure payment via Telegram', uk: 'Безпечна оплата через Telegram', ru: 'Безопасная оплата через Telegram' },
+  requiredField: { en: 'Required field', uk: 'Обов\'язкове поле', ru: 'Обязательное поле' },
+  showMoreDates: { en: 'Show more dates', uk: 'Показати більше дат', ru: 'Показать больше дат' },
 };
 
 // Search page

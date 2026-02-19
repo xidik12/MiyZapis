@@ -113,18 +113,12 @@ const SpecialistProfilePage: React.FC = () => {
         await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
       }
     } catch (error: any) {
-      console.error('Error toggling favorite:', error);
-      
       // Handle specific error cases
       if (error.response?.status === 409) {
-        console.log('🚫 Conflict error - likely trying to favorite own profile or already favorited');
-        // Show user-friendly message
         toast.info(t('specialist.favorites.conflict') || 'You cannot favorite your own profile or this specialist is already in your favorites.');
       } else if (error.response?.status === 401) {
-        console.log('🔒 Authentication required');
         toast.info(t('specialist.favorites.loginRequired') || 'Please log in to add favorites.');
       } else {
-        console.log('❌ Generic favorites error:', error.message);
         toast.error(t('specialist.favorites.updateError') || 'Failed to update favorites. Please try again.');
       }
       
@@ -143,25 +137,6 @@ const SpecialistProfilePage: React.FC = () => {
         
         // Fetch specialist profile
         const specialistData = await specialistService.getPublicProfile(specialistId);
-        console.log('🔍 Specialist data received:', specialistData);
-        console.log('🏢 Bio fields:', { 
-          bio: specialistData.bio, 
-          bioUk: specialistData.bioUk, 
-          bioRu: specialistData.bioRu 
-        });
-        console.log('📍 Location fields:', { 
-          city: specialistData.city, 
-          state: specialistData.state, 
-          country: specialistData.country, 
-          address: specialistData.address 
-        });
-        console.log('📷 Portfolio images:', specialistData.portfolioImages);
-        console.log('🏷️ Specialties:', specialistData.specialties);
-        console.log('👤 User data:', specialistData.user);
-        console.log('🖼️ Avatar paths:', {
-          userAvatar: specialistData.user?.avatar,
-          directAvatar: specialistData.avatar
-        });
         setSpecialist(specialistData);
 
         // Fetch specialist reviews with basic parameters
@@ -169,7 +144,6 @@ const SpecialistProfilePage: React.FC = () => {
           const reviewsData = await reviewsService.getSpecialistReviews(specialistId, 1, 10);
           setReviews(reviewsData.reviews || []);
         } catch (reviewError) {
-          console.warn('Failed to load reviews, continuing without them:', reviewError);
           setReviews([]);
         }
 
@@ -178,7 +152,7 @@ const SpecialistProfilePage: React.FC = () => {
         setServices(servicesData || []);
 
       } catch (error) {
-        console.error('Error fetching specialist data:', error);
+        // Specialist data fetch failed — loading state will be cleared
       } finally {
         setLoading(false);
       }
@@ -217,9 +191,8 @@ const SpecialistProfilePage: React.FC = () => {
           // Backend expects specialist userId; fall back to route param if needed
           const profileViewId = specialist?.user?.id || specialist?.userId || specialistId;
           await profileViewService.trackProfileView(profileViewId as string);
-          console.log('✅ Profile view tracked for specialist:', specialistId);
         } catch (error) {
-          console.warn('Failed to track profile view:', error);
+          // Profile view tracking is non-critical — silently ignore
         }
       }
     };
@@ -326,7 +299,11 @@ const SpecialistProfilePage: React.FC = () => {
                   {t('actions.book') || 'Book'}
                 </button>
               ) : (
-                <Link to={`/booking/${services[0]?.id || ''}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
+                services.length === 1 ? (
+                  <Link to={`/booking/${services[0]?.id}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
+                ) : (
+                  <a href="#services-section" className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</a>
+                )
               )}
               {isOwnProfile ? (
                 <button className="btn btn-secondary btn-sm cursor-not-allowed opacity-60 hidden sm:block" disabled>
@@ -357,14 +334,6 @@ const SpecialistProfilePage: React.FC = () => {
                   className="border-4 border-white shadow-lg"
                   fallbackIcon={false}
                 />
-                {/* Debug specialist avatar data */}
-                {console.log('🔍 SpecialistProfilePage - Avatar debug:', {
-                  specialistUserAvatar: specialist.user?.avatar,
-                  specialistAvatar: specialist.avatar,
-                  finalAvatarSrc: specialist.user?.avatar || specialist.avatar,
-                  specialistId: specialist.id,
-                  specialistKeys: Object.keys(specialist)
-                })}
                 {specialist.user?.isVerified && (
                   <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-8 h-8 text-primary-600 bg-white rounded-full" />
                 )}
@@ -401,15 +370,7 @@ const SpecialistProfilePage: React.FC = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 sm:mt-6 md:mt-0">
-              {(() => {
-                const shouldShowFavorite = user && specialist?.userId !== user.id;
-                console.log('🔍 Favorite button logic:', {
-                  user: user?.id,
-                  specialistUserId: specialist?.userId,
-                  shouldShow: shouldShowFavorite
-                });
-                return shouldShowFavorite;
-              })() && (
+              {user && specialist?.userId !== user.id && (
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
@@ -432,14 +393,31 @@ const SpecialistProfilePage: React.FC = () => {
               )}
 
               {services.length > 0 ? (
-                <Link
-                  to={isOwnProfile ? '#' : `/book/${services[0]?.id}`}
-                  onClick={(e) => { if (isOwnProfile) e.preventDefault(); }}
-                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial`}
-                >
-                  <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
-                  <span>{t('actions.bookNow')}</span>
-                </Link>
+                isOwnProfile ? (
+                  <button
+                    disabled
+                    className="bg-gray-400 cursor-not-allowed text-white px-4 sm:px-6 py-2 rounded-xl flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
+                  >
+                    <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                    <span>{t('actions.bookNow')}</span>
+                  </button>
+                ) : services.length === 1 ? (
+                  <Link
+                    to={`/booking/${services[0]?.id}`}
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
+                  >
+                    <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                    <span>{t('actions.bookNow')}</span>
+                  </Link>
+                ) : (
+                  <a
+                    href="#services-section"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
+                  >
+                    <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                    <span>{t('actions.bookNow')}</span>
+                  </a>
+                )
               ) : (
                 <div className="bg-gray-400 text-white px-4 sm:px-6 py-2 rounded-xl cursor-not-allowed flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial">
                   <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
@@ -476,11 +454,8 @@ const SpecialistProfilePage: React.FC = () => {
                          : []);
                   }
                 } catch (error) {
-                  console.error('Error parsing specialties:', error);
                   specialties = [];
                 }
-                
-                console.log('🏷️ Specialties processed:', specialties);
                 
                 return specialties && specialties.length > 0 && (
                   <div className="mt-3 sm:mt-4">
@@ -514,11 +489,8 @@ const SpecialistProfilePage: React.FC = () => {
                        : []);
                 }
               } catch (error) {
-                console.error('Error parsing portfolio images:', error);
                 portfolioImages = [];
               }
-              
-              console.log('🖼️ Portfolio images processed:', portfolioImages);
               
               return portfolioImages && portfolioImages.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
@@ -582,7 +554,7 @@ const SpecialistProfilePage: React.FC = () => {
             )}
 
             {/* Services */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
+            <div id="services-section" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                 {t('specialist.services')}
               </h2>
@@ -621,7 +593,7 @@ const SpecialistProfilePage: React.FC = () => {
                             </button>
                           ) : (
                             <Link
-                              to={`/book/${service.id}`}
+                              to={`/booking/${service.id}`}
                               className="inline-block mt-0 sm:mt-2 px-2 sm:px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-xs sm:text-sm font-medium transition-colors"
                             >
                               {t('actions.book')}

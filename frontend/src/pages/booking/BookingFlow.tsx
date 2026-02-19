@@ -380,7 +380,7 @@ const BookingFlow: React.FC = () => {
 
     // Auto-refresh slots every 30 seconds to catch newly booked slots
     const refreshInterval = setInterval(() => {
-      if (currentStep === 2 && selectedDate) {
+      if (currentStep === 1 && selectedDate) {
         logger.debug('🔄 BookingFlow: Auto-refreshing available slots...');
         fetchAvailableSlots();
       }
@@ -1088,7 +1088,7 @@ const BookingFlow: React.FC = () => {
                     {t('booking.noAvailableDates')}
                   </p>
                   <p className="text-sm text-gray-400 dark:text-gray-500">
-                    The specialist has no available time slots in the next 30 days
+                    {t('booking.noSlotsInNext30Days') || 'The specialist has no available time slots in the next 30 days'}
                   </p>
                 </div>
               )}
@@ -2082,7 +2082,7 @@ const BookingFlow: React.FC = () => {
                   </div>
                   <div className="text-center">
                     <button
-                      onClick={() => window.open('/loyalty', '_blank')}
+                      onClick={() => navigate('/customer/loyalty')}
                       className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
                     >
                       <StarIcon className="h-4 w-4 mr-1" />

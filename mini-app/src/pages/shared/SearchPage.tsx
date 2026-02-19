@@ -277,7 +277,17 @@ export const SearchPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-lg font-bold text-accent-primary">{formatCurrency(service.price, undefined, locale)}</span>
-                <Button size="sm">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/booking', {
+                      state: { serviceId: service.id, specialistId: service.specialistId || service.specialist?.id },
+                    });
+                  }}
+                >
+                  {t(serviceDetailStrings, 'bookNow', locale)}
+                </Button>
               </div>
             </div>
           </div>
@@ -332,7 +342,18 @@ export const SearchPage: React.FC = () => {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-accent-primary">{formatCurrency(service.price, undefined, locale)}</span>
-            <Button size="sm" className="text-xs px-2 py-1">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
+            <Button
+              size="sm"
+              className="text-xs px-2 py-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/booking', {
+                  state: { serviceId: service.id, specialistId: service.specialistId || service.specialist?.id },
+                });
+              }}
+            >
+              {t(serviceDetailStrings, 'bookNow', locale)}
+            </Button>
           </div>
         </div>
       </Card>

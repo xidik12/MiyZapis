@@ -6,6 +6,7 @@ import {
   MapPin,
   Star,
   ChevronRight,
+  ChevronDown,
   Check,
   User,
   Phone,
@@ -75,12 +76,32 @@ export const BookingFlow: React.FC = () => {
     notes: ''
   });
 
+  // Extended slots state (days 8-14)
+  const [extendedSlots, setExtendedSlots] = useState<TimeSlot[]>([]);
+  const [loadingExtended, setLoadingExtended] = useState(false);
+  const [showExtended, setShowExtended] = useState(false);
+
+  // Track which fields the user has interacted with (for inline validation)
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  const markFieldTouched = (field: string) => {
+    setTouchedFields(prev => ({ ...prev, [field]: true }));
+  };
+
+  const getFieldError = (field: string): string | undefined => {
+    if (!touchedFields[field]) return undefined;
+    const value = bookingDetails[field as keyof typeof bookingDetails];
+    if ((field === 'firstName' || field === 'phone') && !value.trim()) {
+      return t(bookingFlowStrings, 'requiredField', locale);
+    }
+    return undefined;
+  };
+
   const serviceId = searchParams.get('serviceId') || location.state?.serviceId;
   const specialistId = searchParams.get('specialistId') || location.state?.specialistId;
 
-  // Dynamic booking steps with translations
+  // 3 steps: datetime, details, payment (service review is now a persistent banner)
   const bookingSteps: BookingStep[] = [
-    { id: 'service', title: t(bookingFlowStrings, 'selectService', locale), completed: false },
     { id: 'datetime', title: t(bookingFlowStrings, 'dateTime', locale), completed: false },
     { id: 'details', title: t(bookingFlowStrings, 'details', locale), completed: false },
     { id: 'payment', title: t(bookingFlowStrings, 'payment', locale), completed: false }
@@ -100,35 +121,50 @@ export const BookingFlow: React.FC = () => {
     }
   }, [selectedService, specialistId]);
 
+  // Parallel availability loader for a date range
+  const loadSlotsForRange = async (startDay: number, endDay: number): Promise<TimeSlot[]> => {
+    if (!specialistId) return [];
+
+    const today = new Date();
+    const dateStrings: string[] = [];
+    for (let i = startDay; i < endDay; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dateStrings.push(date.toISOString().split('T')[0]);
+    }
+
+    // Fire all requests concurrently
+    const results = await Promise.allSettled(
+      dateStrings.map(dateStr =>
+        apiService.getSpecialistAvailability(specialistId, dateStr)
+          .then(availability => ({ date: dateStr, availability }))
+      )
+    );
+
+    const slots: TimeSlot[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        const { date, availability } = result.value;
+        if (availability && Array.isArray(availability) && availability.length > 0) {
+          slots.push({ date, slots: availability });
+        }
+      }
+    }
+
+    return slots;
+  };
+
   const loadAvailability = async () => {
     if (!specialistId) return;
 
     setLoadingAvailability(true);
     setAvailabilityError(null);
+    setShowExtended(false);
+    setExtendedSlots([]);
 
     try {
-      // Get availability for the next 7 days
-      const slots: TimeSlot[] = [];
-      const today = new Date();
-
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-
-        try {
-          const availability = await apiService.getSpecialistAvailability(specialistId, dateStr);
-          if (availability && Array.isArray(availability) && availability.length > 0) {
-            slots.push({
-              date: dateStr,
-              slots: availability
-            });
-          }
-        } catch (err) {
-          // Continue to next date if this one fails
-          console.error(`Failed to load availability for ${dateStr}:`, err);
-        }
-      }
+      // Get availability for the next 7 days (parallelized)
+      const slots = await loadSlotsForRange(0, 7);
 
       if (slots.length === 0) {
         setAvailabilityError(t(bookingFlowStrings, 'noSlotsAvailable', locale));
@@ -136,10 +172,22 @@ export const BookingFlow: React.FC = () => {
 
       setAvailableSlots(slots);
     } catch (error) {
-      console.error('Failed to load availability:', error);
       setAvailabilityError(t(commonStrings, 'error', locale));
     } finally {
       setLoadingAvailability(false);
+    }
+  };
+
+  const loadExtendedDates = async () => {
+    setLoadingExtended(true);
+    try {
+      const slots = await loadSlotsForRange(7, 14);
+      setExtendedSlots(slots);
+      setShowExtended(true);
+    } catch (error) {
+      // Silently fail — user still has first 7 days
+    } finally {
+      setLoadingExtended(false);
     }
   };
 
@@ -188,12 +236,6 @@ export const BookingFlow: React.FC = () => {
     const step = bookingSteps[currentStep];
 
     switch (step.id) {
-      case 'service':
-        mainButton.setText(t(commonStrings, 'continue', locale));
-        mainButton.show();
-        setMainButtonHandler(handleServiceNext);
-        break;
-
       case 'datetime':
         if (selectedDate && selectedTime) {
           mainButton.setText(t(commonStrings, 'continue', locale));
@@ -222,18 +264,13 @@ export const BookingFlow: React.FC = () => {
     }
   }, [currentStep, selectedDate, selectedTime, bookingDetails, locale]);
 
-  const handleServiceNext = () => {
+  const handleDateTimeNext = () => {
     setCurrentStep(1);
     hapticFeedback.impactLight();
   };
 
-  const handleDateTimeNext = () => {
-    setCurrentStep(2);
-    hapticFeedback.impactLight();
-  };
-
   const handleDetailsNext = () => {
-    setCurrentStep(3);
+    setCurrentStep(2);
     hapticFeedback.impactLight();
   };
 
@@ -265,7 +302,6 @@ export const BookingFlow: React.FC = () => {
         hapticFeedback.notificationSuccess();
         navigate('/bookings');
       } catch (error) {
-        console.error('Booking failed:', error);
         await showAlert(t(bookingFlowStrings, 'bookingFailed', locale));
         hapticFeedback.notificationError();
       } finally {
@@ -298,6 +334,45 @@ export const BookingFlow: React.FC = () => {
     // Use appropriate locale for date formatting
     const localeMap = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU' };
     return date.toLocaleDateString(localeMap[locale], options);
+  };
+
+  // Compact persistent service+specialist banner
+  const renderServiceBanner = () => {
+    if (!selectedService) return null;
+
+    return (
+      <div className="px-4 py-2 bg-bg-card border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-bg-hover flex-shrink-0 overflow-hidden">
+            {selectedService.images && selectedService.images[0] ? (
+              <img
+                src={selectedService.images[0]}
+                alt={selectedService.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-text-muted">
+                <Calendar size={20} />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-text-primary truncate">
+              {selectedService.name}
+            </p>
+            <p className="text-xs text-text-secondary truncate">
+              {selectedService.specialist?.name || ''}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 text-xs text-text-secondary">
+            <span>{selectedService.duration}{t(commonStrings, 'min', locale)}</span>
+            <span className="font-semibold text-accent-primary text-sm">
+              {formatCurrency(selectedService.price, undefined, locale)}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderStepIndicator = () => (
@@ -335,171 +410,105 @@ export const BookingFlow: React.FC = () => {
     </div>
   );
 
-  const renderServiceStep = () => {
-    if (!selectedService) {
-      return (
-        <div className="p-4 flex items-center justify-center min-h-[200px]">
-          <LoadingSpinner size="lg" />
-        </div>
-      );
-    }
+  const renderDateTimeStep = () => {
+    const allSlots = showExtended ? [...availableSlots, ...extendedSlots] : availableSlots;
 
     return (
       <div className="p-4 space-y-4">
-        <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-          <div className="flex gap-4">
-            <div className="w-20 h-20 rounded-lg bg-bg-hover flex-shrink-0">
-              {selectedService.images && selectedService.images[0] ? (
-                <img
-                  src={selectedService.images[0]}
-                  alt={selectedService.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-text-muted">
-                  <Calendar size={32} />
+        <div>
+          <h3 className="font-semibold text-text-primary mb-3">
+            {t(bookingFlowStrings, 'selectDate', locale)}
+          </h3>
+
+          {loadingAvailability ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : availabilityError ? (
+            <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
+              <p className="text-text-secondary">{availabilityError}</p>
+              <Button
+                variant="secondary"
+                onClick={loadAvailability}
+                className="mt-4"
+              >
+                {t(commonStrings, 'retry', locale) || 'Retry'}
+              </Button>
+            </div>
+          ) : allSlots.length === 0 ? (
+            <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
+              <p className="text-text-secondary">
+                {t(bookingFlowStrings, 'noSlotsAvailable', locale)}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {allSlots.map((daySlots) => (
+                <div key={daySlots.date} className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+                  <div className="mb-3">
+                    <h4 className="font-medium text-text-primary">
+                      {formatDate(daySlots.date)}
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {daySlots.slots.map((time) => (
+                      <button
+                        key={`${daySlots.date}-${time}`}
+                        onClick={() => handleTimeSlotSelect(daySlots.date, time)}
+                        className={`
+                          py-2 px-3 rounded-lg text-sm font-medium transition-colors touch-manipulation
+                          ${selectedDate === daySlots.date && selectedTime === time
+                            ? 'bg-accent-primary text-white'
+                            : 'bg-bg-secondary text-text-primary hover:bg-accent-primary hover:text-white'
+                          }
+                        `}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              ))}
+
+              {/* Show more dates button */}
+              {!showExtended && (
+                <Button
+                  variant="secondary"
+                  onClick={loadExtendedDates}
+                  disabled={loadingExtended}
+                  className="w-full"
+                >
+                  {loadingExtended ? (
+                    <LoadingSpinner size="sm" className="mr-2" />
+                  ) : (
+                    <ChevronDown size={16} className="mr-2" />
+                  )}
+                  {t(bookingFlowStrings, 'showMoreDates', locale)}
+                </Button>
               )}
             </div>
-
-            <div className="flex-1">
-              <h3 className="font-semibold text-text-primary mb-1">
-                {selectedService.name}
-              </h3>
-              <p className="text-sm text-text-secondary mb-2">
-                {selectedService.description}
-              </p>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-1">
-                  <Clock size={14} className="text-text-secondary" />
-                  <span className="text-text-secondary">
-                    {selectedService.duration}{t(commonStrings, 'min', locale)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="font-semibold text-accent-primary">{formatCurrency(selectedService.price, undefined, locale)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {selectedService.specialist && (
-          <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-hover">
-                {selectedService.specialist?.avatar ? (
-                  <img
-                    src={selectedService.specialist.avatar}
-                    alt={selectedService.specialist?.name || ''}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-text-muted">
-                    <User size={24} />
-                  </div>
-                )}
+        {selectedDate && selectedTime && selectedService && (
+          <div className="bg-accent-green/15 rounded-2xl p-4 shadow-card border border-white/5">
+            <div className="flex items-center gap-2">
+              <Calendar size={18} className="text-accent-green" />
+              <div>
+                <p className="font-medium text-accent-green">
+                  {formatDate(selectedDate)} {t(commonStrings, 'at', locale) || 'at'} {selectedTime}
+                </p>
+                <p className="text-sm text-accent-green/80">
+                  {t(bookingFlowStrings, 'duration', locale)}: {selectedService.duration} {t(commonStrings, 'min', locale)}
+                </p>
               </div>
-
-              <div className="flex-1">
-                <h4 className="font-semibold text-text-primary">
-                  {selectedService.specialist?.name || ''}
-                </h4>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star size={12} className="text-yellow-400 fill-current" />
-                    <span className="text-text-primary">{selectedService.specialist?.rating || 0}</span>
-                    <span className="text-text-secondary">({selectedService.specialist?.reviewCount || 0})</span>
-                  </div>
-                </div>
-              </div>
-
-              <ChevronRight size={18} className="text-text-secondary" />
             </div>
           </div>
         )}
       </div>
     );
   };
-
-  const renderDateTimeStep = () => (
-    <div className="p-4 space-y-4">
-      <div>
-        <h3 className="font-semibold text-text-primary mb-3">
-          {t(bookingFlowStrings, 'selectDate', locale)}
-        </h3>
-
-        {loadingAvailability ? (
-          <div className="flex items-center justify-center py-8">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : availabilityError ? (
-          <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
-            <p className="text-text-secondary">{availabilityError}</p>
-            <Button
-              variant="outline"
-              onClick={loadAvailability}
-              className="mt-4"
-            >
-              {t(commonStrings, 'retry', locale) || 'Retry'}
-            </Button>
-          </div>
-        ) : availableSlots.length === 0 ? (
-          <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
-            <p className="text-text-secondary">
-              {t(bookingFlowStrings, 'noSlotsAvailable', locale)}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {availableSlots.map((daySlots) => (
-              <div key={daySlots.date} className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-                <div className="mb-3">
-                  <h4 className="font-medium text-text-primary">
-                    {formatDate(daySlots.date)}
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {daySlots.slots.map((time) => (
-                    <button
-                      key={`${daySlots.date}-${time}`}
-                      onClick={() => handleTimeSlotSelect(daySlots.date, time)}
-                      className={`
-                        py-2 px-3 rounded-lg text-sm font-medium transition-colors touch-manipulation
-                        ${selectedDate === daySlots.date && selectedTime === time
-                          ? 'bg-accent-primary text-white'
-                          : 'bg-bg-secondary text-text-primary hover:bg-accent-primary hover:text-white'
-                        }
-                      `}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {selectedDate && selectedTime && selectedService && (
-        <div className="bg-accent-green/15 rounded-2xl p-4 shadow-card border border-white/5">
-          <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-accent-green" />
-            <div>
-              <p className="font-medium text-accent-green">
-                {formatDate(selectedDate)} {t(commonStrings, 'at', locale) || 'at'} {selectedTime}
-              </p>
-              <p className="text-sm text-accent-green/80">
-                {t(bookingFlowStrings, 'duration', locale)}: {selectedService.duration} {t(commonStrings, 'min', locale)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   const renderDetailsStep = () => (
     <div className="p-4 space-y-4">
@@ -513,6 +522,8 @@ export const BookingFlow: React.FC = () => {
             label={`${t(bookingFlowStrings, 'firstName', locale)} *`}
             value={bookingDetails.firstName}
             onChange={(e) => handleInputChange('firstName', e.target.value)}
+            onBlur={() => markFieldTouched('firstName')}
+            error={getFieldError('firstName')}
             icon={<User size={18} />}
             placeholder={t(bookingFlowStrings, 'firstName', locale)}
             required
@@ -531,6 +542,8 @@ export const BookingFlow: React.FC = () => {
             type="tel"
             value={bookingDetails.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
+            onBlur={() => markFieldTouched('phone')}
+            error={getFieldError('phone')}
             icon={<Phone size={18} />}
             placeholder={t(bookingFlowStrings, 'phoneNumber', locale)}
             required
@@ -642,8 +655,6 @@ export const BookingFlow: React.FC = () => {
 
   const renderCurrentStep = () => {
     switch (bookingSteps[currentStep].id) {
-      case 'service':
-        return renderServiceStep();
       case 'datetime':
         return renderDateTimeStep();
       case 'details':
@@ -676,6 +687,7 @@ export const BookingFlow: React.FC = () => {
       <Header title={t(bookingFlowStrings, 'bookAppointment', locale)} />
 
       {renderStepIndicator()}
+      {renderServiceBanner()}
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {renderCurrentStep()}

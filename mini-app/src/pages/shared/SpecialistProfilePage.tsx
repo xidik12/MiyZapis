@@ -516,8 +516,13 @@ export const SpecialistProfilePage: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
         <Button
           onClick={() => {
-            if (selectedSpecialist.services && selectedSpecialist.services.length > 0) {
+            if (selectedSpecialist.services && selectedSpecialist.services.length === 1) {
               handleBookService(selectedSpecialist.services[0]);
+            } else if (selectedSpecialist.services && selectedSpecialist.services.length > 1) {
+              // Multiple services — switch to services tab so user can pick
+              setActiveTab('services');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              hapticFeedback.impactLight();
             }
           }}
           size="lg"
@@ -525,7 +530,9 @@ export const SpecialistProfilePage: React.FC = () => {
           disabled={!selectedSpecialist.services || selectedSpecialist.services.length === 0}
         >
           <Calendar size={18} className="mr-2" />
-          {t(specialistProfileStrings, 'bookAppointment', locale)}
+          {selectedSpecialist.services && selectedSpecialist.services.length > 1
+            ? t(specialistProfileStrings, 'services', locale)
+            : t(specialistProfileStrings, 'bookAppointment', locale)}
         </Button>
       </div>
     </div>
