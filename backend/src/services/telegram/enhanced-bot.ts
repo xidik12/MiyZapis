@@ -737,6 +737,41 @@ export class EnhancedTelegramBot {
       const serviceId = ctx.match[1];
       await this.toggleFavorite(ctx, serviceId);
     });
+
+    // Common callbacks (all user types)
+    this.bot.action('lang_select', async (ctx) => {
+      await this.showLanguageSelection(ctx);
+    });
+
+    this.bot.action('usertype_select', async (ctx) => {
+      await this.showUserTypeSelection(ctx, true);
+    });
+
+    this.bot.action('settings', async (ctx) => {
+      await this.showSettings(ctx);
+    });
+
+    this.bot.action('specialist_profile', async (ctx) => {
+      await this.showSpecialistProfileView(ctx);
+    });
+
+    this.bot.action('my_profile', async (ctx) => {
+      await this.showCustomerProfile(ctx);
+    });
+
+    this.bot.action('help', async (ctx) => {
+      await this.showHelp(ctx);
+    });
+
+    this.bot.action('payment_methods', async (ctx) => {
+      await this.showPaymentMethodsView(ctx);
+    });
+
+    // Booking category filter
+    this.bot.action(/^bookings_filter_(.+)$/, async (ctx) => {
+      const status = ctx.match[1];
+      await this.showBookingsByStatus(ctx, status);
+    });
   }
 
   private setupMessages() {
@@ -1339,30 +1374,85 @@ export class EnhancedTelegramBot {
 
   private async showBookings(ctx: BotContext) {
     const lang = this.getUserLanguage(ctx);
-    
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
     if (!ctx.session.user) {
       await ctx.reply(this.messages[lang].loginRequired);
       return;
     }
 
     try {
-      await ctx.reply(this.messages[lang].loading);
-
       const userRole = ctx.session.userType === 'SPECIALIST' ? 'specialist' : 'customer';
       const bookings = await BookingService.getUserBookings(
         ctx.session.user.id,
         userRole,
         undefined,
         1,
-        10
+        50
       );
 
       if (bookings.bookings.length === 0) {
-        await ctx.reply(this.messages[lang].notFound);
+        const keyboard = Markup.inlineKeyboard([
+          [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+        ]);
+        await ctx.reply('📅 You have no bookings yet.', keyboard);
         return;
       }
 
-      await this.displayBookings(ctx, bookings.bookings);
+      // Count by status
+      const statusCounts: Record<string, number> = {};
+      for (const b of bookings.bookings) {
+        statusCounts[b.status] = (statusCounts[b.status] || 0) + 1;
+      }
+
+      // Build summary dashboard
+      const statusOrder = ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED'];
+      const lines: string[] = [`📅 **My Bookings** (${bookings.total} total)\n`];
+
+      for (const status of statusOrder) {
+        const count = statusCounts[status] || 0;
+        if (count > 0) {
+          lines.push(`${this.getStatusEmoji(status)} ${status}: **${count}**`);
+        }
+      }
+
+      lines.push(`\nTap a category below to view details:`);
+
+      // Category filter buttons — only show statuses that have bookings
+      const filterButtons: any[][] = [];
+      const row1: any[] = [];
+      const row2: any[] = [];
+
+      for (const status of statusOrder) {
+        const count = statusCounts[status] || 0;
+        if (count === 0) continue;
+        const btn = { text: `${this.getStatusEmoji(status)} ${status} (${count})`, callback_data: `bookings_filter_${status}` };
+        if (row1.length < 2) row1.push(btn);
+        else row2.push(btn);
+      }
+
+      if (row1.length > 0) filterButtons.push(row1);
+      if (row2.length > 0) filterButtons.push(row2);
+
+      // Show remaining statuses in a third row if needed
+      const remaining = statusOrder.filter(s => (statusCounts[s] || 0) > 0).slice(4);
+      if (remaining.length > 0) {
+        filterButtons.push(remaining.map(s => ({
+          text: `${this.getStatusEmoji(s)} ${s} (${statusCounts[s]})`,
+          callback_data: `bookings_filter_${s}`
+        })));
+      }
+
+      filterButtons.push([{ text: '📋 All Bookings', callback_data: 'bookings_filter_ALL' }]);
+      filterButtons.push([
+        { text: '🌐 View on Website', url: `${siteUrl}/bookings` },
+        { text: '◀️ Back', callback_data: 'main_menu' }
+      ]);
+
+      await ctx.reply(lines.join('\n'), {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: filterButtons }
+      });
 
     } catch (error) {
       logger.error('Error showing bookings:', error);
@@ -1370,51 +1460,115 @@ export class EnhancedTelegramBot {
     }
   }
 
-  private async displayBookings(ctx: BotContext, bookings: any[]) {
+  private async showBookingsByStatus(ctx: BotContext, status: string) {
     const lang = this.getUserLanguage(ctx);
-    
-    for (const booking of bookings) {
-      const status = this.getStatusEmoji(booking.status);
-      const date = new Date(booking.scheduledAt).toLocaleDateString();
-      const time = new Date(booking.scheduledAt).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
 
-      let bookingText: string;
-      
-      if (ctx.session.userType === 'SPECIALIST') {
-        bookingText = `${status} **Booking #${booking.id.slice(-6)}**\n\n` +
-                     `👤 Customer: ${booking.customer.firstName} ${booking.customer.lastName}\n` +
-                     `🏪 Service: ${booking.service.name}\n` +
-                     `📅 ${date} at ${time}\n` +
-                     `💰 ${booking.totalAmount} ${booking.customer.currency}\n` +
-                     `📋 Status: ${booking.status}`;
-      } else {
-        bookingText = `${status} **${booking.service.name}**\n\n` +
-                     `👤 ${booking.specialist.user.firstName} ${booking.specialist.user.lastName}\n` +
-                     `📅 ${date} at ${time}\n` +
-                     `💰 ${booking.totalAmount} ${booking.customer.currency}\n` +
-                     `📋 Status: ${booking.status}`;
+    if (!ctx.session.user) {
+      await ctx.reply(this.messages[lang].loginRequired);
+      return;
+    }
+
+    try {
+      const userRole = ctx.session.userType === 'SPECIALIST' ? 'specialist' : 'customer';
+      const statusFilter = status === 'ALL' ? undefined : status;
+      const bookings = await BookingService.getUserBookings(
+        ctx.session.user.id,
+        userRole,
+        statusFilter,
+        1,
+        10
+      );
+
+      if (bookings.bookings.length === 0) {
+        const keyboard = Markup.inlineKeyboard([
+          [Markup.button.callback('◀️ Back to Bookings', ctx.session.userType === 'SPECIALIST' ? 'specialist_bookings' : 'my_bookings')]
+        ]);
+        const label = status === 'ALL' ? '' : ` with status ${status}`;
+        await ctx.reply(`No bookings found${label}.`, keyboard);
+        return;
       }
 
-      const keyboard = this.getBookingKeyboard(booking, ctx.session.userType!);
-      
-      await ctx.reply(bookingText, {
+      const emoji = status === 'ALL' ? '📋' : this.getStatusEmoji(status);
+      const label = status === 'ALL' ? 'All Bookings' : status;
+      const lines: string[] = [`${emoji} **${label}** (${bookings.total})\n`];
+
+      for (const booking of bookings.bookings) {
+        const statusEmoji = this.getStatusEmoji(booking.status);
+        const date = new Date(booking.scheduledAt).toLocaleDateString();
+        const time = new Date(booking.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        if (ctx.session.userType === 'SPECIALIST') {
+          const customer = booking.customer
+            ? `${booking.customer.firstName} ${booking.customer.lastName}`
+            : 'Customer';
+          lines.push(`${statusEmoji} **${booking.service?.name || 'Service'}** — ${customer}`);
+          lines.push(`   📅 ${date} ${time} | 💰 ${booking.totalAmount} ${booking.customer?.currency || 'UAH'}`);
+        } else {
+          const specialist = booking.specialist?.user
+            ? `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`
+            : '';
+          lines.push(`${statusEmoji} **${booking.service?.name || 'Service'}** — ${specialist}`);
+          lines.push(`   📅 ${date} ${time} | 💰 ${booking.totalAmount} ${booking.customer?.currency || 'UAH'}`);
+        }
+      }
+
+      if (bookings.total > 10) {
+        lines.push(`\n_Showing 10 of ${bookings.total}_`);
+      }
+
+      // Context-appropriate action buttons
+      const actionButtons: any[][] = [];
+
+      if (status === 'PENDING' || status === 'ALL') {
+        const pending = bookings.bookings.filter((b: any) => b.status === 'PENDING');
+        for (const b of pending.slice(0, 4)) {
+          const shortId = b.id.slice(-6);
+          if (ctx.session.userType === 'SPECIALIST') {
+            actionButtons.push([
+              { text: `✅ Confirm #${shortId}`, callback_data: `booking_action_confirm_${b.id}` },
+              { text: `❌ Cancel #${shortId}`, callback_data: `booking_action_cancel_${b.id}` }
+            ]);
+          } else {
+            actionButtons.push([
+              { text: `❌ Cancel #${shortId}`, callback_data: `booking_action_cancel_${b.id}` },
+              { text: `📅 Reschedule #${shortId}`, callback_data: `booking_action_reschedule_${b.id}` }
+            ]);
+          }
+        }
+      }
+
+      if ((status === 'COMPLETED' || status === 'ALL') && ctx.session.userType !== 'SPECIALIST') {
+        const completed = bookings.bookings.filter((b: any) => b.status === 'COMPLETED');
+        for (const b of completed.slice(0, 3)) {
+          actionButtons.push([
+            { text: `⭐ Review #${b.id.slice(-6)}`, callback_data: `booking_action_review_${b.id}` }
+          ]);
+        }
+      }
+
+      const backTarget = ctx.session.userType === 'SPECIALIST' ? 'specialist_bookings' : 'my_bookings';
+      actionButtons.push([{ text: '◀️ Back to Bookings', callback_data: backTarget }]);
+
+      await ctx.reply(lines.join('\n'), {
         parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: keyboard }
+        reply_markup: { inline_keyboard: actionButtons }
       });
+
+    } catch (error) {
+      logger.error('Error showing bookings by status:', error);
+      await ctx.reply(this.messages[lang].error);
     }
   }
 
   private getBookingKeyboard(booking: any, userType: string) {
     const keyboard = [];
-    
+
     if (['PENDING', 'CONFIRMED'].includes(booking.status)) {
       keyboard.push([
         { text: '❌ Cancel', callback_data: `booking_action_cancel_${booking.id}` }
       ]);
-      
+
       keyboard.push([
         { text: '📅 Reschedule', callback_data: `booking_action_reschedule_${booking.id}` }
       ]);
@@ -1431,7 +1585,7 @@ export class EnhancedTelegramBot {
         { text: '⭐ Leave Review', callback_data: `booking_action_review_${booking.id}` }
       ]);
     }
-    
+
     keyboard.push([
       { text: '💬 Chat', callback_data: `booking_action_chat_${booking.id}` }
     ]);
@@ -1439,8 +1593,41 @@ export class EnhancedTelegramBot {
     keyboard.push([
       { text: '◀️ Back', callback_data: 'main_menu' }
     ]);
-    
+
     return keyboard;
+  }
+
+  private async displayBookings(ctx: BotContext, bookings: any[]) {
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    // Build compact single message
+    const lines: string[] = [];
+    for (const booking of bookings) {
+      const emoji = this.getStatusEmoji(booking.status);
+      const date = new Date(booking.scheduledAt).toLocaleDateString();
+      const time = new Date(booking.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      if (ctx.session.userType === 'SPECIALIST') {
+        const customer = booking.customer
+          ? `${booking.customer.firstName} ${booking.customer.lastName}`
+          : 'Customer';
+        lines.push(`${emoji} **${booking.service?.name || 'Service'}** — ${customer}`);
+        lines.push(`   📅 ${date} ${time} | 💰 ${booking.totalAmount} ${booking.customer?.currency || 'UAH'} | ${booking.status}`);
+      } else {
+        const specialist = booking.specialist?.user
+          ? `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`
+          : '';
+        lines.push(`${emoji} **${booking.service?.name || 'Service'}** — ${specialist}`);
+        lines.push(`   📅 ${date} ${time} | 💰 ${booking.totalAmount} ${booking.customer?.currency || 'UAH'} | ${booking.status}`);
+      }
+    }
+
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+    ]);
+
+    await ctx.reply(lines.join('\n'), { parse_mode: 'Markdown', ...keyboard });
   }
 
   private getStatusEmoji(status: string): string {
@@ -1458,14 +1645,19 @@ export class EnhancedTelegramBot {
   }
 
   private async showProfile(ctx: BotContext) {
-    const lang = this.getUserLanguage(ctx);
-    await ctx.reply(this.messages[lang].loading);
-    await ctx.reply('Profile feature is under development.');
+    // Route to the appropriate profile view based on user type
+    if (ctx.session.userType === 'SPECIALIST') {
+      await this.showSpecialistProfileView(ctx);
+    } else {
+      await this.showCustomerProfile(ctx);
+    }
   }
 
   private async showHelp(ctx: BotContext) {
     const lang = this.getUserLanguage(ctx);
-    const helpText = `**Help & Support**\n\n` +
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    let helpText = `**Help & Support**\n\n` +
                     `📞 Support: +380 123 456 789\n` +
                     `📧 Email: support@miyzapis.com\n` +
                     `🌐 Website: miyzapis.com\n\n` +
@@ -1483,7 +1675,124 @@ export class EnhancedTelegramBot {
                     `/language - Change language\n` +
                     `/help - This help message`;
 
-    await ctx.reply(helpText, { parse_mode: 'Markdown' });
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.url('🌐 Open Website', siteUrl)],
+      [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+    ]);
+
+    await ctx.reply(helpText, { parse_mode: 'Markdown', ...keyboard });
+  }
+
+  private async showSettings(ctx: BotContext) {
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    const currentLang = lang === 'uk' ? '🇺🇦 Українська' : lang === 'ru' ? '🇷🇺 Русский' : '🇺🇸 English';
+    const currentType = ctx.session.userType === 'SPECIALIST' ? '🏢 Specialist' : ctx.session.userType === 'ADMIN' ? '👨‍💼 Admin' : '👤 Customer';
+
+    const settingsText = `⚙️ **Settings**\n\n` +
+                         `🌐 Language: ${currentLang}\n` +
+                         `👤 User type: ${currentType}`;
+
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('🌐 Change Language', 'lang_select')],
+      [Markup.button.callback('🔄 Switch User Type', 'usertype_select')],
+      [Markup.button.url('🌐 Website Settings', `${siteUrl}/settings`)],
+      [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+    ]);
+
+    await ctx.reply(settingsText, { parse_mode: 'Markdown', ...keyboard });
+  }
+
+  private async showSpecialistProfileView(ctx: BotContext) {
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    if (!ctx.session.user?.specialist) {
+      await ctx.reply(this.messages[lang].accessDenied);
+      return;
+    }
+
+    try {
+      const specialist = await SpecialistService.getProfile(ctx.session.user.specialist.id);
+
+      const specialties = Array.isArray(specialist.specialties) ? specialist.specialties.join(', ') : 'Not set';
+      const verified = specialist.isVerified ? '✅ Verified' : '❌ Not verified';
+      const rating = specialist.rating ? `⭐ ${specialist.rating.toFixed(1)} (${specialist.reviewCount || 0} reviews)` : 'No reviews yet';
+
+      // Build working hours summary
+      let hoursText = '';
+      if (specialist.workingHours && typeof specialist.workingHours === 'object') {
+        const wh = specialist.workingHours as Record<string, any>;
+        const workDays = Object.entries(wh)
+          .filter(([_, v]) => v?.isWorking)
+          .map(([day, v]) => `${day.charAt(0).toUpperCase() + day.slice(1, 3)}: ${v.start}-${v.end}`);
+        hoursText = workDays.length > 0 ? workDays.join(', ') : 'No schedule set';
+      }
+
+      const profileText = `🏢 **Specialist Profile**\n\n` +
+                          `📛 ${specialist.businessName || 'No business name'}\n` +
+                          `📝 ${specialist.bio || 'No bio'}\n\n` +
+                          `🏷️ Specialties: ${specialties}\n` +
+                          `${rating}\n` +
+                          `${verified}\n` +
+                          `🕐 Hours: ${hoursText}\n` +
+                          `📊 Active services: ${specialist._count?.services || 0}`;
+
+      const keyboard = Markup.inlineKeyboard([
+        [Markup.button.url('📝 Edit on Website', `${siteUrl}/specialist/profile`)],
+        [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+      ]);
+
+      await ctx.reply(profileText, { parse_mode: 'Markdown', ...keyboard });
+
+    } catch (error) {
+      logger.error('Error showing specialist profile:', error);
+      await ctx.reply(this.messages[lang].error);
+    }
+  }
+
+  private async showCustomerProfile(ctx: BotContext) {
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    if (!ctx.session.user) {
+      await ctx.reply(this.messages[lang].loginRequired);
+      return;
+    }
+
+    const user = ctx.session.user;
+    const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
+
+    const profileText = `👤 **My Profile**\n\n` +
+                        `📛 ${user.firstName || ''} ${user.lastName || ''}\n` +
+                        `📧 ${user.email || 'Not set'}\n` +
+                        `📱 ${user.phoneNumber || 'Not set'}\n` +
+                        `🎁 Loyalty points: ${user.loyaltyPoints || 0}\n` +
+                        `📅 Member since: ${memberSince}`;
+
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.url('📝 Edit on Website', `${siteUrl}/profile`)],
+      [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+    ]);
+
+    await ctx.reply(profileText, { parse_mode: 'Markdown', ...keyboard });
+  }
+
+  private async showPaymentMethodsView(ctx: BotContext) {
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    const text = `💳 **Payment Methods**\n\n` +
+                 `Payment methods are managed on the website for security.\n` +
+                 `Tap below to manage your cards and payment options.`;
+
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.url('💳 Manage on Website', `${siteUrl}/settings/payments`)],
+      [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+    ]);
+
+    await ctx.reply(text, { parse_mode: 'Markdown', ...keyboard });
   }
 
   // Specialist-specific methods
@@ -1573,7 +1882,7 @@ export class EnhancedTelegramBot {
 
     try {
       // Get specialist schedule
-      const specialist = await SpecialistService.getSpecialist(ctx.session.user.specialist.id);
+      const specialist = await SpecialistService.getProfile(ctx.session.user.specialist.id);
       const workingHours = JSON.parse(specialist.workingHours);
 
       let scheduleText = '📅 **Your Schedule**\n\n';
@@ -1607,7 +1916,8 @@ export class EnhancedTelegramBot {
 
   private async showSpecialistBookings(ctx: BotContext) {
     const lang = this.getUserLanguage(ctx);
-    
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
     if (!ctx.session.user?.specialist) {
       await ctx.reply(this.messages[lang].accessDenied);
       return;
@@ -1619,31 +1929,70 @@ export class EnhancedTelegramBot {
         'specialist',
         undefined,
         1,
-        10
+        50
       );
 
       if (bookings.bookings.length === 0) {
-        await ctx.reply('No bookings found.');
+        const keyboard = Markup.inlineKeyboard([
+          [Markup.button.callback(this.messages[lang].back, 'main_menu')]
+        ]);
+        await ctx.reply('📋 No bookings yet.', keyboard);
         return;
       }
 
-      await ctx.reply(`📋 **Your Bookings** (${bookings.total})\n`, { parse_mode: 'Markdown' });
+      // Count by status
+      const statusCounts: Record<string, number> = {};
+      for (const b of bookings.bookings) {
+        statusCounts[b.status] = (statusCounts[b.status] || 0) + 1;
+      }
 
-      // Group bookings by status
-      const groupedBookings = bookings.bookings.reduce((acc, booking) => {
-        const status = booking.status;
-        if (!acc[status]) acc[status] = [];
-        acc[status].push(booking);
-        return acc;
-      }, {} as Record<string, any[]>);
+      // Build summary dashboard
+      const statusOrder = ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED'];
+      const lines: string[] = [`📋 **Specialist Bookings** (${bookings.total} total)\n`];
 
-      for (const [status, statusBookings] of Object.entries(groupedBookings)) {
-        await ctx.reply(`**${status}** (${statusBookings.length}):`, { parse_mode: 'Markdown' });
-        
-        for (const booking of statusBookings) {
-          await this.displayBookings(ctx, [booking]);
+      for (const status of statusOrder) {
+        const count = statusCounts[status] || 0;
+        if (count > 0) {
+          lines.push(`${this.getStatusEmoji(status)} ${status}: **${count}**`);
         }
       }
+
+      lines.push(`\nTap a category below to view details:`);
+
+      // Category filter buttons
+      const filterButtons: any[][] = [];
+      const row1: any[] = [];
+      const row2: any[] = [];
+
+      for (const status of statusOrder) {
+        const count = statusCounts[status] || 0;
+        if (count === 0) continue;
+        const btn = { text: `${this.getStatusEmoji(status)} ${status} (${count})`, callback_data: `bookings_filter_${status}` };
+        if (row1.length < 2) row1.push(btn);
+        else row2.push(btn);
+      }
+
+      if (row1.length > 0) filterButtons.push(row1);
+      if (row2.length > 0) filterButtons.push(row2);
+
+      const remaining = statusOrder.filter(s => (statusCounts[s] || 0) > 0).slice(4);
+      if (remaining.length > 0) {
+        filterButtons.push(remaining.map(s => ({
+          text: `${this.getStatusEmoji(s)} ${s} (${statusCounts[s]})`,
+          callback_data: `bookings_filter_${s}`
+        })));
+      }
+
+      filterButtons.push([{ text: '📋 All Bookings', callback_data: 'bookings_filter_ALL' }]);
+      filterButtons.push([
+        { text: '🌐 View on Website', url: `${siteUrl}/specialist/bookings` },
+        { text: '◀️ Back', callback_data: 'main_menu' }
+      ]);
+
+      await ctx.reply(lines.join('\n'), {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: filterButtons }
+      });
 
     } catch (error) {
       logger.error('Error showing specialist bookings:', error);
