@@ -1054,7 +1054,7 @@ export class EnhancedTelegramBot {
   }
 
   private getMiniAppUrl(): string {
-    return process.env.TELEGRAM_MINI_APP_URL || 'https://miyzapis-telegram-miniapp.railway.app';
+    return process.env.TELEGRAM_MINI_APP_URL || 'https://miyzapis-telegram-miniapp-production.up.railway.app';
   }
 
   private getCustomerMenuKeyboard(lang: keyof typeof this.messages) {
