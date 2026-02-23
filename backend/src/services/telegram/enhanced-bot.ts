@@ -1,8 +1,10 @@
 import { Telegraf, Context, session, Markup } from 'telegraf';
 import { Update } from 'typegram';
+import jwt from 'jsonwebtoken';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
+import { consumeLinkCode } from '@/utils/telegram-link-codes';
 import { EnhancedAuthService } from '@/services/auth/enhanced';
 import { SpecialistService } from '@/services/specialist';
 import { ServiceService } from '@/services/service';
@@ -346,25 +348,93 @@ export class EnhancedTelegramBot {
     // Start command - handles new users and existing users
     this.bot.command('start', async (ctx) => {
       const lang = this.getUserLanguage(ctx);
-      const payload = ctx.message?.text?.split(' ')[1]; // e.g. "link" from /start link
+      const payload = ctx.message?.text?.split(' ')[1]; // e.g. "link_abc123" from /start link_abc123
+      const siteUrl = config.frontend?.url || 'https://miyzapis.com';
 
-      // Handle /start link — account linking from web Settings page
+      // Handle /start link_CODE — one-time code to bind Telegram to web account
+      if (payload && payload.startsWith('link_')) {
+        await this.handleLinkCode(ctx, payload.slice(5));
+        return;
+      }
+
+      // Handle /start link — redirect to website settings
       if (payload === 'link') {
-        const telegramId = ctx.from?.id?.toString();
-        const firstName = ctx.from?.first_name || '';
-        const settingsUrl = `${config.frontend?.url || 'https://miyzapis.com'}/settings`;
-
         await ctx.reply(
           lang === 'uk'
-            ? `🔗 Підключення Telegram акаунту\n\nВаш Telegram ID: ${telegramId}\n\nЩоб підключити цей Telegram акаунт до вашого профілю MiyZapis, використайте Telegram Login віджет на сайті.`
+            ? `🔗 Щоб підключити Telegram, натисніть "Підключити Telegram" на сторінці налаштувань сайту — вам буде згенеровано код для відправки сюди.`
             : lang === 'ru'
-            ? `🔗 Подключение Telegram аккаунта\n\nВаш Telegram ID: ${telegramId}\n\nЧтобы подключить этот Telegram аккаунт к вашему профилю MiyZapis, используйте Telegram Login виджет на сайте.`
-            : `🔗 Telegram Account Linking\n\nYour Telegram ID: ${telegramId}\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website.`,
+            ? `🔗 Чтобы подключить Telegram, нажмите "Подключить Telegram" на странице настроек сайта — вам будет сгенерирован код для отправки сюда.`
+            : `🔗 To link your Telegram to MiyZapis, click "Link Telegram" on the website settings page — it will generate a code for you to send here.`,
           Markup.inlineKeyboard([
-            [Markup.button.url('🌐 Open Settings', settingsUrl)],
+            [Markup.button.url('🌐 Open Settings', `${siteUrl}/settings`)],
             [Markup.button.callback('🏠 Main Menu', 'main_menu')]
           ])
         );
+        return;
+      }
+
+      // Handle /start login — authenticate via bot and redirect to website
+      if (payload === 'login') {
+        try {
+          const user = ctx.from;
+          const telegramId = user.id.toString();
+
+          let dbUser = await prisma.user.findUnique({
+            where: { telegramId }
+          });
+
+          if (!dbUser) {
+            dbUser = await prisma.user.create({
+              data: {
+                telegramId,
+                firstName: user.first_name || 'User',
+                lastName: user.last_name || '',
+                email: `telegram_${user.id}@temp.com`,
+                userType: 'CUSTOMER',
+                isEmailVerified: false,
+                isActive: true,
+              }
+            });
+          } else {
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { lastLoginAt: new Date() }
+            });
+          }
+
+          const token = jwt.sign(
+            { userId: dbUser.id, email: dbUser.email, userType: dbUser.userType },
+            config.jwt.secret as string,
+            { expiresIn: config.jwt.expiresIn as string } as jwt.SignOptions
+          );
+
+          const loginUrl = `${siteUrl}/auth/telegram-callback?token=${encodeURIComponent(token)}`;
+
+          await ctx.reply(
+            lang === 'uk'
+              ? `Вітаємо, ${user.first_name}! Натисніть нижче, щоб увійти.`
+              : lang === 'ru'
+              ? `Добро пожаловать, ${user.first_name}! Нажмите ниже, чтобы войти.`
+              : `Welcome, ${user.first_name}! Click below to sign in.`,
+            Markup.inlineKeyboard([
+              [Markup.button.url('🔑 Sign in to MiyZapis', loginUrl)]
+            ])
+          );
+
+          logger.info('Enhanced bot login token generated', { telegramId, userId: dbUser.id });
+        } catch (error) {
+          logger.error('Enhanced bot login error:', error);
+          await ctx.reply(
+            lang === 'uk'
+              ? 'Не вдалося увійти. Спробуйте ще раз або скористайтесь входом через email.'
+              : lang === 'ru'
+              ? 'Не удалось войти. Попробуйте ещё раз или воспользуйтесь входом через email.'
+              : 'Could not sign in. Please try again or use email login.',
+            Markup.inlineKeyboard([
+              [Markup.button.url('🌐 Open Login Page', `${siteUrl}/auth/login`)]
+            ])
+          );
+        }
         return;
       }
 
@@ -1032,10 +1102,103 @@ export class EnhancedTelegramBot {
     await this.showMainMenu(ctx);
   }
 
+  // ── Link code handler (shared by /start link_CODE and plain text) ──
+  private async handleLinkCode(ctx: BotContext, code: string) {
+    const telegramId = ctx.from!.id.toString();
+    const lang = this.getUserLanguage(ctx);
+    const siteUrl = config.frontend?.url || 'https://miyzapis.com';
+
+    try {
+      const linkedUserId = consumeLinkCode(code);
+
+      if (!linkedUserId) {
+        await ctx.reply(
+          lang === 'uk'
+            ? 'Цей код посилання закінчився або недійсний.\n\nПерейдіть до Налаштувань > Підключені акаунти і натисніть "Підключити Telegram", щоб отримати новий код.'
+            : lang === 'ru'
+            ? 'Этот код ссылки истёк или недействителен.\n\nПерейдите в Настройки > Подключённые аккаунты и нажмите "Подключить Telegram", чтобы получить новый код.'
+            : 'This link code is expired or invalid.\n\nGo back to Settings > Connected Accounts and click "Link Telegram" to get a fresh code.',
+          Markup.inlineKeyboard([
+            [Markup.button.url('🌐 Open Settings', `${siteUrl}/settings`)]
+          ])
+        );
+        return;
+      }
+
+      // Check if this Telegram is already linked to a different account
+      const existingUser = await prisma.user.findFirst({
+        where: { telegramId, id: { not: linkedUserId } }
+      });
+
+      if (existingUser) {
+        if (existingUser.email?.match(/^telegram_\d+@temp\.com$/)) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { telegramId: null }
+          });
+          logger.info('Auto-unlinked Telegram from temp account', {
+            tempUserId: existingUser.id,
+            telegramId
+          });
+        } else {
+          await ctx.reply(
+            lang === 'uk'
+              ? 'Цей Telegram акаунт вже підключено до іншого профілю MiyZapis. Спочатку відключіть його в налаштуваннях іншого акаунта.'
+              : lang === 'ru'
+              ? 'Этот Telegram аккаунт уже привязан к другому профилю MiyZapis. Сначала отключите его в настройках другого аккаунта.'
+              : 'This Telegram account is already linked to a different MiyZapis account. Unlink it from the other account\'s settings first.'
+          );
+          return;
+        }
+      }
+
+      // Link the account
+      await prisma.user.update({
+        where: { id: linkedUserId },
+        data: { telegramId }
+      });
+
+      const linkedUser = await prisma.user.findUnique({
+        where: { id: linkedUserId },
+        select: { firstName: true }
+      });
+
+      await ctx.reply(
+        lang === 'uk'
+          ? `Telegram підключено успішно!\n\n${linkedUser?.firstName || 'Ваш акаунт'} тепер підключений.\nВи будете отримувати сповіщення про бронювання тут.`
+          : lang === 'ru'
+          ? `Telegram подключён успешно!\n\n${linkedUser?.firstName || 'Ваш аккаунт'} теперь подключён.\nВы будете получать уведомления о бронированиях здесь.`
+          : `Telegram linked successfully!\n\n${linkedUser?.firstName || 'Your account'} is now connected.\nYou will receive booking notifications here.`,
+        Markup.inlineKeyboard([
+          [Markup.button.url('🌐 Open Website', siteUrl)],
+          [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+        ])
+      );
+
+      logger.info('Telegram account linked via enhanced bot', { telegramId, userId: linkedUserId });
+    } catch (error) {
+      logger.error('Enhanced bot link error:', error);
+      await ctx.reply(
+        lang === 'uk'
+          ? 'Щось пішло не так при підключенні. Спробуйте ще раз.'
+          : lang === 'ru'
+          ? 'Что-то пошло не так при подключении. Попробуйте ещё раз.'
+          : 'Something went wrong while linking. Please try again.'
+      );
+    }
+  }
+
   private async handleTextMessage(ctx: BotContext) {
     const state = ctx.session.state;
     const step = ctx.session.step;
     const text = ctx.message.text;
+
+    // Handle link codes sent as plain text (e.g. "link_abc12345" or just "abc12345")
+    if (/^(link_)?[a-f0-9]{8}$/i.test(text.trim())) {
+      const code = text.trim().replace(/^link_/i, '');
+      await this.handleLinkCode(ctx, code);
+      return;
+    }
 
     // Route text messages based on current state
     switch (state) {
@@ -3104,9 +3267,17 @@ export class EnhancedTelegramBot {
     if (!config.telegram.webhookUrl) {
       throw new Error('Webhook URL not configured');
     }
-    
-    await this.bot.telegram.setWebhook(config.telegram.webhookUrl);
-    logger.info('Enhanced Telegram webhook set successfully');
+
+    const webhookOptions: Record<string, any> = {};
+    if (config.telegram.webhookSecret) {
+      webhookOptions.secret_token = config.telegram.webhookSecret;
+    }
+
+    await this.bot.telegram.setWebhook(config.telegram.webhookUrl, webhookOptions);
+    logger.info('Enhanced Telegram webhook set successfully', {
+      url: config.telegram.webhookUrl,
+      hasSecret: !!config.telegram.webhookSecret,
+    });
   }
 
   public getWebhookCallback() {

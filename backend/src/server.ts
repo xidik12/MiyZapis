@@ -23,8 +23,8 @@ import { errorHandler, notFoundHandler } from '@/middleware/error';
 // Routes
 import apiRoutes from '@/routes';
 
-// Telegram Bot
-import { bot } from '@/bot';
+// Telegram Bot (enhanced — i18n, full dashboards, webhook support)
+import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { initializeVapid } from '@/services/push';
@@ -319,13 +319,11 @@ const gracefulShutdown = async (signal: string) => {
 
     try {
       // Stop Telegram bot
-      if (bot && bot.botInfo) {
-        try {
-          await bot.stop('SIGTERM');
-          logger.info('🤖 Telegram bot stopped');
-        } catch (botError) {
-          logger.warn('Bot stop error:', botError instanceof Error ? botError.message : botError);
-        }
+      try {
+        await enhancedTelegramBot.stop();
+        logger.info('🤖 Enhanced Telegram bot stopped');
+      } catch (botError) {
+        logger.warn('Bot stop error:', botError instanceof Error ? botError.message : botError);
       }
       
       // Stop workers
@@ -441,25 +439,28 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Launch Telegram bot with retry (handles 409 during Railway zero-downtime deploys)
-      if (bot) {
-        const launchBot = async (retries = 8, delay = 8000) => {
-          for (let attempt = 1; attempt <= retries; attempt++) {
+      // Launch Enhanced Telegram bot
+      const launchEnhancedBot = async () => {
+        try {
+          if (config.env === 'production' && config.telegram.webhookUrl) {
+            // Production: delete any stale webhook first, then register fresh
             try {
-              await bot.launch({ dropPendingUpdates: true });
-              logger.info('🤖 Telegram bot started in polling mode');
-              return;
-            } catch (error: any) {
-              logger.warn(`Bot launch attempt ${attempt}/${retries} failed: ${error.message}`);
-              if (attempt < retries) {
-                await new Promise(r => setTimeout(r, delay));
-              }
+              await enhancedTelegramBot.getBot().telegram.deleteWebhook();
+            } catch (e) {
+              logger.warn('deleteWebhook before setWebhook:', (e as Error).message);
             }
+            await enhancedTelegramBot.setWebhook();
+            logger.info('🤖 Enhanced Telegram bot started in webhook mode');
+          } else {
+            // Development: use polling
+            await enhancedTelegramBot.launch();
+            logger.info('🤖 Enhanced Telegram bot started in polling mode');
           }
-          logger.error('Telegram bot failed to start after all retries');
-        };
-        launchBot().catch(err => logger.error('Bot launcher error:', err));
-      }
+        } catch (error: any) {
+          logger.error('Enhanced Telegram bot failed to start:', error.message);
+        }
+      };
+      launchEnhancedBot();
 
       // Start background workers (stateless, safe to run once per instance)
       try {
