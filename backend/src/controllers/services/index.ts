@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ServiceService } from '@/services/service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class ServiceController {
@@ -18,8 +18,8 @@ export class ServiceController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -56,10 +56,11 @@ export class ServiceController {
           service,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create service error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -92,8 +93,8 @@ export class ServiceController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -132,10 +133,11 @@ export class ServiceController {
           service,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update service error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -146,7 +148,7 @@ export class ServiceController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -201,10 +203,11 @@ export class ServiceController {
           message: 'Service deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Delete service error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -215,7 +218,7 @@ export class ServiceController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -226,7 +229,7 @@ export class ServiceController {
         return;
       }
 
-      if (error.message === 'ACTIVE_BOOKINGS_EXIST') {
+      if (err.message === 'ACTIVE_BOOKINGS_EXIST') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -325,10 +328,11 @@ export class ServiceController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get service error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -394,10 +398,11 @@ export class ServiceController {
           })),
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist services error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -485,7 +490,7 @@ export class ServiceController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Search services error:', error);
 
       res.status(500).json(
@@ -598,7 +603,7 @@ export class ServiceController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get services by location error:', error);
 
       res.status(500).json(
@@ -621,7 +626,7 @@ export class ServiceController {
           categories,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get categories error:', error);
 
       res.status(500).json(
@@ -669,7 +674,7 @@ export class ServiceController {
           })),
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get popular services error:', error);
 
       res.status(500).json(
@@ -715,7 +720,7 @@ export class ServiceController {
           { message: 'Service currency data migrated successfully' }
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error migrating service currency data:', error);
       res.status(500).json(
         createErrorResponse(
@@ -742,7 +747,7 @@ export class ServiceController {
           { message: 'Loyalty points services retrieved successfully' }
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error getting loyalty points services:', error);
       res.status(500).json(
         createErrorResponse(

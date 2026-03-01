@@ -75,22 +75,22 @@ export const HomePage: React.FC = () => {
     hapticFeedback.impactLight();
   };
 
-  const handleCategoryPress = (category: any) => {
+  const handleCategoryPress = (category: Record<string, unknown>) => {
     navigate(`/search?category=${encodeURIComponent(category.id)}`);
     hapticFeedback.selectionChanged();
   };
 
-  const handleServicePress = (service: any) => {
+  const handleServicePress = (service: Record<string, unknown>) => {
     navigate(`/service/${service.id}`);
     hapticFeedback.impactLight();
   };
 
-  const handleSpecialistPress = (specialist: any) => {
+  const handleSpecialistPress = (specialist: Record<string, unknown>) => {
     navigate(`/specialist/${specialist.id}`);
     hapticFeedback.impactLight();
   };
 
-  const handleBookNowPress = (e: React.MouseEvent, service?: any) => {
+  const handleBookNowPress = (e: React.MouseEvent, service?: Record<string, unknown>) => {
     e.stopPropagation();
     if (!isAuthenticated && !authState) {
       navigate('/auth');
@@ -363,7 +363,7 @@ export const HomePage: React.FC = () => {
             </div>
           ) : services.length > 0 ? (
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {services.map((service: any) => (
+              {services.map((service: Record<string, unknown>) => (
                 <Card
                   key={service.id}
                   hover
@@ -473,7 +473,7 @@ export const HomePage: React.FC = () => {
             </div>
           ) : specialists.length > 0 ? (
             <div className="space-y-3">
-              {specialists.map((specialist: any) => (
+              {specialists.map((specialist: Record<string, unknown>) => (
                 <Card
                   key={specialist.id}
                   hover

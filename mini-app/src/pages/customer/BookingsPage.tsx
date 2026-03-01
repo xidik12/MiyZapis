@@ -66,7 +66,7 @@ export const BookingsPage: React.FC = () => {
     }
   };
 
-  const handleReschedule = (booking: any) => {
+  const handleReschedule = (booking: Record<string, unknown>) => {
     const serviceId = booking.service?.id || booking.serviceId;
     const specialistId = booking.specialist?.id || booking.specialistId;
     if (serviceId && specialistId) {
@@ -76,7 +76,7 @@ export const BookingsPage: React.FC = () => {
     }
   };
 
-  const handleLeaveReview = (booking: any) => {
+  const handleLeaveReview = (booking: Record<string, unknown>) => {
     const specialistId = booking.specialist?.id || booking.specialistId;
     if (specialistId) {
       navigate(`/specialist/${specialistId}`);

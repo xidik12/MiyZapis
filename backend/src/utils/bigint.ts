@@ -10,7 +10,7 @@
  * const data = { count: 5n, total: 100n };
  * serializeBigInt(data); // { count: 5, total: 100 }
  */
-export function serializeBigInt(obj: any): any {
+export function serializeBigInt(obj: unknown): unknown {
   // Handle null/undefined
   if (obj === null || obj === undefined) {
     return obj;
@@ -28,10 +28,10 @@ export function serializeBigInt(obj: any): any {
 
   // Recursively handle objects
   if (typeof obj === 'object') {
-    const result: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        result[key] = serializeBigInt(obj[key]);
+    const result: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = serializeBigInt((obj as Record<string, unknown>)[key]);
       }
     }
     return result;

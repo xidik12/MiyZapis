@@ -42,7 +42,7 @@ export interface AuditLog {
     email: string;
     userType: string;
   };
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -64,9 +64,10 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to get dashboard stats');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin dashboard stats error:', error);
-      throw new Error(error.message || 'Failed to get dashboard statistics');
+      throw new Error(err.message || 'Failed to get dashboard statistics');
     }
   }
 
@@ -78,9 +79,10 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to get user analytics');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin user analytics error:', error);
-      throw new Error(error.message || 'Failed to get user analytics');
+      throw new Error(err.message || 'Failed to get user analytics');
     }
   }
 
@@ -92,9 +94,10 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to get booking analytics');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin booking analytics error:', error);
-      throw new Error(error.message || 'Failed to get booking analytics');
+      throw new Error(err.message || 'Failed to get booking analytics');
     }
   }
 
@@ -106,9 +109,10 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to get financial analytics');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin financial analytics error:', error);
-      throw new Error(error.message || 'Failed to get financial analytics');
+      throw new Error(err.message || 'Failed to get financial analytics');
     }
   }
 
@@ -120,9 +124,10 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to manage users');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin manage users error:', error);
-      throw new Error(error.message || 'Failed to manage users');
+      throw new Error(err.message || 'Failed to manage users');
     }
   }
 
@@ -134,14 +139,15 @@ export class AdminService {
         throw new Error(response.error?.message || 'Failed to get system health');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin system health error:', error);
-      throw new Error(error.message || 'Failed to get system health');
+      throw new Error(err.message || 'Failed to get system health');
     }
   }
 
   // Get audit logs
-  async getAuditLogs(page: number = 1, limit: number = 50, filters?: any): Promise<{
+  async getAuditLogs(page: number = 1, limit: number = 50, filters?: Record<string, unknown>): Promise<{
     auditLogs: AuditLog[];
     pagination: {
       currentPage: number;
@@ -161,16 +167,17 @@ export class AdminService {
 
       const response = await apiClient.get<{
         auditLogs: AuditLog[];
-        pagination: any;
+        pagination: Record<string, unknown>;
       }>(`/admin/audit-logs?${params.toString()}`);
       
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get audit logs');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin audit logs error:', error);
-      throw new Error(error.message || 'Failed to get audit logs');
+      throw new Error(err.message || 'Failed to get audit logs');
     }
   }
 }

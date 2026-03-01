@@ -33,15 +33,16 @@ export class AuthService {
       }
       
       return userData;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // Extract the most detailed error message available
-      const errorDetails = error.response?.data?.errors?.details ||
-                          error.response?.data?.error?.details ||
+      const errorDetails = err.response?.data?.errors?.details ||
+                          err.response?.data?.error?.details ||
                           error.apiError?.details ||
-                          error.response?.data?.errors?.message ||
-                          error.response?.data?.error?.message ||
+                          err.response?.data?.errors?.message ||
+                          err.response?.data?.error?.message ||
                           error.apiError?.message ||
-                          error.message ||
+                          err.message ||
                           'Registration failed';
       throw new Error(errorDetails);
     }
@@ -62,29 +63,30 @@ export class AuthService {
       }
       
       return userData;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // Extract the most detailed error message available
-      const errorDetails = error.response?.data?.errors?.details ||
-                          error.response?.data?.error?.details ||
+      const errorDetails = err.response?.data?.errors?.details ||
+                          err.response?.data?.error?.details ||
                           error.apiError?.details ||
-                          error.response?.data?.errors?.message ||
-                          error.response?.data?.error?.message ||
+                          err.response?.data?.errors?.message ||
+                          err.response?.data?.error?.message ||
                           error.apiError?.message ||
-                          error.message ||
+                          err.message ||
                           'Login failed';
       throw new Error(errorDetails);
     }
   }
 
   // Google authentication
-  async googleAuth(credential: string, userType?: 'customer' | 'specialist'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }> {
+  async googleAuth(credential: string, userType?: 'customer' | 'specialist'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }> {
     try {
-      const payload: any = { credential };
+      const payload: unknown = { credential };
       if (userType) {
         payload.userType = userType;
       }
       
-      const response = await apiClient.post<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }>('/auth-enhanced/google', payload);
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }>('/auth-enhanced/google', payload);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Google authentication failed');
       }
@@ -116,8 +118,9 @@ export class AuthService {
       }
       
       return userData;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Google authentication failed';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Google authentication failed';
       throw new Error(errorMessage);
     }
   }
@@ -137,8 +140,9 @@ export class AuthService {
       }
       
       return userData;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Telegram authentication failed';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Telegram authentication failed';
       throw new Error(errorMessage);
     }
   }
@@ -179,7 +183,7 @@ export class AuthService {
             }
           );
           clearTimeout(timeoutId);
-        } catch (requestError: any) {
+        } catch (requestError: unknown) {
           clearTimeout(timeoutId);
           // Silently handle all logout errors - they don't affect the user experience
           // Backend now responds immediately, so any errors are likely network issues
@@ -244,9 +248,10 @@ export class AuthService {
         throw new Error(response.error?.message || 'Failed to set initial password');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // If 404, try different endpoints that might be available
-      if (error.response?.status === 404) {
+      if (err.response?.status === 404) {
         console.log('Fallback: Trying alternative password setup methods');
 
         // Try change-password endpoint
@@ -258,8 +263,8 @@ export class AuthService {
             throw new Error(response.error?.message || 'Failed to set initial password');
           }
           return response.data;
-        } catch (changeError: any) {
-          if (changeError.response?.status === 404) {
+        } catch (changeError: unknown) {
+          if (changeError && typeof changeError === 'object' && 'response' in changeError && (changeError as { response?: { status?: number } }).response?.status === 404) {
             console.log('Change password endpoint also not found, trying profile update approach');
             // Last resort: Try updating user profile with password field
             try {
@@ -270,7 +275,7 @@ export class AuthService {
                 throw new Error(response.error?.message || 'Failed to set initial password');
               }
               return { message: 'Password set successfully' };
-            } catch (profileError: any) {
+            } catch (profileError: unknown) {
               console.error('All password setup methods failed:', profileError);
               throw new Error('Unable to set password. Please contact support or try using the forgot password option.');
             }
@@ -315,9 +320,10 @@ export class AuthService {
         passwordLastChanged: transformedUser.passwordLastChanged
       });
       return transformedUser;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // Extract error message from API response
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user profile';
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user profile';
       throw new Error(errorMessage);
     }
   }
@@ -346,8 +352,9 @@ export class AuthService {
       // Return the URL of the first uploaded file
       const uploadedFile = response.data[0];
       return { avatarUrl: uploadedFile.url || uploadedFile.path };
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload avatar';
       throw new Error(errorMessage);
     }
   }
@@ -368,8 +375,9 @@ export class AuthService {
 
       console.log('✅ External image saved to backend:', response.data.url);
       return { avatarUrl: response.data.url };
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }
@@ -386,7 +394,7 @@ export class AuthService {
   }
 
   // Helper method to transform backend user format to frontend format
-  private transformUserFromBackend(backendUser: any): User {
+  private transformUserFromBackend(backendUser: Record<string, unknown>): User {
     // Debug: Log the raw backend user data
     console.log('🔍 Raw backend user data:', {
       authProvider: backendUser.authProvider,

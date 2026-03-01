@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
-import { RateLimitConfigs, ErrorCodes } from '@/types';
+import { RateLimitConfigs, ErrorCodes, AuthenticatedRequest } from '@/types';
 import { createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 
@@ -180,13 +180,14 @@ const createRateLimiter = (options: {
       resetKey: async (key: string) => {
         await store.resetKey(key);
       },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- custom store adapter doesn't match express-rate-limit's Store interface exactly
     } as any,
     handler: (req: Request, res: Response) => {
       logger.warn('Rate limit exceeded', {
         ip: req.ip,
         path: req.path,
         userAgent: req.get('User-Agent'),
-        userId: (req as any).user?.id,
+        userId: (req as AuthenticatedRequest).user?.id,
       });
 
       res.status(429).json(
@@ -216,7 +217,7 @@ export const authRateLimit = createRateLimiter({
 export const bookingRateLimit = createRateLimiter({
   ...RateLimitConfigs.BOOKINGS,
   keyGenerator: (req: Request) => {
-    const userId = (req as any).user?.id;
+    const userId = (req as AuthenticatedRequest).user?.id;
     return userId ? `booking:${userId}` : `booking:${req.ip}`;
   },
 });
@@ -225,7 +226,7 @@ export const bookingRateLimit = createRateLimiter({
 export const paymentRateLimit = createRateLimiter({
   ...RateLimitConfigs.PAYMENTS,
   keyGenerator: (req: Request) => {
-    const userId = (req as any).user?.id;
+    const userId = (req as AuthenticatedRequest).user?.id;
     return userId ? `payment:${userId}` : `payment:${req.ip}`;
   },
 });
@@ -260,15 +261,13 @@ export const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173', 
+      ...config.security.corsOrigin,
       'https://miyzapis.com',
       'https://www.miyzapis.com',
       'https://miyzapis-frontend-production.up.railway.app',
       // Add Google OAuth domain for OAuth flows
       'https://accounts.google.com',
       'https://oauth2.googleapis.com',
-      ...config.security.corsOrigin
     ];
     
     if (allowedOrigins.includes(origin)) {
@@ -324,7 +323,7 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction): 
 };
 
 // Recursive object sanitization with comprehensive XSS prevention
-const sanitizeObjectRecursive = (obj: any): any => {
+const sanitizeObjectRecursive = (obj: unknown): unknown => {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -338,12 +337,12 @@ const sanitizeObjectRecursive = (obj: any): any => {
   }
 
   if (typeof obj === 'object') {
-    const sanitized: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         // Sanitize the key itself
         const cleanKey = sanitizeString(key);
-        sanitized[cleanKey] = sanitizeObjectRecursive(obj[key]);
+        sanitized[cleanKey] = sanitizeObjectRecursive((obj as Record<string, unknown>)[key]);
       }
     }
     return sanitized;

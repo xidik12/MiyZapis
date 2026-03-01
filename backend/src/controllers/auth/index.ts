@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { AuthService } from '@/services/auth';
+import { emailService as templatedEmailService } from '@/services/email';
 import { resolveLanguage } from '@/utils/language';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
+import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
@@ -26,8 +26,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -50,10 +50,11 @@ export class AuthController {
           user: result.user,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Registration controller error:', error);
 
-      if (error.message === 'EMAIL_ALREADY_EXISTS') {
+      if (err.message === 'EMAIL_ALREADY_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -64,7 +65,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'TELEGRAM_ID_ALREADY_EXISTS') {
+      if (err.message === 'TELEGRAM_ID_ALREADY_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -97,8 +98,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -128,10 +129,11 @@ export class AuthController {
           tokens: result.tokens,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Login controller error:', error);
 
-      if (error.message === 'INVALID_CREDENTIALS') {
+      if (err.message === 'INVALID_CREDENTIALS') {
         res.status(401).json(
           createErrorResponse(
             ErrorCodes.INVALID_CREDENTIALS,
@@ -142,7 +144,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'EMAIL_NOT_VERIFIED') {
+      if (err.message === 'EMAIL_NOT_VERIFIED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -153,7 +155,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'ACCOUNT_DEACTIVATED') {
+      if (err.message === 'ACCOUNT_DEACTIVATED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -186,8 +188,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -205,10 +207,11 @@ export class AuthController {
           isNewUser: result.isNewUser,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Telegram auth controller error:', error);
 
-      if (error.message === 'INVALID_TELEGRAM_AUTH') {
+      if (err.message === 'INVALID_TELEGRAM_AUTH') {
         res.status(401).json(
           createErrorResponse(
             ErrorCodes.INVALID_CREDENTIALS,
@@ -219,7 +222,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'ACCOUNT_DEACTIVATED') {
+      if (err.message === 'ACCOUNT_DEACTIVATED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -252,8 +255,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -283,10 +286,11 @@ export class AuthController {
           isNewUser: result.isNewUser,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Google auth controller error:', error);
 
-      if (error.message === 'INVALID_GOOGLE_TOKEN') {
+      if (err.message === 'INVALID_GOOGLE_TOKEN') {
         res.status(401).json(
           createErrorResponse(
             ErrorCodes.INVALID_CREDENTIALS,
@@ -297,7 +301,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'ACCOUNT_DEACTIVATED') {
+      if (err.message === 'ACCOUNT_DEACTIVATED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -343,10 +347,11 @@ export class AuthController {
           expiresIn: result.expiresIn,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Token refresh controller error:', error);
 
-      if (error.message === 'INVALID_REFRESH_TOKEN' || error.name === 'JsonWebTokenError') {
+      if (err.message === 'INVALID_REFRESH_TOKEN' || err.name === 'JsonWebTokenError') {
         res.status(401).json(
           createErrorResponse(
             ErrorCodes.REFRESH_TOKEN_INVALID,
@@ -357,7 +362,7 @@ export class AuthController {
         return;
       }
 
-      if (error.message === 'ACCOUNT_DEACTIVATED') {
+      if (err.message === 'ACCOUNT_DEACTIVATED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -467,7 +472,7 @@ export class AuthController {
         ]);
 
         logger.debug('Logout cleanup completed');
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.debug('Logout cleanup error (non-critical):', error);
       }
     });
@@ -476,7 +481,7 @@ export class AuthController {
   // Get current user (from token)
   static async me(req: Request, res: Response): Promise<void> {
     try {
-      const user = (req as any).user;
+      const user = (req as AuthenticatedRequest).user;
 
       if (!user) {
         res.status(401).json(
@@ -494,7 +499,7 @@ export class AuthController {
           user,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Me controller error:', error);
 
       res.status(500).json(
@@ -519,8 +524,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -549,7 +554,7 @@ export class AuthController {
           tokens: result.tokens,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Email verification controller error:', error);
 
       res.status(500).json(
@@ -574,8 +579,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -678,7 +683,7 @@ export class AuthController {
           message: 'If your email is registered, you will receive a password reset link shortly.',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Password reset controller error:', error);
 
       res.status(500).json(
@@ -703,8 +708,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -778,7 +783,7 @@ export class AuthController {
           message: 'Password has been reset successfully. Please sign in with your new password.',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Password reset controller error:', error);
 
       res.status(500).json(
@@ -803,8 +808,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -812,7 +817,7 @@ export class AuthController {
         return;
       }
 
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         res.status(401).json(
           createErrorResponse(
@@ -889,7 +894,7 @@ export class AuthController {
           message: 'Password changed successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Change password controller error:', error);
 
       res.status(500).json(
@@ -914,8 +919,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: (error as any).param || (error as any).path || 'unknown',
-              message: (error as any).msg || error.toString(),
+              field: (error as ValidatorError).param || (error as ValidatorError).path || 'unknown',
+              message: (error as ValidatorError).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -923,7 +928,7 @@ export class AuthController {
         return;
       }
 
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         res.status(401).json(
           createErrorResponse(
@@ -986,7 +991,7 @@ export class AuthController {
           message: 'Password set successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Set initial password controller error:', error);
 
       res.status(500).json(

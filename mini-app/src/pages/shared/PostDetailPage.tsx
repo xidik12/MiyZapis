@@ -27,6 +27,7 @@ import { RootState, AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
+import { formatDateRelative } from '@/utils/dateUtils';
 import { postDetailStrings, communityStrings, commonStrings } from '@/utils/translations';
 
 interface PostAuthor {
@@ -151,20 +152,9 @@ export const PostDetailPage: React.FC = () => {
     fetchComments();
   }, [fetchPost, fetchComments]);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHrs = diffMs / (1000 * 60 * 60);
-
-    if (diffHrs < 1) return c('justNow');
-    if (diffHrs < 24) {
-      const hrs = Math.floor(diffHrs);
-      return `${hrs}${c('hoursAgo')}`;
-    }
-    if (diffHrs < 48) return c('yesterday');
-    return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
-  };
+  // Using shared formatDateRelative from @/utils/dateUtils
+  const formatDate = (dateStr: string) =>
+    formatDateRelative(dateStr, locale, (key) => c(key));
 
   const handleLike = async () => {
     if (!post) return;

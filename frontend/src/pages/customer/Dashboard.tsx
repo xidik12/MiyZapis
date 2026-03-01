@@ -209,7 +209,7 @@ const CustomerDashboard: React.FC = () => {
         // Reviews written and average rating from my reviews endpoint
         const myReviewsList = (myReviews as any)?.reviews || [];
         const reviewsWritten = myReviewsList.length;
-        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewsWritten) : 0;
+        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: Record<string, unknown>) => s + (Number(r.rating) || 0), 0) / reviewsWritten) : 0;
         setStats({
           totalSpent,
           loyaltyPoints: loyaltyProfile?.currentPoints || 0,
@@ -228,7 +228,7 @@ const CustomerDashboard: React.FC = () => {
 
         // Map first page of favorite specialists
         const favPage = favSpecs as any;
-        const favSimple = (favPage.specialists || []).map((fs: any) => {
+        const favSimple = (favPage.specialists || []).map((fs: Record<string, unknown>) => {
           const s = fs.specialist;
           const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
           return {
@@ -261,7 +261,7 @@ const CustomerDashboard: React.FC = () => {
     try {
       setFavoritesLoading(true);
       const res = await favoritesService.getFavoriteSpecialists(page, 6);
-      const favSimple = res.specialists.map((fs: any) => {
+      const favSimple = res.specialists.map((fs: Record<string, unknown>) => {
         const s = fs.specialist;
         const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
         return {
@@ -362,7 +362,7 @@ const CustomerDashboard: React.FC = () => {
     return t(`dashboard.booking.status.${status}` as any) || status;
   };
 
-  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
+  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
     <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">

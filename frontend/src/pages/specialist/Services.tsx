@@ -99,7 +99,8 @@ const SpecialistServices: React.FC = () => {
         })));
         logger.debug('Total services loaded:', servicesData?.length || 0);
         setServices(Array.isArray(servicesData) ? servicesData : []);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         setError(err.message || 'Failed to load services');
         logger.error('Error loading services:', err);
       } finally {
@@ -118,7 +119,8 @@ const SpecialistServices: React.FC = () => {
         setCategoriesError(null);
         const categoriesData = await serviceService.getCategories();
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         setCategoriesError(err.message || 'Failed to load categories');
         logger.error('Error loading categories:', err);
         // Fallback to empty array if API fails
@@ -557,7 +559,8 @@ const SpecialistServices: React.FC = () => {
         setServices(prev => [updatedService, ...prev]);
       }
       closeModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Error saving service:', err);
       setError(err.message || 'Failed to save service');
     } finally {
@@ -567,7 +570,7 @@ const SpecialistServices: React.FC = () => {
 
   // Removed availability and timeSlots functions as they're not part of backend schema
 
-  const getLocalizedText = (item: any, field: string) => {
+  const getLocalizedText = (item: Record<string, unknown>, field: string) => {
     return item[field] || '';
   };
 
@@ -645,7 +648,8 @@ const SpecialistServices: React.FC = () => {
       logger.debug('Service deletion verified: Service no longer exists on backend');
       // toast.success('Service deleted successfully and verified!');
 
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Service deletion failed:', {
         serviceId,
         error: err.message,
@@ -701,7 +705,8 @@ const SpecialistServices: React.FC = () => {
       setServices(prev => prev.map(service =>
         service.id === serviceId ? updatedService : service
       ));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Error toggling service status:', err);
       setError(err.message || 'Failed to update service status');
     }

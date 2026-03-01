@@ -38,8 +38,9 @@ export class UserService {
       }
       // Backend returns user data directly in response.data (not nested under .user)
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user profile';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user profile';
       throw new Error(errorMessage);
     }
   }
@@ -52,8 +53,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to update profile');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to update profile';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to update profile';
       throw new Error(errorMessage);
     }
   }
@@ -73,8 +75,9 @@ export class UserService {
       // Return the URL of the first uploaded file
       const uploadedFile = response.data[0];
       return { avatarUrl: uploadedFile.url || uploadedFile.path };
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload avatar';
       throw new Error(errorMessage);
     }
   }
@@ -95,8 +98,9 @@ export class UserService {
 
       console.log('✅ External image saved to backend:', response.data.url);
       return { avatarUrl: response.data.url };
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }
@@ -109,8 +113,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to get user preferences');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user preferences';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user preferences';
       throw new Error(errorMessage);
     }
   }
@@ -123,8 +128,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to update preferences');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to update preferences';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to update preferences';
       throw new Error(errorMessage);
     }
   }
@@ -137,8 +143,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to generate link code');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to generate link code';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to generate link code';
       throw new Error(errorMessage);
     }
   }
@@ -151,8 +158,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to link Telegram account');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to link Telegram account';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to link Telegram account';
       throw new Error(errorMessage);
     }
   }
@@ -165,8 +173,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to unlink Telegram account');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to unlink Telegram account';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to unlink Telegram account';
       throw new Error(errorMessage);
     }
   }
@@ -179,8 +188,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to delete account');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to delete account';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to delete account';
       throw new Error(errorMessage);
     }
   }
@@ -199,8 +209,9 @@ export class UserService {
         throw new Error(response.error?.message || 'Failed to get user statistics');
       }
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user statistics';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user statistics';
       throw new Error(errorMessage);
     }
   }

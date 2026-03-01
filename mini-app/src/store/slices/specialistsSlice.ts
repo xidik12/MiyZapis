@@ -48,7 +48,7 @@ export interface Specialist {
 interface SpecialistsState {
   specialists: Specialist[];
   selectedSpecialist: Specialist | null;
-  availability: any;
+  availability: Record<string, unknown>;
   isLoading: boolean;
   availabilityLoading: boolean;
   error: string | null;
@@ -92,11 +92,11 @@ export const fetchSpecialistsAsync = createAsyncThunk(
     location?: string;
     rating?: number;
   }) => {
-    const response: any = await apiService.getSpecialists(params);
+    const response: Record<string, unknown> = await apiService.getSpecialists(params);
     // API returns { specialists: [...], total, page, totalPages }
     if (response?.specialists) {
       return {
-        items: response.specialists.map((s: any) => ({
+        items: response.specialists.map((s: Record<string, unknown>) => ({
           ...s,
           name: s.user ? `${s.user.firstName} ${s.user.lastName}`.trim() : s.name || '',
           avatar: s.user?.avatar || s.avatar,
@@ -116,7 +116,7 @@ export const fetchSpecialistsAsync = createAsyncThunk(
 export const fetchSpecialistAsync = createAsyncThunk(
   'specialists/fetchSpecialist',
   async (id: string) => {
-    const raw: any = await apiService.getSpecialist(id);
+    const raw: Record<string, unknown> = await apiService.getSpecialist(id);
     return {
       ...raw,
       userId: raw.userId || raw.user?.id || '',
@@ -132,9 +132,9 @@ export const fetchSpecialistAsync = createAsyncThunk(
 export const fetchSpecialistServicesAsync = createAsyncThunk(
   'specialists/fetchSpecialistServices',
   async (id: string) => {
-    const raw: any = await apiService.getSpecialistServices(id);
+    const raw: Record<string, unknown> = await apiService.getSpecialistServices(id);
     const services = Array.isArray(raw) ? raw : raw?.services || [];
-    return services.map((s: any) => ({
+    return services.map((s: Record<string, unknown>) => ({
       ...s,
       price: Number(s.price) || Number(s.basePrice) || 0,
     }));

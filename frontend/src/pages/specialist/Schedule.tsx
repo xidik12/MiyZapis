@@ -43,7 +43,7 @@ interface CalendarBlock {
 interface AddTimeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: unknown) => void;
   editingBlock?: CalendarBlock | null;
   preSelectedDate?: Date;
   preSelectedTime?: string;
@@ -457,7 +457,8 @@ const SpecialistSchedule: React.FC = () => {
         } else {
           setAvailabilityBlocks([]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('Error loading availability blocks:', err);
         setError(err.message || 'Failed to load schedule');
       } finally {
@@ -529,7 +530,8 @@ const SpecialistSchedule: React.FC = () => {
       }
 
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       console.error('Error generating availability:', err);
       setError(err.message || 'Failed to generate availability from working hours');
     } finally {
@@ -537,7 +539,7 @@ const SpecialistSchedule: React.FC = () => {
     }
   };
 
-  const handleAddTimeSlot = async (formData: any) => {
+  const handleAddTimeSlot = async (formData: Record<string, unknown>) => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
       return;
     }
@@ -575,7 +577,7 @@ const SpecialistSchedule: React.FC = () => {
       setPreSelectedDate(undefined);
       setPreSelectedTime(undefined);
       toast.success(t('specialist.schedule.toast.saved'));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error adding time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to add time slot. Please try again.';
       setError(errorMessage);
@@ -585,7 +587,7 @@ const SpecialistSchedule: React.FC = () => {
     }
   };
 
-  const handleEditTimeSlot = async (formData: any) => {
+  const handleEditTimeSlot = async (formData: Record<string, unknown>) => {
     if (!editingBlock) return;
 
     setOperationInProgress(true);
@@ -623,7 +625,7 @@ const SpecialistSchedule: React.FC = () => {
       setEditingBlock(null);
       setError(null);
       toast.success(t('specialist.schedule.toast.saved'));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error editing time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to edit time slot. Please try again.';
       setError(errorMessage);
@@ -644,7 +646,7 @@ const SpecialistSchedule: React.FC = () => {
       setAvailabilityBlocks(prev => prev.filter(block => block.id !== id));
       setError(null);
       toast.success(t('specialist.schedule.toast.saved'));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting time slot:', err);
       const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to delete time slot. Please try again.';
       setError(errorMessage);

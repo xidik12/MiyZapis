@@ -72,7 +72,7 @@ export const FavoritesPage: React.FC = () => {
         : (data?.services || []);
 
       // Map to FavoriteItem interface
-      const items: FavoriteItem[] = rawItems.map((item: any) => ({
+      const items: FavoriteItem[] = rawItems.map((item: unknown) => ({
         id: item.id,
         targetId: activeTab === 'specialist'
           ? (item.specialistId || item.specialist?.id || item.id)

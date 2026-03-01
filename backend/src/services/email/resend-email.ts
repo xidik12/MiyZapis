@@ -85,14 +85,15 @@ class ResendEmailService {
       });
       
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('❌ Failed to send email via Resend', {
         to: options.to,
         subject: options.subject,
         error: {
-          message: error.message,
-          name: error.name,
-          stack: error.stack
+          message: err.message,
+          name: err.name,
+          stack: err.stack
         }
       });
       return false;

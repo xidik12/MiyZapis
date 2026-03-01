@@ -60,7 +60,7 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  const renderCustomLabel = (entry: any) => {
+  const renderCustomLabel = (entry: { value: number }) => {
     if (!showLabels) return null;
     const percentage = ((entry.value / total) * 100).toFixed(0);
     return `${percentage}%`;
@@ -125,7 +125,7 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
             <Legend
               verticalAlign="bottom"
               height={36}
-              formatter={(value, entry: any) => {
+              formatter={(value, entry: { payload: { value: number } }) => {
                 const percentage = calculatePercentage(entry.payload.value, total);
                 return `${value} (${percentage})`;
               }}

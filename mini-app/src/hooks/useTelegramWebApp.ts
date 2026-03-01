@@ -20,7 +20,7 @@ export interface UseTelegramWebAppReturn {
   sendData: (data: string) => void;
   showAlert: (message: string) => Promise<void>;
   showConfirm: (message: string) => Promise<boolean>;
-  showPopup: (params: any) => Promise<string | undefined>;
+  showPopup: (params: Record<string, unknown>) => Promise<string | undefined>;
   openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
   openInvoice: (url: string) => Promise<string>;
   
@@ -163,7 +163,7 @@ export const useTelegramWebApp = (): UseTelegramWebAppReturn => {
     });
   }, [webApp]);
 
-  const showPopup = useCallback((params: any): Promise<string | undefined> => {
+  const showPopup = useCallback((params: Record<string, unknown>): Promise<string | undefined> => {
     return new Promise((resolve) => {
       webApp?.showPopup(params, (buttonId) => resolve(buttonId));
     });

@@ -202,7 +202,7 @@ const getEmptyProfile = (): SpecialistProfile => ({
 });
 
 // Safe merge function that ensures all required fields exist
-const mergeProfileData = (apiData: any): SpecialistProfile => {
+const mergeProfileData = (apiData: Record<string, unknown>): SpecialistProfile => {
   const defaultProfile = getEmptyProfile();
   
   logger.debug('🔄 mergeProfileData input:', apiData);
@@ -212,7 +212,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   const specialist = apiData?.specialist || apiData;
   
   // Parse JSON strings if they exist (backend stores some fields as JSON strings)
-  const parseJsonField = (field: any, fallback: any) => {
+  const parseJsonField = (field: unknown, fallback: unknown) => {
     if (typeof field === 'string') {
       try {
         return JSON.parse(field);
@@ -479,7 +479,7 @@ const SpecialistProfile: React.FC = () => {
   }, [user?.id, language]); // Only depend on user ID, not the entire user object
 
   // Handle profile changes
-  const handleProfileChange = (field: string, value: any) => {
+  const handleProfileChange = (field: string, value: unknown) => {
     logger.debug(`📝 Profile field changed: ${field} =`, value);
     setProfile(prev => {
       const newProfile = {
@@ -637,7 +637,7 @@ const SpecialistProfile: React.FC = () => {
           try {
             const updateResult = await specialistService.updateProfile(specialistData);
             logger.debug('✅ Backend response for specialist update:', updateResult);
-          } catch (updateError: any) {
+          } catch (updateError: unknown) {
             logger.error('❌ Update failed, error:', updateError);
             // If specialist profile doesn't exist, try to create it first
             if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
@@ -645,7 +645,7 @@ const SpecialistProfile: React.FC = () => {
               try {
                 await specialistService.createProfile(specialistData);
                 logger.debug('Specialist profile created successfully');
-              } catch (createError: any) {
+              } catch (createError: unknown) {
                 logger.error('Failed to create specialist profile:', createError);
                 throw createError;
               }
@@ -677,14 +677,14 @@ const SpecialistProfile: React.FC = () => {
               
               // Update Redux store so changes persist
               dispatch(updateUserProfile(userUpdateData));
-            } catch (userError: any) {
+            } catch (userError: unknown) {
               logger.error('Failed to update user info:', userError);
               logger.error('Error details:', userError.message);
               // Don't throw error here - let specialist profile save continue
             }
           }
           
-        } catch (apiError: any) {
+        } catch (apiError: unknown) {
           logger.error('API call failed:', apiError);
           throw new Error(apiError.message || 'Failed to save profile');
         }
@@ -810,10 +810,11 @@ const SpecialistProfile: React.FC = () => {
       // Clear the file input
       event.target.value = '';
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('❤️ Avatar upload error:', error);
       showErrorNotification(
-        error.message || 
+        err.message || 
         (language === 'uk' ? 'Помилка завантаження аватара' :
          language === 'ru' ? 'Ошибка загрузки аватара' :
          'Failed to upload avatar')
@@ -881,10 +882,11 @@ const SpecialistProfile: React.FC = () => {
       // Clear the file input
       event.target.value = '';
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('❌ Portfolio upload error:', error);
       showErrorNotification(
-        error.message || 
+        err.message || 
         (language === 'uk' ? 'Помилка завантаження зображення' :
          language === 'ru' ? 'Ошибка загрузки изображения' :
          'Failed to upload image')
@@ -937,10 +939,11 @@ const SpecialistProfile: React.FC = () => {
         'QR code uploaded successfully'
       );
       event.target.value = '';
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[Profile Payment QR Upload] Upload failed:', error);
       setPaymentQrError(
-        error.message ||
+        err.message ||
         (language === 'uk' ? 'Помилка завантаження QR-коду' :
          language === 'ru' ? 'Ошибка загрузки QR-кода' :
          'Failed to upload QR code')

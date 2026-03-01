@@ -102,7 +102,7 @@ export const SpecialistLoyaltyPage: React.FC = () => {
       if (tiersRes.status === 'fulfilled' && tiersRes.value) {
         const raw = tiersRes.value as any;
         const list = Array.isArray(raw) ? raw : raw?.tiers || [];
-        setTiers(list.map((t: any) => ({
+        setTiers(list.map((t: Record<string, unknown>) => ({
           name: t.name || t.tier,
           minPoints: Number(t.minPoints ?? t.pointsRequired ?? 0),
           maxPoints: t.maxPoints ? Number(t.maxPoints) : undefined,

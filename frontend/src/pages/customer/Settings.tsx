@@ -168,7 +168,7 @@ const CustomerSettings: React.FC = () => {
     }));
   };
 
-  const handlePrivacyChange = (key: keyof typeof privacy, value: any) => {
+  const handlePrivacyChange = (key: keyof typeof privacy, value: unknown) => {
     setPrivacy(prev => ({
       ...prev,
       [key]: value
@@ -201,7 +201,7 @@ const CustomerSettings: React.FC = () => {
     setShowAddAddressModal(true);
   };
 
-  const handleSavePaymentMethod = async (paymentData: any) => {
+  const handleSavePaymentMethod = async (paymentData: Record<string, unknown>) => {
     try {
       setLoading(true);
       const newMethod = await PaymentMethodsService.addPaymentMethod({
@@ -224,7 +224,7 @@ const CustomerSettings: React.FC = () => {
     }
   };
 
-  const handleSaveAddress = (addressData: any) => {
+  const handleSaveAddress = (addressData: Record<string, unknown>) => {
     // TODO: Integrate with address API when backend is ready
     const newAddress: Address = {
       id: Date.now().toString(),
@@ -289,10 +289,11 @@ const CustomerSettings: React.FC = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setUploadSuccess(false), 3000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error uploading avatar:', error);
       setUploadError(
-        error.message ||
+        err.message ||
         (language === 'uk' ? 'Помилка завантаження зображення' :
          language === 'ru' ? 'Ошибка загрузки изображения' :
          'Failed to upload image')
@@ -323,10 +324,11 @@ const CustomerSettings: React.FC = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setUploadSuccess(false), 3000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error removing avatar:', error);
       setUploadError(
-        error.message ||
+        err.message ||
         (language === 'uk' ? 'Помилка видалення зображення' :
          language === 'ru' ? 'Ошибка удаления изображения' :
          'Failed to remove image')
@@ -368,10 +370,11 @@ const CustomerSettings: React.FC = () => {
         'Settings saved successfully'
       );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error saving account settings:', error);
       toast.error(
-        error.message ||
+        err.message ||
         (language === 'uk' ? 'Помилка збереження налаштувань' :
          language === 'ru' ? 'Ошибка сохранения настроек' :
          'Failed to save settings')
@@ -393,8 +396,9 @@ const CustomerSettings: React.FC = () => {
         language === 'ru' ? 'Telegram отключен' :
         'Telegram unlinked'
       );
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to unlink Telegram');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      toast.error(err.message || 'Failed to unlink Telegram');
     } finally {
       setIsUnlinkingTelegram(false);
     }

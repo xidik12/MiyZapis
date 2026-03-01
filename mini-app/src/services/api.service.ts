@@ -63,17 +63,17 @@ class ApiService {
   }
 
   // Generic methods
-  private async get<T>(url: string, params?: any): Promise<T> {
+  private async get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
     const response: AxiosResponse<ApiResponse<T>> = await this.api.get(url, { params });
     return response.data.data;
   }
 
-  private async post<T>(url: string, data?: any): Promise<T> {
+  private async post<T>(url: string, data?: unknown): Promise<T> {
     const response: AxiosResponse<ApiResponse<T>> = await this.api.post(url, data);
     return response.data.data;
   }
 
-  private async put<T>(url: string, data?: any): Promise<T> {
+  private async put<T>(url: string, data?: unknown): Promise<T> {
     const response: AxiosResponse<ApiResponse<T>> = await this.api.put(url, data);
     return response.data.data;
   }
@@ -98,7 +98,7 @@ class ApiService {
     return this.post('/auth/register', userData);
   }
 
-  async telegramAuth(telegramData: any) {
+  async telegramAuth(telegramData: Record<string, unknown>) {
     return this.post('/auth/telegram', telegramData);
   }
 
@@ -118,9 +118,9 @@ class ApiService {
     search?: string;
     sort?: string;
     city?: string;
-  }): Promise<PaginatedResponse<any>> {
+  }): Promise<PaginatedResponse<Record<string, unknown>>> {
     // Backend expects 'query' not 'search'
-    const apiParams: any = { ...params };
+    const apiParams: Record<string, unknown> = { ...params };
     if (apiParams.search) {
       apiParams.query = apiParams.search;
       delete apiParams.search;
@@ -129,10 +129,10 @@ class ApiService {
   }
 
   async getCities(params?: { search?: string }): Promise<{ city: string; state?: string; count: number }[]> {
-    const response: any = await this.get('/locations/cities', params);
+    const response: Record<string, unknown> = await this.get('/locations/cities', params);
     const cities = response?.cities || response || [];
     // Backend returns specialistsCount, normalize to count
-    return cities.map((c: any) => ({
+    return (cities as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
       city: c.city,
       state: c.state,
       count: c.specialistsCount ?? c.count ?? 0,
@@ -196,7 +196,7 @@ class ApiService {
     return this.post('/bookings', bookingData);
   }
 
-  async updateBooking(id: string, updates: any) {
+  async updateBooking(id: string, updates: Record<string, unknown>) {
     return this.put(`/bookings/${id}`, updates);
   }
 
@@ -234,7 +234,7 @@ class ApiService {
     lastName?: string;
     phone?: string;
     avatar?: string;
-    preferences?: any;
+    preferences?: Record<string, unknown>;
   }) {
     return this.put('/users/profile', updates);
   }
@@ -365,7 +365,7 @@ class ApiService {
     return this.post('/specialists/services', data);
   }
 
-  async updateService(id: string, data: any) {
+  async updateService(id: string, data: Record<string, unknown>) {
     return this.put(`/specialists/services/${id}`, data);
   }
 
@@ -470,7 +470,7 @@ class ApiService {
     return this.post('/specialists/blocks', data);
   }
 
-  async updateAvailabilityBlock(id: string, data: any) {
+  async updateAvailabilityBlock(id: string, data: Record<string, unknown>) {
     return this.put(`/specialists/blocks/${id}`, data);
   }
 
@@ -534,7 +534,7 @@ class ApiService {
     return this.get('/specialists/profile');
   }
 
-  async updateSpecialistProfile(data: any) {
+  async updateSpecialistProfile(data: unknown) {
     return this.put('/specialists/profile', data);
   }
 
@@ -628,7 +628,7 @@ class ApiService {
   }
 
   // ==================== Onboarding ====================
-  async completeOnboarding(data: any) {
+  async completeOnboarding(data: unknown) {
     return this.post('/specialists/profile', data);
   }
 

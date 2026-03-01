@@ -183,7 +183,7 @@ export const TelegramActionSheet: React.FC<TelegramActionSheetProps> = ({
 }) => {
   const { hapticFeedback } = useTelegram();
 
-  const handleActionPress = (action: any) => {
+  const handleActionPress = (action: { onPress: () => void }) => {
     hapticFeedback.impactLight();
     action.onPress();
     onClose();

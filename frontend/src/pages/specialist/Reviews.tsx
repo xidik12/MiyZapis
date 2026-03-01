@@ -36,7 +36,8 @@ const SpecialistReviews: React.FC = () => {
         const profile = await specialistService.getProfile();
         const specialistData = profile.specialist || profile;
         setSpecialistId(specialistData.id);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('[Reviews] Error loading specialist profile:', err);
         setError(err.message || 'Failed to load specialist profile');
       }
@@ -118,7 +119,8 @@ const SpecialistReviews: React.FC = () => {
 
         setHasMore(paginationData?.hasNext || false);
 
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('[Reviews] Error loading reviews:', err);
         setError(err.message || 'Failed to load reviews');
       } finally {
@@ -164,7 +166,7 @@ const SpecialistReviews: React.FC = () => {
 
       // Call backend API
       await reviewsService.reactToReview(reviewId, reaction);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error reacting to review:', err);
       // Revert optimistic update on error
       loadReviews();
@@ -200,7 +202,7 @@ const SpecialistReviews: React.FC = () => {
 
       // Call backend API
       await reviewsService.reactToResponse(review.id, reaction);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error reacting to response:', err);
       // Revert optimistic update on error
       loadReviews();
@@ -216,7 +218,7 @@ const SpecialistReviews: React.FC = () => {
     try {
       if (!reportingReviewId) return;
       await reviewsService.reportReview(reportingReviewId, reason, details);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw error; // Re-throw to let modal handle it
     }
   };
@@ -248,7 +250,7 @@ const SpecialistReviews: React.FC = () => {
             }
           : review
       ));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Reviews] Error responding to review:', error);
       throw error; // Re-throw to let modal handle it
     }

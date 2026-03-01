@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PaymentService } from '@/services/payment';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 /**
@@ -27,8 +27,8 @@ export class StripeController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -59,10 +59,11 @@ export class StripeController {
           paymentIntent,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create payment intent error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -73,7 +74,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -84,7 +85,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'PAYMENT_ALREADY_EXISTS') {
+      if (err.message === 'PAYMENT_ALREADY_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -95,7 +96,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'BOOKING_ID_REQUIRED') {
+      if (err.message === 'BOOKING_ID_REQUIRED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -106,7 +107,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'INVALID_AMOUNT') {
+      if (err.message === 'INVALID_AMOUNT') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -117,7 +118,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'CURRENCY_REQUIRED') {
+      if (err.message === 'CURRENCY_REQUIRED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -162,10 +163,11 @@ export class StripeController {
           message: 'Payment confirmed successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Confirm payment error:', error);
 
-      if (error.message === 'PAYMENT_NOT_FOUND') {
+      if (err.message === 'PAYMENT_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -218,17 +220,19 @@ export class StripeController {
       const { paymentController } = await import('@/controllers/payment.controller');
 
       // Cast the request to match the expected type for the old payment controller
-      const compatibleReq = req as any; // Cast to avoid type conflicts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- legacy controller expects different Request type
+      const compatibleReq = req as any;
 
       // Use the old payment controller's getPaymentStatus method
       return await paymentController.getPaymentStatus(compatibleReq, res);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get payment status error:', {
-        error: error.message,
+        error: err.message,
         paymentId: req.params.paymentId,
         userId: req.user?.id,
-        stack: error.stack
+        stack: err.stack
       });
 
       res.status(500).json(
@@ -286,7 +290,7 @@ export class StripeController {
           payment,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get payment details error:', error);
 
       res.status(500).json(
@@ -324,8 +328,8 @@ export class StripeController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -426,17 +430,18 @@ export class StripeController {
           }
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get payment history error:', {
         userId: req.user?.id,
         query: req.query,
-        error: error.message,
-        stack: error.stack,
+        error: err.message,
+        stack: err.stack,
         requestId: req.headers['x-request-id']
       });
 
       // Handle specific service errors
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -447,7 +452,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'INVALID_FILTER_PARAMETERS') {
+      if (err.message === 'INVALID_FILTER_PARAMETERS') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -514,7 +519,7 @@ export class StripeController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get user payments error:', error);
 
       res.status(500).json(
@@ -559,7 +564,7 @@ export class StripeController {
           overview,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get earnings overview error:', error);
 
       res.status(500).json(
@@ -583,8 +588,8 @@ export class StripeController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -625,7 +630,7 @@ export class StripeController {
           trends,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get earnings trends error:', error);
 
       res.status(500).json(
@@ -670,7 +675,7 @@ export class StripeController {
           analytics,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get earnings analytics error:', error);
 
       res.status(500).json(
@@ -694,8 +699,8 @@ export class StripeController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -738,7 +743,7 @@ export class StripeController {
           earnings,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get specialist earnings error:', error);
 
       res.status(500).json(
@@ -763,8 +768,8 @@ export class StripeController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -803,10 +808,11 @@ export class StripeController {
           message: 'Refund processed successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Process refund error:', error);
 
-      if (error.message === 'PAYMENT_NOT_FOUND') {
+      if (err.message === 'PAYMENT_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -817,7 +823,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'CANNOT_REFUND_UNSUCCESSFUL_PAYMENT') {
+      if (err.message === 'CANNOT_REFUND_UNSUCCESSFUL_PAYMENT') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -828,7 +834,7 @@ export class StripeController {
         return;
       }
 
-      if (error.message === 'REFUND_AMOUNT_EXCEEDS_PAYMENT') {
+      if (err.message === 'REFUND_AMOUNT_EXCEEDS_PAYMENT') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -874,10 +880,11 @@ export class StripeController {
           message: 'Mock payment completed successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Mock payment success error:', error);
 
-      if (error.message === 'PAYMENT_NOT_FOUND') {
+      if (err.message === 'PAYMENT_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -1046,7 +1053,7 @@ export class StripeController {
           revenue: responseData,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get revenue data error:', error);
 
       res.status(500).json(
@@ -1080,7 +1087,7 @@ export class StripeController {
           paymentMethods,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get user payment methods error:', error);
 
       res.status(500).json(
@@ -1120,10 +1127,11 @@ export class StripeController {
           message: 'Payment method added successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Add payment method error:', error);
 
-      if (error.message === 'PAYMENT_METHOD_EXISTS') {
+      if (err.message === 'PAYMENT_METHOD_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -1179,7 +1187,7 @@ export class StripeController {
           message: 'Payment method updated successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Update payment method error:', error);
 
       res.status(500).json(
@@ -1226,7 +1234,7 @@ export class StripeController {
           message: 'Payment method deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Delete payment method error:', error);
 
       res.status(500).json(
@@ -1274,7 +1282,7 @@ export class StripeController {
           message: 'Default payment method set successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Set default payment method error:', error);
 
       res.status(500).json(

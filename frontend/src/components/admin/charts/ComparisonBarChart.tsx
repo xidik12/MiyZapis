@@ -14,7 +14,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export interface ComparisonBarChartProps {
   data: Array<{
     name: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }>;
   bars: Array<{
     dataKey: string;

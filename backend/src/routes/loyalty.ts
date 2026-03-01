@@ -291,7 +291,7 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
       setTimeout(() => reject(new Error('Query timeout')), 8000)
     );
 
-    const stats = await Promise.race([statsPromise, timeoutPromise]) as any;
+    const stats = await Promise.race([statsPromise, timeoutPromise]) as Record<string, unknown>;
     if (!stats) {
       // Get user's actual loyalty points from the user table
       const user = await prisma.user.findUnique({
@@ -400,7 +400,7 @@ router.get('/transactions', [
     const { page = 1, limit = 20, type } = req.query;
     const offset = calculatePaginationOffset(Number(page), Number(limit));
 
-    const whereClause: any = { userId };
+    const whereClause: Record<string, unknown> = { userId };
     if (type) {
       whereClause.type = type;
     }

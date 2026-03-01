@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
       } else {
         toast.error(response.error?.message || t('auth.resendFailed') || 'Failed to resend verification email');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Resend verification error:', error);
       toast.error(t('auth.resendFailed') || 'Failed to resend verification email. Please try again.');
     } finally {
@@ -141,7 +141,7 @@ const LoginPage: React.FC = () => {
 
       await dispatch(login(loginData)).unwrap();
       // Navigation will happen automatically due to the useEffect above
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if this is an email verification error
       const errorMessage = error?.message || error?.toString() || '';
       if (isEmailNotVerified(errorMessage)) {

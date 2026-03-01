@@ -150,7 +150,7 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
     }
 
     const userId = req.userId;
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     // Only update provided fields
     if (req.body.firstName) updateData.firstName = req.body.firstName;
@@ -503,11 +503,11 @@ router.get('/activity', authenticateToken, validateGetUserActivity, async (req: 
     const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
 
     // Build date filter
-    const dateFilter: any = {};
+    const dateFilter: Record<string, Date> = {};
     if (startDate) dateFilter.gte = new Date(startDate as string);
     if (endDate) dateFilter.lte = new Date(endDate as string);
 
-    let activities: any[] = [];
+    let activities: Record<string, unknown>[] = [];
 
     // Get bookings
     if (!type || type === 'booking') {

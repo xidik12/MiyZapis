@@ -488,7 +488,8 @@ const SpecialistClients: React.FC = () => {
       const bookings = result.bookings || [];
       const clients = deriveClientsFromBookings(bookings);
       setAllClients(clients);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       console.error('[Clients] Error loading client data:', err);
       setError(err.message || 'Failed to load clients');
     } finally {

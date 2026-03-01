@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { wayforpayService } from '@/services/payment/wayforpay.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class WayForPayController {
@@ -17,8 +17,8 @@ export class WayForPayController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -81,11 +81,12 @@ export class WayForPayController {
           paymentUrl: wayforpayInvoice.paymentUrl
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[WayForPay] Failed to create WayForPay invoice', {
         userId: req.user?.id,
         bookingId: req.body.bookingId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -137,11 +138,12 @@ export class WayForPayController {
           status: paymentStatus
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[WayForPay] Failed to get WayForPay payment status', {
         userId: req.user?.id,
         orderReference: req.params.orderReference,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -230,9 +232,10 @@ export class WayForPayController {
         status: 'accept',
         time: Math.floor(Date.now() / 1000)
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[WayForPay] Webhook processing failed', {
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json({

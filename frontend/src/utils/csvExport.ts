@@ -6,14 +6,14 @@
 export interface CSVExportOptions {
   filename?: string;
   headers?: string[];
-  data: any[];
+  data: Record<string, unknown>[];
   fields?: string[];
 }
 
 /**
  * Convert data to CSV string
  */
-export const convertToCSV = (data: any[], fields?: string[]): string => {
+export const convertToCSV = (data: Record<string, unknown>[], fields?: string[]): string => {
   if (!data || data.length === 0) {
     return '';
   }
@@ -86,7 +86,7 @@ export const exportToCSV = ({ filename, data, fields }: CSVExportOptions): void 
 /**
  * Export dashboard stats to CSV
  */
-export const exportDashboardStatsToCSV = (stats: any, period: string): void => {
+export const exportDashboardStatsToCSV = (stats: Record<string, unknown>, period: string): void => {
   const data = [
     {
       metric: 'Total Users',
@@ -140,8 +140,8 @@ export const exportDashboardStatsToCSV = (stats: any, period: string): void => {
 /**
  * Export user analytics to CSV
  */
-export const exportUserAnalyticsToCSV = (userAnalytics: any, period: string): void => {
-  const data = userAnalytics.userTrends.map((trend: any) => ({
+export const exportUserAnalyticsToCSV = (userAnalytics: Record<string, unknown>, period: string): void => {
+  const data = userAnalytics.userTrends.map((trend: Record<string, unknown>) => ({
     date: trend.date,
     userType: trend.user_type,
     count: trend.count,
@@ -158,8 +158,8 @@ export const exportUserAnalyticsToCSV = (userAnalytics: any, period: string): vo
 /**
  * Export booking analytics to CSV
  */
-export const exportBookingAnalyticsToCSV = (bookingAnalytics: any, period: string): void => {
-  const data = bookingAnalytics.bookingTrends.map((trend: any) => ({
+export const exportBookingAnalyticsToCSV = (bookingAnalytics: Record<string, unknown>, period: string): void => {
+  const data = bookingAnalytics.bookingTrends.map((trend: Record<string, unknown>) => ({
     date: trend.date,
     count: trend.count,
     totalRevenue: trend.totalRevenue || 0,
@@ -176,8 +176,8 @@ export const exportBookingAnalyticsToCSV = (bookingAnalytics: any, period: strin
 /**
  * Export financial analytics to CSV
  */
-export const exportFinancialAnalyticsToCSV = (financialAnalytics: any, period: string): void => {
-  const data = financialAnalytics.revenueTrends.map((trend: any) => ({
+export const exportFinancialAnalyticsToCSV = (financialAnalytics: Record<string, unknown>, period: string): void => {
+  const data = financialAnalytics.revenueTrends.map((trend: Record<string, unknown>) => ({
     date: trend.date,
     totalRevenue: trend.totalRevenue,
     platformFees: trend.platformFees,
@@ -196,7 +196,7 @@ export const exportFinancialAnalyticsToCSV = (financialAnalytics: any, period: s
 /**
  * Export top specialists to CSV
  */
-export const exportTopSpecialistsToCSV = (specialists: any[]): void => {
+export const exportTopSpecialistsToCSV = (specialists: Record<string, unknown>[]): void => {
   const data = specialists.map((specialist, index) => ({
     rank: index + 1,
     name: specialist.name,
@@ -217,7 +217,7 @@ export const exportTopSpecialistsToCSV = (specialists: any[]): void => {
 /**
  * Export system health to CSV
  */
-export const exportSystemHealthToCSV = (health: any): void => {
+export const exportSystemHealthToCSV = (health: Record<string, unknown>): void => {
   const data = [
     {
       component: 'Overall Status',

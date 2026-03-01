@@ -26,9 +26,10 @@ export const fetchBookings = createAsyncThunk(
       console.log('📦 Bookings API response:', result);
       console.log('📊 Number of bookings received:', result.bookings?.length || 0);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('❌ Failed to fetch bookings:', error);
-      return rejectWithValue(error.message || 'Failed to fetch bookings');
+      return rejectWithValue(err.message || 'Failed to fetch bookings');
     }
   }
 );
@@ -38,8 +39,9 @@ export const fetchBooking = createAsyncThunk(
   async (bookingId: string, { rejectWithValue }) => {
     try {
       return await bookingService.getBooking(bookingId);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch booking');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch booking');
     }
   }
 );
@@ -49,9 +51,10 @@ export const createBooking = createAsyncThunk(
   async (data: CreateBookingRequest, { rejectWithValue }) => {
     try {
       return await bookingService.createBooking(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // Handle specific error types
-      if (error.response?.status === 409) {
+      if (err.response?.status === 409) {
         return rejectWithValue({
           message: 'This time slot is no longer available. Please choose a different time.',
           type: 'BOOKING_CONFLICT',
@@ -59,18 +62,18 @@ export const createBooking = createAsyncThunk(
         });
       }
       
-      if (error.response?.status === 400) {
+      if (err.response?.status === 400) {
         return rejectWithValue({
-          message: error.response.data?.error || 'Invalid booking data. Please check your selection.',
+          message: err.response.data?.error || 'Invalid booking data. Please check your selection.',
           type: 'VALIDATION_ERROR',
           status: 400
         });
       }
       
       return rejectWithValue({
-        message: error.message || 'Failed to create booking',
+        message: err.message || 'Failed to create booking',
         type: 'UNKNOWN_ERROR',
-        status: error.response?.status || 500
+        status: err.response?.status || 500
       });
     }
   }
@@ -81,8 +84,9 @@ export const cancelBooking = createAsyncThunk(
   async ({ bookingId, reason }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
     try {
       return await bookingService.cancelBooking(bookingId, reason);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to cancel booking');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to cancel booking');
     }
   }
 );
@@ -96,8 +100,9 @@ export const updateBookingStatus = createAsyncThunk(
         updateData.specialistNotes = notes;
       }
       return await bookingService.updateBooking(bookingId, updateData);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update booking status');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to update booking status');
     }
   }
 );

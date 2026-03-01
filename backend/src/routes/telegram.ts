@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
+import { enhancedTelegramBot } from '@/services/telegram';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { authenticateToken, requireAdmin } from '@/middleware/auth/jwt';

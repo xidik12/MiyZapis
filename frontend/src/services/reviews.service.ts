@@ -378,7 +378,7 @@ export class ReviewsService {
   }
 
   // Respond to a review (specialist only)
-  async respondToReview(reviewId: string, message: string): Promise<{ message?: string; response: any }> {
+  async respondToReview(reviewId: string, message: string): Promise<{ message?: string; response: Record<string, unknown> }> {
     // Backend expects endpoint '/reviews/:id/response' with body { response: string }
     const res = await apiClient.post<any>(
       `/reviews/${reviewId}/response`,

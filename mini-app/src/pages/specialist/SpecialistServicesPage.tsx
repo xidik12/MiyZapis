@@ -83,9 +83,9 @@ export const SpecialistServicesPage: React.FC = () => {
       ]);
 
       if (servicesData.status === 'fulfilled') {
-        const raw: any = servicesData.value;
+        const raw: Record<string, unknown> = servicesData.value;
         const arr = Array.isArray(raw) ? raw : raw?.services || [];
-        setServices(arr.map((s: any) => {
+        setServices(arr.map((s: Record<string, unknown>) => {
           let parsedImages: string[] = [];
           if (Array.isArray(s.images)) parsedImages = s.images;
           else if (typeof s.images === 'string') {
@@ -101,7 +101,7 @@ export const SpecialistServicesPage: React.FC = () => {
         }));
       }
       if (categoriesData.status === 'fulfilled') {
-        const raw: any = categoriesData.value;
+        const raw: Record<string, unknown> = categoriesData.value;
         setCategories(Array.isArray(raw) ? raw : raw?.categories || []);
       }
     } finally {

@@ -10,7 +10,7 @@
  * - PostgreSQL numeric types (convert to proper numbers)
  * - Nested objects and arrays
  */
-export function serializeData(obj: any): any {
+export function serializeData(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -33,12 +33,12 @@ export function serializeData(obj: any): any {
   // Handle PostgreSQL numeric types (they come as objects with 's', 'e', 'd' properties)
   if (obj && typeof obj === 'object' && 's' in obj && 'e' in obj && 'd' in obj) {
     // This is a PostgreSQL numeric type
-    const { s, e, d } = obj;
-    if (Array.isArray(d) && d.length > 0) {
+    const rec = obj as { s: number; e: number; d: number[] };
+    if (Array.isArray(rec.d) && rec.d.length > 0) {
       // Convert to number: sign * digit * 10^exponent
-      const sign = s === 1 ? 1 : -1;
-      const mantissa = d[0];
-      const exponent = e || 0;
+      const sign = rec.s === 1 ? 1 : -1;
+      const mantissa = rec.d[0];
+      const exponent = rec.e || 0;
       return sign * mantissa * Math.pow(10, exponent);
     }
     return 0;
@@ -46,10 +46,10 @@ export function serializeData(obj: any): any {
 
   // Handle plain objects
   if (typeof obj === 'object') {
-    const serialized: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        serialized[key] = serializeData(obj[key]);
+    const serialized: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeData((obj as Record<string, unknown>)[key]);
       }
     }
     return serialized;
@@ -63,7 +63,7 @@ export function serializeData(obj: any): any {
  * Legacy function - redirects to serializeData
  * @deprecated Use serializeData instead
  */
-export function serializeBigInt(obj: any): any {
+export function serializeBigInt(obj: unknown): unknown {
   return serializeData(obj);
 }
 
@@ -71,9 +71,9 @@ export function serializeBigInt(obj: any): any {
  * Serialize query results specifically for analytics endpoints
  * Handles common PostgreSQL patterns used in raw queries
  */
-export function serializeQueryResult(result: any[]): any[] {
+export function serializeQueryResult(result: Record<string, unknown>[]): Record<string, unknown>[] {
   return result.map(row => {
-    const serialized: any = {};
+    const serialized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(row)) {
       // Handle date fields
@@ -107,7 +107,7 @@ export function serializeQueryResult(result: any[]): any[] {
 /**
  * Serialize PostgreSQL numeric values to JavaScript numbers
  */
-function serializeNumericValue(value: any): number {
+function serializeNumericValue(value: unknown): number {
   // Already a number
   if (typeof value === 'number') {
     return value;

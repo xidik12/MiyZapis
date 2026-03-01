@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
+import { formatDateRelative } from '@/utils/dateUtils';
 import { communityStrings, commonStrings } from '@/utils/translations';
 
 interface CommunityPost {
@@ -69,13 +70,13 @@ export const CommunityPage: React.FC = () => {
   const fetchPosts = useCallback(async (pageNum: number, append = false) => {
     try {
       if (!append) setLoading(true);
-      const params: any = { page: pageNum, limit: 15 };
+      const params: Record<string, unknown> = { page: pageNum, limit: 15 };
       if (activeFilter !== 'ALL') params.type = activeFilter;
       if (searchQuery) params.search = searchQuery;
 
       const data = await apiService.getCommunityPosts(params) as any;
       const rawItems = data.items || data.posts || (Array.isArray(data) ? data : []);
-      const items = rawItems.map((p: any) => {
+      const items = rawItems.map((p: Record<string, unknown>) => {
         // Parse images from JSON string if needed
         let parsedImages: string[] = [];
         if (Array.isArray(p.images)) {
@@ -145,24 +146,9 @@ export const CommunityPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHrs = diffMs / (1000 * 60 * 60);
-
-    if (diffHrs < 1) {
-      return c('justNow');
-    }
-    if (diffHrs < 24) {
-      const hrs = Math.floor(diffHrs);
-      return `${hrs}${c('hoursAgo')}`;
-    }
-    if (diffHrs < 48) {
-      return c('yesterday');
-    }
-    return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
-  };
+  // Using shared formatDateRelative from @/utils/dateUtils
+  const formatDate = (dateStr: string) =>
+    formatDateRelative(dateStr, locale, (key) => c(key));
 
   const getTypeBadge = (type: string) => {
     if (type === 'SALE') {

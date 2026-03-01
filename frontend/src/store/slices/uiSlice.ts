@@ -11,7 +11,7 @@ interface UIState {
   
   // Modals and dialogs
   activeModal: string | null;
-  modalData: any;
+  modalData: unknown;
   
   // Toast notifications
   toasts: Array<{
@@ -105,7 +105,7 @@ const uiSlice = createSlice({
     },
     
     // Modals and dialogs
-    openModal: (state, action: PayloadAction<{ modalId: string; data?: any }>) => {
+    openModal: (state, action: PayloadAction<{ modalId: string; data?: unknown }>) => {
       state.activeModal = action.payload.modalId;
       state.modalData = action.payload.data || null;
     },
@@ -136,7 +136,7 @@ const uiSlice = createSlice({
     setActiveFilters: (state, action: PayloadAction<Record<string, any>>) => {
       state.activeFilters = action.payload;
     },
-    updateFilter: (state, action: PayloadAction<{ key: string; value: any }>) => {
+    updateFilter: (state, action: PayloadAction<{ key: string; value: unknown }>) => {
       state.activeFilters[action.payload.key] = action.payload.value;
     },
     removeFilter: (state, action: PayloadAction<string>) => {

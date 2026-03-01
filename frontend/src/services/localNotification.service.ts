@@ -217,7 +217,7 @@ export class LocalNotificationService {
   }
 
   // Create system notifications for common events
-  createBookingNotification(bookingData: any): LocalNotification {
+  createBookingNotification(bookingData: Record<string, unknown>): LocalNotification {
     return this.addNotification({
       type: 'booking',
       title: 'Booking Update',
@@ -228,7 +228,7 @@ export class LocalNotificationService {
     });
   }
 
-  createPaymentNotification(paymentData: any): LocalNotification {
+  createPaymentNotification(paymentData: Record<string, unknown>): LocalNotification {
     return this.addNotification({
       type: 'payment',
       title: 'Payment Processed',
@@ -251,7 +251,7 @@ export class LocalNotificationService {
   }
 
   // Sync with backend when available
-  async syncWithBackend(backendService: any): Promise<{
+  async syncWithBackend(backendService: unknown): Promise<{
     synced: number;
     errors: number;
   }> {

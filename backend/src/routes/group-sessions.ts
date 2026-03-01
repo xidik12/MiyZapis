@@ -3,6 +3,7 @@ import { prisma } from '@/config/database';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { getAvailableSpots, getGroupSessionBookings, generateGroupSessionId } from '@/utils/groupSessions';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ const router = Router();
  * GET /group-sessions/availability/:serviceId
  * Check available spots for a group session at a specific time
  */
-router.get('/availability/:serviceId', async (req: Request, res: Response) => {
+router.get('/availability/:serviceId', cacheMiddleware(60, 'group-availability'), async (req: Request, res: Response) => {
   try {
     const { serviceId } = req.params;
     const { scheduledAt } = req.query;
@@ -89,7 +90,7 @@ router.get('/availability/:serviceId', async (req: Request, res: Response) => {
         pricePerParticipant: service.basePrice
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error checking group session availability:', error);
     return res.status(500).json(
       createErrorResponse(
@@ -105,7 +106,7 @@ router.get('/availability/:serviceId', async (req: Request, res: Response) => {
  * GET /group-sessions/participants/:serviceId
  * Get list of participants for a group session
  */
-router.get('/participants/:serviceId', async (req: Request, res: Response) => {
+router.get('/participants/:serviceId', cacheMiddleware(60, 'group-participants'), async (req: Request, res: Response) => {
   try {
     const { serviceId } = req.params;
     const { scheduledAt } = req.query;
@@ -158,7 +159,7 @@ router.get('/participants/:serviceId', async (req: Request, res: Response) => {
         }))
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error getting group session participants:', error);
     return res.status(500).json(
       createErrorResponse(

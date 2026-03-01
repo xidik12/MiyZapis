@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { body } from 'express-validator';
 import { AvailabilityController } from '@/controllers/specialists/availability';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -99,14 +100,14 @@ const validateCheckTimeSlot = [
     .withMessage('End date time must be a valid ISO 8601 date'),
 ];
 
-// Get specialist availability for date range
-router.get('/specialists/:id/availability', AvailabilityController.getSpecialistAvailability);
+// Get specialist availability for date range (cached 60s - dynamic data)
+router.get('/specialists/:id/availability', cacheMiddleware(60, 'availability'), AvailabilityController.getSpecialistAvailability);
 
-// Get available dates for a specialist (for booking flow)
-router.get('/specialists/:id/available-dates', AvailabilityController.getAvailableDates);
+// Get available dates for a specialist (for booking flow, cached 60s)
+router.get('/specialists/:id/available-dates', cacheMiddleware(60, 'available-dates'), AvailabilityController.getAvailableDates);
 
-// Get available time slots for a specific date (for booking flow)
-router.get('/specialists/:id/slots', AvailabilityController.getAvailableSlots);
+// Get available time slots for a specific date (for booking flow, cached 60s)
+router.get('/specialists/:id/slots', cacheMiddleware(60, 'available-slots'), AvailabilityController.getAvailableSlots);
 
 // Check specific time slot availability
 router.post('/specialists/:id/availability/check', validateCheckTimeSlot, AvailabilityController.checkTimeSlotAvailability);

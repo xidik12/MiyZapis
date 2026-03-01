@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken, authenticateTokenOptional } from '@/middleware/auth/jwt';
 import { CommunityController } from '@/controllers/community';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -8,8 +9,8 @@ const router = Router();
 // PUBLIC ROUTES (optional auth for enhanced data)
 // ============================================
 
-// Get posts preview for landing page (public)
-router.get('/posts/preview', CommunityController.getPostsPreview);
+// Get posts preview for landing page (public, cached 60s)
+router.get('/posts/preview', cacheMiddleware(60, 'community-preview'), CommunityController.getPostsPreview);
 
 // Get posts with filters (public, optional auth for like status)
 router.get('/posts', authenticateTokenOptional, CommunityController.getPosts);

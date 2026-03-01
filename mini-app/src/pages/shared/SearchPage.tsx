@@ -134,7 +134,7 @@ export const SearchPage: React.FC = () => {
       rating: preset.data.rating || '',
     });
     // Apply the preset filters immediately
-    const newFilters: any = {};
+    const newFilters: Record<string, unknown> = {};
     if (preset.data.category) newFilters.category = preset.data.category;
     if (preset.data.city) newFilters.city = preset.data.city;
     if (preset.data.minPrice) newFilters.minPrice = Number(preset.data.minPrice);
@@ -190,7 +190,7 @@ export const SearchPage: React.FC = () => {
   };
 
   const handleApplyFilters = () => {
-    const newFilters: any = {};
+    const newFilters: Record<string, unknown> = {};
 
     if (localFilters.category) newFilters.category = localFilters.category;
     if (localFilters.city) newFilters.city = localFilters.city;
@@ -217,7 +217,7 @@ export const SearchPage: React.FC = () => {
     hapticFeedback.selectionChanged();
   };
 
-  const handleServicePress = (service: any) => {
+  const handleServicePress = (service: Record<string, unknown>) => {
     navigate(`/service/${service.id}`);
     hapticFeedback.impactLight();
   };
@@ -226,7 +226,7 @@ export const SearchPage: React.FC = () => {
     setLocalFilters(prev => ({ ...prev, category: categoryName }));
   };
 
-  const ServiceCard: React.FC<{ service: any; mode: 'grid' | 'list' }> = ({
+  const ServiceCard: React.FC<{ service: Record<string, unknown>; mode: 'grid' | 'list' }> = ({
     service,
     mode,
   }) => {

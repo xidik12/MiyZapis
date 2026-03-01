@@ -1,7 +1,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { emailService as templatedEmailService } from '@/services/email';
 import { resolveLanguage } from '@/utils/language';
 import LoyaltyService from '@/services/loyalty';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
@@ -801,7 +801,7 @@ export class BookingService {
       }
 
       // Prepare update data
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         ...data,
         updatedAt: new Date(),
       };
@@ -1268,7 +1268,7 @@ export class BookingService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {};
+      const where: Record<string, unknown> = {};
       
       if (userType === 'customer') {
         where.customerId = userId;
@@ -1294,19 +1294,7 @@ export class BookingService {
                 userType: true,
                 phoneNumber: true,
                 telegramId: true,
-                isEmailVerified: true,
-                isPhoneVerified: true,
-                isActive: true,
-                loyaltyPoints: true,
                 language: true,
-                currency: true,
-                timezone: true,
-                lastLoginAt: true,
-                emailNotifications: true,
-                pushNotifications: true,
-                telegramNotifications: true,
-                createdAt: true,
-                updatedAt: true,
               },
             },
             specialist: {
@@ -1318,20 +1306,6 @@ export class BookingService {
                 avatar: true,
                 userType: true,
                 phoneNumber: true,
-                telegramId: true,
-                isEmailVerified: true,
-                isPhoneVerified: true,
-                isActive: true,
-                loyaltyPoints: true,
-                language: true,
-                currency: true,
-                timezone: true,
-                lastLoginAt: true,
-                emailNotifications: true,
-                pushNotifications: true,
-                telegramNotifications: true,
-                createdAt: true,
-                updatedAt: true,
               },
             },
             service: {
@@ -1344,8 +1318,6 @@ export class BookingService {
                 duration: true,
                 isActive: true,
                 categoryId: true,
-                createdAt: true,
-                updatedAt: true,
                 specialist: true,
               },
             },
@@ -1359,7 +1331,6 @@ export class BookingService {
                 isPublic: true,
                 isVerified: true,
                 createdAt: true,
-                updatedAt: true,
               },
             },
           },
@@ -1491,7 +1462,7 @@ export class BookingService {
       }
 
       // Update booking to COMPLETED with notes
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status: 'COMPLETED',
         completionNotes: data.completionNotes,
         specialistNotes: data.specialistNotes,
@@ -1553,7 +1524,7 @@ export class BookingService {
     averageBookingValue: number;
   }> {
     try {
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId,
       };
 
@@ -1793,7 +1764,7 @@ export class BookingService {
           });
 
           childrenCreated++;
-        } catch (childError: any) {
+        } catch (childError: unknown) {
           // Skip dates that conflict or fail validation – log but continue
           logger.warn('Skipping recurring child booking date due to error', {
             parentBookingId: parentBooking.id,

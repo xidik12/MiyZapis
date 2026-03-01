@@ -6,6 +6,27 @@ import { LRUCache } from '../utils/LRUCache';
 import { logger } from '../utils/logger';
 import { getHttpErrorMessage, getErrorMessage } from '../utils/errorMessages';
 
+// Extended Axios config with custom metadata properties
+interface ExtendedAxiosConfig extends InternalAxiosRequestConfig {
+  skipCache?: boolean;
+  cachedResponse?: unknown;
+  pendingRequest?: Promise<AxiosResponse>;
+  cacheKey?: string;
+  metadata?: { startTime: number; url?: string; method?: string };
+  skipToast?: boolean;
+  _retry?: boolean;
+}
+
+// Window augmentation for debug functions
+declare global {
+  interface Window {
+    debugApiConnection?: () => Promise<void>;
+    debugAuthStatus?: () => void;
+    debugBrowserInfo?: () => void;
+    runFullDiagnostics?: () => Promise<void>;
+  }
+}
+
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
@@ -21,7 +42,7 @@ const api: AxiosInstance = axios.create({
 
 // Request deduplication and caching with LRU eviction
 interface CacheEntry {
-  data: any;
+  data: unknown;
   timestamp: number;
 }
 
@@ -38,7 +59,7 @@ const getCacheKey = (config: AxiosRequestConfig): string => {
   return `${config.method}:${config.url}:${JSON.stringify(config.params || {})}`;
 };
 
-const getCachedResponse = (key: string): any | null => {
+const getCachedResponse = (key: string): unknown | null => {
   const entry = requestCache.get(key);
   if (entry && Date.now() - entry.timestamp < APP_CONSTANTS.CACHE_TTL) {
     return entry.data;
@@ -49,7 +70,7 @@ const getCachedResponse = (key: string): any | null => {
   return null;
 };
 
-const setCachedResponse = (key: string, data: any): void => {
+const setCachedResponse = (key: string, data: unknown): void => {
   requestCache.set(key, { data, timestamp: Date.now() });
 };
 
@@ -99,12 +120,12 @@ export const withRetry = async <T>(
   maxRetries: number = 2,
   delayMs: number = 1000
 ): Promise<T> => {
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error;
 
       // Don't retry authentication errors or validation errors
@@ -131,7 +152,7 @@ api.interceptors.request.use(
     // Axios can only set the multipart boundary if Content-Type isn't forced.
     const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
     if (isFormData && config.headers) {
-      const headers = config.headers as any;
+      const headers = config.headers as Record<string, string>;
       if (typeof headers.delete === 'function') {
         headers.delete('Content-Type');
       } else {
@@ -146,21 +167,21 @@ api.interceptors.request.use(
     }
 
     // Check for cached GET requests
-    if (config.method?.toLowerCase() === 'get' && !(config as any).skipCache) {
+    if (config.method?.toLowerCase() === 'get' && !(config as ExtendedAxiosConfig).skipCache) {
       const cacheKey = getCacheKey(config);
       const cachedResponse = getCachedResponse(cacheKey);
 
       if (cachedResponse) {
         // Return cached response immediately
-        (config as any).cachedResponse = cachedResponse;
+        (config as ExtendedAxiosConfig).cachedResponse = cachedResponse;
       } else {
         // Check if there's a pending request for the same endpoint
         const pendingRequest = pendingRequests.get(cacheKey);
         if (pendingRequest) {
-          (config as any).pendingRequest = pendingRequest.promise;
+          (config as ExtendedAxiosConfig).pendingRequest = pendingRequest.promise;
         } else {
           // Store cache key for response interceptor
-          (config as any).cacheKey = cacheKey;
+          (config as ExtendedAxiosConfig).cacheKey = cacheKey;
         }
       }
     }
@@ -170,16 +191,16 @@ api.interceptors.request.use(
     const requestId = `req_${requestStartTime}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Store debugging info in config
-    (config as any).metadata = {
+    (config as ExtendedAxiosConfig).metadata = {
       startTime: requestStartTime,
       requestId: requestId
     };
 
-    if (environment.DEBUG && !(config as any).cachedResponse) {
+    if (environment.DEBUG && !(config as ExtendedAxiosConfig).cachedResponse) {
       logger.debug(`[API Request] ${requestId}`, {
         method: config.method?.toUpperCase(),
         url: config.url,
-        cached: !!(config as any).cachedResponse
+        cached: !!(config as ExtendedAxiosConfig).cachedResponse
       });
     }
 
@@ -194,7 +215,7 @@ api.interceptors.request.use(
 // Response interceptor for error handling and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
-    const config = response.config as any;
+    const config = response.config as ExtendedAxiosConfig;
     const metadata = config.metadata;
     const responseTime = metadata ? Date.now() - metadata.startTime : 0;
 
@@ -236,7 +257,7 @@ api.interceptors.response.use(
     
     // Enhanced error debugging
     if (environment.DEBUG) {
-      const metadata = (originalRequest as any)?.metadata;
+      const metadata = (originalRequest as ExtendedAxiosConfig)?.metadata;
       const responseTime = metadata ? Date.now() - metadata.startTime : 0;
 
       // Don't log 404 errors for loyalty endpoints as they're expected for new users
@@ -244,7 +265,7 @@ api.interceptors.response.use(
                              error.response?.status === 404;
 
       if (!isExpectedError) {
-        const errorDetails: any = {
+        const errorDetails: Record<string, unknown> = {
           requestId: metadata?.requestId || 'unknown',
           method: originalRequest?.method?.toUpperCase(),
           url: originalRequest?.url,
@@ -312,7 +333,7 @@ api.interceptors.response.use(
     const isLoginRequest = originalRequest.url?.includes('/auth/login');
     const isLogoutRequest = originalRequest.url?.includes('/auth/logout') || originalRequest.url?.includes('/logout');
     // Check if toast should be skipped for this request (used by admin analytics with Promise.allSettled)
-    const skipToast = (originalRequest as any)?.skipToast === true;
+    const skipToast = (originalRequest as ExtendedAxiosConfig)?.skipToast === true;
 
     // Handle different error types
     if (error.response) {
@@ -366,17 +387,17 @@ class ApiClient {
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.post<ApiResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.put<ApiResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.patch<ApiResponse<T>>(url, data, config);
     return response.data;
   }
@@ -465,7 +486,7 @@ export const createCancelToken = () => {
   return axios.CancelToken.source();
 };
 
-export const isRequestCancelled = (error: any): boolean => {
+export const isRequestCancelled = (error: unknown): boolean => {
   return axios.isCancel(error);
 };
 
@@ -482,12 +503,13 @@ export const debugApiConnection = async () => {
   try {
     const healthResponse = await axios.get(`${environment.API_URL.replace('/api/v1', '')}/health`, { timeout: 5000 });
     logger.info('Health Check Response:', healthResponse.data);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Health Check Failed:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data,
+      message: err.message
     });
   }
 
@@ -495,12 +517,13 @@ export const debugApiConnection = async () => {
   try {
     const apiResponse = await axios.get(`${environment.API_URL}`, { timeout: 5000 });
     logger.info('API v1 Response:', apiResponse.data);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('API v1 Check Failed:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data,
+      message: err.message
     });
   }
 };
@@ -562,12 +585,13 @@ export const runFullDiagnostics = async () => {
         }
       });
       logger.info(`${endpoint}: ${response.status} - ${response.statusText}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error(`${endpoint} failed:`, {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        message: err.message
       });
     }
   }
@@ -575,10 +599,10 @@ export const runFullDiagnostics = async () => {
 
 // Make debug functions available globally for easy access
 if (environment.DEBUG) {
-  (window as any).debugApiConnection = debugApiConnection;
-  (window as any).debugAuthStatus = debugAuthStatus;
-  (window as any).debugBrowserInfo = debugBrowserInfo;
-  (window as any).runFullDiagnostics = runFullDiagnostics;
+  window.debugApiConnection = debugApiConnection;
+  window.debugAuthStatus = debugAuthStatus;
+  window.debugBrowserInfo = debugBrowserInfo;
+  window.runFullDiagnostics = runFullDiagnostics;
 
   logger.info('Debug functions available: debugApiConnection(), debugAuthStatus(), debugBrowserInfo(), runFullDiagnostics()');
 }

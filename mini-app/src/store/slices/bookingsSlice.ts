@@ -91,7 +91,7 @@ const initialState: BookingsState = {
 };
 
 // Backend returns Prisma Decimal fields as strings — convert to numbers
-const normalizeBookingAmounts = (booking: any) => ({
+const normalizeBookingAmounts = (booking: Record<string, unknown>) => ({
   ...booking,
   status: typeof booking.status === 'string' ? booking.status.toLowerCase() : booking.status,
   totalAmount: Number(booking.totalAmount) || 0,
@@ -116,7 +116,7 @@ export const fetchBookingsAsync = createAsyncThunk(
     endDate?: string;
     userType?: 'customer' | 'specialist';
   }) => {
-    const response: any = await apiService.getBookings(params);
+    const response: Record<string, unknown> = await apiService.getBookings(params);
     // API returns { bookings: [...], total, page, totalPages }
     if (response?.bookings) {
       return {
@@ -136,7 +136,7 @@ export const fetchBookingsAsync = createAsyncThunk(
 export const fetchBookingAsync = createAsyncThunk(
   'bookings/fetchBooking',
   async (id: string) => {
-    const raw: any = await apiService.getBooking(id);
+    const raw: Record<string, unknown> = await apiService.getBooking(id);
     return normalizeBookingAmounts(raw);
   }
 );
@@ -155,7 +155,7 @@ export const createBookingAsync = createAsyncThunk(
 
 export const updateBookingAsync = createAsyncThunk(
   'bookings/updateBooking',
-  async ({ id, updates }: { id: string; updates: any }) => {
+  async ({ id, updates }: { id: string; updates: Record<string, unknown> }) => {
     return await apiService.updateBooking(id, updates);
   }
 );

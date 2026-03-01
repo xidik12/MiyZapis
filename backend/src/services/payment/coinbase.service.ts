@@ -49,7 +49,7 @@ interface CoinbaseCharge {
       currency: string;
     };
   };
-  payments: any[];
+  payments: Record<string, unknown>[];
   addresses: Record<string, string>;
 }
 

@@ -10,8 +10,17 @@ export interface AuthenticatedRequest extends Request {
   userId?: string;
 }
 
+// Request type where user is guaranteed to exist (after requireAuth middleware)
+export interface VerifiedAuthRequest extends Request {
+  user: User;
+  userId: string;
+}
+
+// express-validator ValidationError compatibility type for accessing param/path/msg
+export interface ValidatorError { param?: string; path?: string; msg?: string; message?: string }
+
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: ApiError;
@@ -35,8 +44,8 @@ export interface ResponseMeta {
   total?: number;
   count?: number;
   message?: string;
-  filters?: any;
-  stats?: any;
+  filters?: Record<string, unknown>;
+  stats?: Record<string, unknown>;
 }
 
 export interface PaginationMeta {
@@ -78,6 +87,8 @@ export interface RegisterRequest {
   phoneNumber?: string;
   userType: UserType;
   telegramId?: string;
+  language?: string;
+  referralCode?: string;
 }
 
 export interface TelegramAuthRequest {
@@ -155,7 +166,7 @@ export interface NotificationData {
   type: string;
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   userId: string;
   bookingId?: string;
 }
@@ -163,7 +174,7 @@ export interface NotificationData {
 // WebSocket event types
 export interface WebSocketEvent {
   type: string;
-  data: any;
+  data: unknown;
   userId?: string;
   room?: string;
 }
@@ -242,7 +253,7 @@ export const RateLimitConfigs = {
 } as const;
 
 // Utility functions
-export const formatValidationErrors = (errors: any[]): ApiError['details'] => {
+export const formatValidationErrors = (errors: Array<{ param?: string; path?: string; msg?: string; message?: string }>): ApiError['details'] => {
   return errors.map(error => ({
     field: error.param || error.path,
     message: error.msg || error.message,

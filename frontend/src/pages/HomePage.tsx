@@ -226,7 +226,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : categories.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-              {categories.slice(0, 6).map((category: any) => {
+              {categories.slice(0, 6).map((category: Record<string, unknown>) => {
                 const slug = category.slug || category.id;
                 const CategoryIcon = categoryIcons[slug] || SparklesIcon;
                 return (
@@ -332,7 +332,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : topSpecialists.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-              {topSpecialists.map((specialist: any) => (
+              {topSpecialists.map((specialist: Record<string, unknown>) => (
                 <Link
                   key={specialist.id}
                   to={`/specialist/${specialist.id}`}

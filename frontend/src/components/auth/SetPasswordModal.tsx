@@ -58,9 +58,10 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Set password failed:', error);
-      toast.error(error.message || (t('auth.passwordSetFailed') || 'Failed to set password. Please try again.'));
+      toast.error(err.message || (t('auth.passwordSetFailed') || 'Failed to set password. Please try again.'));
     } finally {
       setIsLoading(false);
     }

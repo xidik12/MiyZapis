@@ -82,7 +82,7 @@ const CustomerBookings: React.FC = () => {
       await waitlistService.leaveWaitlist(entryId);
       setWaitlistEntries(prev => prev.filter(e => e.id !== entryId));
       toast.success(t('waitlist.cancelledSuccess') || 'Removed from waitlist');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Failed to cancel waitlist entry:', error);
       toast.error(error?.message || t('waitlist.cancelFailed') || 'Failed to cancel waitlist entry');
     }
@@ -111,7 +111,7 @@ const CustomerBookings: React.FC = () => {
 
     // Sort bookings
     filtered.sort((a, b) => {
-      let aVal: any, bVal: any;
+      let aVal: unknown, bVal: unknown;
 
       switch (sortBy) {
         case 'date':
@@ -232,7 +232,7 @@ const CustomerBookings: React.FC = () => {
       dispatch(fetchBookings({ filters: {}, userType: 'customer' }));
 
       toast.success(t('reviews.reviewSubmitted'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Failed to submit review:', error);
 
       if (error?.response?.status === 409 || error?.status === 409) {

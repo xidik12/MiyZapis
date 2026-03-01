@@ -1,5 +1,5 @@
 import { logger } from '@/utils/logger';
-import { EnhancedWebSocketService } from './enhanced-websocket';
+import { WebSocketService } from './websocket';
 
 /**
  * WebSocket Manager Singleton
@@ -8,12 +8,12 @@ import { EnhancedWebSocketService } from './enhanced-websocket';
  * to emit real-time events (like payment confirmations, booking updates, etc.)
  */
 export class WebSocketManager {
-  private static instance: EnhancedWebSocketService | null = null;
+  private static instance: WebSocketService | null = null;
 
   /**
-   * Initialize the WebSocket manager with an EnhancedWebSocketService instance
+   * Initialize the WebSocket manager with an WebSocketService instance
    */
-  static initialize(enhancedWebSocketService: EnhancedWebSocketService): void {
+  static initialize(enhancedWebSocketService: WebSocketService): void {
     if (WebSocketManager.instance) {
       logger.warn('WebSocketManager is already initialized');
       return;
@@ -26,7 +26,7 @@ export class WebSocketManager {
   /**
    * Get the WebSocket service instance
    */
-  static getInstance(): EnhancedWebSocketService {
+  static getInstance(): WebSocketService {
     if (!WebSocketManager.instance) {
       throw new Error('WebSocketManager not initialized. Call initialize() first.');
     }
@@ -52,7 +52,7 @@ export class WebSocketManager {
     currency: string;
     type: 'DEPOSIT' | 'SUBSCRIPTION' | 'WALLET_TOPUP';
     confirmedAt: Date;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }): Promise<void> {
     if (!WebSocketManager.isInitialized()) {
       logger.warn('WebSocketManager not initialized, cannot emit payment completion event');

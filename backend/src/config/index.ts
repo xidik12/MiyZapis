@@ -93,7 +93,10 @@ const envSchema = z.object({
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   
   // Frontend URL
-  FRONTEND_URL: z.string().optional(),
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
+
+  // Backend base URL (for file uploads, etc.)
+  BASE_URL: z.string().optional(),
   
   // Google OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -262,6 +265,9 @@ export const config = {
   frontend: {
     url: env.FRONTEND_URL,
   },
+
+  // Backend base URL
+  baseUrl: env.BASE_URL || `http://localhost:${env.PORT}`,
 
   // Google OAuth
   google: {

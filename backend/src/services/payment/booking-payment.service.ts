@@ -150,9 +150,9 @@ export class BookingPaymentService {
 
       let totalPaid = 0;
       let remainingAmount = depositAmount;
-      let walletTransaction: any = undefined;
-      let cryptoPayment: any = undefined;
-      let onrampSession: any = undefined;
+      let walletTransaction: unknown = undefined;
+      let cryptoPayment: unknown = undefined;
+      let onrampSession: unknown = undefined;
 
       // Step 1: Try to use wallet balance first if requested
       if (useWalletFirst && remainingAmount > 0) {
@@ -354,8 +354,8 @@ export class BookingPaymentService {
     paidAmount: number;
     walletAmountUsed: number;
     remainingAmount: number;
-    cryptoPayments: any[];
-    walletTransactions: any[];
+    cryptoPayments: Record<string, unknown>[];
+    walletTransactions: Record<string, unknown>[];
   }> {
     const booking = await prisma.booking.findFirst({
       where: {
@@ -670,7 +670,7 @@ export class BookingPaymentService {
     return await coinbaseOnrampService.getOnrampSession(sessionId);
   }
 
-  async processOnrampCompletion(sessionId: string, completionData: any): Promise<void> {
+  async processOnrampCompletion(sessionId: string, completionData: Record<string, unknown>): Promise<void> {
     await coinbaseOnrampService.processOnrampCompletion({
       sessionId,
       ...completionData,

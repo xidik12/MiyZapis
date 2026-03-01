@@ -201,10 +201,11 @@ export class PayPalService {
       } else {
         throw new Error('PayPal order creation failed: No order ID returned');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Order creation failed', {
-        error: error instanceof Error ? error.message : JSON.stringify(error),
-        stack: error instanceof Error ? error.stack : undefined,
+        error: error instanceof Error ? err.message : JSON.stringify(error),
+        stack: error instanceof Error ? err.stack : undefined,
         bookingId: data.bookingId,
         amount: data.amount,
         paypalAmount: (data.amount / 100).toFixed(2),

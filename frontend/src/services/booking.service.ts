@@ -57,17 +57,18 @@ export class BookingService {
       
       console.log('✅ BookingService: Booking created successfully');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('❌ BookingService: Booking creation failed:', error);
       
       // Re-throw with proper error structure for Redux to handle
-      if (error.response) {
+      if (err.response) {
         throw error; // Already has response structure
       } else {
-        const wrappedError = new Error(error.message || 'Failed to create booking');
+        const wrappedError = new Error(err.message || 'Failed to create booking');
         (wrappedError as any).response = { 
-          status: error.message?.includes('conflicts detected') ? 409 : 500, 
-          data: { error: error.message } 
+          status: err.message?.includes('conflicts detected') ? 409 : 500, 
+          data: { error: err.message } 
         };
         throw wrappedError;
       }
@@ -109,15 +110,16 @@ export class BookingService {
 
       console.log('BookingService: Recurring booking created successfully');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('BookingService: Recurring booking creation failed:', error);
-      if (error.response) {
+      if (err.response) {
         throw error;
       }
-      const wrappedError = new Error(error.message || 'Failed to create recurring booking');
+      const wrappedError = new Error(err.message || 'Failed to create recurring booking');
       (wrappedError as any).response = {
         status: 500,
-        data: { error: error.message },
+        data: { error: err.message },
       };
       throw wrappedError;
     }
@@ -153,7 +155,7 @@ export class BookingService {
 
       console.log('✅ BookingService: Booking created with payment successfully');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ BookingService: Booking with payment creation failed:', error);
       throw error;
     }

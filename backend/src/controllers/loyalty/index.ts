@@ -7,7 +7,7 @@ import {
 } from '@/services/loyalty';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class LoyaltyController {
@@ -35,10 +35,11 @@ export class LoyaltyController {
           balance,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get loyalty balance error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -114,7 +115,7 @@ export class LoyaltyController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get loyalty transactions error:', error);
 
       res.status(500).json(
@@ -142,8 +143,8 @@ export class LoyaltyController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -193,10 +194,11 @@ export class LoyaltyController {
           message: `Successfully awarded ${points} points`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Award loyalty points error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -207,7 +209,7 @@ export class LoyaltyController {
         return;
       }
 
-      if (error.message === 'POINTS_MUST_BE_POSITIVE') {
+      if (err.message === 'POINTS_MUST_BE_POSITIVE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -243,8 +245,8 @@ export class LoyaltyController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -281,10 +283,11 @@ export class LoyaltyController {
           message: `Successfully redeemed ${points} points`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Redeem loyalty points error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -295,7 +298,7 @@ export class LoyaltyController {
         return;
       }
 
-      if (error.message === 'POINTS_MUST_BE_POSITIVE') {
+      if (err.message === 'POINTS_MUST_BE_POSITIVE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -306,7 +309,7 @@ export class LoyaltyController {
         return;
       }
 
-      if (error.message === 'INSUFFICIENT_POINTS') {
+      if (err.message === 'INSUFFICIENT_POINTS') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.INSUFFICIENT_BALANCE,
@@ -352,7 +355,7 @@ export class LoyaltyController {
           stats,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get loyalty stats error:', error);
 
       res.status(500).json(
@@ -378,7 +381,7 @@ export class LoyaltyController {
           tiers,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get loyalty tiers error:', error);
 
       res.status(500).json(
@@ -415,10 +418,11 @@ export class LoyaltyController {
           tier: tierInfo,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get user tier error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -506,7 +510,7 @@ export class LoyaltyController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get all loyalty transactions error:', error);
 
       res.status(500).json(

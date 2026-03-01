@@ -13,7 +13,7 @@ interface EnhancedGoogleSignInProps {
 
 declare global {
   interface Window {
-    google: any;
+    google: Record<string, unknown>;
   }
 }
 
@@ -83,7 +83,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
     }
   };
 
-  const handleCredentialResponse = async (response: any) => {
+  const handleCredentialResponse = async (response: Record<string, unknown>) => {
     try {
       if (!response.credential) {
         throw new Error('No credential received from Google');
@@ -114,20 +114,21 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
         navigate('/dashboard');
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Google Sign-In Error:', error);
       
       // Handle different types of errors
       let errorMessage = t('auth.google.error');
 
-      if (error.message?.includes('CORS') || error.message?.includes('Cross-Origin')) {
+      if (err.message?.includes('CORS') || err.message?.includes('Cross-Origin')) {
         errorMessage = t('auth.google.tryAgain');
-      } else if (error.message?.includes('popup_blocked')) {
+      } else if (err.message?.includes('popup_blocked')) {
         errorMessage = t('auth.google.tryAgain');
-      } else if (error.message?.includes('access_denied')) {
+      } else if (err.message?.includes('access_denied')) {
         errorMessage = t('auth.google.error');
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else if (err.message) {
+        errorMessage = err.message;
       }
       
       if (onError) {
@@ -162,13 +163,14 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
         navigate('/dashboard');
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('User type selection error:', error);
       setShowUserTypeModal(false);
       setPendingGoogleData(null);
       
       if (onError) {
-        onError(error.message || 'Registration failed');
+        onError(err.message || 'Registration failed');
       }
     }
   };

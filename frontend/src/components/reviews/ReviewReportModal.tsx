@@ -46,9 +46,10 @@ export const ReviewReportModal: React.FC<ReviewReportModalProps> = ({
       setDetails('');
       onClose();
       toast.success(t('reviews.report.success') || 'Report submitted successfully. Our team will review it.');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[ReviewReportModal] Error submitting report:', error);
-      toast.error(error.message || t('reviews.report.error') || 'Failed to submit report');
+      toast.error(err.message || t('reviews.report.error') || 'Failed to submit report');
     } finally {
       setIsSubmitting(false);
     }

@@ -3,7 +3,7 @@ import { SpecialistService } from '@/services/specialist';
 import { ServiceService } from '@/services/service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
 
@@ -20,8 +20,8 @@ export class SpecialistController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -47,10 +47,11 @@ export class SpecialistController {
           specialist,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create specialist profile error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -61,7 +62,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'USER_NOT_ELIGIBLE_FOR_SPECIALIST') {
+      if (err.message === 'USER_NOT_ELIGIBLE_FOR_SPECIALIST') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -72,7 +73,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_PROFILE_EXISTS') {
+      if (err.message === 'SPECIALIST_PROFILE_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -115,8 +116,8 @@ export class SpecialistController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -151,10 +152,11 @@ export class SpecialistController {
           specialist,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update specialist profile error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -196,10 +198,11 @@ export class SpecialistController {
           specialist,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get my specialist profile error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -243,10 +246,11 @@ export class SpecialistController {
           specialist,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist profile error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -290,10 +294,11 @@ export class SpecialistController {
           specialist,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get public specialist profile error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -353,7 +358,7 @@ export class SpecialistController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Search specialists error:', error);
 
       res.status(500).json(
@@ -439,10 +444,11 @@ export class SpecialistController {
           }
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist analytics error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -487,10 +493,11 @@ export class SpecialistController {
           message: `Specialist ${specialist.isVerified ? 'verified' : 'unverified'} successfully`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Toggle specialist verification error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -532,10 +539,11 @@ export class SpecialistController {
           services,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist services error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -567,8 +575,8 @@ export class SpecialistController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -594,10 +602,11 @@ export class SpecialistController {
           service,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create service error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -629,8 +638,8 @@ export class SpecialistController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -658,10 +667,11 @@ export class SpecialistController {
           service,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update service error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -672,7 +682,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -683,7 +693,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.FORBIDDEN,
@@ -727,10 +737,11 @@ export class SpecialistController {
           message: 'Service deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Delete service error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -741,7 +752,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -752,7 +763,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.FORBIDDEN,
@@ -763,7 +774,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'ACTIVE_BOOKINGS_EXIST') {
+      if (err.message === 'ACTIVE_BOOKINGS_EXIST') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -776,8 +787,8 @@ export class SpecialistController {
 
       // Log the full error for debugging
       logger.error('Unhandled service deletion error:', {
-        message: error.message,
-        stack: error.stack,
+        message: err.message,
+        stack: err.stack,
         serviceId: req.params.serviceId,
         userId: req.user?.id
       });
@@ -816,10 +827,11 @@ export class SpecialistController {
           service: restoredService,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Restore service error:', error);
 
-      if (error.message === 'DELETED_SERVICE_NOT_FOUND') {
+      if (err.message === 'DELETED_SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -830,7 +842,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -841,7 +853,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.FORBIDDEN,
@@ -898,10 +910,11 @@ export class SpecialistController {
           message: `Service ${isActive ? 'activated' : 'deactivated'} successfully`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Toggle service status error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -912,7 +925,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -923,7 +936,7 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'UNAUTHORIZED_ACCESS') {
+      if (err.message === 'UNAUTHORIZED_ACCESS') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.FORBIDDEN,
@@ -963,7 +976,7 @@ export class SpecialistController {
 
       const { startDate, endDate } = req.query;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: specialist.id,
       };
 
@@ -987,10 +1000,11 @@ export class SpecialistController {
           blockedSlots,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get blocked slots error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -1022,8 +1036,8 @@ export class SpecialistController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -1064,10 +1078,11 @@ export class SpecialistController {
           blockedSlot,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Block time slot error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -1135,10 +1150,11 @@ export class SpecialistController {
           message: 'Time slot unblocked successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Unblock time slot error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -1186,10 +1202,11 @@ export class SpecialistController {
           services,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist services error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -1311,9 +1328,80 @@ export class SpecialistController {
         toDate: lastMonthEnd,
       });
 
-      const monthlyGrowthPercentage = lastMonthEarnings.totalEarnings > 0 
-        ? ((earningsData.totalEarnings - lastMonthEarnings.totalEarnings) / lastMonthEarnings.totalEarnings) * 100 
+      const monthlyGrowthPercentage = lastMonthEarnings.totalEarnings > 0
+        ? ((earningsData.totalEarnings - lastMonthEarnings.totalEarnings) / lastMonthEarnings.totalEarnings) * 100
         : earningsData.totalEarnings > 0 ? 100 : 0;
+
+      // Compute repeat customers, peak hours, best day, avg duration, and new customers
+      const periodBookings = await prisma.booking.findMany({
+        where: {
+          specialistId: req.user.id,
+          createdAt: { gte: startDate, lte: endDate },
+        },
+        select: {
+          customerId: true,
+          scheduledAt: true,
+          duration: true,
+          createdAt: true,
+        },
+      });
+
+      // Repeat customers: customers with more than 1 booking in the period
+      const customerBookingCounts: Record<string, number> = {};
+      for (const b of periodBookings) {
+        customerBookingCounts[b.customerId] = (customerBookingCounts[b.customerId] || 0) + 1;
+      }
+      const repeatCustomerCount = Object.values(customerBookingCounts).filter(c => c > 1).length;
+
+      // Peak hours: find the hour with the most bookings
+      const hourCounts: Record<number, number> = {};
+      for (const b of periodBookings) {
+        const hour = new Date(b.scheduledAt).getHours();
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      }
+      const peakHourNum = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
+      const peakHours = peakHourNum
+        ? `${String(Number(peakHourNum[0])).padStart(2, '0')}:00 - ${String(Number(peakHourNum[0]) + 1).padStart(2, '0')}:00`
+        : 'No data';
+
+      // Best day of week
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayCounts: Record<number, number> = {};
+      for (const b of periodBookings) {
+        const day = new Date(b.scheduledAt).getDay();
+        dayCounts[day] = (dayCounts[day] || 0) + 1;
+      }
+      const bestDayNum = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
+      const bestDay = bestDayNum ? dayNames[Number(bestDayNum[0])] : 'No data';
+
+      // Average booking duration from the booking's duration field (in minutes)
+      const durationsWithValue = periodBookings.filter(b => b.duration > 0);
+      const avgBookingDuration = durationsWithValue.length > 0
+        ? Math.round(durationsWithValue.reduce((sum, b) => sum + b.duration, 0) / durationsWithValue.length)
+        : null;
+
+      // New customers: customers whose first-ever booking with this specialist is within the period
+      const allCustomerIds = Object.keys(customerBookingCounts);
+      let newCustomerCount = 0;
+      if (allCustomerIds.length > 0) {
+        const firstBookings = await prisma.booking.groupBy({
+          by: ['customerId'],
+          where: {
+            specialistId: req.user.id,
+            customerId: { in: allCustomerIds },
+          },
+          _min: { createdAt: true },
+        });
+        newCustomerCount = firstBookings.filter(
+          fb => fb._min.createdAt && fb._min.createdAt >= startDate
+        ).length;
+      }
+
+      // Last payout: most recent completed payment amount
+      const lastPayoutPayment = earningsData.payments.find(
+        (p: Record<string, unknown>) => p.status === 'COMPLETED' || p.status === 'CAPTURED'
+      );
+      const lastPayoutAmount = lastPayoutPayment ? lastPayoutPayment.amount : null;
 
       // Format response data to match frontend expectations
       const responseData = {
@@ -1321,37 +1409,37 @@ export class SpecialistController {
         totalEarnings: earningsData.totalEarnings || 0,
         thisMonth: earningsData.totalEarnings || 0,
         pending: earningsData.pendingEarnings || 0,
-        lastPayout: 0, // TODO: Implement payout tracking
-        
+        lastPayout: lastPayoutAmount,
+
         // Secondary metrics
         completedBookings: analytics.completedBookings,
         activeClients: analytics.activeClients,
         averageBookingValue: analytics.averageBookingValue,
         monthlyGrowth: monthlyGrowthPercentage,
-        
+
         // Chart data
         breakdown: trendsData.trends.map(trend => ({
           date: trend.date,
           revenue: trend.earnings,
           bookings: trend.bookingCount,
         })),
-        
+
         // Detailed analytics
         performanceMetrics: {
           conversionRate: analytics.conversionRate,
-          repeatCustomers: 0, // TODO: Calculate repeat customers
+          repeatCustomers: repeatCustomerCount,
           avgSessionValue: analytics.averageBookingValue,
         },
-        
+
         timeAnalysis: {
-          peakHours: 'No data', // TODO: Implement peak hours analysis
-          bestDay: 'No data',   // TODO: Implement best day analysis
-          avgBookingDuration: 90, // TODO: Calculate from service data
+          peakHours,
+          bestDay,
+          avgBookingDuration,
         },
-        
+
         growthInsights: {
           monthlyGrowth: monthlyGrowthPercentage,
-          newCustomers: 0, // TODO: Calculate new vs returning customers
+          newCustomers: newCustomerCount,
           revenueTrend: monthlyGrowthPercentage > 0 ? 'Increasing' : 'Stable',
         },
         
@@ -1375,7 +1463,7 @@ export class SpecialistController {
       res.json(
         createSuccessResponse(responseData)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get revenue breakdown error:', error);
 
       res.status(500).json(

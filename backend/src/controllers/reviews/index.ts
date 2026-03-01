@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ReviewService, CreateReviewData, UpdateReviewData, ReviewFilters } from '@/services/review';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
 
@@ -22,8 +22,8 @@ export class ReviewController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -57,10 +57,11 @@ export class ReviewController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create review error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -71,7 +72,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'NOT_AUTHORIZED_TO_REVIEW') {
+      if (err.message === 'NOT_AUTHORIZED_TO_REVIEW') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -82,7 +83,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'BOOKING_NOT_COMPLETED') {
+      if (err.message === 'BOOKING_NOT_COMPLETED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -93,7 +94,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'REVIEW_ALREADY_EXISTS') {
+      if (err.message === 'REVIEW_ALREADY_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -104,7 +105,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'INVALID_RATING_RANGE') {
+      if (err.message === 'INVALID_RATING_RANGE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -173,7 +174,7 @@ export class ReviewController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get reviews error:', error);
 
       res.status(500).json(
@@ -212,10 +213,11 @@ export class ReviewController {
           review,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get review error:', error);
 
-      if (error.message === 'REVIEW_NOT_FOUND') {
+      if (err.message === 'REVIEW_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -251,8 +253,8 @@ export class ReviewController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -308,10 +310,11 @@ export class ReviewController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update review error:', error);
 
-      if (error.message === 'REVIEW_NOT_FOUND') {
+      if (err.message === 'REVIEW_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -322,7 +325,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'INVALID_RATING_RANGE') {
+      if (err.message === 'INVALID_RATING_RANGE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -393,10 +396,11 @@ export class ReviewController {
           message: 'Review deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Delete review error:', error);
 
-      if (error.message === 'REVIEW_NOT_FOUND') {
+      if (err.message === 'REVIEW_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -485,10 +489,11 @@ export class ReviewController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Add specialist response error:', error);
 
-      if (error.message === 'REVIEW_NOT_FOUND') {
+      if (err.message === 'REVIEW_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -499,7 +504,7 @@ export class ReviewController {
         return;
       }
 
-      if (error.message === 'NOT_AUTHORIZED_TO_RESPOND') {
+      if (err.message === 'NOT_AUTHORIZED_TO_RESPOND') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -546,7 +551,7 @@ export class ReviewController {
           stats,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get specialist review stats error:', error);
 
       res.status(500).json(
@@ -658,7 +663,7 @@ export class ReviewController {
           reaction
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('React to review error:', error);
 
       res.status(500).json(
@@ -780,7 +785,7 @@ export class ReviewController {
           message: 'Report submitted successfully. Our team will review it.'
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Report review error:', error);
 
       res.status(500).json(
@@ -892,7 +897,7 @@ export class ReviewController {
           reaction
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('React to response error:', error);
 
       res.status(500).json(
@@ -975,7 +980,7 @@ export class ReviewController {
       }));
 
       res.json(createSuccessResponse({ comments: formattedComments }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get review comments error:', error);
 
       res.status(500).json(
@@ -1111,7 +1116,7 @@ export class ReviewController {
           }
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Create review comment error:', error);
 
       res.status(500).json(
@@ -1223,7 +1228,7 @@ export class ReviewController {
           reaction
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('React to comment error:', error);
 
       res.status(500).json(
@@ -1308,7 +1313,7 @@ export class ReviewController {
           message: 'Comment deleted successfully'
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Delete comment error:', error);
 
       res.status(500).json(

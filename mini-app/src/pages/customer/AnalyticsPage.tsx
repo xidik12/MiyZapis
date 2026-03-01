@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '@/hooks/redux';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
-import { useLocale, t } from '@/hooks/useLocale';
+import { useTelegram } from '@/components/telegram/TelegramProvider';
+import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { analyticsStrings, commonStrings } from '@/utils/translations';
 import { apiService } from '@/services/api.service';
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
@@ -30,7 +30,7 @@ export const AnalyticsPage: React.FC = () => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { webApp } = useTelegramWebApp();
+  const { webApp } = useTelegram();
 
   useEffect(() => {
     fetchAnalytics();
@@ -47,7 +47,7 @@ export const AnalyticsPage: React.FC = () => {
       });
 
       // Calculate analytics from bookings data
-      const raw: any = bookingsResponse;
+      const raw: Record<string, unknown> = bookingsResponse as Record<string, unknown>;
       const bookings = raw.bookings || raw.items || (Array.isArray(raw) ? raw : []);
 
       if (bookings.length === 0) {
@@ -68,8 +68,8 @@ export const AnalyticsPage: React.FC = () => {
 
       // Calculate total bookings and spending
       const totalBookings = bookings.length;
-      const completedBookings = bookings.filter((b: any) => b.status === 'completed');
-      const totalSpent = completedBookings.reduce((sum: number, b: any) => sum + (Number(b.totalAmount) || 0), 0);
+      const completedBookings = bookings.filter((b: Record<string, unknown>) => b.status === 'completed');
+      const totalSpent = completedBookings.reduce((sum: number, b: Record<string, unknown>) => sum + (Number(b.totalAmount) || 0), 0);
 
       // Calculate completion rate
       const completionRate = totalBookings > 0
@@ -77,9 +77,9 @@ export const AnalyticsPage: React.FC = () => {
         : 0;
 
       // Calculate average rating given by the user
-      const bookingsWithRatings = bookings.filter((b: any) => b.review?.rating);
+      const bookingsWithRatings = bookings.filter((b: Record<string, unknown>) => b.review?.rating);
       const averageRating = bookingsWithRatings.length > 0
-        ? parseFloat((bookingsWithRatings.reduce((sum: number, b: any) => sum + b.review.rating, 0) / bookingsWithRatings.length).toFixed(1))
+        ? parseFloat((bookingsWithRatings.reduce((sum: number, b: Record<string, unknown>) => sum + ((b.review as Record<string, unknown>)?.rating as number || 0), 0) / bookingsWithRatings.length).toFixed(1))
         : 0;
 
       // Calculate monthly stats for the last 6 months
@@ -91,14 +91,14 @@ export const AnalyticsPage: React.FC = () => {
         const monthStart = startOfMonth(month);
         const monthEnd = endOfMonth(month);
 
-        const monthBookings = bookings.filter((b: any) => {
+        const monthBookings = bookings.filter((b: Record<string, unknown>) => {
           const bookingDate = new Date(b.scheduledAt);
           return bookingDate >= monthStart && bookingDate <= monthEnd;
         });
 
         const monthSpending = monthBookings
-          .filter((b: any) => b.status === 'completed')
-          .reduce((sum: number, b: any) => sum + (Number(b.totalAmount) || 0), 0);
+          .filter((b: Record<string, unknown>) => b.status === 'completed')
+          .reduce((sum: number, b: Record<string, unknown>) => sum + (Number(b.totalAmount) || 0), 0);
 
         return {
           label: format(month, 'MMM'),
@@ -110,7 +110,7 @@ export const AnalyticsPage: React.FC = () => {
       // Calculate spending by service category
       const categoryMap = new Map<string, { bookings: number; spent: number }>();
 
-      completedBookings.forEach((booking: any) => {
+      completedBookings.forEach((booking: Record<string, unknown>) => {
         const categoryName = booking.service?.category?.name || t(analyticsStrings, 'otherCategory', locale);
         const existing = categoryMap.get(categoryName) || { bookings: 0, spent: 0 };
         categoryMap.set(categoryName, {
@@ -249,7 +249,7 @@ export const AnalyticsPage: React.FC = () => {
 
           <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4 text-center">
             <div className="text-2xl font-bold text-accent-primary">
-              ${analytics.totalSpent.toFixed(2)}
+              {formatCurrency(analytics.totalSpent, undefined, locale)}
             </div>
             <div className="text-sm text-text-secondary">
               {t(analyticsStrings, 'totalSpent', locale)}
@@ -322,7 +322,7 @@ export const AnalyticsPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="font-semibold text-text-primary">
-                    ${category.spent.toFixed(2)}
+                    {formatCurrency(category.spent, undefined, locale)}
                   </div>
                 </div>
               ))}

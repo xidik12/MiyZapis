@@ -91,7 +91,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     }
   };
 
-  const NavItem = ({ item, showText = true }: { item: any; showText?: boolean }) => {
+  const NavItem = ({ item, showText = true }: { item: Record<string, unknown>; showText?: boolean }) => {
     const Icon = item.icon;
 
     if (item.isHashLink) {

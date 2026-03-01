@@ -1,8 +1,33 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
-import { emailService } from './email/enhanced-email';
+import { emailService } from './email';
 
 export class TrialExpirationService {
+  /**
+   * Batch-fetch existing email log entries for a set of recipients and subject pattern.
+   * Returns a Set of recipient emails that already have a matching notification.
+   */
+  private async getAlreadyNotifiedEmails(
+    recipientEmails: string[],
+    subjectContains: string,
+    sinceDaysAgo: number
+  ): Promise<Set<string>> {
+    if (recipientEmails.length === 0) return new Set();
+
+    const sinceDate = new Date(Date.now() - sinceDaysAgo * 24 * 60 * 60 * 1000);
+
+    const existingLogs = await prisma.emailLog.findMany({
+      where: {
+        recipient: { in: recipientEmails },
+        subject: { contains: subjectContains },
+        sentAt: { gte: sinceDate },
+      },
+      select: { recipient: true },
+    });
+
+    return new Set(existingLogs.map((log) => log.recipient));
+  }
+
   /**
    * Check for trials expiring in 7 days and send warning emails
    */
@@ -24,7 +49,7 @@ export class TrialExpirationService {
     sevenDaysEnd.setHours(23, 59, 59, 999);
 
     try {
-      // Find users whose trial expires in 7 days and haven't been notified yet
+      // Find users whose trial expires in 7 days
       const users = await prisma.user.findMany({
         where: {
           isInTrial: true,
@@ -32,38 +57,37 @@ export class TrialExpirationService {
             gte: sevenDaysStart,
             lte: sevenDaysEnd,
           },
-          // Check if we haven't sent the 7-day warning yet
-          // We'll use a simple check: if trial is still active and ends in 7 days,
-          // we can track this with a notification flag or email log
+        },
+        select: {
+          id: true,
+          email: true,
+          language: true,
         },
       });
 
       logger.info(`Found ${users.length} users with trial expiring in 7 days`);
 
+      if (users.length === 0) {
+        return { usersChecked: 0, emailsSent: 0, errors: 0 };
+      }
+
+      // Batch-fetch already notified emails (N+1 fix)
+      const alreadyNotified = await this.getAlreadyNotifiedEmails(
+        users.map((u) => u.email),
+        'Trial is Ending Soon',
+        8 // Last 8 days
+      );
+
       let emailsSent = 0;
       let errors = 0;
 
       for (const user of users) {
+        if (alreadyNotified.has(user.email)) {
+          logger.info(`7-day warning already sent to user ${user.id}`);
+          continue;
+        }
+
         try {
-          // Check if we already sent this notification (check email logs)
-          const existingNotification = await prisma.emailLog.findFirst({
-            where: {
-              recipient: user.email,
-              subject: {
-                contains: 'Trial is Ending Soon',
-              },
-              sentAt: {
-                gte: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // Last 8 days
-              },
-            },
-          });
-
-          if (existingNotification) {
-            logger.info(`7-day warning already sent to user ${user.id}`);
-            continue;
-          }
-
-          // Send 7-day warning email
           const sent = await emailService.sendTrialExpiringWarning(user.id, user.language || 'en');
 
           if (sent) {
@@ -129,34 +153,36 @@ export class TrialExpirationService {
             lte: threeDaysEnd,
           },
         },
+        select: {
+          id: true,
+          email: true,
+          language: true,
+        },
       });
 
       logger.info(`Found ${users.length} users with trial expiring in 3 days`);
+
+      if (users.length === 0) {
+        return { usersChecked: 0, emailsSent: 0, errors: 0 };
+      }
+
+      // Batch-fetch already notified emails (N+1 fix)
+      const alreadyNotified = await this.getAlreadyNotifiedEmails(
+        users.map((u) => u.email),
+        'Trial is Ending Soon',
+        4 // Last 4 days
+      );
 
       let emailsSent = 0;
       let errors = 0;
 
       for (const user of users) {
+        if (alreadyNotified.has(user.email)) {
+          logger.info(`3-day warning already sent to user ${user.id}`);
+          continue;
+        }
+
         try {
-          // Check if we already sent this notification
-          const existingNotification = await prisma.emailLog.findFirst({
-            where: {
-              recipient: user.email,
-              subject: {
-                contains: 'Trial is Ending Soon',
-              },
-              sentAt: {
-                gte: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // Last 4 days
-              },
-            },
-          });
-
-          if (existingNotification) {
-            logger.info(`3-day warning already sent to user ${user.id}`);
-            continue;
-          }
-
-          // Send 3-day warning email
           const sent = await emailService.sendTrialExpiringWarning(user.id, user.language || 'en');
 
           if (sent) {
@@ -215,51 +241,54 @@ export class TrialExpirationService {
             lt: now,
           },
         },
+        select: {
+          id: true,
+          email: true,
+          language: true,
+        },
       });
 
       logger.info(`Found ${users.length} users with expired trials`);
 
-      let usersExpired = 0;
+      if (users.length === 0) {
+        return { usersChecked: 0, usersExpired: 0, emailsSent: 0, errors: 0 };
+      }
+
+      const expiredUserIds = users.map((u) => u.id);
+
+      // Batch update all expired trials at once (N+1 fix)
+      const updateResult = await prisma.user.updateMany({
+        where: { id: { in: expiredUserIds } },
+        data: { isInTrial: false },
+      });
+
+      const usersExpired = updateResult.count;
+      logger.info(`Batch-expired ${usersExpired} user trials`);
+
+      // Batch-fetch already notified emails (N+1 fix)
+      const alreadyNotified = await this.getAlreadyNotifiedEmails(
+        users.map((u) => u.email),
+        'Trial Has Ended',
+        2 // Last 2 days
+      );
+
       let emailsSent = 0;
       let errors = 0;
 
       for (const user of users) {
+        if (alreadyNotified.has(user.email)) {
+          continue;
+        }
+
         try {
-          // Update user to mark trial as expired
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              isInTrial: false,
-            },
-          });
+          const sent = await emailService.sendTrialExpired(user.id, user.language || 'en');
 
-          usersExpired++;
-          logger.info(`Expired trial for user ${user.id} (${user.email})`);
-
-          // Check if we already sent expiration notification
-          const existingNotification = await prisma.emailLog.findFirst({
-            where: {
-              recipient: user.email,
-              subject: {
-                contains: 'Trial Has Ended',
-              },
-              sentAt: {
-                gte: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Last 2 days
-              },
-            },
-          });
-
-          if (!existingNotification) {
-            // Send trial expired email
-            const sent = await emailService.sendTrialExpired(user.id, user.language || 'en');
-
-            if (sent) {
-              emailsSent++;
-              logger.info(`Trial expiration email sent to user ${user.id}`);
-            } else {
-              errors++;
-              logger.error(`Failed to send trial expiration email to user ${user.id}`);
-            }
+          if (sent) {
+            emailsSent++;
+            logger.info(`Trial expiration email sent to user ${user.id}`);
+          } else {
+            errors++;
+            logger.error(`Failed to send trial expiration email to user ${user.id}`);
           }
         } catch (error) {
           errors++;

@@ -54,7 +54,7 @@ interface ErrorState {
 }
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
 };
@@ -301,7 +301,8 @@ const SpecialistEarnings: React.FC = () => {
         setEarningsData(transformedEarnings);
         setMonthlyEarnings(monthlyBreakdown);
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('Error loading earnings:', err);
         
         // Set fallback data instead of showing error
@@ -355,7 +356,7 @@ const SpecialistEarnings: React.FC = () => {
         const bookings = Array.isArray(bookingData.bookings) ? bookingData.bookings : [];
         const recentEarnings: PayoutHistory[] = bookings
           .filter(booking => booking && booking.id && booking.totalAmount) // Only valid completed bookings
-          .map((booking: any) => {
+          .map((booking: Record<string, unknown>) => {
             return {
               id: booking.id,
               date: booking.completedAt || booking.updatedAt || new Date().toISOString(),
@@ -368,7 +369,7 @@ const SpecialistEarnings: React.FC = () => {
         
         setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading recent completed bookings:', err);
         
         setPayoutHistory([]);
@@ -383,7 +384,7 @@ const SpecialistEarnings: React.FC = () => {
 
         const summary = await expenseService.getExpenseSummary();
         setExpenseSummary(summary);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading expense summary:', err);
         setExpenseSummary(null);
       } finally {

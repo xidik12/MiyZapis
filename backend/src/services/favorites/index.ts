@@ -16,7 +16,7 @@ interface FavoriteSpecialist {
     rating: number | null;
     reviewCount: number;
     isVerified: boolean;
-    location: any;
+    location: Record<string, unknown>;
     user: {
       id: string;
       firstName: string;
@@ -59,7 +59,7 @@ export class FavoritesService {
   }
 
   // Add specialist to favorites
-  async addSpecialistToFavorites(userId: string, specialistId: string): Promise<{ message: string; favorite: any }> {
+  async addSpecialistToFavorites(userId: string, specialistId: string): Promise<{ message: string; favorite: Record<string, unknown> }> {
     try {
       // Check if specialist exists
       const specialist = await this.prisma.specialist.findUnique({
@@ -123,7 +123,7 @@ export class FavoritesService {
   }
 
   // Add service to favorites
-  async addServiceToFavorites(userId: string, serviceId: string): Promise<{ message: string; favorite: any }> {
+  async addServiceToFavorites(userId: string, serviceId: string): Promise<{ message: string; favorite: Record<string, unknown> }> {
     try {
       // Check if service exists
       const service = await this.prisma.service.findUnique({

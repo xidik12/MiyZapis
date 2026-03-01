@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
-import { AuthenticatedRequest, JwtPayload, ErrorCodes } from '@/types';
+import { AuthenticatedRequest, VerifiedAuthRequest, JwtPayload, ErrorCodes } from '@/types';
 import { logger } from '@/utils/logger';
 import { createErrorResponse } from '@/utils/response';
 
 // In-memory user cache with 30s TTL to avoid DB hit on every request
 const USER_CACHE_TTL = 30_000;
-const userCache = new Map<string, { data: any; expiresAt: number }>();
+const userCache = new Map<string, { data: Record<string, unknown>; expiresAt: number }>();
 
 const USER_SELECT = {
   id: true,
@@ -104,7 +104,8 @@ export const authenticateToken = async (
     }
 
     // Attach user to request
-    req.user = user as any;
+    // Prisma select returns partial User; cast to satisfy AuthenticatedRequest.user
+    req.user = user as AuthenticatedRequest['user'];
     req.userId = user.id;
 
     next();
@@ -143,6 +144,37 @@ export const authenticateToken = async (
   }
 };
 
+/**
+ * Middleware that guarantees req.user exists.
+ * Use AFTER authenticateToken on routes where all controller methods need a user.
+ * This eliminates the repeated `if (!req.user) { return 401 }` pattern in controllers.
+ *
+ * Usage in routes:
+ *   router.get('/profile', authenticateToken, requireAuth, Controller.getProfile);
+ *   // Or apply to an entire router group:
+ *   router.use(authenticateToken, requireAuth);
+ *
+ * Controllers can then use VerifiedAuthRequest instead of AuthenticatedRequest
+ * and safely access req.user without null checks.
+ */
+export const requireAuth = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json(
+      createErrorResponse(
+        ErrorCodes.AUTHENTICATION_REQUIRED,
+        'Authentication required',
+        req.headers['x-request-id'] as string
+      )
+    );
+    return;
+  }
+  next();
+};
+
 // Optional authentication - don't fail if no token
 export const optionalAuth = async (
   req: AuthenticatedRequest,
@@ -165,7 +197,8 @@ export const optionalAuth = async (
     const user = await getCachedUser(decoded.userId);
 
     if (user && user.isActive) {
-      req.user = user as any;
+      // Prisma select returns partial User; cast to satisfy AuthenticatedRequest.user
+    req.user = user as AuthenticatedRequest['user'];
       req.userId = user.id;
     }
 
@@ -344,7 +377,8 @@ export const authenticateTokenOptional = async (
       return;
     }
 
-    req.user = user as any; // Type assertion for compatibility
+    // Prisma select returns partial User; cast to satisfy AuthenticatedRequest.user
+    req.user = user as AuthenticatedRequest['user']; // Type assertion for compatibility
     next();
   } catch (error) {
     // Token invalid or expired, continue without authentication

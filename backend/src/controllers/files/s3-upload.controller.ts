@@ -96,7 +96,7 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const uploadResults: any[] = [];
+    const uploadResults: Record<string, unknown>[] = [];
     const errors: string[] = [];
 
     // Process each file
@@ -130,7 +130,7 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
 
         // Create database record (temporarily without cloud fields until migration)
         // Save file record to database - handle missing cloudProvider field gracefully
-        const fileData: any = {
+        const fileData: Record<string, unknown> = {
           filename: path.basename(s3Result.key),
           originalName: file.originalname,
           mimeType: s3Result.mimeType,
@@ -384,8 +384,8 @@ function validateFileForPurpose(file: Express.Multer.File, purpose: string): { v
  * Get upload options based on purpose
  */
 function getUploadOptionsForPurpose(purpose: string, userId: string) {
-  const options: any = {
-    purpose: purpose as any,
+  const options: Record<string, unknown> = {
+    purpose,
     userId
   };
 

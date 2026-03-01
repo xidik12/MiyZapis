@@ -225,7 +225,30 @@ export class EnhancedAnalyticsService {
       const monthlyTrends = await this.getMonthlyTrends(specialist.userId, filters);
 
       const pendingBookings = totalBookings - completedBookings - cancelledBookings;
-      
+
+      // Calculate revenue and booking growth by comparing current vs previous period
+      const periodLength = (filters.endDate?.getTime() ?? Date.now()) - (filters.startDate?.getTime() ?? Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const previousStart = new Date((filters.startDate?.getTime() ?? Date.now() - 30 * 24 * 60 * 60 * 1000) - periodLength);
+      const previousEnd = new Date(filters.startDate?.getTime() ?? Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const previousDateFilter = this.buildDateFilter(previousStart, previousEnd);
+      const previousBookingWhere = { specialistId: specialist.userId, ...previousDateFilter };
+
+      const [previousBookingCount, previousRevenueAgg] = await Promise.all([
+        prisma.booking.count({ where: previousBookingWhere }),
+        prisma.booking.aggregate({
+          where: { ...previousBookingWhere, status: 'COMPLETED' },
+          _sum: { totalAmount: true },
+        }),
+      ]);
+
+      const previousRevenue = Number(previousRevenueAgg._sum.totalAmount || 0);
+      const revenueGrowth = previousRevenue > 0
+        ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
+        : totalRevenue > 0 ? 100 : 0;
+      const bookingGrowth = previousBookingCount > 0
+        ? ((totalBookings - previousBookingCount) / previousBookingCount) * 100
+        : totalBookings > 0 ? 100 : 0;
+
       return {
         totalBookings,
         completedBookings,
@@ -237,8 +260,8 @@ export class EnhancedAnalyticsService {
         responseTimeAvg: specialist.responseTime,
         conversionRate: Math.round(conversionRate * 10) / 10,
         repeatCustomerRate: Math.round(repeatCustomerRate * 10) / 10,
-        revenueGrowth: 0, // TODO: Calculate revenue growth
-        bookingGrowth: 0, // TODO: Calculate booking growth
+        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+        bookingGrowth: Math.round(bookingGrowth * 10) / 10,
         topServices: popularServices, // Use popularServices for topServices
         revenueByMonth: monthlyTrends,
         bookingsByStatus: { completed: completedBookings, cancelled: cancelledBookings, pending: pendingBookings },
@@ -397,7 +420,7 @@ export class EnhancedAnalyticsService {
    */
   private static async getPopularServices(
     specialistUserId: string, 
-    dateFilter: any
+    dateFilter: Record<string, unknown>
   ) {
     const services = await prisma.booking.groupBy({
       by: ['serviceId'],
@@ -497,7 +520,7 @@ export class EnhancedAnalyticsService {
   /**
    * Get top categories
    */
-  private static async getTopCategories(dateFilter: any) {
+  private static async getTopCategories(dateFilter: Record<string, unknown>) {
     const categories = await prisma.booking.groupBy({
       by: ['serviceId'],
       where: {
@@ -544,7 +567,7 @@ export class EnhancedAnalyticsService {
   /**
    * Get top specialists
    */
-  private static async getTopSpecialists(dateFilter: any) {
+  private static async getTopSpecialists(dateFilter: Record<string, unknown>) {
     const specialists = await prisma.booking.groupBy({
       by: ['specialistId'],
       where: {
@@ -586,7 +609,7 @@ export class EnhancedAnalyticsService {
   /**
    * Get booking status distribution
    */
-  private static async getBookingStatusDistribution(dateFilter: any) {
+  private static async getBookingStatusDistribution(dateFilter: Record<string, unknown>) {
     const statuses = await prisma.booking.groupBy({
       by: ['status'],
       where: dateFilter,
@@ -668,7 +691,7 @@ export class EnhancedAnalyticsService {
    * Build date filter for Prisma queries
    */
   private static buildDateFilter(startDate?: Date, endDate?: Date) {
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
 
     if (startDate || endDate) {
       filter.createdAt = {};

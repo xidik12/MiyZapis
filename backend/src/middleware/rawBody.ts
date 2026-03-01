@@ -19,7 +19,7 @@ export const webhookRawBodyParser = (req: Request, res: Response, next: NextFunc
     });
 
     req.on('end', () => {
-      (req as any).rawBody = data;
+      (req as Request & { rawBody: string }).rawBody = data;
       // Parse the JSON manually
       try {
         req.body = JSON.parse(data);

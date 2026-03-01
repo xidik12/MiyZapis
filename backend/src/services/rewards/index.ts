@@ -91,7 +91,7 @@ async function ensureLoyaltySchema() {
     `;
 
     schemaEnsured = true;
-  } catch (e: any) {
+  } catch (e: unknown) {
     logger.warn('Failed to ensure loyalty schema (will retry on next call)', { error: e?.message || e });
   }
 }
@@ -227,7 +227,7 @@ export class RewardsService {
         throw new Error('Reward not found or access denied');
       }
 
-      const updateData: any = { ...data };
+      const updateData: Record<string, unknown> = { ...data };
       if (data.serviceIds) {
         updateData.serviceIds = JSON.stringify(data.serviceIds);
       }
@@ -316,7 +316,7 @@ export class RewardsService {
         throw new Error('User not found');
       }
 
-      const whereClause: any = {
+      const whereClause: Record<string, unknown> = {
         isActive: true,
         validFrom: { lte: new Date() },
         OR: [

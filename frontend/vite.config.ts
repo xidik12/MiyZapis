@@ -74,7 +74,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, '../shared')
     }
   },
   define: {
@@ -127,10 +128,52 @@ export default defineConfig({
           }
           return `assets/[name]-[hash].[ext]`;
         },
-        // No manualChunks — Vite handles code splitting automatically.
-        // Manual chunking breaks React CJS-to-ESM interop, causing
-        // "Cannot read properties of undefined (reading 'useSyncExternalStore')"
-        // when packages like use-sync-external-store are in a different chunk than React.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          // React core + use-sync-external-store must stay together
+          // to avoid CJS-to-ESM interop issues (useSyncExternalStore undefined error)
+          if (
+            id.includes('/react/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/scheduler/') ||
+            id.includes('/use-sync-external-store/')
+          ) {
+            return 'react-vendor';
+          }
+
+          // Redux state management
+          if (
+            id.includes('/@reduxjs/toolkit/') ||
+            id.includes('/react-redux/') ||
+            id.includes('/redux/') ||
+            id.includes('/redux-persist/') ||
+            id.includes('/reselect/') ||
+            id.includes('/immer/')
+          ) {
+            return 'redux';
+          }
+
+          // Animation library (~140KB)
+          if (id.includes('/framer-motion/')) {
+            return 'animation';
+          }
+
+          // Router
+          if (id.includes('/react-router-dom/') || id.includes('/react-router/')) {
+            return 'router';
+          }
+
+          // Charts (~250KB)
+          if (id.includes('/recharts/') || id.includes('/d3-')) {
+            return 'charts';
+          }
+
+          // Date utilities
+          if (id.includes('/date-fns/') || id.includes('/react-datepicker/')) {
+            return 'date-utils';
+          }
+        },
       }
     },
     chunkSizeWarningLimit: 1000

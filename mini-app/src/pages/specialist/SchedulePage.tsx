@@ -276,7 +276,7 @@ export const SchedulePage: React.FC = () => {
   // Compute booking dates for calendar indicators
   const bookingDates = useMemo(() => {
     const dates = new Set<string>();
-    bookings.forEach((b: any) => {
+    bookings.forEach((b: Record<string, unknown>) => {
       const dateStr = b.scheduledAt || b.startTime || b.createdAt;
       if (dateStr) {
         try {
@@ -294,7 +294,7 @@ export const SchedulePage: React.FC = () => {
     const now = new Date();
     const todayStr = format(now, 'yyyy-MM-dd');
     return bookings
-      .filter((b: any) => {
+      .filter((b: Record<string, unknown>) => {
         const dateStr = b.scheduledAt || b.startTime || b.createdAt;
         if (!dateStr) return false;
         try {
@@ -303,7 +303,7 @@ export const SchedulePage: React.FC = () => {
           return false;
         }
       })
-      .sort((a: any, b: any) => {
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
         const da = a.scheduledAt || a.startTime || a.createdAt || '';
         const db = b.scheduledAt || b.startTime || b.createdAt || '';
         return da.localeCompare(db);
@@ -419,7 +419,7 @@ export const SchedulePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {upcomingBookings.map((booking: any) => {
+                {upcomingBookings.map((booking: Record<string, unknown>) => {
                   const dateStr = booking.scheduledAt || booking.startTime || booking.createdAt;
                   let formattedDate = '';
                   let formattedTime = '';
@@ -478,7 +478,7 @@ export const SchedulePage: React.FC = () => {
         {selectedDate && editingDayIndex !== null && (() => {
           const daySchedule = schedule[editingDayIndex];
           const dateStr = format(selectedDate, 'yyyy-MM-dd');
-          const dayBookings = bookings.filter((b: any) => {
+          const dayBookings = bookings.filter((b: Record<string, unknown>) => {
             const bDate = b.scheduledAt || b.startTime || b.createdAt;
             if (!bDate) return false;
             try { return format(parseISO(bDate), 'yyyy-MM-dd') === dateStr; } catch { return false; }
@@ -517,7 +517,7 @@ export const SchedulePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {dayBookings.map((booking: any) => {
+                    {dayBookings.map((booking: Record<string, unknown>) => {
                       const bDate = booking.scheduledAt || booking.startTime;
                       let timeStr = '';
                       try { timeStr = bDate ? format(parseISO(bDate), 'HH:mm') : ''; } catch { /* skip */ }

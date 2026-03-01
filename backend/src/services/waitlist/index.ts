@@ -188,7 +188,7 @@ export class WaitlistService {
       const { status, fromDate, toDate, page = 1, limit = 20 } = filters;
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId,
       };
 
@@ -276,7 +276,7 @@ export class WaitlistService {
       });
 
       // Enrich with specialist info
-      const specialistIds = Array.from(new Set(entries.map((e: any) => e.specialistId as string)));
+      const specialistIds = Array.from(new Set(entries.map((e: Record<string, unknown>) => e.specialistId as string)));
       const specialists = await prisma.specialist.findMany({
         where: { userId: { in: specialistIds } },
         include: {

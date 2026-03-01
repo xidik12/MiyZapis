@@ -145,7 +145,7 @@ export class ReviewService {
     limit: number = 20
   ) {
     try {
-      const where: any = {
+      const where: Record<string, unknown> = {
         isPublic: true, // Only show public reviews by default
       };
 
@@ -303,7 +303,7 @@ export class ReviewService {
         throw new Error('INVALID_RATING_RANGE');
       }
 
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
 
       if (data.rating !== undefined) {
         updateData.rating = data.rating;

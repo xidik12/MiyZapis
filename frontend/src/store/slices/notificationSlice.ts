@@ -24,8 +24,9 @@ export const fetchNotifications = createAsyncThunk(
   async (filters: { type?: NotificationType; isRead?: boolean; page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
       return await notificationService.getNotifications(filters);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch notifications');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch notifications');
     }
   }
 );
@@ -36,8 +37,9 @@ export const markNotificationAsRead = createAsyncThunk(
     try {
       await notificationService.markAsRead(notificationId);
       return notificationId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to mark notification as read');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to mark notification as read');
     }
   }
 );
@@ -48,8 +50,9 @@ export const markAllNotificationsAsRead = createAsyncThunk(
     try {
       await notificationService.markAllAsRead();
       return true;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to mark all notifications as read');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to mark all notifications as read');
     }
   }
 );

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { BookingController } from '@/controllers/bookings';
-import { authenticateToken, requireAdmin } from '@/middleware/auth/jwt';
+import { authenticateToken, requireAuth, requireAdmin } from '@/middleware/auth/jwt';
 import { bookingRateLimit } from '@/middleware/rate-limiter';
 import {
   validateCreateBooking,
@@ -13,20 +13,24 @@ import {
 
 const router = Router();
 
-// Protected routes - require authentication
-router.post('/', authenticateToken, bookingRateLimit, validateCreateBooking, BookingController.createBooking);
-router.post('/with-payment', authenticateToken, bookingRateLimit, BookingController.createBookingWithPayment);
-router.post('/recurring', authenticateToken, bookingRateLimit, BookingController.createRecurringBooking);
-router.get('/', authenticateToken, validateGetBookings, BookingController.getUserBookings);
-router.get('/stats', authenticateToken, BookingController.getSpecialistBookingStats);
-router.get('/:bookingId', authenticateToken, validateBookingId, BookingController.getBooking);
-router.put('/:bookingId', authenticateToken, validateBookingId, validateUpdateBookingStatus, BookingController.updateBooking);
-router.put('/:bookingId/confirm', authenticateToken, validateConfirmBooking, BookingController.confirmBooking);
-router.post('/:bookingId/complete', authenticateToken, validateBookingId, BookingController.completeBookingWithPayment);
-router.put('/:bookingId/reject', authenticateToken, validateBookingId, BookingController.rejectBooking);
-router.put('/:bookingId/cancel', authenticateToken, validateCancelBooking, BookingController.cancelBooking);
+// All booking routes require authentication.
+// requireAuth guarantees req.user exists, so controllers don't need `if (!req.user)` checks.
+router.use(authenticateToken, requireAuth);
+
+// Protected routes
+router.post('/', bookingRateLimit, validateCreateBooking, BookingController.createBooking);
+router.post('/with-payment', bookingRateLimit, BookingController.createBookingWithPayment);
+router.post('/recurring', bookingRateLimit, BookingController.createRecurringBooking);
+router.get('/', validateGetBookings, BookingController.getUserBookings);
+router.get('/stats', BookingController.getSpecialistBookingStats);
+router.get('/:bookingId', validateBookingId, BookingController.getBooking);
+router.put('/:bookingId', validateBookingId, validateUpdateBookingStatus, BookingController.updateBooking);
+router.put('/:bookingId/confirm', validateConfirmBooking, BookingController.confirmBooking);
+router.post('/:bookingId/complete', validateBookingId, BookingController.completeBookingWithPayment);
+router.put('/:bookingId/reject', validateBookingId, BookingController.rejectBooking);
+router.put('/:bookingId/cancel', validateCancelBooking, BookingController.cancelBooking);
 
 // Admin routes
-router.get('/admin/all', authenticateToken, requireAdmin, BookingController.getAllBookings);
+router.get('/admin/all', requireAdmin, BookingController.getAllBookings);
 
 export default router;

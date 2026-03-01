@@ -1,5 +1,5 @@
 import { PrismaClient, User, Notification } from '@prisma/client';
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { emailService as templatedEmailService } from '@/services/email';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
@@ -10,7 +10,7 @@ interface NotificationData {
   type: string;
   title: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
   emailTemplate?: string;
   smsTemplate?: string;
   priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
@@ -152,7 +152,7 @@ export class NotificationService {
   /**
    * Build details HTML from notification data, filtering out internal fields and non-string values.
    */
-  private buildDetailsHtml(data: any): string {
+  private buildDetailsHtml(data: unknown): string {
     if (!data) return '';
     return `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
       Object.entries(data)
@@ -318,7 +318,7 @@ export class NotificationService {
   }
 
   private async sendEmailNotification(
-    user: any,
+    user: Record<string, unknown>,
     data: NotificationData,
     notificationId: string
   ): Promise<void> {
@@ -420,7 +420,7 @@ export class NotificationService {
   }
 
   private async sendSMSNotification(
-    user: any,
+    user: Record<string, unknown>,
     data: NotificationData,
     notificationId: string
   ): Promise<void> {
@@ -487,7 +487,7 @@ export class NotificationService {
   }
 
   private async sendTelegramNotification(
-    user: any,
+    user: Record<string, unknown>,
     data: NotificationData,
     notificationId: string
   ): Promise<void> {
@@ -522,7 +522,7 @@ export class NotificationService {
   }
 
   private async sendPushNotification(
-    user: any,
+    user: Record<string, unknown>,
     data: NotificationData,
     notificationId: string
   ): Promise<void> {
@@ -650,7 +650,7 @@ export class NotificationService {
 
       const skip = (page - 1) * limit;
 
-      const where: any = { userId };
+      const where: Record<string, unknown> = { userId };
       if (type) where.type = type;
       if (isRead !== undefined) where.isRead = isRead;
 
@@ -829,7 +829,7 @@ export class NotificationService {
     return titles[type] || 'Сповіщення';
   }
 
-  private getDefaultBookingMessage(type: string, booking: any): string {
+  private getDefaultBookingMessage(type: string, booking: Record<string, unknown> & { service: { name: string }; scheduledAt: string | Date }): string {
     const serviceName = booking.service.name;
     const scheduledAt = new Date(booking.scheduledAt).toLocaleString('uk-UA');
 

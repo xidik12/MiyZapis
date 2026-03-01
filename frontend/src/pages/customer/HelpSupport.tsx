@@ -35,9 +35,10 @@ const CustomerHelpSupport: React.FC = () => {
         
         setFaqs(faqsResponse.faqs);
         setContactMethods(contactResponse.contactMethods);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to fetch help data:', error);
-        setError(error.message || 'Failed to load help data');
+        setError(err.message || 'Failed to load help data');
         // Set empty arrays on error to show empty states
         setFaqs([]);
         setContactMethods([]);
@@ -79,9 +80,10 @@ const CustomerHelpSupport: React.FC = () => {
         category: 'general',
         email: '',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Failed to submit feedback:', error);
-      toast.error(error.message || 'Failed to submit feedback. Please try again.');
+      toast.error(err.message || 'Failed to submit feedback. Please try again.');
     }
   };
 

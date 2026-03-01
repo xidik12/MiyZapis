@@ -172,7 +172,7 @@ export class WayForPayService {
   /**
    * Handle payment success callback
    */
-  handlePaymentSuccess(callbackData: any): {
+  handlePaymentSuccess(callbackData: Record<string, unknown>): {
     orderId: string;
     transactionStatus: string;
     amount: number;
@@ -192,7 +192,7 @@ export class WayForPayService {
   /**
    * Handle payment failure callback
    */
-  handlePaymentFailure(callbackData: any): {
+  handlePaymentFailure(callbackData: Record<string, unknown>): {
     orderId: string;
     reason: string;
     reasonCode: number;

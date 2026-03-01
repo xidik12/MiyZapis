@@ -145,7 +145,7 @@ export const sanitizeSearchQuery = (query: string | undefined | null): string =>
  * Use for: price, duration, quantities
  */
 export const sanitizeNumber = (
-  value: any,
+  value: unknown,
   options: { min?: number; max?: number; default?: number } = {}
 ): number => {
   const num = Number(value);
@@ -169,7 +169,7 @@ export const sanitizeNumber = (
 /**
  * Sanitize boolean value
  */
-export const sanitizeBoolean = (value: any): boolean => {
+export const sanitizeBoolean = (value: unknown): boolean => {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
     return value.toLowerCase() === 'true' || value === '1';
@@ -183,7 +183,7 @@ export const sanitizeBoolean = (value: any): boolean => {
 /**
  * Sanitize JSON string
  */
-export const sanitizeJSON = <T = any>(json: string | undefined | null, defaultValue: T): T => {
+export const sanitizeJSON = <T = unknown>(json: string | undefined | null, defaultValue: T): T => {
   if (!json || typeof json !== 'string') return defaultValue;
 
   try {
@@ -197,7 +197,7 @@ export const sanitizeJSON = <T = any>(json: string | undefined | null, defaultVa
 /**
  * Recursively sanitize all string values in an object
  */
-export const sanitizeObjectStrings = (obj: any): any => {
+export const sanitizeObjectStrings = (obj: unknown): unknown => {
   if (typeof obj === 'string') {
     return sanitizeText(obj);
   }
@@ -207,12 +207,12 @@ export const sanitizeObjectStrings = (obj: any): any => {
   }
 
   if (obj !== null && typeof obj === 'object') {
-    const sanitized: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         // Sanitize key as well
         const cleanKey = sanitizeText(key);
-        sanitized[cleanKey] = sanitizeObjectStrings(obj[key]);
+        sanitized[cleanKey] = sanitizeObjectStrings((obj as Record<string, unknown>)[key]);
       }
     }
     return sanitized;
@@ -225,10 +225,10 @@ export const sanitizeObjectStrings = (obj: any): any => {
  * Sanitize array
  */
 export const sanitizeArray = (
-  arr: any[] | undefined | null,
+  arr: unknown[] | undefined | null,
   maxLength: number = 100,
-  itemSanitizer: (item: any) => any = sanitizeText
-): any[] => {
+  itemSanitizer: (item: unknown) => unknown = sanitizeText as (item: unknown) => unknown
+): unknown[] => {
   if (!Array.isArray(arr)) return [];
 
   return arr
@@ -304,9 +304,9 @@ export const sanitizeDate = (date: string | undefined | null): Date | null => {
 /**
  * Sanitize object by applying appropriate sanitizers to each field
  */
-export const sanitizeObject = <T extends Record<string, any>>(
+export const sanitizeObject = <T extends Record<string, unknown>>(
   obj: T,
-  schema: Record<keyof T, (value: any) => any>
+  schema: Record<keyof T, (value: unknown) => unknown>
 ): Partial<T> => {
   const sanitized: Partial<T> = {};
 

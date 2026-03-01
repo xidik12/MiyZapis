@@ -11,7 +11,7 @@ interface Toast {
 interface UIState {
   theme: 'light' | 'dark';
   isBottomSheetOpen: boolean;
-  bottomSheetContent: any;
+  bottomSheetContent: unknown;
   toasts: Toast[];
   isLoading: boolean;
   loadingMessage?: string;

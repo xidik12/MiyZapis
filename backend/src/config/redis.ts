@@ -36,7 +36,7 @@ if (!isRedisDisabled && config.redis.url) {
       keepAlive: 30000, // 30 seconds keepalive
       
       // Smart reconnection logic
-      reconnectOnError: (err: any) => {
+      reconnectOnError: (err: Error & { code?: string }) => {
         logger.warn('Redis error, checking if should reconnect:', {
           error: err?.message || 'Unknown error',
           code: err?.code || 'UNKNOWN'
@@ -97,8 +97,8 @@ if (redis) {
     });
   });
 
-  redis.on('error', (error: any) => {
-    logger.warn('⚠️ Redis connection error (continuing without cache)', {
+  redis.on('error', (error: Error & { code?: string }) => {
+    logger.warn('Redis connection error (continuing without cache)', {
       error: error?.message || 'Unknown error',
       code: error?.code || 'UNKNOWN',
       timestamp: new Date().toISOString()
@@ -171,7 +171,7 @@ export const testRedisConnection = async (): Promise<boolean> => {
       }
     }
     return false;
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('❌ Redis connection test failed', {
       error: error?.message || 'Unknown error',
       errorType: error?.constructor?.name || 'Unknown',
@@ -191,7 +191,7 @@ export const closeRedisConnection = async (): Promise<void> => {
   try {
     await redis.quit();
     logger.info('Redis connection closed');
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.warn('Error closing Redis connection (non-fatal):', {
       error: error?.message || 'Unknown error',
       errorType: error?.constructor?.name || 'Unknown'

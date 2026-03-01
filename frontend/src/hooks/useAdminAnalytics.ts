@@ -67,7 +67,8 @@ export const useAdminAnalytics = (
 
       const dashboardData = await adminAnalyticsService.getAllDashboardData(period);
       setData(dashboardData);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       const errorMessage = err.message || 'Failed to fetch analytics data';
       setError(errorMessage);
       console.error('useAdminAnalytics error:', err);
@@ -114,7 +115,7 @@ export const useAdminAnalytics = (
  */
 export const useSpecificAnalytics = <T>(
   fetchFn: () => Promise<T>,
-  dependencies: any[] = []
+  dependencies: unknown[] = []
 ) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,7 +127,8 @@ export const useSpecificAnalytics = <T>(
       setError(null);
       const result = await fetchFn();
       setData(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       setError(err.message || 'Failed to fetch data');
       console.error('useSpecificAnalytics error:', err);
     } finally {

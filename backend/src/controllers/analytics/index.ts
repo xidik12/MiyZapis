@@ -508,7 +508,7 @@ export class AnalyticsController {
         };
 
         return successResponse(res, stats, 'Profile view statistics retrieved successfully');
-      } catch (dbError: any) {
+      } catch (dbError: unknown) {
         // If ProfileView table doesn't exist yet, return default stats
         if (dbError.code === 'P2021' || dbError.code === 'P2010' || 
             dbError.message?.includes('does not exist') || 

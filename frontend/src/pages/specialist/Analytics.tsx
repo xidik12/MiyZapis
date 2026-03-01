@@ -4,7 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 // Helper function to get the booking currency (same as Dashboard)
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   return currency;
@@ -61,7 +61,7 @@ const calculateGrowthPercentage = (current: number, previous: number): number =>
 };
 
 // Helper function to format time periods for chart labels
-const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', data: any[]): string[] => {
+const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', data: Record<string, unknown>[]): string[] => {
   switch (period) {
     case 'daily':
       return data.map(item => {
@@ -496,7 +496,7 @@ Performance:
         };
         
 
-        const performance: any = {
+        const performance: Record<string, unknown> = {
           averageResponseTime: averageResponseTime,
           completionRate: completionRate,
           customerSatisfaction: 4.5, // Default good rating
@@ -701,7 +701,8 @@ Performance:
           });
         }
         
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('Error loading analytics:', err);
         
         // Only show error if it's not a network/auth issue - provide fallback data instead

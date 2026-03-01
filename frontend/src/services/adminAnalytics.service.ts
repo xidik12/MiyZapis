@@ -91,9 +91,10 @@ export class AdminAnalyticsService {
       const stats = response.data.stats;
       this.cache.set(cacheKey, stats);
       return stats;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin dashboard stats error:', error);
-      throw new Error(error.message || 'Failed to get dashboard statistics');
+      throw new Error(err.message || 'Failed to get dashboard statistics');
     }
   }
 
@@ -124,9 +125,10 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, response.data);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin user analytics error:', error);
-      throw new Error(error.message || 'Failed to get user analytics');
+      throw new Error(err.message || 'Failed to get user analytics');
     }
   }
 
@@ -154,9 +156,10 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, response.data);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin booking analytics error:', error);
-      throw new Error(error.message || 'Failed to get booking analytics');
+      throw new Error(err.message || 'Failed to get booking analytics');
     }
   }
 
@@ -184,9 +187,10 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, response.data);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin financial analytics error:', error);
-      throw new Error(error.message || 'Failed to get financial analytics');
+      throw new Error(err.message || 'Failed to get financial analytics');
     }
   }
 
@@ -214,9 +218,10 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, response.data);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin referral analytics error:', error);
-      throw new Error(error.message || 'Failed to get referral analytics');
+      throw new Error(err.message || 'Failed to get referral analytics');
     }
   }
 
@@ -238,9 +243,10 @@ export class AdminAnalyticsService {
       }
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin system health error:', error);
-      throw new Error(error.message || 'Failed to get system health');
+      throw new Error(err.message || 'Failed to get system health');
     }
   }
 
@@ -282,22 +288,22 @@ export class AdminAnalyticsService {
       const posts = postsResponse.data.posts || postsResponse.data || [];
 
       // Filter posts by date range
-      const filteredPosts = posts.filter((post: any) => {
+      const filteredPosts = posts.filter((post: Record<string, unknown>) => {
         const postDate = new Date(post.createdAt);
         return postDate >= startDate && postDate <= endDate;
       });
 
       // Calculate metrics
-      const discussions = filteredPosts.filter((p: any) => p.type === 'DISCUSSION');
-      const marketplace = filteredPosts.filter((p: any) => p.type === 'SALE');
+      const discussions = filteredPosts.filter((p: Record<string, unknown>) => p.type === 'DISCUSSION');
+      const marketplace = filteredPosts.filter((p: Record<string, unknown>) => p.type === 'SALE');
 
       const metrics = {
         totalPosts: filteredPosts.length,
         totalDiscussions: discussions.length,
         totalMarketplace: marketplace.length,
-        totalViews: filteredPosts.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0),
-        totalLikes: filteredPosts.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0),
-        totalComments: filteredPosts.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0),
+        totalViews: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0),
+        totalLikes: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0),
+        totalComments: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0),
         avgEngagementRate: 0
       };
 
@@ -308,7 +314,7 @@ export class AdminAnalyticsService {
 
       // Group by date for trends
       const trendMap = new Map<string, any>();
-      filteredPosts.forEach((post: any) => {
+      filteredPosts.forEach((post: Record<string, unknown>) => {
         const date = new Date(post.createdAt).toISOString().split('T')[0];
         if (!trendMap.has(date)) {
           trendMap.set(date, {
@@ -332,13 +338,13 @@ export class AdminAnalyticsService {
 
       // Top posts
       const topPosts = filteredPosts
-        .sort((a: any, b: any) => {
+        .sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
           const aEngagement = (a.viewCount || 0) + (a.likeCount || 0) * 2 + (a.commentCount || 0) * 3;
           const bEngagement = (b.viewCount || 0) + (b.likeCount || 0) * 2 + (b.commentCount || 0) * 3;
           return bEngagement - aEngagement;
         })
         .slice(0, 10)
-        .map((post: any) => ({
+        .map((post: Record<string, unknown>) => ({
           id: post.id,
           title: post.title,
           type: post.type,
@@ -358,25 +364,25 @@ export class AdminAnalyticsService {
         {
           type: 'DISCUSSION' as const,
           avgViews: discussions.length > 0
-            ? discussions.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0) / discussions.length
             : 0,
           avgLikes: discussions.length > 0
-            ? discussions.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0) / discussions.length
             : 0,
           avgComments: discussions.length > 0
-            ? discussions.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0) / discussions.length
             : 0
         },
         {
           type: 'SALE' as const,
           avgViews: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0) / marketplace.length
             : 0,
           avgLikes: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0) / marketplace.length
             : 0,
           avgComments: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0) / marketplace.length
             : 0
         }
       ];
@@ -390,7 +396,7 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, contentAnalytics);
       return contentAnalytics;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Content analytics error:', error);
       // Return empty analytics on error
       return {
@@ -437,7 +443,7 @@ export class AdminAnalyticsService {
       // Return traffic analytics based on referral data
       // Profile view aggregation requires a dedicated admin endpoint
       const trafficAnalytics: TrafficAnalytics = {
-        totalViews: 0, // TODO: Add admin endpoint for aggregated profile views
+        totalViews: 0, // No admin endpoint for aggregated profile views yet
         uniqueVisitors: 0,
         viewTrends: [],
         trafficSources: [],
@@ -451,7 +457,7 @@ export class AdminAnalyticsService {
 
       this.cache.set(cacheKey, trafficAnalytics);
       return trafficAnalytics;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Traffic analytics error:', error);
       // Return empty analytics on error
       return {
@@ -571,9 +577,10 @@ export class AdminAnalyticsService {
       }
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin list users error:', error);
-      throw new Error(error.message || 'Failed to list users');
+      throw new Error(err.message || 'Failed to list users');
     }
   }
 
@@ -596,9 +603,10 @@ export class AdminAnalyticsService {
       this.cache.clear('dashboard-stats');
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin manage users error:', error);
-      throw new Error(error.message || 'Failed to manage users');
+      throw new Error(err.message || 'Failed to manage users');
     }
   }
 

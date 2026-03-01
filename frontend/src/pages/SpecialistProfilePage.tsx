@@ -39,7 +39,7 @@ const SpecialistProfilePage: React.FC = () => {
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
 
   // Helper function to get localized description with fallbacks
-  const getLocalizedDescription = (specialist: any) => {
+  const getLocalizedDescription = (specialist: Record<string, unknown>) => {
     if (!specialist) return null;
     
     // Try to get description based on current language
@@ -52,7 +52,7 @@ const SpecialistProfilePage: React.FC = () => {
   };
 
   // Helper function to format location from specialist data
-  const getFormattedLocation = (specialist: any) => {
+  const getFormattedLocation = (specialist: Record<string, unknown>) => {
     if (!specialist) return null;
     
     const parts = [];
@@ -65,7 +65,7 @@ const SpecialistProfilePage: React.FC = () => {
     return parts.length > 0 ? parts.join(', ') : null;
   };
 
-  const getBankDetails = (specialist: any) => {
+  const getBankDetails = (specialist: Record<string, unknown>) => {
     if (!specialist?.bankDetails) return null;
     if (typeof specialist.bankDetails === 'string') {
       try {
@@ -112,11 +112,12 @@ const SpecialistProfilePage: React.FC = () => {
         // Make API call
         await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // Handle specific error cases
-      if (error.response?.status === 409) {
+      if (err.response?.status === 409) {
         toast.info(t('specialist.favorites.conflict') || 'You cannot favorite your own profile or this specialist is already in your favorites.');
-      } else if (error.response?.status === 401) {
+      } else if (err.response?.status === 401) {
         toast.info(t('specialist.favorites.loginRequired') || 'Please log in to add favorites.');
       } else {
         toast.error(t('specialist.favorites.updateError') || 'Failed to update favorites. Please try again.');
@@ -170,7 +171,7 @@ const SpecialistProfilePage: React.FC = () => {
         const raw = Array.isArray(specialist.portfolioImages)
           ? specialist.portfolioImages
           : (typeof specialist.portfolioImages === 'string' ? JSON.parse(specialist.portfolioImages) : []);
-        imgs = raw.map((it: any) => it?.imageUrl || it).filter(Boolean);
+        imgs = raw.map((it: Record<string, unknown>) => it?.imageUrl || it).filter(Boolean);
       }
       setLightbox((prev) => ({ ...prev, images: imgs }));
     } catch {}
@@ -498,7 +499,7 @@ const SpecialistProfilePage: React.FC = () => {
                     Portfolio
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-                    {portfolioImages.map((portfolioItem: any, index: number) => {
+                    {portfolioImages.map((portfolioItem: Record<string, unknown>, index: number) => {
                       // Handle both direct base64 strings and objects with imageUrl
                       const imageUrl = portfolioItem.imageUrl || portfolioItem;
                       
@@ -561,7 +562,7 @@ const SpecialistProfilePage: React.FC = () => {
               
               {services.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
-                  {services.map((service: any) => (
+                  {services.map((service: Record<string, unknown>) => (
                     <div
                       key={service.id}
                       className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-colors"
@@ -619,7 +620,7 @@ const SpecialistProfilePage: React.FC = () => {
               
               {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-4 sm:space-y-6">
-                  {reviews.slice(0, 5).map((review: any) => (
+                  {reviews.slice(0, 5).map((review: Record<string, unknown>) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-6 last:border-b-0">
                       <div className="flex items-start space-x-2 sm:space-x-4">
                         <Avatar

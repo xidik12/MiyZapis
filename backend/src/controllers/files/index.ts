@@ -175,7 +175,7 @@ export class FileController {
           }
 
           // Prepare file record data - handle missing cloudProvider field gracefully
-          const fileData: any = {
+          const fileData: Record<string, unknown> = {
             filename: processedFile.filename,
             originalName: file.originalname,
             mimeType: file.mimetype,
@@ -481,7 +481,7 @@ export class FileController {
       const limit = parseInt(req.query.limit as string) || 20;
       const purpose = req.query.purpose as string;
 
-      const where: any = { uploadedBy: userId };
+      const where: Record<string, unknown> = { uploadedBy: userId };
       if (purpose) {
         where.purpose = purpose;
       }

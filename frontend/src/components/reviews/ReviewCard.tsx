@@ -102,7 +102,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           const loadedComments = await reviewsService.getReviewComments(review.id);
           setComments(loadedComments);
           setShowComments(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('[ReviewCard] Error auto-loading comments:', error);
           // Don't show error toast for auto-load, just fail silently
         } finally {
@@ -146,7 +146,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           const loadedComments = await reviewsService.getReviewComments(review.id);
           setComments(loadedComments);
           setShowComments(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('[ReviewCard] Error loading comments:', error);
           toast.error(t('reviews.comments.loadError') || 'Failed to load comments');
         } finally {
@@ -178,9 +178,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
         await navigator.clipboard.writeText(reviewUrl);
         toast.success(t('reviews.linkCopied') || 'Review link copied to clipboard!');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // User cancelled share or clipboard failed
-      if (error.name !== 'AbortError') {
+      if (err.name !== 'AbortError') {
         console.error('[ReviewCard] Share error:', error);
         toast.error(t('reviews.shareFailed') || 'Failed to share review');
       }
@@ -194,9 +195,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
     try {
       const newComment = await reviewsService.createReviewComment(review.id, content, parentId);
       setComments(prevComments => [...prevComments, newComment]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[ReviewCard] Error posting comment:', error);
-      toast.error(error.message || t('reviews.comments.postError') || 'Failed to post comment');
+      toast.error(err.message || t('reviews.comments.postError') || 'Failed to post comment');
       throw error; // Re-throw so CommentThread can handle it
     }
   };
@@ -231,9 +233,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           return comment;
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[ReviewCard] Error reacting to comment:', error);
-      toast.error(error.message || t('reviews.comments.reactError') || 'Failed to react to comment');
+      toast.error(err.message || t('reviews.comments.reactError') || 'Failed to react to comment');
     }
   };
 
@@ -244,9 +247,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       // Remove comment from local state
       setComments(prevComments => prevComments.filter(c => c.id !== commentId));
       toast.success(t('reviews.commentDeleted') || 'Comment deleted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[ReviewCard] Error deleting comment:', error);
-      toast.error(error.message || t('reviews.comments.deleteError') || 'Failed to delete comment');
+      toast.error(err.message || t('reviews.comments.deleteError') || 'Failed to delete comment');
       throw error; // Re-throw so CommentThread can handle it
     }
   };

@@ -233,12 +233,12 @@ router.get('/my-referrals', authenticateToken, async (req: Request, res: Respons
 
     const { status, type, limit = '10', offset = '0' } = req.query;
 
-    const whereClause: any = { referrerId: userId };
+    const whereClause: Record<string, unknown> = { referrerId: userId };
     if (status) whereClause.status = status;
     if (type) whereClause.referralType = type;
 
     // Try to get referrals with graceful fallback
-    let referrals: any[] = [];
+    let referrals: Record<string, unknown>[] = [];
     let total = 0;
 
     try {

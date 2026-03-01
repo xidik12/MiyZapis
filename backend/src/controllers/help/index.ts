@@ -24,11 +24,12 @@ export class HelpController {
         faqs,
         total: faqs.length
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting FAQs:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to get FAQs',
+        err.message || 'Failed to get FAQs',
         req.headers['x-request-id'] as string
       ));
     }
@@ -45,11 +46,12 @@ export class HelpController {
         contactMethods,
         total: contactMethods.length
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting contact methods:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to get contact methods',
+        err.message || 'Failed to get contact methods',
         req.headers['x-request-id'] as string
       ));
     }
@@ -79,11 +81,12 @@ export class HelpController {
       });
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error submitting feedback:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to submit feedback',
+        err.message || 'Failed to submit feedback',
         req.headers['x-request-id'] as string
       ));
     }
@@ -98,11 +101,12 @@ export class HelpController {
         categories,
         total: categories.length
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting FAQ categories:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to get FAQ categories',
+        err.message || 'Failed to get FAQ categories',
         req.headers['x-request-id'] as string
       ));
     }
@@ -130,11 +134,12 @@ export class HelpController {
         total: faqs.length,
         query
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error searching FAQs:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to search FAQs',
+        err.message || 'Failed to search FAQs',
         req.headers['x-request-id'] as string
       ));
     }
@@ -154,11 +159,12 @@ export class HelpController {
       };
 
       res.json(createSuccessResponse(stats));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting support stats:', error);
       res.status(500).json(createErrorResponse(
         'HELP_ERROR',
-        error.message || 'Failed to get support statistics',
+        err.message || 'Failed to get support statistics',
         req.headers['x-request-id'] as string
       ));
     }

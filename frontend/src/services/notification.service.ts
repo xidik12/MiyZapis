@@ -65,11 +65,12 @@ export class NotificationService {
         
         throw new Error('Backend returned unsuccessful response');
         
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         console.error('🚨 Backend notifications failed, switching to local fallback:', {
-          message: error.message,
-          status: error.response?.status,
-          statusText: error.response?.statusText
+          message: err.message,
+          status: err.response?.status,
+          statusText: err.response?.statusText
         });
         
         this.useLocalFallback = true;

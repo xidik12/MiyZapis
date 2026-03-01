@@ -1,14 +1,15 @@
 import { Request, Response } from 'express';
 import { BookingService } from '@/services/booking';
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { emailService as templatedEmailService } from '@/services/email';
 import { resolveLanguage } from '@/utils/language';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class BookingController {
   // Create a new booking
+  // req.user guaranteed by requireAuth middleware at the router level
   static async createBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Check validation errors
@@ -20,21 +21,10 @@ export class BookingController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
-          )
-        );
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
           )
         );
         return;
@@ -71,10 +61,11 @@ export class BookingController {
             : 'Your booking request has been sent and is waiting for specialist confirmation.',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create booking error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -85,7 +76,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SERVICE_NOT_ACTIVE') {
+      if (err.message === 'SERVICE_NOT_ACTIVE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -96,7 +87,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CUSTOMER_NOT_FOUND') {
+      if (err.message === 'CUSTOMER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -107,7 +98,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CUSTOMER_NOT_ACTIVE') {
+      if (err.message === 'CUSTOMER_NOT_ACTIVE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -118,7 +109,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'TIME_SLOT_NOT_AVAILABLE') {
+      if (err.message === 'TIME_SLOT_NOT_AVAILABLE') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.BOOKING_CONFLICT,
@@ -129,7 +120,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'INSUFFICIENT_LOYALTY_POINTS') {
+      if (err.message === 'INSUFFICIENT_LOYALTY_POINTS') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.INSUFFICIENT_BALANCE,
@@ -140,7 +131,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CANNOT_BOOK_OWN_SERVICE') {
+      if (err.message === 'CANNOT_BOOK_OWN_SERVICE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -151,7 +142,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CUSTOMER_ID_REQUIRED') {
+      if (err.message === 'CUSTOMER_ID_REQUIRED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -162,7 +153,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SERVICE_ID_REQUIRED') {
+      if (err.message === 'SERVICE_ID_REQUIRED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -173,7 +164,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SCHEDULED_AT_REQUIRED') {
+      if (err.message === 'SCHEDULED_AT_REQUIRED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -184,7 +175,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'INVALID_DURATION') {
+      if (err.message === 'INVALID_DURATION') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -195,7 +186,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'DUPLICATE_BOOKING') {
+      if (err.message === 'DUPLICATE_BOOKING') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -206,7 +197,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SCHEDULED_TIME_MUST_BE_FUTURE') {
+      if (err.message === 'SCHEDULED_TIME_MUST_BE_FUTURE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -230,17 +221,6 @@ export class BookingController {
   // Create a recurring booking series
   static async createRecurringBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const { recurrence, ...bookingFields } = req.body;
 
       if (!recurrence || !recurrence.frequency || !recurrence.endType) {
@@ -298,22 +278,23 @@ export class BookingController {
           message: `Recurring booking created: 1 parent + ${result.childrenCount} recurring bookings.`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create recurring booking error:', error);
 
-      if (error.message === 'SERVICE_NOT_FOUND') {
+      if (err.message === 'SERVICE_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Service not found', req.headers['x-request-id'] as string)
         );
         return;
       }
-      if (error.message === 'TIME_SLOT_NOT_AVAILABLE') {
+      if (err.message === 'TIME_SLOT_NOT_AVAILABLE') {
         res.status(409).json(
           createErrorResponse(ErrorCodes.BOOKING_CONFLICT, 'The selected time slot is not available for the initial booking', req.headers['x-request-id'] as string)
         );
         return;
       }
-      if (error.message === 'CANNOT_BOOK_OWN_SERVICE') {
+      if (err.message === 'CANNOT_BOOK_OWN_SERVICE') {
         res.status(400).json(
           createErrorResponse(ErrorCodes.BUSINESS_RULE_VIOLATION, 'You cannot book your own service', req.headers['x-request-id'] as string)
         );
@@ -349,7 +330,7 @@ export class BookingController {
       const booking = await BookingService.getBooking(bookingId);
 
       // Check if user has access to this booking
-      if (!req.user || (booking.customerId !== req.user.id && booking.specialistId !== req.user.id && req.user.userType !== 'ADMIN')) {
+      if (booking.customerId !== req.user.id && booking.specialistId !== req.user.id && req.user.userType !== 'ADMIN') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -365,10 +346,11 @@ export class BookingController {
           booking,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get booking error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -401,8 +383,8 @@ export class BookingController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -425,7 +407,7 @@ export class BookingController {
 
       // First check if user has access to this booking
       const existingBooking = await BookingService.getBooking(bookingId);
-      if (!req.user || (existingBooking.customerId !== req.user.id && existingBooking.specialistId !== req.user.id && req.user.userType !== 'ADMIN')) {
+      if (existingBooking.customerId !== req.user.id && existingBooking.specialistId !== req.user.id && req.user.userType !== 'ADMIN') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -448,10 +430,11 @@ export class BookingController {
           booking,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update booking error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -462,7 +445,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'INVALID_STATUS_TRANSITION') {
+      if (err.message === 'INVALID_STATUS_TRANSITION') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -499,17 +482,6 @@ export class BookingController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const booking = await BookingService.confirmBooking(bookingId, req.user.id);
 
       // Send confirmation emails and possible reminder
@@ -529,10 +501,11 @@ export class BookingController {
           message: 'Booking confirmed successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Confirm booking error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -543,7 +516,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+      if (err.message === 'SPECIALIST_NOT_AUTHORIZED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -554,7 +527,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'BOOKING_NOT_PENDING') {
+      if (err.message === 'BOOKING_NOT_PENDING') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -592,17 +565,6 @@ export class BookingController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const booking = await BookingService.rejectBooking(bookingId, req.user.id, reason);
 
       // Send rejection notification to customer
@@ -619,10 +581,11 @@ export class BookingController {
           message: 'Booking rejected successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Reject booking error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -633,7 +596,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+      if (err.message === 'SPECIALIST_NOT_AUTHORIZED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -644,7 +607,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'BOOKING_NOT_PENDING') {
+      if (err.message === 'BOOKING_NOT_PENDING') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -682,17 +645,6 @@ export class BookingController {
         return;
       }
 
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       // First check if user has access to this booking
       const existingBooking = await BookingService.getBooking(bookingId);
       if (existingBooking.customerId !== req.user.id && existingBooking.specialistId !== req.user.id && req.user.userType !== 'ADMIN') {
@@ -722,10 +674,11 @@ export class BookingController {
           message: 'Booking cancelled successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Cancel booking error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -736,7 +689,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CANCELLATION_TOO_LATE') {
+      if (err.message === 'CANCELLATION_TOO_LATE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.CANCELLATION_NOT_ALLOWED,
@@ -747,7 +700,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'CANCELLATION_NOT_ALLOWED') {
+      if (err.message === 'CANCELLATION_NOT_ALLOWED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.CANCELLATION_NOT_ALLOWED,
@@ -771,17 +724,6 @@ export class BookingController {
   // Get user bookings (customer or specialist)
   static async getUserBookings(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const {
         userType = 'customer',
         status,
@@ -821,7 +763,7 @@ export class BookingController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get user bookings error:', error);
 
       res.status(500).json(
@@ -837,17 +779,6 @@ export class BookingController {
   // Get booking statistics for a specialist
   static async getSpecialistBookingStats(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const { startDate, endDate } = req.query;
 
       const stats = await BookingService.getSpecialistBookingStats(
@@ -861,7 +792,7 @@ export class BookingController {
           stats,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get specialist booking stats error:', error);
 
       res.status(500).json(
@@ -885,17 +816,6 @@ export class BookingController {
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
             'Booking ID is required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
             req.headers['x-request-id'] as string
           )
         );
@@ -937,10 +857,11 @@ export class BookingController {
             : 'Booking completion cancelled - please ensure payment is received first',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Complete booking with payment error:', error);
 
-      if (error.message === 'BOOKING_NOT_FOUND') {
+      if (err.message === 'BOOKING_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -951,7 +872,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+      if (err.message === 'SPECIALIST_NOT_AUTHORIZED') {
         res.status(403).json(
           createErrorResponse(
             ErrorCodes.ACCESS_DENIED,
@@ -962,7 +883,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'BOOKING_NOT_IN_PROGRESS') {
+      if (err.message === 'BOOKING_NOT_IN_PROGRESS') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -973,7 +894,7 @@ export class BookingController {
         return;
       }
 
-      if (error.message === 'PAYMENT_NOT_CONFIRMED') {
+      if (err.message === 'PAYMENT_NOT_CONFIRMED') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -1029,7 +950,7 @@ export class BookingController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get all bookings error:', error);
 
       res.status(500).json(
@@ -1045,17 +966,6 @@ export class BookingController {
   // Create booking with confirmed payment (payment-first approach)
   static async createBookingWithPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       // Validate required fields
       const { paymentId, serviceId, scheduledAt, duration, customerNotes } = req.body;
 
@@ -1096,25 +1006,26 @@ export class BookingController {
           { message: 'Booking created successfully' }
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create booking with payment error:', error);
 
-      if (error.message?.includes('Payment not found') || error.message?.includes('Payment not completed')) {
+      if (err.message?.includes('Payment not found') || err.message?.includes('Payment not completed')) {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
-            error.message,
+            err.message,
             req.headers['x-request-id'] as string
           )
         );
         return;
       }
 
-      if (error.message?.includes('Time slot conflicts') || error.message?.includes('already booked')) {
+      if (err.message?.includes('Time slot conflicts') || err.message?.includes('already booked')) {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.BOOKING_CONFLICT,
-            error.message,
+            err.message,
             req.headers['x-request-id'] as string
           )
         );

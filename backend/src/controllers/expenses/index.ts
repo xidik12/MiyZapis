@@ -24,7 +24,7 @@ const RECURRING_FREQUENCIES = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY'] as co
 type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];
 type RecurringFrequency = typeof RECURRING_FREQUENCIES[number];
 
-const isMissingExpensesTableError = (error: any): boolean => {
+const isMissingExpensesTableError = (error: unknown): boolean => {
   const code = error?.code;
   const message = typeof error?.message === 'string' ? error.message : '';
   return code === 'P2021' || (message.includes('expenses') && message.includes('does not exist'));
@@ -47,7 +47,7 @@ export class ExpenseController {
       } = req.query;
 
       // Build where clause
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: userId
       };
 
@@ -91,7 +91,8 @@ export class ExpenseController {
         limit: parseInt(limit as string),
         offset: parseInt(offset as string)
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       if (isMissingExpensesTableError(error)) {
         res.json(createSuccessResponse({
           expenses: [],
@@ -103,7 +104,7 @@ export class ExpenseController {
       }
 
       logger.error('Error getting expenses:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -114,7 +115,7 @@ export class ExpenseController {
       const { startDate, endDate } = req.query;
 
       // Build where clause for date range
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: userId
       };
 
@@ -191,7 +192,8 @@ export class ExpenseController {
         monthlyBreakdown,
         currency: summaryCurrency
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       if (isMissingExpensesTableError(error)) {
         res.json(createSuccessResponse({
           totalExpenses: 0,
@@ -205,7 +207,7 @@ export class ExpenseController {
       }
 
       logger.error('Error getting expense summary:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -228,9 +230,10 @@ export class ExpenseController {
       }
 
       res.json(createSuccessResponse(expense));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting expense:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -291,9 +294,10 @@ export class ExpenseController {
 
       logger.info(`Expense created: ${expense.id} by specialist ${userId}`);
       res.status(201).json(createSuccessResponse(expense));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error creating expense:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -346,7 +350,7 @@ export class ExpenseController {
       }
 
       // Build update data
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (category !== undefined) updateData.category = category;
       if (amount !== undefined) updateData.amount = amount;
       if (currency !== undefined) updateData.currency = currency;
@@ -369,9 +373,10 @@ export class ExpenseController {
 
       logger.info(`Expense updated: ${expense.id} by specialist ${userId}`);
       res.json(createSuccessResponse(expense));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error updating expense:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -400,9 +405,10 @@ export class ExpenseController {
 
       logger.info(`Expense deleted: ${id} by specialist ${userId}`);
       res.json(createSuccessResponse({ message: 'Expense deleted successfully' }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error deleting expense:', error);
-      res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('EXPENSE_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 }

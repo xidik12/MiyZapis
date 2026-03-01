@@ -15,7 +15,7 @@ export function cacheMiddleware(ttlSeconds: number, keyPrefix?: string) {
     const key = `cache:${keyPrefix || 'api'}:${req.originalUrl}`;
 
     try {
-      const cached = await cacheUtils.get<{ body: any; statusCode: number }>(key);
+      const cached = await cacheUtils.get<{ body: unknown; statusCode: number }>(key);
       if (cached) {
         logger.debug(`Cache hit: ${key}`);
         return res.status(cached.statusCode).json(cached.body);
@@ -26,7 +26,7 @@ export function cacheMiddleware(ttlSeconds: number, keyPrefix?: string) {
 
     // Intercept res.json to cache the response
     const originalJson = res.json.bind(res);
-    res.json = (body: any) => {
+    res.json = (body: unknown) => {
       if (res.statusCode === 200) {
         cacheUtils.set(key, { body, statusCode: 200 }, ttlSeconds).catch(() => {});
       }

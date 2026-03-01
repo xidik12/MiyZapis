@@ -24,7 +24,7 @@ export class SpecialistService {
 
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
-    const response = await apiClient.get<{ specialist: any }>(`/specialists/${specialistId}/public`);
+    const response = await apiClient.get<{ specialist: Record<string, unknown> }>(`/specialists/${specialistId}/public`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
@@ -43,7 +43,7 @@ export class SpecialistService {
     
     // Transform the response to match frontend expectations
     // Normalize response time to minutes if backend stores milliseconds
-    const normalizeResponseTime = (value: any): number | undefined => {
+    const normalizeResponseTime = (value: unknown): number | undefined => {
       if (value === null || value === undefined) return undefined;
       const n = Number(value);
       if (!isFinite(n) || n <= 0) return undefined;
@@ -104,7 +104,7 @@ export class SpecialistService {
                : []);
           
           // Filter out overly large base64 images that could cause performance issues
-          const filteredPortfolio = portfolioData.filter((item: any) => {
+          const filteredPortfolio = portfolioData.filter((item: unknown) => {
             if (typeof item === 'string' && item.startsWith('data:image/')) {
               const sizeKB = Math.round(item.length / 1024);
               if (item.length >= 500000) {
@@ -153,7 +153,7 @@ export class SpecialistService {
   }
 
   // Create specialist profile
-  async createProfile(data: any): Promise<Specialist> {
+  async createProfile(data: unknown): Promise<Specialist> {
     const response = await apiClient.post<Specialist>('/specialists/profile', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create specialist profile');
@@ -265,30 +265,31 @@ export class SpecialistService {
 
       logger.debug('API: Service deleted successfully');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('API: Service deletion error:', {
         serviceId,
-        error: error.message,
-        response: error.response?.data,
-        status: error.response?.status
+        error: err.message,
+        response: err.response?.data,
+        status: err.response?.status
       });
       
       // Provide more specific error messages based on status code
-      if (error.response?.status === 500) {
+      if (err.response?.status === 500) {
         throw new Error('Server error occurred while deleting service. This may be due to existing bookings or dependencies.');
-      } else if (error.response?.status === 404) {
+      } else if (err.response?.status === 404) {
         throw new Error('Service not found or already deleted.');
-      } else if (error.response?.status === 403) {
+      } else if (err.response?.status === 403) {
         throw new Error('You do not have permission to delete this service.');
       }
       
-      throw new Error(error.message || 'Failed to delete service');
+      throw new Error(err.message || 'Failed to delete service');
     }
   }
 
   // Migrate currency data for existing services
-  async migrateCurrencyData(): Promise<{ totalServices: number; updatedServices: number; updates: any[] }> {
-    const response = await apiClient.post<{ totalServices: number; updatedServices: number; updates: any[] }>('/services/migrate-currency');
+  async migrateCurrencyData(): Promise<{ totalServices: number; updatedServices: number; updates: Record<string, unknown>[] }> {
+    const response = await apiClient.post<{ totalServices: number; updatedServices: number; updates: Record<string, unknown>[] }>('/services/migrate-currency');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to migrate currency data');
     }
@@ -401,7 +402,7 @@ export class SpecialistService {
         });
         return Array.isArray(blocks) ? blocks : [];
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.warn('Failed to fetch availability blocks:', error);
     }
 
@@ -677,11 +678,11 @@ export class SpecialistService {
 
   // Get available time slots for a specific date
   // Get available dates for a specialist (for booking flow)
-  async getAvailableDates(specialistId: string): Promise<{ availableDates: string[] }> {
+  async getAvailableDates(specialistId: string): Promise<{ availableDates: Array<{ date: string; dayName: string; workingHours: string; availableSlots: number; totalSlots: number }> }> {
     try {
       logger.debug('API: Getting available dates for specialist:', specialistId);
 
-      const response = await apiClient.get<{ availableDates: string[] }>(
+      const response = await apiClient.get<{ availableDates: Array<{ date: string; dayName: string; workingHours: string; availableSlots: number; totalSlots: number }> }>(
         `/specialists/${specialistId}/available-dates`
       );
 
@@ -691,7 +692,7 @@ export class SpecialistService {
 
       logger.debug('API: Available dates received:', response.data.availableDates);
       return { availableDates: response.data.availableDates || [] };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('API: Error getting available dates:', error);
       throw error;
     }

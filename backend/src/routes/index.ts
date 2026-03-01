@@ -26,7 +26,7 @@ import rewardsRoutes from './rewards';
 import referralRoutes from './referral';
 import availabilityRoutes from './availability';
 import analyticsEnhancedRoutes from './analytics-enhanced';
-import telegramEnhancedRoutes from './telegram-enhanced';
+import telegramRoutes from './telegram';
 import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
@@ -71,7 +71,7 @@ router.use('/rewards', rewardsRoutes);
 router.use('/referral', referralRoutes);
 router.use('/', availabilityRoutes);  // Mount availability routes at root to match /specialists/:id/slots pattern
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
-router.use('/telegram', telegramEnhancedRoutes);
+router.use('/telegram', telegramRoutes);
 router.use('/diagnostics', diagnosticsRoutes);
 router.use('/group-sessions', groupSessionsRoutes);
 router.use('/expenses', expenseRoutes);

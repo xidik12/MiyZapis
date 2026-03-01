@@ -388,23 +388,17 @@ export class SpecialistSubscriptionService {
     let failedSubscriptions = 0;
     let totalRevenue = 0;
 
+    // Track success/failure IDs for batch updates
+    const successfulSubIds: string[] = [];
+    const failedSubIds: string[] = [];
+    const suspendSubIds: string[] = [];
+    const suspendSpecialistIds: string[] = [];
+
     for (const subscription of subscriptionsToProcess) {
       try {
         const payment = await this.createMonthlySubscriptionPayment(subscription.specialistId);
 
-        // Update next billing date
-        const nextMonth = new Date();
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-        await prisma.specialistSubscription.update({
-          where: { id: subscription.id },
-          data: {
-            nextBillingDate: nextMonth,
-            currentMonthTransactions: 0,
-            currentMonthFees: 0,
-          },
-        });
-
+        successfulSubIds.push(subscription.id);
         processedSubscriptions++;
         totalRevenue += subscription.monthlyRate;
 
@@ -415,14 +409,7 @@ export class SpecialistSubscriptionService {
         });
       } catch (error) {
         failedSubscriptions++;
-
-        // Increment failure count
-        await prisma.specialistSubscription.update({
-          where: { id: subscription.id },
-          data: {
-            paymentFailures: { increment: 1 },
-          },
-        });
+        failedSubIds.push(subscription.id);
 
         logger.error('Monthly billing failed', {
           specialistId: subscription.specialistId,
@@ -430,21 +417,10 @@ export class SpecialistSubscriptionService {
           error: error instanceof Error ? error.message : error,
         });
 
-        // If too many failures, consider suspending subscription
+        // If too many failures, mark for suspension
         if (subscription.paymentFailures >= 2) {
-          await prisma.specialistSubscription.update({
-            where: { id: subscription.id },
-            data: {
-              status: 'EXPIRED',
-            },
-          });
-
-          await prisma.user.update({
-            where: { id: subscription.specialistId },
-            data: {
-              subscriptionStatus: 'PAY_PER_USE',
-            },
-          });
+          suspendSubIds.push(subscription.id);
+          suspendSpecialistIds.push(subscription.specialistId);
 
           logger.warn('Subscription suspended due to payment failures', {
             specialistId: subscription.specialistId,
@@ -452,6 +428,44 @@ export class SpecialistSubscriptionService {
           });
         }
       }
+    }
+
+    // Batch update successful subscriptions
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    if (successfulSubIds.length > 0) {
+      await prisma.specialistSubscription.updateMany({
+        where: { id: { in: successfulSubIds } },
+        data: {
+          nextBillingDate: nextMonth,
+          currentMonthTransactions: 0,
+          currentMonthFees: 0,
+        },
+      });
+    }
+
+    // Batch increment failure count for failed subscriptions
+    if (failedSubIds.length > 0) {
+      await prisma.specialistSubscription.updateMany({
+        where: { id: { in: failedSubIds } },
+        data: {
+          paymentFailures: { increment: 1 },
+        },
+      });
+    }
+
+    // Batch suspend subscriptions with too many failures
+    if (suspendSubIds.length > 0) {
+      await prisma.specialistSubscription.updateMany({
+        where: { id: { in: suspendSubIds } },
+        data: { status: 'EXPIRED' },
+      });
+
+      await prisma.user.updateMany({
+        where: { id: { in: suspendSpecialistIds } },
+        data: { subscriptionStatus: 'PAY_PER_USE' },
+      });
     }
 
     logger.info('Monthly billing process completed', {

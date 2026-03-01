@@ -49,7 +49,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
       loadUnreadCount();
     });
     // Also listen to global updates from NotificationCenter (mark-all, delete-all)
-    const onGlobalUpdate = (e: any) => {
+    const onGlobalUpdate = (e: Record<string, unknown>) => {
       const detail = e?.detail || {};
       if (typeof detail.unreadCount === 'number') {
         setUnreadCount(detail.unreadCount);

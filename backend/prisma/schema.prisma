@@ -125,6 +125,8 @@ model User {
   @@index([userType, isActive])
   @@index([userType, isActive, createdAt])
   @@index([lastLoginAt])
+  @@index([isInTrial, trialEndDate])  // Trial expiration service queries
+  @@index([trialStartDate])           // Trial start lookups
 
   @@map("users")
 }
@@ -360,6 +362,8 @@ model Booking {
   @@index([groupSessionId])
   @@index([scheduledAt, serviceId])
   @@index([parentBookingId])
+  @@index([customerId, serviceId, scheduledAt])  // Double-booking prevention composite
+  @@index([specialistId, serviceId, scheduledAt]) // Specialist schedule conflict check
 
   // Relations
   customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
@@ -1673,6 +1677,8 @@ model SpecialistSubscription {
   @@index([specialistId, status])
   @@index([planType, status])
   @@index([nextBillingDate])
+  @@index([planChangeEffectiveDate])  // processPendingPlanChanges query
+  @@index([planType, status, nextBillingDate]) // processMonthlyBilling composite
   @@map("specialist_subscriptions")
 }
 
@@ -1877,6 +1883,26 @@ model CommentLike {
 
   @@unique([commentId, userId])
   @@map("comment_likes")
+}
+
+// Email delivery logs for deduplication and tracking
+model EmailLog {
+  id        String   @id @default(cuid())
+  recipient String
+  subject   String
+  status    String   @default("SENT") // SENT, FAILED
+  messageId String?  // External email provider message ID
+  error     String?  // Error message if failed
+  sentAt    DateTime @default(now())
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recipient, subject, sentAt]) // Dedup lookups in trial/reminder workers
+  @@index([recipient, sentAt])          // Per-recipient recent emails
+  @@index([sentAt])                     // Cleanup/analytics queries
+  @@map("email_logs")
 }
 
 // Web Push Notification Subscriptions

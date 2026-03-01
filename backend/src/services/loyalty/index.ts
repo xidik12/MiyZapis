@@ -455,7 +455,7 @@ export class LoyaltyService {
   }
   
   // Tier management
-  static async updateUserTier(userId: string, tx?: any): Promise<void> {
+  static async updateUserTier(userId: string, tx?: unknown): Promise<void> {
     const dbClient = tx || prisma;
     
     try {
@@ -502,7 +502,7 @@ export class LoyaltyService {
   }
 
   // Create default loyalty tiers
-  static async createDefaultTiers(tx?: any): Promise<void> {
+  static async createDefaultTiers(tx?: unknown): Promise<void> {
     const dbClient = tx || prisma;
     
     try {
@@ -597,7 +597,7 @@ export class LoyaltyService {
   }
   
   // Badge achievements
-  static async checkBadgeAchievements(userId: string, reason: string, tx?: any): Promise<void> {
+  static async checkBadgeAchievements(userId: string, reason: string, tx?: unknown): Promise<void> {
     const dbClient = tx || prisma;
     
     try {
@@ -639,7 +639,7 @@ export class LoyaltyService {
     }
   }
   
-  static async awardBadge(userId: string, badgeName: string, tx?: any): Promise<void> {
+  static async awardBadge(userId: string, badgeName: string, tx?: unknown): Promise<void> {
     const dbClient = tx || prisma;
     
     try {
@@ -768,7 +768,7 @@ export class LoyaltyService {
   }
   
   
-  static async createDefaultBadges(tx?: any): Promise<void> {
+  static async createDefaultBadges(tx?: unknown): Promise<void> {
     const dbClient = tx || prisma;
     
     const defaultBadges = [
@@ -834,7 +834,7 @@ export class LoyaltyService {
   static async getLoyaltyTransactions(filters: LoyaltyFilters, page = 1, limit = 20) {
     const offset = (page - 1) * limit;
     
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (filters.userId) where.userId = filters.userId;
     if (filters.type) where.type = filters.type;
     if (filters.startDate) where.createdAt = { gte: filters.startDate };
@@ -985,24 +985,51 @@ export class LoyaltyService {
 
   static async getLoyaltyStats(userId: string) {
     const userStats = await this.getUserLoyaltyStats(userId);
-    
+
     if (!userStats) {
       return null;
     }
-    
+
+    // Look up tiers and determine current/next tier
+    const tiers = await this.getLoyaltyTiers();
+    const sortedTiers = [...tiers].sort((a, b) => a.minPoints - b.minPoints);
+    const currentTier = sortedTiers.reverse().find(tier => userStats.totalPoints >= tier.minPoints) || null;
+    // Re-sort ascending to find next tier
+    sortedTiers.sort((a, b) => a.minPoints - b.minPoints);
+    const nextTier = currentTier
+      ? sortedTiers.find(tier => tier.minPoints > (currentTier.minPoints ?? 0)) || null
+      : sortedTiers[0] || null;
+    const pointsToNextTier = nextTier ? Math.max(0, nextTier.minPoints - userStats.totalPoints) : 0;
+
+    // Calculate monthly and yearly points from transactions
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    const [monthlyPointsAgg, yearlyPointsAgg] = await Promise.all([
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, type: 'EARNED', createdAt: { gte: monthStart } }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, type: 'EARNED', createdAt: { gte: yearStart } }
+      }),
+    ]);
+
     // Transform the user stats to match frontend expectations
     return {
       totalPoints: userStats.totalPoints,
       totalTransactions: userStats.totalTransactions,
       totalBadges: userStats.badges.length,
       totalReferrals: userStats.successfulReferrals,
-      totalServices: userStats.totalBookings, // Map totalBookings to totalServices
-      currentTier: null, // TODO: Implement tier lookup
-      nextTier: null, // TODO: Implement next tier lookup
-      pointsToNextTier: 0, // TODO: Calculate points needed for next tier
-      monthlyPoints: 0, // TODO: Calculate monthly points
-      yearlyPoints: 0, // TODO: Calculate yearly points
-      totalSpentPoints: 0 // TODO: Calculate spent points from redemption transactions
+      totalServices: userStats.totalBookings,
+      currentTier,
+      nextTier,
+      pointsToNextTier,
+      monthlyPoints: monthlyPointsAgg._sum.points || 0,
+      yearlyPoints: yearlyPointsAgg._sum.points || 0,
+      totalSpentPoints: userStats.totalRedeemed,
     };
   }
   

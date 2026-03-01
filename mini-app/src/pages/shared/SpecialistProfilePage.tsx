@@ -96,7 +96,7 @@ export const SpecialistProfilePage: React.FC = () => {
     }
   };
 
-  const handleBookService = (service: any) => {
+  const handleBookService = (service: Record<string, unknown>) => {
     if (!isAuthenticated) {
       navigate('/auth');
     } else {

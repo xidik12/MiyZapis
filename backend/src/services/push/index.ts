@@ -165,13 +165,14 @@ export const sendPushToUser = async (
           }
         );
         return { success: true, endpoint: sub.endpoint };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         // 410 Gone or 404 Not Found means the subscription is expired
-        if (error.statusCode === 410 || error.statusCode === 404) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
           logger.info('Removing expired push subscription', {
             userId,
             endpoint: sub.endpoint.substring(0, 50) + '...',
-            statusCode: error.statusCode,
+            statusCode: err.statusCode,
           });
           await prisma.pushSubscription.deleteMany({
             where: { endpoint: sub.endpoint },

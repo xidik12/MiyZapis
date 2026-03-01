@@ -14,11 +14,11 @@ import { telegramAuthService } from '@/services/telegramAuth.service';
 
 interface WebSocketContextType {
   isConnected: boolean;
-  lastMessage: any;
+  lastMessage: unknown;
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
-  send: (event: string, data: any) => void;
-  subscribe: (event: string, callback: (data: any) => void) => void;
-  unsubscribe: (event: string, callback: (data: any) => void) => void;
+  send: (event: string, data: unknown) => void;
+  subscribe: (event: string, callback: (data: unknown) => void) => void;
+  unsubscribe: (event: string, callback: (data: unknown) => void) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
@@ -80,7 +80,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       if (import.meta.env.DEV) console.log('WebSocket reconnected after', data.attempts, 'attempts');
     };
 
-    const handleMessage = (data: any) => {
+    const handleMessage = (data: unknown) => {
       setLastMessage({
         ...data,
         timestamp: Date.now()
@@ -90,7 +90,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     const getLocale = (): Locale => (localStorage.getItem('miyzapis_locale') || 'uk') as Locale;
     const ws = (key: string) => t(webSocketNotificationStrings, key, getLocale());
 
-    const handleBookingUpdate = (data: any) => {
+    const handleBookingUpdate = (data: unknown) => {
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: data.status }));
       dispatch(addToast({
         type: 'info',
@@ -100,7 +100,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       handleMessage(data);
     };
 
-    const handleBookingConfirmed = (data: any) => {
+    const handleBookingConfirmed = (data: unknown) => {
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: 'confirmed' }));
       dispatch(addToast({
         type: 'success',
@@ -110,7 +110,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       handleMessage(data);
     };
 
-    const handleBookingCancelled = (data: any) => {
+    const handleBookingCancelled = (data: unknown) => {
       dispatch(updateBookingStatus({ bookingId: data.bookingId, status: 'cancelled' }));
       dispatch(addToast({
         type: 'warning',
@@ -131,7 +131,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     webSocketService.on('booking_cancelled', handleBookingCancelled);
     
     // Handle new notification events
-    const handleNotification = (data: any) => {
+    const handleNotification = (data: unknown) => {
       dispatch(addNotification(data));
       dispatch(fetchUnreadCountAsync() as any);
       dispatch(addToast({
@@ -143,7 +143,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     };
 
     // Handle new message events
-    const handleNewMessage = (data: any) => {
+    const handleNewMessage = (data: unknown) => {
       dispatch(addMessage(data));
       dispatch(fetchMessageUnreadCountAsync() as any);
       dispatch(addToast({
@@ -190,15 +190,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     };
   }, []);
 
-  const send = (event: string, data: any) => {
+  const send = (event: string, data: unknown) => {
     webSocketService.send(event, data);
   };
 
-  const subscribe = (event: string, callback: (data: any) => void) => {
+  const subscribe = (event: string, callback: (data: unknown) => void) => {
     webSocketService.on(event, callback);
   };
 
-  const unsubscribe = (event: string, callback: (data: any) => void) => {
+  const unsubscribe = (event: string, callback: (data: unknown) => void) => {
     webSocketService.off(event, callback);
   };
 

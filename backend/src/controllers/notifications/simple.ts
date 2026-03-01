@@ -26,7 +26,7 @@ export class SimpleNotificationController {
       };
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error in simplified notifications:', error);
       res.status(500).json({
         success: false,
@@ -45,7 +45,7 @@ export class SimpleNotificationController {
       logger.info('Returning zero unread count (simplified fallback)');
       
       res.json(createSuccessResponse({ count: 0 }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error in simplified unread count:', error);
       res.status(500).json({
         success: false,
@@ -64,7 +64,7 @@ export class SimpleNotificationController {
       logger.info('Marking notification as read (simplified fallback)');
       
       res.json(createSuccessResponse({ success: true }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error in simplified mark as read:', error);
       res.status(500).json({
         success: false,
@@ -83,7 +83,7 @@ export class SimpleNotificationController {
       logger.info('Marking all notifications as read (simplified fallback)');
       
       res.json(createSuccessResponse({ success: true, count: 0 }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error in simplified mark all as read:', error);
       res.status(500).json({
         success: false,
@@ -107,7 +107,7 @@ export class SimpleNotificationController {
         timestamp: new Date().toISOString(),
         user: req.user ? { id: req.user.id, email: req.user.email } : null,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error in backend test:', error);
       res.status(500).json({
         success: false,

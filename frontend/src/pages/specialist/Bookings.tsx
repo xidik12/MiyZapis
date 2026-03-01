@@ -124,15 +124,20 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         setMessage('');
         toast.success(t('bookingDetails.messageSent') || 'Message sent');
         return;
-      } catch (createErr: any) {
+      } catch (createErr: unknown) {
         console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
         // Fallback: fetch conversations and find one matching this booking
         try {
           const { conversations } = await messagesService.getConversations(1, 50);
-          const existing = conversations.find((c: any) => c?.booking?.id === booking.id || (
-            (c?.customer?.id === booking.customerId && c?.specialist?.id === booking.specialistId) ||
-            (c?.customer?.id === booking.specialistId && c?.specialist?.id === booking.customerId)
-          ));
+          const existing = conversations.find((c: Record<string, unknown>) => {
+            const cb = c.booking as Record<string, unknown> | undefined;
+            const cc = c.customer as Record<string, unknown> | undefined;
+            const cs = c.specialist as Record<string, unknown> | undefined;
+            return cb?.id === booking.id || (
+              (cc?.id === booking.customerId && cs?.id === booking.specialistId) ||
+              (cc?.id === booking.specialistId && cs?.id === booking.customerId)
+            );
+          });
           if (existing) conversationId = existing.id;
         } catch (listErr) {
           console.error('Failed to list conversations for fallback:', listErr);
@@ -148,7 +153,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
       setMessage('');
       toast.success('Message sent');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to send booking message:', err);
       toast.error(err?.message || t('specialist.bookings.toast.error'));
     }
@@ -822,7 +827,7 @@ const SpecialistBookings: React.FC = () => {
     
     // Sort bookings
     filtered.sort((a, b) => {
-      let aVal: any, bVal: any;
+      let aVal: unknown, bVal: unknown;
       
       switch (sortBy) {
         case 'date':
@@ -884,7 +889,7 @@ const SpecialistBookings: React.FC = () => {
         console.error('❌ Failed to update booking status:', result.payload);
         // Optionally show an error toast here
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Failed to update booking status:', error);
     }
   };
@@ -907,9 +912,10 @@ const SpecialistBookings: React.FC = () => {
       const userType = activeTab === 'provider' ? 'specialist' : 'customer';
       dispatch(fetchBookings({ filters: {}, userType }));
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      toast.error(`${t('specialist.bookings.toast.error')}: ${error.message}`);
+      toast.error(`${t('specialist.bookings.toast.error')}: ${err.message}`);
     }
   };
   
@@ -975,7 +981,7 @@ const SpecialistBookings: React.FC = () => {
       // Optional: Show success message or refresh bookings
       // You could also dispatch a success notification here
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to submit review:', error);
       
       // Show user-friendly error message
@@ -1004,7 +1010,7 @@ const SpecialistBookings: React.FC = () => {
         const userType = activeTab === 'provider' ? 'specialist' : 'customer';
         dispatch(fetchBookings({ filters: {}, userType }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Failed to cancel booking:', error);
       toast.error(t('specialist.bookings.toast.error'));
     }

@@ -23,7 +23,8 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"]
     },
 
     /* Additional options */
@@ -31,7 +32,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src", "../shared"],
   "exclude": ["backend", "telegram-bot", "mini-app", "node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

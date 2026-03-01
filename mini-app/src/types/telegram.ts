@@ -49,7 +49,7 @@ export interface TelegramWebApp {
   readTextFromClipboard(callback?: (text: string) => void): void;
   requestWriteAccess(callback?: (granted: boolean) => void): void;
   requestContact(callback?: (granted: boolean) => void): void;
-  invokeCustomMethod(method: string, params: any, callback?: (error: string | null, result: any) => void): void;
+  invokeCustomMethod(method: string, params: Record<string, unknown>, callback?: (error: string | null, result: unknown) => void): void;
 }
 
 export interface TelegramUser {

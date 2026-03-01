@@ -164,7 +164,7 @@ export const useSafeNumber = (
  */
 export const useSafeForm = <T extends Record<string, any>>(
   initialValues: T,
-  sanitizers: Partial<Record<keyof T, (value: any) => any>> = {}
+  sanitizers: Partial<Record<keyof T, (value: unknown) => any>> = {}
 ) => {
   const [values, setValues] = useState<T>(initialValues);
   const [dangerousFields, setDangerousFields] = useState<Set<keyof T>>(new Set());
@@ -195,8 +195,8 @@ export const useSafeForm = <T extends Record<string, any>>(
     }));
   }, [sanitizers]);
 
-  const setValue = useCallback((field: keyof T, value: any) => {
-    const sanitizer = sanitizers[field] || ((v: any) => v);
+  const setValue = useCallback((field: keyof T, value: unknown) => {
+    const sanitizer = sanitizers[field] || ((v: unknown) => v);
     const sanitized = sanitizer(value);
 
     setValues(prev => ({

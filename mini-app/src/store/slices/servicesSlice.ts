@@ -25,7 +25,7 @@ export interface Service {
 
 // Backend returns specialist.user.firstName/lastName and specialist.totalReviews
 // Normalize to flat specialist.name and specialist.reviewCount
-const normalizeServiceSpecialist = (specialist: any) => {
+const normalizeServiceSpecialist = (specialist: Record<string, unknown>) => {
   if (!specialist) return { id: '', name: '', rating: 0, reviewCount: 0 };
   return {
     id: specialist.id || '',
@@ -99,12 +99,12 @@ export const fetchServicesAsync = createAsyncThunk(
     sort?: string;
     city?: string;
   }) => {
-    const response: any = await apiService.getServices(params);
+    const response: Record<string, unknown> = await apiService.getServices(params);
     // API returns { services: [...], total, page, totalPages }
     // Normalize to { items, pagination }
     if (response?.services) {
       return {
-        items: response.services.map((s: any) => ({
+        items: response.services.map((s: Record<string, unknown>) => ({
           ...s,
           price: Number(s.price) || Number(s.basePrice) || 0,
           images: (() => {
@@ -131,7 +131,7 @@ export const fetchServicesAsync = createAsyncThunk(
 export const fetchServiceAsync = createAsyncThunk(
   'services/fetchService',
   async (id: string) => {
-    const response: any = await apiService.getService(id);
+    const response: Record<string, unknown> = await apiService.getService(id);
     // Backend wraps in { service: {...} } — unwrap it
     const raw = response?.service || response;
     return {
@@ -152,7 +152,7 @@ export const fetchServiceAsync = createAsyncThunk(
 export const fetchCategoriesAsync = createAsyncThunk(
   'services/fetchCategories',
   async () => {
-    const response: any = await apiService.getServiceCategories();
+    const response: Record<string, unknown> = await apiService.getServiceCategories();
     // API returns { categories: [...] } — extract the array
     return Array.isArray(response) ? response : response?.categories || [];
   }

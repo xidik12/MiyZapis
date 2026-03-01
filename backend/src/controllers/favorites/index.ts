@@ -23,11 +23,12 @@ export class FavoritesController {
       const result = await this.favoritesService.addSpecialistToFavorites(userId, specialistId);
 
       res.status(201).json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error adding specialist to favorites:', error);
-      const statusCode = error.message.includes('not found') ? 404 : 
-                        error.message.includes('already in favorites') || error.message.includes('Cannot add') ? 409 : 500;
-      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      const statusCode = err.message.includes('not found') ? 404 : 
+                        err.message.includes('already in favorites') || err.message.includes('Cannot add') ? 409 : 500;
+      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -40,11 +41,12 @@ export class FavoritesController {
       const result = await this.favoritesService.addServiceToFavorites(userId, serviceId);
 
       res.status(201).json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error adding service to favorites:', error);
-      const statusCode = error.message.includes('not found') ? 404 : 
-                        error.message.includes('already in favorites') || error.message.includes('Cannot add') ? 409 : 500;
-      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      const statusCode = err.message.includes('not found') ? 404 : 
+                        err.message.includes('already in favorites') || err.message.includes('Cannot add') ? 409 : 500;
+      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -57,10 +59,11 @@ export class FavoritesController {
       const result = await this.favoritesService.removeSpecialistFromFavorites(userId, specialistId);
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error removing specialist from favorites:', error);
-      const statusCode = error.message.includes('not in favorites') ? 404 : 500;
-      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      const statusCode = err.message.includes('not in favorites') ? 404 : 500;
+      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -73,10 +76,11 @@ export class FavoritesController {
       const result = await this.favoritesService.removeServiceFromFavorites(userId, serviceId);
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error removing service from favorites:', error);
-      const statusCode = error.message.includes('not in favorites') ? 404 : 500;
-      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      const statusCode = err.message.includes('not in favorites') ? 404 : 500;
+      res.status(statusCode).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -90,9 +94,10 @@ export class FavoritesController {
       const result = await this.favoritesService.getFavoriteSpecialists(userId, page, limit);
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting favorite specialists:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -106,9 +111,10 @@ export class FavoritesController {
       const result = await this.favoritesService.getFavoriteServices(userId, page, limit);
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting favorite services:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -134,9 +140,10 @@ export class FavoritesController {
       };
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting all favorites:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -149,9 +156,10 @@ export class FavoritesController {
       const isInFavorites = await this.favoritesService.isSpecialistInFavorites(userId, specialistId);
 
       res.json(createSuccessResponse({ isInFavorites }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error checking specialist in favorites:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -164,9 +172,10 @@ export class FavoritesController {
       const isInFavorites = await this.favoritesService.isServiceInFavorites(userId, serviceId);
 
       res.json(createSuccessResponse({ isInFavorites }));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error checking service in favorites:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -178,9 +187,10 @@ export class FavoritesController {
       const count = await this.favoritesService.getFavoritesCount(userId);
 
       res.json(createSuccessResponse(count));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error getting favorites count:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 
@@ -192,9 +202,10 @@ export class FavoritesController {
       const result = await this.favoritesService.clearAllFavorites(userId);
 
       res.json(createSuccessResponse(result));
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Error clearing all favorites:', error);
-      res.status(500).json(createErrorResponse('FAVORITES_ERROR', error.message, req.headers['x-request-id'] as string));
+      res.status(500).json(createErrorResponse('FAVORITES_ERROR', err.message, req.headers['x-request-id'] as string));
     }
   };
 }

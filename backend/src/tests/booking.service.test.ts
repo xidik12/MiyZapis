@@ -47,7 +47,7 @@ const mockPrisma = {
     findFirst: jest.fn(),
     update: jest.fn(),
   },
-  $transaction: jest.fn((fn: (tx: any) => Promise<any>) => fn(mockPrisma)),
+  $transaction: jest.fn((fn: (tx: Record<string, unknown>) => Promise<unknown>) => fn(mockPrisma)),
   $executeRaw: jest.fn(),
 };
 
@@ -70,7 +70,7 @@ jest.mock('@/services/notification', () => ({
   })),
 }));
 
-jest.mock('@/services/email/enhanced-email', () => ({
+jest.mock('@/services/email', () => ({
   emailService: {
     sendTemplateEmail: jest.fn().mockResolvedValue(undefined),
     sendBookingReminder: jest.fn().mockResolvedValue(undefined),

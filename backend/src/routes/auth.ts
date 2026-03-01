@@ -23,7 +23,7 @@ const router = Router();
 router.post('/register', async (req, res) => {
   try {
     // Import enhanced auth service to handle registration
-    const { EnhancedAuthService } = await import('@/services/auth/enhanced');
+    const { AuthService } = await import('@/services/auth');
     
     // Simple validation for the proxy
     if (!req.body.email || !req.body.password || !req.body.firstName || !req.body.lastName || !req.body.userType) {
@@ -39,15 +39,16 @@ router.post('/register', async (req, res) => {
       return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Names can only contain letters, spaces, hyphens, and apostrophes', req.id));
     }
 
-    const result = await EnhancedAuthService.register(req.body);
+    const result = await AuthService.register(req.body);
     return res.status(201).json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Registration proxy error:', error);
 
     let errorCode = 'REGISTRATION_FAILED';
     let errorMessage = 'Registration failed';
 
-    if (error.message === 'EMAIL_ALREADY_EXISTS') {
+    if (err.message === 'EMAIL_ALREADY_EXISTS') {
       errorCode = 'EMAIL_ALREADY_EXISTS';
       errorMessage = 'Email address is already registered';
     }

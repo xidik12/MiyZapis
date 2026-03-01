@@ -49,7 +49,7 @@ interface GoogleOAuthUser {
 }
 
 interface AuthResult {
-  user: any;
+  user: Record<string, unknown>;
   accessToken: string;
   refreshToken: string;
   platform: string;
@@ -102,7 +102,7 @@ export class MultiPlatformAuthService {
   /**
    * Authenticate user from Telegram Bot
    */
-  async authenticateTelegramBot(telegramUser: any): Promise<AuthResult> {
+  async authenticateTelegramBot(telegramUser: Record<string, unknown>): Promise<AuthResult> {
     try {
       // Find or create user
       const { user, isNewUser } = await this.findOrCreateTelegramUser(
@@ -246,7 +246,7 @@ export class MultiPlatformAuthService {
   /**
    * Find or create user from Telegram data
    */
-  private async findOrCreateTelegramUser(telegramUser: any, platform: string) {
+  private async findOrCreateTelegramUser(telegramUser: Record<string, unknown>, platform: string) {
     const telegramId = telegramUser.id.toString();
     
     // Find existing user by Telegram ID
@@ -400,10 +400,10 @@ export class MultiPlatformAuthService {
   /**
    * Refresh access token
    */
-  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; user: any }> {
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; user: Record<string, unknown> }> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as any;
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as { userId: string };
       
       // Check if token exists and is valid
       const tokenRecord = await prisma.refreshToken.findFirst({

@@ -41,8 +41,9 @@ export const createPaymentIntent = createAsyncThunk(
   ) => {
     try {
       return await paymentService.createPaymentIntent(data);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create payment intent');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to create payment intent');
     }
   }
 );
@@ -55,8 +56,9 @@ export const confirmPaymentIntent = createAsyncThunk(
   ) => {
     try {
       return await paymentService.confirmPaymentIntent(paymentIntentId, paymentMethodId);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to confirm payment');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to confirm payment');
     }
   }
 );
@@ -74,8 +76,9 @@ export const fetchPaymentHistory = createAsyncThunk(
   ) => {
     try {
       return await paymentService.getPaymentHistory(filters);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch payment history');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch payment history');
     }
   }
 );
@@ -85,8 +88,9 @@ export const fetchPaymentMethods = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await paymentService.getPaymentMethods();
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch payment methods');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch payment methods');
     }
   }
 );
@@ -96,8 +100,9 @@ export const addPaymentMethod = createAsyncThunk(
   async (paymentMethodId: string, { rejectWithValue }) => {
     try {
       return await paymentService.addPaymentMethod(paymentMethodId);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to add payment method');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to add payment method');
     }
   }
 );
@@ -108,8 +113,9 @@ export const removePaymentMethod = createAsyncThunk(
     try {
       await paymentService.removePaymentMethod(paymentMethodId);
       return paymentMethodId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to remove payment method');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to remove payment method');
     }
   }
 );
@@ -127,8 +133,9 @@ export const processRefund = createAsyncThunk(
   ) => {
     try {
       return await paymentService.processRefund(data);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to process refund');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to process refund');
     }
   }
 );

@@ -149,7 +149,7 @@ export const CreatePostPage: React.FC = () => {
       setSubmitting(true);
       hapticFeedback.impactLight();
 
-      const postData: any = {
+      const postData: Record<string, unknown> = {
         title: title.trim(),
         content: content.trim(),
         type,
@@ -182,7 +182,7 @@ export const CreatePostPage: React.FC = () => {
           navigate('/community');
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = err?.response?.data?.message || err?.message || cp('failedToPublish');
       dispatch(addToast({ type: 'error', title: c('error'), message: msg }));
       hapticFeedback.notificationError();

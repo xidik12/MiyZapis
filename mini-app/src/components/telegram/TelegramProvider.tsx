@@ -15,7 +15,7 @@ interface TelegramContextType extends UseTelegramWebAppReturn {
   user: User | null;
   isLoading: boolean;
   error: string | null;
-  login: (additionalData?: any) => Promise<void>;
+  login: (additionalData?: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -169,7 +169,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
     }
   }, [telegramWebApp.isReady, telegramWebApp.initData, authenticateWithTelegram, fetchCurrentUser]);
 
-  const login = useCallback(async (additionalData?: any): Promise<void> => {
+  const login = useCallback(async (additionalData?: Record<string, unknown>): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);

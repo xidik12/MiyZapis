@@ -216,7 +216,7 @@ export class AdminService {
     }
 
     // Handle activate/deactivate
-    let updateData: any = {};
+    let updateData: Record<string, unknown> = {};
     switch (action) {
       case 'activate':
         updateData = { isActive: true };

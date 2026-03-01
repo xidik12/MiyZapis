@@ -27,8 +27,9 @@ export const login = createAsyncThunk(
       const response = await authService.login(credentials);
       setAuthTokens(response.tokens);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Login failed');
     }
   }
 );
@@ -44,8 +45,9 @@ export const register = createAsyncThunk(
         setAuthTokens(response.tokens);
       }
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Registration failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Registration failed');
     }
   }
 );
@@ -61,8 +63,9 @@ export const googleLogin = createAsyncThunk(
       }
       setAuthTokens(response.tokens);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Google authentication failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Google authentication failed');
     }
   }
 );
@@ -74,8 +77,9 @@ export const telegramLogin = createAsyncThunk(
       const response = await authService.telegramAuth(telegramData);
       setAuthTokens(response.tokens);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Telegram authentication failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Telegram authentication failed');
     }
   }
 );
@@ -87,8 +91,9 @@ export const telegramAuth = createAsyncThunk(
       const response = await authService.telegramAuth(telegramData);
       setAuthTokens(response.tokens);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Telegram authentication failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Telegram authentication failed');
     }
   }
 );
@@ -99,8 +104,9 @@ export const getCurrentUser = createAsyncThunk(
     try {
       const user = await authService.getCurrentUser();
       return user;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to get user profile');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to get user profile');
     }
   }
 );
@@ -111,8 +117,9 @@ export const updateProfile = createAsyncThunk(
     try {
       const user = await authService.updateProfile(userData);
       return user;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update profile');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to update profile');
     }
   }
 );
@@ -127,8 +134,9 @@ export const uploadAvatar = createAsyncThunk(
       // Also refresh the current user data to ensure consistency
       dispatch(getCurrentUser());
       return response.avatarUrl;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to upload avatar');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to upload avatar');
     }
   }
 );
@@ -142,8 +150,9 @@ export const changePassword = createAsyncThunk(
     try {
       await authService.changePassword(currentPassword, newPassword);
       return 'Password changed successfully';
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to change password');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to change password');
     }
   }
 );
@@ -154,8 +163,9 @@ export const forgotPassword = createAsyncThunk(
     try {
       const response = await authService.forgotPassword(email);
       return response.message;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to send reset email');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to send reset email');
     }
   }
 );
@@ -169,8 +179,9 @@ export const resetPassword = createAsyncThunk(
     try {
       const response = await authService.resetPassword(token, newPassword);
       return response.message;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to reset password');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to reset password');
     }
   }
 );
@@ -181,8 +192,9 @@ export const verifyEmail = createAsyncThunk(
     try {
       const response = await authService.verifyEmail(token);
       return response.message;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Email verification failed');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Email verification failed');
     }
   }
 );
@@ -193,8 +205,9 @@ export const resendVerificationEmail = createAsyncThunk(
     try {
       const response = await authService.resendVerificationEmail();
       return response.message;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to resend verification email');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to resend verification email');
     }
   }
 );
@@ -206,7 +219,7 @@ export const logout = createAsyncThunk(
       await authService.logout();
       clearAuthTokens();
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Still clear tokens even if logout request fails
       clearAuthTokens();
       // Always return success for logout to prevent error toasts

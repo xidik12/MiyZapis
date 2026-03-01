@@ -243,15 +243,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     socketService.on('booking:updated', handleBookingUpdated);
     socketService.on('notification:new', handleNewNotification);
     // Decrement optimistically on notification read or bulk read events if emitted by server
-    const handleNotificationRead = (_data: any) => {
+    const handleNotificationRead = (_data: unknown) => {
       optimisticIncrement(-1);
     };
-    const handleNotificationMarkAll = (_data: any) => {
+    const handleNotificationMarkAll = (_data: unknown) => {
       try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } })); } catch {}
       // Reconcile to be sure
       broadcastUnreadCount();
     };
-    const handleNotificationDeleted = (_data: any) => {
+    const handleNotificationDeleted = (_data: unknown) => {
       // If server indicates deletion of an unread notification, decrement; else reconcile
       optimisticIncrement(-1);
     };
@@ -260,7 +260,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     socketService.on('notification:deleted', handleNotificationDeleted);
     socketService.on('payment:status_changed', handlePaymentStatusChanged);
     // Exact unread count from backend initial payload
-    const handleUnreadNotifications = (data: any) => {
+    const handleUnreadNotifications = (data: unknown) => {
       const count = typeof data?.count === 'number' ? data.count : undefined;
       if (count !== undefined) {
         try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: count } })); } catch {}

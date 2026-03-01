@@ -79,10 +79,11 @@ export class EnhancedAnalyticsController {
           analytics,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist analytics error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -146,7 +147,7 @@ export class EnhancedAnalyticsController {
           analytics,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get platform analytics error:', error);
 
       res.status(500).json(
@@ -207,7 +208,7 @@ export class EnhancedAnalyticsController {
           analytics,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get my specialist analytics error:', error);
 
       res.status(500).json(
@@ -237,7 +238,7 @@ export class EnhancedAnalyticsController {
         return;
       }
 
-      const summary: any = {};
+      const summary: Record<string, unknown> = {};
 
       if (req.user.userType === 'ADMIN') {
         // Admin gets platform summary
@@ -316,7 +317,7 @@ export class EnhancedAnalyticsController {
           period: 'last_30_days',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get analytics summary error:', error);
 
       res.status(500).json(
@@ -357,7 +358,7 @@ export class EnhancedAnalyticsController {
       } = req.query;
 
       // Build filter based on user type and permissions
-      const where: any = {};
+      const where: Record<string, unknown> = {};
 
       if (startDate) where.createdAt = { gte: new Date(startDate as string) };
       if (endDate) where.createdAt = { ...where.createdAt, lte: new Date(endDate as string) };
@@ -433,7 +434,7 @@ export class EnhancedAnalyticsController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get booking analytics error:', error);
 
       res.status(500).json(
@@ -449,7 +450,7 @@ export class EnhancedAnalyticsController {
   /**
    * Group bookings by time period
    */
-  private static groupBookingsByPeriod(bookings: any[], groupBy: string) {
+  private static groupBookingsByPeriod(bookings: Record<string, unknown>[], groupBy: string) {
     const grouped: Record<string, { bookings: number; revenue: number }> = {};
 
     bookings.forEach(booking => {

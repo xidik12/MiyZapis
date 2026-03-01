@@ -323,7 +323,7 @@ export class AvailabilityService {
       });
 
       // Parse working hours
-      let workingHours: any = {};
+      let workingHours: Record<string, unknown> = {};
       try {
         workingHours = JSON.parse(specialist.workingHours || '{}');
       } catch (error) {
@@ -454,7 +454,7 @@ export class AvailabilityService {
         throw new Error('OVERLAPPING_AVAILABILITY_BLOCK');
       }
 
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
 
       if (data.startDateTime !== undefined) updateData.startDateTime = data.startDateTime;
       if (data.endDateTime !== undefined) updateData.endDateTime = data.endDateTime;
@@ -512,7 +512,7 @@ export class AvailabilityService {
     limit: number = 20
   ) {
     try {
-      const where: any = {};
+      const where: Record<string, unknown> = {};
 
       if (filters.specialistId) {
         where.specialistId = filters.specialistId;
@@ -658,8 +658,8 @@ export class AvailabilityService {
     startDate: Date,
     endDate: Date,
     availabilityBlocks: AvailabilityBlock[],
-    bookings: any[],
-    workingHours: any
+    bookings: Record<string, unknown>[],
+    workingHours: Record<string, unknown>
   ) {
     const calendar = [];
     const currentDate = new Date(startDate);
@@ -704,9 +704,9 @@ export class AvailabilityService {
    */
   private static generateTimeSlotsForDay(
     date: Date,
-    workingHours: any,
+    workingHours: Record<string, unknown>,
     availabilityBlocks: AvailabilityBlock[],
-    bookings: any[]
+    bookings: Record<string, unknown>[]
   ): TimeSlot[] {
     const slots: TimeSlot[] = [];
     const slotDuration = 60; // 1 hour slots

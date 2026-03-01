@@ -6,6 +6,7 @@ import { selectIsAuthenticated } from '@/store/slices/authSlice';
 import { communityService, Post, PostType } from '@/services';
 import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { formatDateRelative } from '@/utils/dateUtils';
 import {
   PlusIcon,
   HeartIcon,
@@ -47,7 +48,7 @@ const CommunityPage: React.FC = () => {
       }
       setError(null);
 
-      const filters: any = {
+      const filters: Record<string, unknown> = {
         page,
         limit: 20,
         sortBy: 'createdAt',
@@ -72,7 +73,8 @@ const CommunityPage: React.FC = () => {
 
       setTotalPages(response.pagination.totalPages);
       setCurrentPage(page);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       setError(err.message || 'Failed to load posts');
     } finally {
       setLoading(false);
@@ -151,18 +153,13 @@ const CommunityPage: React.FC = () => {
     }
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return t('community.justNow') || 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ${t('community.ago') || 'ago'}`;
-    if (diffInHours < 48) return t('community.yesterday') || 'Yesterday';
-
-    return date.toLocaleDateString();
-  };
+  // Using shared formatDateRelative from @/utils/dateUtils
+  const formatDate = (dateString: string) =>
+    formatDateRelative(dateString, undefined, {
+      justNow: t('community.justNow') || 'Just now',
+      ago: t('community.ago') || 'ago',
+      yesterday: t('community.yesterday') || 'Yesterday',
+    });
 
   if (loading && posts.length === 0) {
     return <PageLoader />;

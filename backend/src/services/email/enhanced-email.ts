@@ -28,7 +28,7 @@ interface TemplateEmailOptions {
   }>;
 }
 
-export class EnhancedEmailService {
+export class EmailService {
   private transporter: Transporter | null = null;
   private isConfigured: boolean = false;
 
@@ -323,8 +323,8 @@ export class EnhancedEmailService {
           // Service location information
           serviceLocation: booking.service.serviceLocation,
           locationNotes: booking.service.locationNotes,
-          latitude: (booking.service as any).latitude,
-          longitude: (booking.service as any).longitude,
+          latitude: (booking.service as Record<string, unknown>).latitude,
+          longitude: (booking.service as Record<string, unknown>).longitude,
         },
       });
 
@@ -832,7 +832,106 @@ export class EnhancedEmailService {
       };
     }
   }
+  /**
+   * Send verification email (compatibility method for base email API)
+   * Used by auth service which passes email + { firstName, verificationLink } directly
+   */
+  async sendVerificationEmail(email: string, data: { firstName: string; verificationLink: string }): Promise<boolean> {
+    try {
+      return await this.sendEmail({
+        to: email,
+        subject: 'Verify Your Email - MiyZapis',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Verify Your Email - MiyZapis</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+              .content { padding: 30px 20px; }
+              .button { display: inline-block; background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header"><h1>Welcome to MiyZapis!</h1></div>
+              <div class="content">
+                <h2>Hi ${data.firstName}!</h2>
+                <p>Thank you for registering with MiyZapis, your trusted booking platform.</p>
+                <p>To complete your registration, please click the button below:</p>
+                <p style="text-align: center;"><a href="${data.verificationLink}" class="button">Verify Email Address</a></p>
+                <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #007bff;">${data.verificationLink}</p>
+                <p><strong>This link will expire in 24 hours.</strong></p>
+                <p>If you didn't create an account with MiyZapis, you can safely ignore this email.</p>
+              </div>
+              <div class="footer"><p>&copy; 2024 MiyZapis. All rights reserved.</p></div>
+            </div>
+          </body>
+          </html>`,
+        text: `Welcome to MiyZapis!\n\nHi ${data.firstName}!\n\nTo verify your email, visit: ${data.verificationLink}\n\nThis link will expire in 24 hours.`,
+      });
+    } catch (error) {
+      logger.error('Failed to send verification email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send password reset email (compatibility method for base email API)
+   */
+  async sendPasswordResetEmail(email: string, data: { firstName: string; resetLink: string }): Promise<boolean> {
+    try {
+      return await this.sendEmail({
+        to: email,
+        subject: 'Reset Your Password - MiyZapis',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Reset Your Password - MiyZapis</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #dc3545; color: white; padding: 20px; text-align: center; }
+              .content { padding: 30px 20px; }
+              .button { display: inline-block; background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header"><h1>Password Reset Request</h1></div>
+              <div class="content">
+                <h2>Hi ${data.firstName}!</h2>
+                <p>We received a request to reset your password for your MiyZapis account.</p>
+                <p>Click the button below to reset your password:</p>
+                <p style="text-align: center;"><a href="${data.resetLink}" class="button">Reset Password</a></p>
+                <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #dc3545;">${data.resetLink}</p>
+                <p><strong>This link will expire in 1 hour.</strong></p>
+                <p>If you didn't request a password reset, you can safely ignore this email.</p>
+              </div>
+              <div class="footer"><p>&copy; 2024 MiyZapis. All rights reserved.</p></div>
+            </div>
+          </body>
+          </html>`,
+        text: `Password Reset - MiyZapis\n\nHi ${data.firstName}!\n\nTo reset your password, visit: ${data.resetLink}\n\nThis link will expire in 1 hour.`,
+      });
+    } catch (error) {
+      logger.error('Failed to send password reset email:', error);
+      return false;
+    }
+  }
 }
 
+// Backward compatibility alias
+export { EmailService as EnhancedEmailService };
+
 // Export singleton instance
-export const emailService = new EnhancedEmailService();
+export const emailService = new EmailService();

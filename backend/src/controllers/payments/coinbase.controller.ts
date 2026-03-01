@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class CoinbaseController {
@@ -17,8 +17,8 @@ export class CoinbaseController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -116,17 +116,18 @@ export class CoinbaseController {
           }
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[Coinbase] Failed to create Coinbase Commerce charge', {
         userId: req.user?.id,
         bookingId: req.body.bookingId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
-          error instanceof Error ? error.message : 'Failed to create Coinbase Commerce charge',
+          error instanceof Error ? err.message : 'Failed to create Coinbase Commerce charge',
           req.headers['x-request-id'] as string
         )
       );
@@ -172,11 +173,12 @@ export class CoinbaseController {
           charge
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[Coinbase] Failed to get Coinbase Commerce charge details', {
         userId: req.user?.id,
         chargeCode: req.params.chargeCode,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -195,7 +197,7 @@ export class CoinbaseController {
       const signature = req.headers['x-cc-webhook-signature'] as string;
       // Use the raw body preserved by rawBodySaver middleware
       // This is critical for signature verification - we need the EXACT bytes Coinbase sent
-      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
+      const rawBody = (req as Request & { rawBody?: string }).rawBody || JSON.stringify(req.body);
 
       if (!signature) {
         logger.warn('[Coinbase] Webhook received without signature header');
@@ -206,10 +208,10 @@ export class CoinbaseController {
       logger.info('[Coinbase] Webhook received DEBUG', {
         eventType: req.body.event?.type,
         eventId: req.body.event?.id,
-        hasRawBody: !!(req as any).rawBody,
-        rawBodyLength: (req as any).rawBody?.length || 0,
+        hasRawBody: !!(req as Request & { rawBody?: string }).rawBody,
+        rawBodyLength: (req as Request & { rawBody?: string }).rawBody?.length || 0,
         bodyLength: JSON.stringify(req.body).length,
-        usingFallback: !(req as any).rawBody,
+        usingFallback: !(req as Request & { rawBody?: string }).rawBody,
         signatureHeader: signature?.substring(0, 20) + '...',
         signatureLength: signature?.length || 0
       });
@@ -402,9 +404,10 @@ export class CoinbaseController {
 
       // Coinbase expects 200 OK response
       res.status(200).json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[Coinbase] Webhook processing failed', {
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json({

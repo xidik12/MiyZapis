@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { NotificationService } from '@/services/notification';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 const prisma = new PrismaClient();
@@ -14,20 +14,10 @@ export class NotificationController {
   /**
    * Get user notifications
    * GET /notifications
+   * req.user guaranteed by requireAuth middleware
    */
   static async getNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       const type = req.query.type as string;
@@ -50,7 +40,7 @@ export class NotificationController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error getting notifications:', error);
       res.status(500).json(
         createErrorResponse(
@@ -68,17 +58,6 @@ export class NotificationController {
    */
   static async markAsRead(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const notificationId = req.params.id;
 
       if (!notificationId) {
@@ -115,7 +94,7 @@ export class NotificationController {
           message: 'Notification marked as read',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error marking notification as read:', error);
       res.status(500).json(
         createErrorResponse(
@@ -133,17 +112,6 @@ export class NotificationController {
    */
   static async markAllAsRead(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       await NotificationController.notificationService.markAllNotificationsAsRead(req.user.id);
 
       res.json(
@@ -151,7 +119,7 @@ export class NotificationController {
           message: 'All notifications marked as read',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error marking all notifications as read:', error);
       res.status(500).json(
         createErrorResponse(
@@ -169,17 +137,6 @@ export class NotificationController {
    */
   static async deleteNotification(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const notificationId = req.params.id;
 
       if (!notificationId) {
@@ -218,7 +175,7 @@ export class NotificationController {
           message: 'Notification deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error deleting notification:', error);
       res.status(500).json(
         createErrorResponse(
@@ -236,17 +193,6 @@ export class NotificationController {
    */
   static async deleteAllNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       // Delete all notifications for the user
       const result = await prisma.notification.deleteMany({
         where: { userId: req.user.id }
@@ -258,7 +204,7 @@ export class NotificationController {
           deletedCount: result.count
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error deleting all notifications:', error);
       res.status(500).json(
         createErrorResponse(
@@ -285,21 +231,10 @@ export class NotificationController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
-          )
-        );
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
           )
         );
         return;
@@ -312,7 +247,7 @@ export class NotificationController {
         notificationTypes
       } = req.body;
 
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
       if (pushNotifications !== undefined) updateData.pushNotifications = pushNotifications;
       if (telegramNotifications !== undefined) updateData.telegramNotifications = telegramNotifications;
@@ -339,7 +274,7 @@ export class NotificationController {
           message: 'Notification preferences updated successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error updating notification preferences:', error);
       res.status(500).json(
         createErrorResponse(
@@ -357,17 +292,6 @@ export class NotificationController {
    */
   static async getPreferences(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const user = await prisma.user.findUnique({
         where: { id: req.user.id },
         select: {
@@ -400,7 +324,7 @@ export class NotificationController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error getting notification preferences:', error);
       res.status(500).json(
         createErrorResponse(
@@ -418,17 +342,6 @@ export class NotificationController {
    */
   static async getUnreadCount(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const unreadCount = await NotificationController.notificationService.getUnreadCount(req.user.id);
 
       res.json(
@@ -436,7 +349,7 @@ export class NotificationController {
           unreadCount,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error getting unread count:', error);
       res.status(500).json(
         createErrorResponse(
@@ -454,17 +367,6 @@ export class NotificationController {
    */
   static async sendTestNotification(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
       const { type, title, message } = req.body;
 
       await NotificationController.notificationService.sendNotification(req.user.id, {
@@ -479,7 +381,7 @@ export class NotificationController {
           message: 'Test notification sent successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error sending test notification:', error);
       res.status(500).json(
         createErrorResponse(
@@ -506,21 +408,10 @@ export class NotificationController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
-          )
-        );
-        return;
-      }
-
-      if (!req.user) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.AUTHENTICATION_REQUIRED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
           )
         );
         return;
@@ -567,7 +458,7 @@ export class NotificationController {
           message: `Bulk notification sent successfully${sendToAll ? ' to all users' : ` to ${userIds.length} users`}`,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Error sending bulk notification:', error);
       res.status(500).json(
         createErrorResponse(

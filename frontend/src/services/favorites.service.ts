@@ -16,7 +16,7 @@ export interface FavoriteSpecialist {
     rating: number | null;
     reviewCount: number;
     isVerified: boolean;
-    location: any;
+    location: Record<string, unknown>;
     user: {
       id: string;
       firstName: string;

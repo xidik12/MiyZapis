@@ -51,7 +51,7 @@ export const useBookingFilters = (bookings: Booking[], itemsPerPage: number = 10
 
     // Sort bookings
     filtered.sort((a, b) => {
-      let aVal: any, bVal: any;
+      let aVal: unknown, bVal: unknown;
 
       switch (sortBy) {
         case 'date':

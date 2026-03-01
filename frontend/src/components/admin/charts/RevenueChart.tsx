@@ -17,7 +17,7 @@ export interface RevenueChartProps {
     revenue?: number;
     fees?: number;
     refunds?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   }>;
   height?: number;
   showLegend?: boolean;

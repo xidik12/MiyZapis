@@ -213,7 +213,8 @@ const SpecialistOnboarding: React.FC = () => {
       dispatch(updateUserProfile({ phoneNumber: basicInfo.phone } as any));
       setProfileSaved(true);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Onboarding: failed to save basic info', err);
       setError(err.message || 'Failed to save profile information');
       return false;
@@ -241,7 +242,8 @@ const SpecialistOnboarding: React.FC = () => {
       }
       setServiceSaved(true);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Onboarding: failed to create service', err);
       setError(err.message || 'Failed to create service');
       return false;
@@ -322,7 +324,8 @@ const SpecialistOnboarding: React.FC = () => {
       }
       setScheduleSaved(true);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Onboarding: failed to save schedule', err);
       setError(err.message || 'Failed to save schedule');
       return false;
@@ -346,7 +349,8 @@ const SpecialistOnboarding: React.FC = () => {
         dispatch(getCurrentUser());
       }
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       logger.error('Onboarding: failed to upload avatar', err);
       setError(err.message || 'Failed to upload avatar');
       return false;

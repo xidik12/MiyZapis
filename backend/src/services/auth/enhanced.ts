@@ -29,7 +29,7 @@ interface GoogleAuthData {
   picture: string;
 }
 
-export class EnhancedAuthService {
+export class AuthService {
   // Generate verification token
   private static generateVerificationToken(): string {
     return crypto.randomBytes(32).toString('hex');
@@ -135,7 +135,7 @@ export class EnhancedAuthService {
           userType: data.userType,
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
-          language: (data as any).language || 'en',
+          language: data.language || 'en',
           // Free 3-month trial period
           trialStartDate,
           trialEndDate,
@@ -190,7 +190,7 @@ export class EnhancedAuthService {
       });
 
       // Send verification email (non-blocking)
-      const frontendUrl = process.env.FRONTEND_URL || (config.isProduction ? 'https://miyzapis.up.railway.app' : 'http://localhost:3000');
+      const frontendUrl = config.frontend.url || (config.isProduction ? 'https://miyzapis.up.railway.app' : 'http://localhost:3000');
       const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
       
       logger.info('Attempting to send verification email', {
@@ -240,10 +240,10 @@ export class EnhancedAuthService {
 
       // Process referral if provided
       let referralProcessed = false;
-      if ((data as any).referralCode) {
+      if (data.referralCode) {
         try {
           // Validate and process the referral
-          const referral = await ReferralService.getReferralByCode((data as any).referralCode);
+          const referral = await ReferralService.getReferralByCode(data.referralCode);
 
           // Check if the user type matches the referral target
           const isSpecialist = data.userType === 'SPECIALIST';
@@ -252,20 +252,20 @@ export class EnhancedAuthService {
 
             // Process referral completion
             await ReferralService.processReferralCompletion({
-              referralCode: (data as any).referralCode,
+              referralCode: data.referralCode,
               referredUserId: user.id
             });
 
             referralProcessed = true;
             logger.info('Referral processed during registration', {
               userId: user.id,
-              referralCode: (data as any).referralCode,
+              referralCode: data.referralCode,
               referralType: referral.referralType
             });
           } else {
             logger.warn('Referral user type mismatch during registration', {
               userId: user.id,
-              referralCode: (data as any).referralCode,
+              referralCode: data.referralCode,
               expectedType: referral.targetUserType,
               actualType: data.userType
             });
@@ -274,7 +274,7 @@ export class EnhancedAuthService {
           // Don't fail registration if referral processing fails
           logger.error('Failed to process referral during registration', {
             userId: user.id,
-            referralCode: (data as any).referralCode,
+            referralCode: data.referralCode,
             error: error instanceof Error ? error.message : 'Unknown error'
           });
         }
@@ -1037,7 +1037,7 @@ export class EnhancedAuthService {
       });
 
       // Send verification email
-      const frontendUrl = config.frontend?.url || (config.isProduction ? 'https://miyzapis.com' : 'http://localhost:3000');
+      const frontendUrl = config.frontend.url || (config.isProduction ? 'https://miyzapis.com' : 'http://localhost:3000');
       const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
       
       const emailSent = await emailService.sendVerificationEmail(user.email, {
@@ -1155,9 +1155,10 @@ export class EnhancedAuthService {
       });
 
       logger.debug('Refresh token revoked successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       // If token doesn't exist, that's fine - user is already logged out
-      if (error.code === 'P2025') {
+      if (err.code === 'P2025') {
         logger.debug('Refresh token not found (already logged out)');
       } else {
         logger.debug('Logout error (non-critical):', error);
@@ -1166,3 +1167,6 @@ export class EnhancedAuthService {
     }
   }
 }
+
+// Backward compatibility alias
+export { AuthService as EnhancedAuthService };

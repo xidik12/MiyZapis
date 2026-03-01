@@ -139,6 +139,7 @@ export class CoinbaseOnrampService {
         id: session.id,
         sessionId: session.id,
         userId: session.userId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma enum doesn't match service return type exactly
         status: session.status as any,
         amount: session.amount,
         currency: session.currency,
@@ -271,8 +272,8 @@ export class CoinbaseOnrampService {
    * Handle successful onramp completion
    */
   private async handleSuccessfulOnramp(
-    session: any,
-    completionData: any
+    session: Record<string, unknown>,
+    completionData: Record<string, unknown>
   ): Promise<void> {
     try {
       switch (session.purpose) {
@@ -304,7 +305,7 @@ export class CoinbaseOnrampService {
    */
   private async processBookingDepositOnramp(
     bookingId: string,
-    completionData: any
+    completionData: Record<string, unknown>
   ): Promise<void> {
     // This would integrate with your existing booking payment service
     // to complete the deposit payment process
@@ -323,7 +324,7 @@ export class CoinbaseOnrampService {
    */
   private async processWalletTopup(
     userId: string,
-    completionData: any
+    completionData: Record<string, unknown>
   ): Promise<void> {
     // This would integrate with your wallet service
     // to credit the user's wallet with the converted crypto
@@ -342,7 +343,7 @@ export class CoinbaseOnrampService {
    */
   private async processSubscriptionOnramp(
     userId: string,
-    completionData: any
+    completionData: Record<string, unknown>
   ): Promise<void> {
     // This would integrate with your subscription service
     // to process monthly subscription payments

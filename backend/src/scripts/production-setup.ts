@@ -250,7 +250,7 @@ class ProductionSetup {
   }
 
   private generateEnvContent(isExample = false): string {
-    const getValue = (value: any): string => {
+    const getValue = (value: unknown): string => {
       if (isExample) return 'YOUR_VALUE_HERE';
       return value || '';
     };

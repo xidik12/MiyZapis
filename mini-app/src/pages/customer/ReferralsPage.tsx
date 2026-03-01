@@ -118,7 +118,7 @@ export const ReferralsPage: React.FC = () => {
       if (referralsData.status === 'fulfilled') {
         const raw = referralsData.value as any;
         const list = raw?.referrals || raw?.items || (Array.isArray(raw) ? raw : []);
-        setReferrals(list.map((r: any) => ({
+        setReferrals(list.map((r: Record<string, unknown>) => ({
           id: r.id,
           referredUserName: r.referred?.firstName
             ? `${r.referred.firstName} ${r.referred.lastName || ''}`.trim()

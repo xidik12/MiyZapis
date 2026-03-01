@@ -121,7 +121,7 @@ async function main() {
         }
       });
       corrected += 1;
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('Failed to correct transaction', { txId: t.id, error: e?.message || e });
     }
   }

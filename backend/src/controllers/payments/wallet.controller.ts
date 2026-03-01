@@ -66,7 +66,7 @@ export class WalletController {
       const pageNum = Math.max(1, parseInt(page as string) || 1);
       const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
 
-      const filters: any = {};
+      const filters: Record<string, unknown> = {};
 
       if (type && ['CREDIT', 'DEBIT', 'REFUND', 'FORFEITURE_SPLIT'].includes(type as string)) {
         filters.type = type as string;

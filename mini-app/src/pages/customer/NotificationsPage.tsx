@@ -89,7 +89,7 @@ export const NotificationsPage: React.FC = () => {
     dispatch(deleteNotificationAsync(id));
   };
 
-  const handleNotificationTap = (notif: any) => {
+  const handleNotificationTap = (notif: Record<string, unknown>) => {
     hapticFeedback.impactLight();
     if (!notif.isRead) {
       dispatch(markNotificationReadAsync(notif.id));

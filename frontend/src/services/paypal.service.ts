@@ -30,8 +30,8 @@ export interface PayPalCaptureResponse {
   id: string;
   status: string;
   captureId?: string;
-  purchaseUnits: any[];
-  paymentSource: any;
+  purchaseUnits: Record<string, unknown>[];
+  paymentSource: Record<string, unknown>;
   links: Array<{
     href: string;
     rel: string;
@@ -44,8 +44,8 @@ export interface PayPalOrderDetails {
   id: string;
   status: string;
   intent: string;
-  purchaseUnits: any[];
-  paymentSource: any;
+  purchaseUnits: Record<string, unknown>[];
+  paymentSource: Record<string, unknown>;
   createTime: string;
   updateTime: string;
   links: Array<{

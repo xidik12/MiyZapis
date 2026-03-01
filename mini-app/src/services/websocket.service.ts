@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 
 export interface WebSocketMessage {
   type: string;
-  data: any;
+  data: unknown;
   timestamp: number;
   userId?: string;
 }
@@ -36,16 +36,16 @@ export type WebSocketEventType =
   | 'system_notification';
 
 const isDev = import.meta.env.DEV;
-const log = (...args: any[]) => { if (isDev) console.log('[WS]', ...args); };
-const logWarn = (...args: any[]) => { if (isDev) console.warn('[WS]', ...args); };
-const logError = (...args: any[]) => { console.error('[WS]', ...args); };
+const log = (...args: unknown[]) => { if (isDev) console.log('[WS]', ...args); };
+const logWarn = (...args: unknown[]) => { if (isDev) console.warn('[WS]', ...args); };
+const logError = (...args: unknown[]) => { console.error('[WS]', ...args); };
 
 class WebSocketService {
   private socket: Socket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
-  private listeners: Map<string, Set<(data: any) => void>> = new Map();
+  private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
   private isConnected = false;
   private userId: string | null = null;
   private token: string | null = null;
@@ -167,7 +167,7 @@ class WebSocketService {
       );
     });
 
-    this.socket.on('booking_reminder', (data: any) => {
+    this.socket.on('booking_reminder', (data: unknown) => {
       log('Booking reminder:', data);
       this.emit('booking_reminder', data);
       const l = this.getLocale();
@@ -178,7 +178,7 @@ class WebSocketService {
     });
 
     // Payment events
-    this.socket.on('payment_completed', (data: any) => {
+    this.socket.on('payment_completed', (data: unknown) => {
       log('Payment completed:', data);
       this.emit('payment_completed', data);
       const l = this.getLocale();
@@ -188,7 +188,7 @@ class WebSocketService {
       );
     });
 
-    this.socket.on('payment_failed', (data: any) => {
+    this.socket.on('payment_failed', (data: unknown) => {
       log('Payment failed:', data);
       this.emit('payment_failed', data);
       const l = this.getLocale();
@@ -199,18 +199,18 @@ class WebSocketService {
     });
 
     // Specialist status events
-    this.socket.on('specialist_online', (data: any) => {
+    this.socket.on('specialist_online', (data: unknown) => {
       log('Specialist online:', data);
       this.emit('specialist_online', data);
     });
 
-    this.socket.on('specialist_offline', (data: any) => {
+    this.socket.on('specialist_offline', (data: unknown) => {
       log('Specialist offline:', data);
       this.emit('specialist_offline', data);
     });
 
     // Message events
-    this.socket.on('new_message', (data: any) => {
+    this.socket.on('new_message', (data: unknown) => {
       log('New message:', data);
       this.emit('new_message', data);
       const l = this.getLocale();
@@ -264,7 +264,7 @@ class WebSocketService {
   /**
    * Subscribe to an event
    */
-  on(event: string, callback: (data: any) => void): void {
+  on(event: string, callback: (data: unknown) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -274,7 +274,7 @@ class WebSocketService {
   /**
    * Unsubscribe from an event
    */
-  off(event: string, callback: (data: any) => void): void {
+  off(event: string, callback: (data: unknown) => void): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
       eventListeners.delete(callback);
@@ -287,7 +287,7 @@ class WebSocketService {
   /**
    * Emit event to local listeners
    */
-  private emit(event: string, data: any): void {
+  private emit(event: string, data: unknown): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
       eventListeners.forEach(callback => {
@@ -303,7 +303,7 @@ class WebSocketService {
   /**
    * Send message to server
    */
-  send(event: string, data: any): void {
+  send(event: string, data: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
@@ -328,7 +328,7 @@ class WebSocketService {
   /**
    * Update booking status
    */
-  updateBookingStatus(bookingId: string, status: string, data?: any): void {
+  updateBookingStatus(bookingId: string, status: string, data?: unknown): void {
     this.send('update_booking_status', {
       bookingId,
       status,

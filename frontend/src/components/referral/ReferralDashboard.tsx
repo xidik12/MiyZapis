@@ -67,7 +67,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       if (copied) {
         toast.success(t('referral.success.linkCopied'));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create referral:', error);
       const errorMessage = error?.apiError?.message || t('referral.errors.createFailed');
       toast.error(errorMessage);

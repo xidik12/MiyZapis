@@ -160,7 +160,7 @@ export class PaymentService {
   }
 
   // Handle successful payment side effects
-  private static async handleSuccessfulPayment(payment: Payment & { booking: any }): Promise<void> {
+  private static async handleSuccessfulPayment(payment: Payment & { booking: Record<string, unknown> }): Promise<void> {
     try {
       const { booking } = payment;
 
@@ -277,7 +277,7 @@ export class PaymentService {
 
       const skip = (page - 1) * limit;
 
-      const where: any = { userId };
+      const where: Record<string, unknown> = { userId };
       if (status) where.status = status;
       if (type) where.type = type;
       if (bookingId) where.bookingId = bookingId;
@@ -294,7 +294,7 @@ export class PaymentService {
         if (maxAmount !== undefined) where.amount.lte = maxAmount;
       }
 
-      const orderBy: any = {};
+      const orderBy: Record<string, string> = {};
       orderBy[sortBy] = sortOrder;
 
       const [payments, total, stats] = await Promise.all([
@@ -394,7 +394,7 @@ export class PaymentService {
 
       const skip = (page - 1) * limit;
 
-      const where: any = { userId };
+      const where: Record<string, unknown> = { userId };
       if (status) where.status = status;
       if (type) where.type = type;
       if (fromDate || toDate) {
@@ -909,7 +909,7 @@ export class PaymentService {
         customerAnalytics: {
           totalCustomers: totalCustomersResult.length,
           newCustomers,
-          returningCustomers: (returningCustomersResult as any[]).length,
+          returningCustomers: (returningCustomersResult as unknown[]).length,
           topCustomers,
         },
         serviceAnalytics: {
@@ -944,7 +944,7 @@ export class PaymentService {
     try {
       const { fromDate, toDate } = filters;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         booking: { specialistId },
         status: 'SUCCEEDED',
         type: { in: ['FULL_PAYMENT', 'DEPOSIT'] },
@@ -1442,7 +1442,7 @@ export class PaymentService {
       };
     }
   ): Promise<{
-    transactions: any[];
+    transactions: Record<string, unknown>[];
     pagination: {
       currentPage: number;
       totalPages: number;

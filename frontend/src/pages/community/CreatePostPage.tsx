@@ -49,7 +49,8 @@ const CreatePostPage: React.FC = () => {
           contactEmail: data.contactEmail || '',
           images: data.images || [],
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         toast.error(err.message || t('community.loadFailed') || 'Failed to load post');
         navigate('/community');
       } finally {
@@ -96,7 +97,8 @@ const CreatePostPage: React.FC = () => {
         images: [...(prev.images || []), ...uploadedUrls],
       }));
       console.log('[Community Upload] Upload complete, form data updated');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       console.error('[Community Upload] Upload failed:', err);
       const message = err.message || t('community.form.imageUploadFailed') || 'Failed to upload image';
       setUploadError(message);
@@ -158,7 +160,8 @@ const CreatePostPage: React.FC = () => {
 
       toast.success(isEditing ? t('community.postUpdated') || 'Post updated' : t('community.postCreated') || 'Post published');
       navigate(`/community/post/${result.id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const err = err instanceof Error ? err : new Error(String(err));
       toast.error(err.message || t('community.publishFailed') || 'Failed to publish post');
     } finally {
       setLoading(false);

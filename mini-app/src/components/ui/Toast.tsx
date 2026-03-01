@@ -1,9 +1,40 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { RootState } from '@/store';
 import { removeToast } from '@/store/slices/uiSlice';
+
+const toastStyles = `
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+}
+
+.toast-enter {
+  animation: toast-enter 0.3s ease-out forwards;
+}
+
+.toast-exit {
+  animation: toast-exit 0.2s ease-in forwards;
+}
+`;
 
 interface ToastProps {
   id: string;
@@ -15,17 +46,25 @@ interface ToastProps {
 
 const Toast: React.FC<ToastProps> = ({ id, type, title, message, duration = 5000 }) => {
   const dispatch = useDispatch();
+  const [exiting, setExiting] = useState(false);
+
+  const dismissToast = useCallback(() => {
+    setExiting(true);
+    setTimeout(() => {
+      dispatch(removeToast(id));
+    }, 200); // Match exit animation duration
+  }, [dispatch, id]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      dispatch(removeToast(id));
+      dismissToast();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [id, duration, dispatch]);
+  }, [id, duration, dismissToast]);
 
   const handleClose = () => {
-    dispatch(removeToast(id));
+    dismissToast();
   };
 
   const getIcon = () => {
@@ -55,11 +94,8 @@ const Toast: React.FC<ToastProps> = ({ id, type, title, message, duration = 5000
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.9 }}
-      className={`relative w-full max-w-sm mx-auto p-4 rounded-2xl border shadow-card backdrop-blur-lg ${getColorClasses()}`}
+    <div
+      className={`relative w-full max-w-sm mx-auto p-4 rounded-2xl border shadow-card backdrop-blur-lg ${getColorClasses()} ${exiting ? 'toast-exit' : 'toast-enter'}`}
     >
       <div className="flex items-start gap-3">
         {getIcon()}
@@ -76,7 +112,7 @@ const Toast: React.FC<ToastProps> = ({ id, type, title, message, duration = 5000
           <X size={16} className="text-text-muted" />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -84,9 +120,10 @@ export const ToastContainer: React.FC = () => {
   const toasts = useSelector((state: RootState) => state.ui.toasts);
 
   return (
-    <div className="fixed top-4 left-4 right-4 z-50 pointer-events-none">
-      <div className="space-y-2">
-        <AnimatePresence>
+    <>
+      <style>{toastStyles}</style>
+      <div className="fixed top-4 left-4 right-4 z-50 pointer-events-none">
+        <div className="space-y-2">
           {toasts.map((toast) => (
             <div key={toast.id} className="pointer-events-auto">
               <Toast
@@ -98,8 +135,8 @@ export const ToastContainer: React.FC = () => {
               />
             </div>
           ))}
-        </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

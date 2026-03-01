@@ -20,7 +20,7 @@ interface LocationPickerProps {
 
 declare global {
   interface Window {
-    google: any;
+    google: Record<string, unknown>;
   }
 }
 
@@ -129,7 +129,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
 
     // Add click listener to map
-    mapInstanceRef.current.addListener('click', (event: any) => {
+    mapInstanceRef.current.addListener('click', (event: Record<string, unknown>) => {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
       
@@ -144,7 +144,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         });
 
         // Add drag listener to marker
-        markerRef.current.addListener('dragend', (dragEvent: any) => {
+        markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
           const newLat = dragEvent.latLng.lat();
           const newLng = dragEvent.latLng.lng();
           reverseGeocode(newLat, newLng);
@@ -163,7 +163,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         draggable: true,
       });
 
-      markerRef.current.addListener('dragend', (dragEvent: any) => {
+      markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
         const newLat = dragEvent.latLng.lat();
         const newLng = dragEvent.latLng.lng();
         reverseGeocode(newLat, newLng);
@@ -195,7 +195,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     
     geocoder.geocode(
       { location: { lat, lng } },
-      (results: any[], status: string) => {
+      (results: Record<string, unknown>[], status: string) => {
         if (status === 'OK' && results[0]) {
           const locationData = extractLocationFromPlace(results[0]);
           onLocationChange({
@@ -208,7 +208,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
   };
 
-  const extractLocationFromPlace = (place: any): Location => {
+  const extractLocationFromPlace = (place: Record<string, unknown>): Location => {
     const addressComponents = place.address_components || [];
     const formattedAddress = place.formatted_address || '';
     
@@ -219,7 +219,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     let postalCode = '';
     
     // Extract address components with improved logic
-    addressComponents.forEach((component: any) => {
+    addressComponents.forEach((component: Record<string, unknown>) => {
       const types = component.types;
       
       if (types.includes('street_number')) {
@@ -258,7 +258,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return location;
   };
 
-  const handlePlaceSelect = (place: any) => {
+  const handlePlaceSelect = (place: Record<string, unknown>) => {
     if (!place.geometry || !place.geometry.location) return;
 
     const lat = place.geometry.location.lat();
@@ -284,7 +284,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       });
 
       // Add drag listener to new marker
-      markerRef.current.addListener('dragend', (dragEvent: any) => {
+      markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
         const newLat = dragEvent.latLng.lat();
         const newLng = dragEvent.latLng.lng();
         reverseGeocode(newLat, newLng);
@@ -316,7 +316,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
     };
 
-    placesServiceRef.current.textSearch(request, (results: any[], status: string) => {
+    placesServiceRef.current.textSearch(request, (results: Record<string, unknown>[], status: string) => {
       setIsSearching(false);
       if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
         setSearchResults(results.slice(0, 5)); // Limit to 5 results
@@ -341,7 +341,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }, 300);
   };
 
-  const selectSearchResult = (place: any) => {
+  const selectSearchResult = (place: Record<string, unknown>) => {
     handlePlaceSelect(place);
     setSearchResults([]);
   };

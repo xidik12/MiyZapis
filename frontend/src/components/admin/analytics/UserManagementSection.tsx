@@ -85,7 +85,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       });
       setUsers(result.users);
       setPagination(result.pagination);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch users:', error);
       toast.error(t('admin.users.failedToLoad'));
     } finally {
@@ -142,8 +142,9 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       setSelectedUsers(new Set());
       // Refresh user list
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error.message || `Failed to ${action} users`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      toast.error(err.message || `Failed to ${action} users`);
     } finally {
       setActionLoading(false);
     }

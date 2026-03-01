@@ -52,17 +52,17 @@ const CustomerReviews: React.FC = () => {
           const totalReviews = response.pagination.totalItems;
           const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-          response.reviews.forEach((r: any) => {
+          response.reviews.forEach((r: Record<string, unknown>) => {
             if (distribution[r.rating] !== undefined) {
               distribution[r.rating] += 1;
             }
           });
 
-          const totalForAverage = response.reviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+          const totalForAverage = response.reviews.reduce((sum: number, r: Record<string, unknown>) => sum + r.rating, 0);
           const avgRating = totalReviews > 0 ? totalForAverage / totalReviews : 0;
-          const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
+          const verifiedReviewsCount = response.reviews.filter((r: Record<string, unknown>) => r.isVerified).length;
           const recommendationRate = totalReviews > 0
-            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / totalReviews
+            ? response.reviews.filter((r: Record<string, unknown>) => (r.rating || 0) >= 4).length / totalReviews
             : 0;
 
           setReviewStats({
@@ -73,7 +73,8 @@ const CustomerReviews: React.FC = () => {
             recommendationRate
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const err = err instanceof Error ? err : new Error(String(err));
         console.error('[Reviews] Error loading reviews:', err);
         setError(err.message || 'Failed to load reviews');
       } finally {
@@ -117,7 +118,7 @@ const CustomerReviews: React.FC = () => {
       ));
 
       await reviewsService.reactToReview(reviewId, reaction);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error reacting to review:', err);
       // Reload reviews on error to revert optimistic update
       setPage(1);
@@ -150,7 +151,7 @@ const CustomerReviews: React.FC = () => {
       }));
 
       await reviewsService.reactToResponse(reviewId, reaction);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error reacting to response:', err);
       // Reload reviews on error to revert optimistic update
       setPage(1);
@@ -166,13 +167,13 @@ const CustomerReviews: React.FC = () => {
     try {
       if (!reportingReviewId) return;
       await reviewsService.reportReview(reportingReviewId, reason, details);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw error;
     }
   };
 
   // Transform reviews to ReviewCardData format
-  const transformedReviews: ReviewCardData[] = reviews.map((review: any) => {
+  const transformedReviews: ReviewCardData[] = reviews.map((review: Record<string, unknown>) => {
     const customer = review.customer || {
       id: currentUser?.id || 'me',
       firstName: currentUser?.firstName || 'You',

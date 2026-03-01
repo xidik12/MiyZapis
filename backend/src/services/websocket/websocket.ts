@@ -8,14 +8,14 @@ import { config } from '@/config';
 interface AuthenticatedSocket extends Socket {
   userId: string;
   platform: string;
-  user: any;
+  user: Record<string, unknown>;
 }
 
 interface SocketEventHandlers {
-  [event: string]: (socket: AuthenticatedSocket, data: any) => Promise<void>;
+  [event: string]: (socket: AuthenticatedSocket, data: unknown) => Promise<void>;
 }
 
-export class EnhancedWebSocketService {
+export class WebSocketService {
   private io: SocketIOServer;
   private eventHandlers: SocketEventHandlers = {};
 
@@ -39,7 +39,7 @@ export class EnhancedWebSocketService {
         }
 
         // Verify JWT token
-        const decoded = jwt.verify(token, config.jwt.secret!) as any;
+        const decoded = jwt.verify(token, config.jwt.secret!) as { userId: string };
         
         // Get user data
         const user = await prisma.user.findUnique({
@@ -141,7 +141,7 @@ export class EnhancedWebSocketService {
     });
 
     // Send message
-    socket.on('send_message', async (data: any) => {
+    socket.on('send_message', async (data: unknown) => {
       await this.handleSendMessage(socket, data);
     });
 
@@ -264,7 +264,7 @@ export class EnhancedWebSocketService {
   /**
    * Handle send message
    */
-  private async handleSendMessage(socket: AuthenticatedSocket, data: any) {
+  private async handleSendMessage(socket: AuthenticatedSocket, data: Record<string, unknown>) {
     try {
       const { conversationId, content, messageType = 'TEXT', attachments = [] } = data;
 
@@ -497,7 +497,7 @@ export class EnhancedWebSocketService {
   /**
    * Broadcast booking update to relevant users
    */
-  async broadcastBookingUpdate(bookingId: string, update: any) {
+  async broadcastBookingUpdate(bookingId: string, update: Record<string, unknown>) {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
@@ -538,14 +538,14 @@ export class EnhancedWebSocketService {
   /**
    * Send notification to user
    */
-  async sendNotification(userId: string, notification: any) {
+  async sendNotification(userId: string, notification: Record<string, unknown>) {
     this.io.to(`user:${userId}`).emit('notification', notification);
   }
 
   /**
    * Broadcast platform-wide announcement
    */
-  async broadcastAnnouncement(platforms: string[], message: any) {
+  async broadcastAnnouncement(platforms: string[], message: unknown) {
     platforms.forEach(platform => {
       this.io.to(`platform:${platform}`).emit('announcement', message);
     });
@@ -626,3 +626,6 @@ export class EnhancedWebSocketService {
     }
   }
 }
+
+// Backward compatibility alias
+export { WebSocketService as EnhancedWebSocketService };

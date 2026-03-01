@@ -40,10 +40,11 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
       loginUrl: '/auth/login'
     });
 
-  } catch (error: any) {
-    logger.error('❌ Admin setup failed:', error.message);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('❌ Admin setup failed:', err.message);
 
-    if (error.message.includes('Admin user already exists')) {
+    if (err.message.includes('Admin user already exists')) {
       return res.status(409).json({
         error: 'Admin user already exists',
         message: 'An admin user with this email already exists',
@@ -53,7 +54,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
 
     return res.status(500).json({
       error: 'Admin setup failed',
-      message: error.message
+      message: err.message
     });
   }
 });

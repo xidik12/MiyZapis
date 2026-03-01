@@ -92,7 +92,7 @@ export const OnboardingPage: React.FC = () => {
   // Fetch categories
   useEffect(() => {
     apiService.getServiceCategories()
-      .then((cats: any) => { if (Array.isArray(cats)) setCategories(cats); })
+      .then((cats: unknown) => { if (Array.isArray(cats)) setCategories(cats); })
       .catch(() => {});
   }, []);
 

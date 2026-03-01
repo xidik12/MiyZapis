@@ -174,7 +174,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
             {t('referral.widget.yourReferrals')}
           </h4>
           <div className="space-y-2">
-            {analytics.recentActivity.slice(0, 3).map((activity: any, index: number) => (
+            {analytics.recentActivity.slice(0, 3).map((activity: Record<string, unknown>, index: number) => (
               <div key={activity.id || index} className="flex items-center justify-between text-xs">
                 <span className="text-gray-600 dark:text-gray-400">
                   {referralService.getReferralTypeDisplayName(activity.referralType)}

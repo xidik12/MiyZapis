@@ -1,6 +1,6 @@
 import express from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { EnhancedAuthService } from '@/services/auth/enhanced';
+import { AuthService } from '@/services/auth';
 import { createErrorResponse } from '@/utils/response';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
@@ -57,7 +57,7 @@ router.get('/google', async (req, res) => {
       picture: payload.picture || '',
     };
 
-    const result = await EnhancedAuthService.authenticateWithGoogle(googleData);
+    const result = await AuthService.authenticateWithGoogle(googleData);
 
     logger.info(`Google OAuth callback: Authentication successful for ${payload.email}`);
 
@@ -75,7 +75,7 @@ router.get('/google', async (req, res) => {
     const redirectUrl = `${frontendUrl}/auth/callback?token=${result.tokens.accessToken}&refreshToken=${result.tokens.refreshToken}`;
     
     res.redirect(redirectUrl);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Google OAuth callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'https://miyzapis.com';
     res.redirect(`${frontendUrl}/auth/error?error=oauth_failed`);

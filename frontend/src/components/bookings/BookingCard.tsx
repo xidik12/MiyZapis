@@ -10,6 +10,7 @@ import {
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 export interface BookingData {
   id: string;
@@ -60,6 +61,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
   isDragging = false
 }) => {
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const otherParty = userRole === 'customer' ? booking.specialist : booking.customer;
   const displayName = userRole === 'customer'
     ? booking.specialist?.businessName || `${booking.specialist?.firstName || ''} ${booking.specialist?.lastName || ''}`.trim()
@@ -162,7 +164,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         <div className="flex items-center gap-1.5">
           <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
           <span className="font-bold text-sm text-gray-900 dark:text-white leading-none">
-            ${(Number(booking.totalPrice) || 0).toFixed(2)}
+            {formatPrice(Number(booking.totalPrice) || 0)}
           </span>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border leading-none ${statusColor}`}>

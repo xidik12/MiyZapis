@@ -99,7 +99,7 @@ const SpecialistFinances: React.FC = () => {
       setLoading(true);
 
       // Build filters
-      const filters: any = { limit: 50, sortBy: 'date', sortOrder: 'desc' };
+      const filters: Record<string, unknown> = { limit: 50, sortBy: 'date', sortOrder: 'desc' };
       if (filterCategory) filters.category = filterCategory;
       if (filterStartDate) filters.startDate = new Date(filterStartDate).toISOString();
       if (filterEndDate) filters.endDate = new Date(filterEndDate).toISOString();
@@ -115,7 +115,7 @@ const SpecialistFinances: React.FC = () => {
 
       setExpenses(expensesResponse.expenses || []);
       setSummary(summaryResponse);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading expenses:', error);
       toast.error(t('finances.loadError') || 'Failed to load expenses');
     } finally {
@@ -187,9 +187,10 @@ const SpecialistFinances: React.FC = () => {
 
       setIsModalOpen(false);
       loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error saving expense:', error);
-      toast.error(error.message || t('finances.saveError') || 'Failed to save expense');
+      toast.error(err.message || t('finances.saveError') || 'Failed to save expense');
     } finally {
       setSubmitting(false);
     }
@@ -206,9 +207,10 @@ const SpecialistFinances: React.FC = () => {
       await expenseService.deleteExpense(id);
       toast.success(t('finances.expenseDeleted') || 'Expense deleted');
       loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error deleting expense:', error);
-      toast.error(error.message || t('finances.deleteError') || 'Failed to delete expense');
+      toast.error(err.message || t('finances.deleteError') || 'Failed to delete expense');
     } finally {
       setDeleting(null);
     }

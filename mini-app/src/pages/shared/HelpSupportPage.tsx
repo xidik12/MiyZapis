@@ -88,7 +88,7 @@ export const HelpSupportPage: React.FC = () => {
       if (categoriesData.status === 'fulfilled') {
         const raw = categoriesData.value as any;
         const cats = raw?.categories || (Array.isArray(raw) ? raw : []);
-        setCategories(cats.map((c: any) => ({
+        setCategories(cats.map((c: Record<string, unknown>) => ({
           id: c.id || c.category || '',
           name: c.name || c.category || '',
         })));

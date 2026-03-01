@@ -202,7 +202,7 @@ const SpecialistLoyalty: React.FC = () => {
       await RewardsService.redeemReward(rewardId);
       toast.success(t('loyalty.success.redeem') || 'Reward redeemed successfully');
       await fetchRedeemData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to redeem reward:', error);
       const message = error?.apiError?.message || (t('loyalty.error.redeem') || 'Failed to redeem reward');
       toast.error(message);

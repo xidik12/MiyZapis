@@ -75,8 +75,8 @@ export interface LoyaltyCampaign {
   startDate: string;
   endDate: string;
   isActive: boolean;
-  conditions: any;
-  rewards: any;
+  conditions: Record<string, unknown>;
+  rewards: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -122,7 +122,7 @@ export class LoyaltyService {
   // Initialize user loyalty profile (handles new users)
   async initUserLoyalty(): Promise<UserLoyalty> {
     try {
-      const response = await apiClient.post<{profile: any}>('/loyalty/init');
+      const response = await apiClient.post<{profile: Record<string, unknown>}>('/loyalty/init');
 
       if (!response.success || !response.data) {
         return this.getDefaultLoyaltyProfile();
@@ -146,7 +146,7 @@ export class LoyaltyService {
           totalTransactions: 0
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('Failed to initialize loyalty profile:', error);
       return this.getDefaultLoyaltyProfile();
     }
@@ -156,7 +156,7 @@ export class LoyaltyService {
   async getUserLoyalty(): Promise<UserLoyalty> {
     try {
       // Try to get the profile first
-      const response = await apiClient.get<{profile: any}>('/loyalty/profile');
+      const response = await apiClient.get<{profile: Record<string, unknown>}>('/loyalty/profile');
 
       if (!response.success || !response.data) {
         // If no profile exists, try to initialize it
@@ -181,7 +181,7 @@ export class LoyaltyService {
           totalTransactions: 0
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If getting profile fails, try to initialize for new users
       if (error?.response?.status === 401) {
         console.warn('Loyalty profile authentication failed - user may need to re-login');
@@ -191,7 +191,7 @@ export class LoyaltyService {
       try {
         // Try initialization for new users
         return await this.initUserLoyalty();
-      } catch (initError: any) {
+      } catch (initError: unknown) {
         console.warn('Failed to initialize loyalty profile:', initError);
         return this.getDefaultLoyaltyProfile();
       }
@@ -226,7 +226,7 @@ export class LoyaltyService {
       }
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check for authentication errors specifically
       if (error?.response?.status === 401) {
         console.warn('Loyalty stats authentication failed - user may need to re-login');
@@ -281,7 +281,7 @@ export class LoyaltyService {
       }
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('Failed to get loyalty transactions:', error);
       return this.getDefaultTransactions();
     }
@@ -358,7 +358,7 @@ export class LoyaltyService {
       return base;
     });
     return normalized;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('Failed to get loyalty tiers:', error);
       return this.getDefaultTiers();
     }
@@ -427,7 +427,7 @@ export class LoyaltyService {
       }
 
       return response.data.badges;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('Failed to get user badges:', error);
       return [];
     }

@@ -31,7 +31,7 @@ export class WalletService {
   }
 
   async addFunds(data: WalletTransactionData): Promise<{
-    transaction: any;
+    transaction: Record<string, unknown>;
     newBalance: number;
   }> {
     if (data.type !== 'CREDIT' && data.type !== 'REFUND') {
@@ -94,7 +94,7 @@ export class WalletService {
   }
 
   async deductFunds(data: WalletTransactionData): Promise<{
-    transaction: any;
+    transaction: Record<string, unknown>;
     newBalance: number;
   }> {
     if (data.type !== 'DEBIT') {
@@ -171,13 +171,13 @@ export class WalletService {
       endDate?: Date;
     } = {}
   ): Promise<{
-    transactions: any[];
+    transactions: Record<string, unknown>[];
     total: number;
     balance: number;
   }> {
     const { limit = 50, offset = 0, type, startDate, endDate } = options;
 
-    const where: any = { userId };
+    const where: Record<string, unknown> = { userId };
 
     if (type) {
       where.type = type;
@@ -222,8 +222,8 @@ export class WalletService {
   }
 
   async transferFunds(fromUserId: string, toUserId: string, amount: number, reason: string): Promise<{
-    fromTransaction: any;
-    toTransaction: any;
+    fromTransaction: Record<string, unknown>;
+    toTransaction: Record<string, unknown>;
   }> {
     if (amount <= 0) {
       throw new Error('Amount must be positive');
@@ -271,7 +271,7 @@ export class WalletService {
   ): Promise<{
     appliedAmount: number;
     remainingBalance: number;
-    transaction?: any;
+    transaction?: Record<string, unknown>;
   }> {
     return await prisma.$transaction(async (tx) => {
       const [user, booking] = await Promise.all([
@@ -346,7 +346,7 @@ export class WalletService {
   async handleDepositForfeiture(bookingId: string): Promise<{
     platformAmount: number;
     specialistAmount: number;
-    specialistTransaction?: any;
+    specialistTransaction?: Record<string, unknown>;
   }> {
     return await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
@@ -409,7 +409,7 @@ export class WalletService {
   // Handle deposit refund (full refund to customer)
   async handleDepositRefund(bookingId: string, reason: string): Promise<{
     refundAmount: number;
-    transaction: any;
+    transaction: Record<string, unknown>;
   }> {
     return await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({

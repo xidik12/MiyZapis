@@ -125,7 +125,7 @@ const messagesSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     });
-    builder.addCase(fetchConversationsAsync.fulfilled, (state, action: any) => {
+    builder.addCase(fetchConversationsAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.isLoading = false;
       const p = action.payload;
       const raw = p.items || p.conversations || (Array.isArray(p) ? p : []);
@@ -140,7 +140,7 @@ const messagesSlice = createSlice({
     builder.addCase(fetchConversationAsync.pending, (state) => {
       state.isLoadingMessages = true;
     });
-    builder.addCase(fetchConversationAsync.fulfilled, (state, action: any) => {
+    builder.addCase(fetchConversationAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.isLoadingMessages = false;
       const rawConv = action.payload.conversation || action.payload;
       state.activeConversation = rawConv;
@@ -154,7 +154,7 @@ const messagesSlice = createSlice({
     builder.addCase(sendMessageAsync.pending, (state) => {
       state.isSending = true;
     });
-    builder.addCase(sendMessageAsync.fulfilled, (state, action: any) => {
+    builder.addCase(sendMessageAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.isSending = false;
       state.messages.push(action.payload);
       const conv = state.conversations.find(c => c.id === action.payload.conversationId);
@@ -168,7 +168,7 @@ const messagesSlice = createSlice({
       state.error = action.error.message || 'Failed to send message';
     });
 
-    builder.addCase(createConversationAsync.fulfilled, (state, action: any) => {
+    builder.addCase(createConversationAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.conversations.unshift(action.payload);
       state.activeConversation = action.payload;
     });
@@ -188,7 +188,7 @@ const messagesSlice = createSlice({
       });
     });
 
-    builder.addCase(fetchMessageUnreadCountAsync.fulfilled, (state, action: any) => {
+    builder.addCase(fetchMessageUnreadCountAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.unreadCount = action.payload.count ?? action.payload ?? 0;
     });
   },

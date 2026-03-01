@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { prisma } from './database';
 import { redis } from './redis';
@@ -329,10 +329,11 @@ export const API_CONFIG: APIConfig = {
   security: {
     cors: {
       origins: [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'https://your-domain.com',
-        'https://your-miniapp-domain.com'
+        // Configured via CORS_ORIGIN environment variable
+        // Defaults: http://localhost:3000 (dev), https://miyzapis.com (prod)
+        'https://miyzapis.com',
+        'https://www.miyzapis.com',
+        'https://miyzapis-frontend-production.up.railway.app'
       ],
       credentials: true
     },
@@ -362,7 +363,7 @@ export const API_CONFIG: APIConfig = {
 };
 
 // Platform detection utility
-export function detectPlatform(req: any): keyof APIConfig['platforms'] {
+export function detectPlatform(req: Request): keyof APIConfig['platforms'] {
   const userAgent = req.get('User-Agent') || '';
   const telegramWebApp = req.get('X-Telegram-Web-App');
   const telegramBot = req.get('X-Telegram-Bot');
@@ -505,7 +506,7 @@ export function configureHealthCheck(app: Express) {
 }
 
 // Request logging middleware
-export function requestLogger(req: any, res: any, next: any) {
+export function requestLogger(req: Request & { user?: { id: string } }, res: Response, next: NextFunction) {
   const start = Date.now();
   const platform = detectPlatform(req);
   
@@ -541,7 +542,7 @@ export function requestLogger(req: any, res: any, next: any) {
 }
 
 // Analytics logging function
-async function logAPIUsage(logData: any) {
+async function logAPIUsage(logData: { userId?: string; url: string; method: string; platform: string; statusCode: number; duration: number; ip: string }) {
   try {
     await prisma.auditLog.create({
       data: {

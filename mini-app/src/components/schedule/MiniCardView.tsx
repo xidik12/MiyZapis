@@ -18,7 +18,7 @@ interface MiniCardViewProps {
   schedule: DaySchedule[];
   onDayClick: (dayIndex: number) => void;
   locale: string;
-  bookings?: any[];
+  bookings?: Record<string, unknown>[];
 }
 
 const DAY_SHORT: Record<string, string[]> = {
@@ -40,7 +40,7 @@ export const MiniCardView: React.FC<MiniCardViewProps> = ({ schedule, onDayClick
 
   // Group bookings by weekday
   const bookingsByDay: Record<number, any[]> = {};
-  bookings.forEach((b: any) => {
+  bookings.forEach((b: Record<string, unknown>) => {
     const dateStr = b.scheduledAt || b.startTime || b.createdAt;
     if (!dateStr) return;
     try {

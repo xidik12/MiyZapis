@@ -87,7 +87,7 @@ export function createCacheMiddleware(options: CacheOptions = {}) {
 
       // Override res.json to cache the response
       const originalJson = res.json.bind(res);
-      res.json = function(data: any) {
+      res.json = function(data: unknown) {
         // Only cache successful responses
         if (res.statusCode >= 200 && res.statusCode < 300) {
           setCache(cacheKey, data, ttl, tags).catch(err => {
@@ -162,7 +162,7 @@ async function getFromCache(key: string): Promise<any | null> {
 /**
  * Set data in cache
  */
-async function setCache(key: string, data: any, ttl: number, tags: string[] = []): Promise<void> {
+async function setCache(key: string, data: unknown, ttl: number, tags: string[] = []): Promise<void> {
   try {
     const serialized = JSON.stringify(data);
     
@@ -264,9 +264,9 @@ export async function clearAllCache(): Promise<void> {
  * Get cache statistics
  */
 export async function getCacheStats(): Promise<{
-  info: any;
+  info: string | null;
   keyCount: number;
-  memoryUsage: any;
+  memoryUsage: string | null;
 }> {
   try {
     const [info, keyCount] = await Promise.all([
@@ -336,7 +336,7 @@ export const cacheStatic = createCacheMiddleware(cacheConfigs.static);
 /**
  * Wrapper for caching function results
  */
-export function memoize<T extends (...args: any[]) => Promise<any>>(
+export function memoize<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   options: {
     ttl?: number;

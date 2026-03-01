@@ -24,7 +24,7 @@ import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon
 ;
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   return currency;
@@ -439,13 +439,13 @@ Repeat Clients: ${dashboardData.stats.repeatClients || 0}
 
 RECENT BOOKINGS
 ===============
-${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: any) => 
+${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: Record<string, unknown>) => 
   `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
 ).join('\n') : 'No recent bookings'}
 
 UPCOMING APPOINTMENTS
 ====================
-${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: any) => 
+${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: Record<string, unknown>) => 
   `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
 ).join('\n') : 'No upcoming appointments'}
       `;
@@ -466,7 +466,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
     }
   };
 
-  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
+  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
     <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex-1">

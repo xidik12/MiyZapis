@@ -1,16 +1,16 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, RequestHandler } from 'express';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { WaitlistService } from '@/services/waitlist';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes } from '@/types';
+import { ErrorCodes, AuthenticatedRequest } from '@/types';
 
 const router = Router();
 
 // POST /api/waitlist — Join the waitlist
-router.post('/', authenticateToken as any, async (req: Request, res: Response): Promise<void> => {
+router.post('/', authenticateToken as RequestHandler, async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json(
         createErrorResponse(
@@ -50,40 +50,41 @@ router.post('/', authenticateToken as any, async (req: Request, res: Response): 
         message: 'Successfully joined the waitlist',
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Join waitlist error:', error);
 
-    if (error.message === 'USER_NOT_FOUND') {
+    if (err.message === 'USER_NOT_FOUND') {
       res.status(404).json(
         createErrorResponse('USER_NOT_FOUND', 'User not found', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'SERVICE_NOT_FOUND') {
+    if (err.message === 'SERVICE_NOT_FOUND') {
       res.status(404).json(
         createErrorResponse('SERVICE_NOT_FOUND', 'Service not found', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'SERVICE_NOT_ACTIVE') {
+    if (err.message === 'SERVICE_NOT_ACTIVE') {
       res.status(400).json(
         createErrorResponse('SERVICE_NOT_ACTIVE', 'Service is not active', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'CANNOT_JOIN_OWN_WAITLIST') {
+    if (err.message === 'CANNOT_JOIN_OWN_WAITLIST') {
       res.status(400).json(
         createErrorResponse('CANNOT_JOIN_OWN_WAITLIST', 'You cannot join the waitlist for your own service', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'ALREADY_ON_WAITLIST') {
+    if (err.message === 'ALREADY_ON_WAITLIST') {
       res.status(409).json(
         createErrorResponse('ALREADY_ON_WAITLIST', 'You are already on the waitlist for this date', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'DATE_MUST_BE_FUTURE') {
+    if (err.message === 'DATE_MUST_BE_FUTURE') {
       res.status(400).json(
         createErrorResponse('DATE_MUST_BE_FUTURE', 'Preferred date must be in the future', req.headers['x-request-id'] as string)
       );
@@ -97,9 +98,9 @@ router.post('/', authenticateToken as any, async (req: Request, res: Response): 
 });
 
 // GET /api/waitlist/my — Get current user's waitlist entries
-router.get('/my', authenticateToken as any, async (req: Request, res: Response): Promise<void> => {
+router.get('/my', authenticateToken as RequestHandler, async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json(
         createErrorResponse(
@@ -119,7 +120,7 @@ router.get('/my', authenticateToken as any, async (req: Request, res: Response):
         total: entries.length,
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Get user waitlist error:', error);
     res.status(500).json(
       createErrorResponse('INTERNAL_ERROR', 'Failed to get waitlist entries', req.headers['x-request-id'] as string)
@@ -128,9 +129,9 @@ router.get('/my', authenticateToken as any, async (req: Request, res: Response):
 });
 
 // GET /api/waitlist/specialist — Get specialist's waitlist entries
-router.get('/specialist', authenticateToken as any, async (req: Request, res: Response): Promise<void> => {
+router.get('/specialist', authenticateToken as RequestHandler, async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json(
         createErrorResponse(
@@ -158,7 +159,7 @@ router.get('/specialist', authenticateToken as any, async (req: Request, res: Re
     res.json(
       createSuccessResponse(result)
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Get specialist waitlist error:', error);
     res.status(500).json(
       createErrorResponse('INTERNAL_ERROR', 'Failed to get specialist waitlist', req.headers['x-request-id'] as string)
@@ -167,9 +168,9 @@ router.get('/specialist', authenticateToken as any, async (req: Request, res: Re
 });
 
 // DELETE /api/waitlist/:id — Leave/cancel a waitlist entry
-router.delete('/:id', authenticateToken as any, async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', authenticateToken as RequestHandler, async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json(
         createErrorResponse(
@@ -191,28 +192,29 @@ router.delete('/:id', authenticateToken as any, async (req: Request, res: Respon
         message: 'Successfully left the waitlist',
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Leave waitlist error:', error);
 
-    if (error.message === 'WAITLIST_ENTRY_NOT_FOUND') {
+    if (err.message === 'WAITLIST_ENTRY_NOT_FOUND') {
       res.status(404).json(
         createErrorResponse('WAITLIST_ENTRY_NOT_FOUND', 'Waitlist entry not found', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'UNAUTHORIZED_WAITLIST_ACTION') {
+    if (err.message === 'UNAUTHORIZED_WAITLIST_ACTION') {
       res.status(403).json(
         createErrorResponse('UNAUTHORIZED', 'You are not authorized to cancel this waitlist entry', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'ALREADY_CANCELLED') {
+    if (err.message === 'ALREADY_CANCELLED') {
       res.status(400).json(
         createErrorResponse('ALREADY_CANCELLED', 'This waitlist entry is already cancelled', req.headers['x-request-id'] as string)
       );
       return;
     }
-    if (error.message === 'ALREADY_BOOKED') {
+    if (err.message === 'ALREADY_BOOKED') {
       res.status(400).json(
         createErrorResponse('ALREADY_BOOKED', 'This waitlist entry has already been converted to a booking', req.headers['x-request-id'] as string)
       );

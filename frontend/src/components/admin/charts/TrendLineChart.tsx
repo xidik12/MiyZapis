@@ -14,7 +14,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export interface TrendLineChartProps {
   data: Array<{
     date: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }>;
   dataKeys: Array<{
     key: string;

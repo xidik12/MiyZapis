@@ -28,7 +28,7 @@ interface DerivedClient {
   totalSpent: number;
   lastVisitDate: string;
   isActive: boolean;
-  bookings: any[];
+  bookings: Record<string, unknown>[];
 }
 
 export const ClientsPage: React.FC = () => {
@@ -52,7 +52,7 @@ export const ClientsPage: React.FC = () => {
       // Group bookings by customerId to derive unique clients
       const clientMap = new Map<string, DerivedClient>();
 
-      bookings.forEach((booking: any) => {
+      bookings.forEach((booking: Record<string, unknown>) => {
         const customerId = booking.customerId || booking.customer?.id;
         if (!customerId) return;
 
@@ -86,7 +86,7 @@ export const ClientsPage: React.FC = () => {
       clientMap.forEach((client) => {
         client.isActive = differenceInDays(now, parseISO(client.lastVisitDate)) <= 30;
         // Sort bookings by date desc
-        client.bookings.sort((a: any, b: any) =>
+        client.bookings.sort((a: Record<string, unknown>, b: Record<string, unknown>) =>
           new Date(b.scheduledAt || b.createdAt).getTime() - new Date(a.scheduledAt || a.createdAt).getTime()
         );
       });
@@ -329,7 +329,7 @@ export const ClientsPage: React.FC = () => {
 
               {selectedClient.bookings.length > 0 ? (
                 <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {selectedClient.bookings.map((booking: any) => (
+                  {selectedClient.bookings.map((booking: Record<string, unknown>) => (
                     <div
                       key={booking.id}
                       className="p-3 bg-bg-secondary/50 rounded-xl border border-white/5"

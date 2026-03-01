@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { UserService } from '@/services/user';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class UserController {
@@ -18,8 +18,8 @@ export class UserController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -46,10 +46,11 @@ export class UserController {
           user: updatedUser,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update profile controller error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -60,7 +61,7 @@ export class UserController {
         return;
       }
 
-      if (error.message === 'EMAIL_ALREADY_EXISTS') {
+      if (err.message === 'EMAIL_ALREADY_EXISTS') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.DUPLICATE_RESOURCE,
@@ -105,10 +106,11 @@ export class UserController {
           user,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get profile controller error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -162,7 +164,7 @@ export class UserController {
           req.headers['x-request-id'] as string
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Upload avatar controller error:', error);
 
       res.status(500).json(
@@ -196,10 +198,11 @@ export class UserController {
           message: 'Account deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Delete account controller error:', error);
 
-      if (error.message === 'USER_NOT_FOUND') {
+      if (err.message === 'USER_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -210,7 +213,7 @@ export class UserController {
         return;
       }
 
-      if (error.message === 'ACTIVE_BOOKINGS_EXIST') {
+      if (err.message === 'ACTIVE_BOOKINGS_EXIST') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -252,7 +255,7 @@ export class UserController {
           preferences,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get notification preferences controller error:', error);
 
       res.status(500).json(
@@ -277,8 +280,8 @@ export class UserController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -304,7 +307,7 @@ export class UserController {
           preferences,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Update notification preferences controller error:', error);
 
       res.status(500).json(
@@ -336,7 +339,7 @@ export class UserController {
       res.json(
         createSuccessResponse(loyaltyData)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get loyalty points controller error:', error);
 
       res.status(500).json(

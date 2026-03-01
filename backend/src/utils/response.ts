@@ -1,4 +1,5 @@
 import { ApiResponse, ApiError, ResponseMeta, PaginationMeta } from '@/types';
+import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
 // Create success response
@@ -79,23 +80,23 @@ export const calculatePaginationOffset = (
 };
 
 // Format validation errors
-export const formatValidationErrors = (errors: any[]): Array<{
+export const formatValidationErrors = (errors: Array<{ path?: string | string[]; field?: string; message?: string; code?: string }>): Array<{
   field?: string;
   message: string;
   code?: string;
 }> => {
   return errors.map(error => ({
     field: Array.isArray(error.path) ? error.path.join('.') : error.path || error.field,
-    message: error.message,
+    message: error.message || 'Validation error',
     code: error.code,
   }));
 };
 
 // Express response helpers
-export const successResponse = (res: any, data: any, message?: string, statusCode: number = 200) => {
+export const successResponse = (res: Response, data: unknown, message?: string, statusCode: number = 200) => {
   return res.status(statusCode).json(createSuccessResponse(data, message ? { message } : undefined));
 };
 
-export const errorResponse = (res: any, message: string, statusCode: number = 500, code?: string) => {
+export const errorResponse = (res: Response, message: string, statusCode: number = 500, code?: string) => {
   return res.status(statusCode).json(createErrorResponse(code || 'ERROR', message));
 };

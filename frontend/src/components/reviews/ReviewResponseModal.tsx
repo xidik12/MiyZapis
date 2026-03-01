@@ -39,9 +39,10 @@ export const ReviewResponseModal: React.FC<ReviewResponseModalProps> = ({
       setResponseText('');
       onClose();
       toast.success(t('reviews.response.success') || 'Response posted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[ReviewResponseModal] Error submitting response:', error);
-      toast.error(error.message || t('reviews.response.error') || 'Failed to post response');
+      toast.error(err.message || t('reviews.response.error') || 'Failed to post response');
     } finally {
       setIsSubmitting(false);
     }

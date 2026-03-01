@@ -1,10 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { RewardsService, CreateRewardData, UpdateRewardData, RedeemRewardData } from '../services/rewards';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { AuthenticatedRequest } from '@/types';
 import { logger } from '../utils/logger';
 import { z } from 'zod';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -35,7 +36,7 @@ const redeemRewardSchema = z.object({
 });
 
 // Helper function to check if user is specialist
-const requireSpecialist = async (req: Request, res: Response, next: any) => {
+const requireSpecialist = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as AuthenticatedRequest).user;
     if (!user || user.userType !== 'SPECIALIST') {
@@ -107,10 +108,10 @@ router.get('/specialist', authenticateToken, requireSpecialist, async (req: Requ
     return res.json(createSuccessResponse({ rewards }));
   } catch (error) {
     logger.error('Failed to get specialist rewards', {
-      errorName: (error as any)?.name,
-      errorMessage: (error as any)?.message,
-      errorCode: (error as any)?.code,
-      errorStack: (error as any)?.stack,
+      errorName: (error as Error)?.name,
+      errorMessage: (error as Error)?.message,
+      errorCode: (error as NodeJS.ErrnoException)?.code,
+      errorStack: (error as Error)?.stack,
     });
     return res.status(500).json(createErrorResponse('INTERNAL_SERVER_ERROR', 'Failed to get rewards'));
   }
@@ -120,7 +121,7 @@ router.get('/specialist', authenticateToken, requireSpecialist, async (req: Requ
  * GET /api/v1/rewards/specialist/:specialistId
  * Get rewards for specific specialist (public)
  */
-router.get('/specialist/:specialistId', async (req: Request, res: Response) => {
+router.get('/specialist/:specialistId', cacheMiddleware(300, 'specialist-rewards'), async (req: Request, res: Response) => {
   try {
     const { specialistId } = req.params;
     logger.info('Fetching public specialist rewards', { specialistId });
@@ -129,10 +130,10 @@ router.get('/specialist/:specialistId', async (req: Request, res: Response) => {
     return res.json(createSuccessResponse({ rewards }));
   } catch (error) {
     logger.error('Failed to get public specialist rewards', {
-      errorName: (error as any)?.name,
-      errorMessage: (error as any)?.message,
-      errorCode: (error as any)?.code,
-      errorStack: (error as any)?.stack,
+      errorName: (error as Error)?.name,
+      errorMessage: (error as Error)?.message,
+      errorCode: (error as NodeJS.ErrnoException)?.code,
+      errorStack: (error as Error)?.stack,
     });
     return res.status(500).json(createErrorResponse('INTERNAL_SERVER_ERROR', 'Failed to get rewards'));
   }
@@ -236,10 +237,10 @@ router.get('/available', authenticateToken, async (req: Request, res: Response) 
     return res.json(createSuccessResponse({ rewards }));
   } catch (error) {
     logger.error('Failed to get available rewards', {
-      errorName: (error as any)?.name,
-      errorMessage: (error as any)?.message,
-      errorCode: (error as any)?.code,
-      errorStack: (error as any)?.stack,
+      errorName: (error as Error)?.name,
+      errorMessage: (error as Error)?.message,
+      errorCode: (error as NodeJS.ErrnoException)?.code,
+      errorStack: (error as Error)?.stack,
     });
     return res.status(500).json(createErrorResponse('INTERNAL_SERVER_ERROR', 'Failed to get available rewards'));
   }
@@ -313,10 +314,10 @@ router.get('/redemptions', authenticateToken, async (req: Request, res: Response
     return res.json(createSuccessResponse({ redemptions }));
   } catch (error) {
     logger.error('Failed to get user redemptions', {
-      errorName: (error as any)?.name,
-      errorMessage: (error as any)?.message,
-      errorCode: (error as any)?.code,
-      errorStack: (error as any)?.stack,
+      errorName: (error as Error)?.name,
+      errorMessage: (error as Error)?.message,
+      errorCode: (error as NodeJS.ErrnoException)?.code,
+      errorStack: (error as Error)?.stack,
     });
     return res.status(500).json(createErrorResponse('INTERNAL_SERVER_ERROR', 'Failed to get redemptions'));
   }
@@ -326,7 +327,7 @@ router.get('/redemptions', authenticateToken, async (req: Request, res: Response
  * GET /api/v1/rewards/:rewardId
  * Get a specific reward by ID
  */
-router.get('/:rewardId', async (req: Request, res: Response) => {
+router.get('/:rewardId', cacheMiddleware(300, 'reward'), async (req: Request, res: Response) => {
   try {
     const { rewardId } = req.params;
     const reward = await RewardsService.getRewardById(rewardId);

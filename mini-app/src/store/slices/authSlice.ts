@@ -11,7 +11,7 @@ export interface User {
   avatar?: string;
   role: 'customer' | 'specialist' | 'admin';
   isEmailVerified: boolean;
-  preferences?: any;
+  preferences?: Record<string, unknown>;
   telegramId?: string;
 }
 
@@ -58,7 +58,7 @@ export const registerAsync = createAsyncThunk(
 
 export const telegramAuthAsync = createAsyncThunk(
   'auth/telegramAuth',
-  async (telegramData: any) => {
+  async (telegramData: Record<string, unknown>) => {
     const response = await apiService.telegramAuth(telegramData) as any;
     telegramAuthService.setTokens(response.token, response.refreshToken);
     return response;
@@ -82,7 +82,7 @@ export const updateProfileAsync = createAsyncThunk(
     lastName?: string;
     phone?: string;
     avatar?: string;
-    preferences?: any;
+    preferences?: Record<string, unknown>;
   }) => {
     return await apiService.updateProfile(updates);
   }

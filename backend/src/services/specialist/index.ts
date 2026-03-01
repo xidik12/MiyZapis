@@ -575,7 +575,7 @@ export class SpecialistService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         user: {
           isActive: true,
         },
@@ -606,7 +606,7 @@ export class SpecialistService {
         where.rating = { gte: minRating };
       }
 
-      let orderBy: any = {};
+      let orderBy: Record<string, string> = {};
       switch (sortBy) {
         case 'rating':
           orderBy = [
@@ -712,16 +712,16 @@ export class SpecialistService {
     totalRevenue: number;
     averageRating: number;
     responseTime: number;
-    recentBookings: any[];
+    recentBookings: Record<string, unknown>[];
     // Enhanced analytics
     averageMonthlyRevenue: number;
     monthlyBookings: number;
     completionRate: number;
-    profileViews: number;
+    profileViews: number | null;
     conversionRate: number;
-    revenueTrend: any[];
-    servicePerformance: any[];
-    revenueByService: any[];
+    revenueTrend: Record<string, unknown>[];
+    servicePerformance: Record<string, unknown>[];
+    revenueByService: Record<string, unknown>[];
     reviewCount: number;
     monthlyGrowth: number;
     averageBookingValue: number;
@@ -736,7 +736,7 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: specialist.userId,
       };
 
@@ -1045,7 +1045,7 @@ export class SpecialistService {
         averageMonthlyRevenue,
         monthlyBookings,
         completionRate,
-        profileViews: 0, // TODO: Implement profile view tracking
+        profileViews: null, // Profile view tracking not yet implemented
         conversionRate,
         revenueTrend,
         servicePerformance,

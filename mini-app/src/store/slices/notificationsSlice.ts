@@ -93,7 +93,7 @@ const notificationsSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     });
-    builder.addCase(fetchNotificationsAsync.fulfilled, (state, action: any) => {
+    builder.addCase(fetchNotificationsAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.isLoading = false;
       const p = action.payload;
       state.notifications = p.items || p.notifications || (Array.isArray(p) ? p : []);
@@ -114,11 +114,11 @@ const notificationsSlice = createSlice({
       state.error = action.error.message || 'Failed to fetch notifications';
     });
 
-    builder.addCase(fetchUnreadCountAsync.fulfilled, (state, action: any) => {
+    builder.addCase(fetchUnreadCountAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       state.unreadCount = action.payload.count ?? action.payload ?? 0;
     });
 
-    builder.addCase(markNotificationReadAsync.fulfilled, (state, action: any) => {
+    builder.addCase(markNotificationReadAsync.fulfilled, (state, action: { payload: Record<string, unknown> }) => {
       const id = action.meta.arg;
       const notif = state.notifications.find(n => n.id === id);
       if (notif && !notif.isRead) {

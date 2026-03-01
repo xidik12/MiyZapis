@@ -253,9 +253,10 @@ export class S3Service {
 
       try {
         await this.s3Client.send(command);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         // If we get NoSuchKey error, it means we can connect to the bucket
-        if (error.name === 'NoSuchKey') {
+        if (err.name === 'NoSuchKey') {
           logger.debug('✅ S3 connection test successful');
           return true;
         }

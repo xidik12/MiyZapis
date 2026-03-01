@@ -14,7 +14,7 @@ if (!config.telegram.botToken) {
 const bot = config.telegram.botToken ? new Telegraf(config.telegram.botToken) : null;
 
 // Helper: safely edit or send a new message (editMessageText fails if message was already edited/deleted)
-async function safeEdit(ctx: any, text: string, extra?: any) {
+async function safeEdit(ctx: unknown, text: string, extra?: Record<string, unknown>) {
   try {
     await ctx.editMessageText(text, extra);
   } catch {
@@ -27,7 +27,7 @@ if (bot) {
   // ── /start command ──────────────────────────────────────────────────
   bot.start(async (ctx) => {
     const user = ctx.from;
-    const payload = (ctx as any).startPayload || ctx.message?.text?.split(' ')[1] || '';
+    const payload = (ctx as { startPayload?: string }).startPayload || ctx.message?.text?.split(' ')[1] || '';
 
     logger.info('Bot /start received', { telegramId: user.id, payload });
 
@@ -176,7 +176,7 @@ if (bot) {
   });
 
   // ── Link code handler (shared by /start link_CODE and text messages) ──
-  async function handleLinkCode(ctx: any, code: string) {
+  async function handleLinkCode(ctx: unknown, code: string) {
     const telegramId = ctx.from.id.toString();
 
     try {
@@ -488,10 +488,10 @@ if (bot) {
   });
 
   // ── Global error handler ────────────────────────────────────────────
-  bot.catch((err: any, ctx: any) => {
+  bot.catch((err: unknown, ctx: { reply?: (text: string) => Promise<unknown> }) => {
     logger.error('Bot unhandled error:', err);
     try {
-      ctx.reply('Something went wrong. Try /start.');
+      ctx.reply?.('Something went wrong. Try /start.');
     } catch {}
   });
 

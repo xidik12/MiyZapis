@@ -11,7 +11,7 @@ interface TelegramLoginProps {
 
 declare global {
   interface Window {
-    onTelegramAuth?: (user: any) => void;
+    onTelegramAuth?: (user: Record<string, unknown>) => void;
   }
 }
 
@@ -25,7 +25,7 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
   const widgetRef = useRef<HTMLDivElement>(null);
   const scriptLoaded = useRef(false);
 
-  const handleAuth = useCallback(async (user: any) => {
+  const handleAuth = useCallback(async (user: Record<string, unknown>) => {
     setIsLoading(true);
     try {
       // Only include optional fields if they have values — Telegram
@@ -43,9 +43,10 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
 
       await dispatch(telegramLogin(telegramData)).unwrap();
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Telegram Auth Error:', error);
-      onError?.(error.message || 'Telegram authentication failed');
+      onError?.(err.message || 'Telegram authentication failed');
     } finally {
       setIsLoading(false);
     }

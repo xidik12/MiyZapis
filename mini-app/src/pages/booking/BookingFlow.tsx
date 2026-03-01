@@ -308,7 +308,7 @@ export const BookingFlow: React.FC = () => {
         await showAlert(t(bookingFlowStrings, 'bookingSuccess', locale));
         hapticFeedback.notificationSuccess();
         navigate('/bookings');
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorMsg = error?.message || error?.response?.data?.message || '';
         if (errorMsg.includes('CANNOT_BOOK_OWN_SERVICE')) {
           await showAlert(t(specialistProfileStrings, 'cannotBookOwn', locale));

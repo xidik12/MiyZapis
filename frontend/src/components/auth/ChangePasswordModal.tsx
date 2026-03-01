@@ -60,9 +60,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Change password failed:', error);
-      toast.error(error.message || t('auth.passwordChangeFailed') || 'Failed to change password. Please try again.');
+      toast.error(err.message || t('auth.passwordChangeFailed') || 'Failed to change password. Please try again.');
     } finally {
       setIsLoading(false);
     }

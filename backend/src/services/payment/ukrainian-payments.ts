@@ -268,7 +268,7 @@ export class UkrainianPaymentService {
     return crypto.createHash('md5').update(signatureString).digest('hex');
   }
 
-  private static generateWayForPaySignature(data: any): string {
+  private static generateWayForPaySignature(data: unknown): string {
     const signatureString = [
       data.merchantAccount,
       data.merchantDomainName,
@@ -325,7 +325,7 @@ export class UkrainianPaymentService {
     return expectedSignature === receivedSignature;
   }
 
-  static verifyWayForPaySignature(data: any, receivedSignature: string): boolean {
+  static verifyWayForPaySignature(data: Record<string, unknown>, receivedSignature: string): boolean {
     const expectedSignature = this.generateWayForPaySignature(data);
     return expectedSignature === receivedSignature;
   }

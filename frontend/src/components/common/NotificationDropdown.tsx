@@ -65,7 +65,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     }, 300);
   };
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: Record<string, unknown>) => {
     if (!notification.isRead) {
       handleMarkAsRead(notification.id);
     }

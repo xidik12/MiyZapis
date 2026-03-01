@@ -193,7 +193,7 @@ export class ServiceService {
       }
 
       // Update service
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updatedAt: new Date(),
       };
 
@@ -459,7 +459,7 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: specialist.id,
       };
 
@@ -529,7 +529,7 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         specialistId: specialistId,
         isDeleted: false, // Never include deleted services in public views
       };
@@ -600,7 +600,7 @@ export class ServiceService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         isActive: true,
         isDeleted: false,
         specialist: {
@@ -635,7 +635,7 @@ export class ServiceService {
         if (maxPrice !== undefined) where.basePrice.lte = maxPrice;
       }
 
-      let orderBy: any = {};
+      let orderBy: Record<string, string> = {};
       switch (sortBy) {
         case 'price':
           orderBy = { basePrice: 'asc' };
@@ -772,7 +772,7 @@ export class ServiceService {
       );
 
       // Get services from nearby specialists
-      const where: any = {
+      const where: Record<string, unknown> = {
         isActive: true,
         isDeleted: false,
         specialistId: {
@@ -1139,7 +1139,7 @@ export class ServiceService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         isActive: true,
         isDeleted: false,
         loyaltyPointsEnabled: true,

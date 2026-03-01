@@ -87,7 +87,7 @@ export const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     apiService.getNotificationPreferences()
-      .then((data: any) => { if (data) setNotifPrefs(data); })
+      .then((data: unknown) => { if (data) setNotifPrefs(data); })
       .catch(() => {});
   }, []);
 

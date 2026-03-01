@@ -16,14 +16,14 @@ const SENSITIVE_FIELDS = new Set([
 ]);
 
 // Redact sensitive fields from an object (shallow + nested)
-const redactSensitiveFields = (obj: any): any => {
+const redactSensitiveFields = (obj: Record<string, unknown>): Record<string, unknown> => {
   if (!obj || typeof obj !== 'object') return obj;
-  const redacted: any = Array.isArray(obj) ? [] : {};
+  const redacted: Record<string, unknown> = Array.isArray(obj) ? [] : {};
   for (const key of Object.keys(obj)) {
     if (SENSITIVE_FIELDS.has(key)) {
       redacted[key] = '[REDACTED]';
     } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-      redacted[key] = redactSensitiveFields(obj[key]);
+      redacted[key] = redactSensitiveFields(obj[key] as Record<string, unknown>);
     } else {
       redacted[key] = obj[key];
     }
@@ -32,7 +32,7 @@ const redactSensitiveFields = (obj: any): any => {
 };
 
 // Redact authorization header
-const redactHeaders = (headers: any): any => {
+const redactHeaders = (headers: Record<string, unknown>): Record<string, unknown> => {
   if (!headers) return headers;
   const redacted = { ...headers };
   if (redacted.authorization) redacted.authorization = '[REDACTED]';
@@ -42,10 +42,10 @@ const redactHeaders = (headers: any): any => {
 
 // Global error handler
 export const errorHandler = (
-  error: any,
+  error: Error & { type?: string },
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   logger.error('Unhandled error:', {
     error: {
@@ -56,13 +56,13 @@ export const errorHandler = (
     request: {
       method: req.method,
       url: req.originalUrl,
-      headers: redactHeaders(req.headers),
-      body: redactSensitiveFields(req.body),
+      headers: redactHeaders(req.headers as unknown as Record<string, unknown>),
+      body: redactSensitiveFields(req.body as Record<string, unknown>),
       params: req.params,
       query: req.query,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
-      userId: (req as any).user?.id,
+      userId: (req as Request & { user?: { id: string } }).user?.id,
     },
   });
 
@@ -197,7 +197,7 @@ const handlePrismaError = (
 };
 
 // Handle Stripe errors
-const handleStripeError = (error: any, req: Request, res: Response): void => {
+const handleStripeError = (error: Error & { type?: string }, req: Request, res: Response): void => {
   switch (error.type) {
     case 'StripeCardError':
       res.status(400).json(

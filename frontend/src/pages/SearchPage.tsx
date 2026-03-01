@@ -76,7 +76,7 @@ const SearchPage: React.FC = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isFilterTrayOpen, setIsFilterTrayOpen] = useState(false);
   // Saved filter presets
-  const [presets, setPresets] = useState<Array<{ name: string; data: any }>>(() => {
+  const [presets, setPresets] = useState<Array<{ name: string; data: Record<string, unknown> }>>(() => {
     try {
       const raw = localStorage.getItem('search-presets');
       return raw ? JSON.parse(raw) : [];
@@ -95,7 +95,7 @@ const SearchPage: React.FC = () => {
           { id: 'all', name: t('category.all') },
           ...(Array.isArray(categoriesData) ? categoriesData : [])
         ]);
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('Failed to fetch categories:', err);
         // Fallback to default categories
         setCategories([
@@ -155,7 +155,7 @@ const SearchPage: React.FC = () => {
           sortOrder: 'desc' as const, // Default to descending (best first)
           distance: selectedDistance > 0 ? selectedDistance : undefined,
         };
-        let data: any;
+        let data: unknown;
         if (sortBy === 'distance' && typeof navigator !== 'undefined' && navigator.geolocation) {
           try {
             const coords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
@@ -172,13 +172,13 @@ const SearchPage: React.FC = () => {
         }
         
         // Transform the data to match our interface based on actual backend response
-        const toMinutes = (v: any) => {
+        const toMinutes = (v: unknown) => {
           const n = Number(v);
           if (!isFinite(n) || n <= 0) return undefined;
           return n > 300 ? Math.round(n / 60000) : n;
         };
 
-        let servicesWithSpecialists = (data.services || []).map((service: any) => ({
+        let servicesWithSpecialists = (data.services || []).map((service: Record<string, unknown>) => ({
           id: service.id,
           name: service.name,
           description: service.description,
@@ -235,7 +235,7 @@ const SearchPage: React.FC = () => {
         // Users can still enable the toggle, but it won't filter until backend is ready
 
         setServices(servicesWithSpecialists);
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error('Error fetching services:', error);
         const errorMessage = error?.message || error?.toString() || 'Failed to load services';
         setError(errorMessage);
@@ -289,7 +289,7 @@ const SearchPage: React.FC = () => {
     setShowSaveInput(false);
   };
 
-  const applyPreset = (p: { name: string; data: any }) => {
+  const applyPreset = (p: { name: string; data: Record<string, unknown> }) => {
     const d = p.data || {};
     setSearchQuery(d.searchQuery ?? '');
     setSelectedCategory(d.selectedCategory ?? '');

@@ -24,7 +24,7 @@ import { errorHandler, notFoundHandler } from '@/middleware/error';
 import apiRoutes from '@/routes';
 
 // Telegram Bot (enhanced — i18n, full dashboards, webhook support)
-import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
+import { enhancedTelegramBot } from '@/services/telegram';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { initializeVapid } from '@/services/push';
@@ -51,7 +51,7 @@ app.use((req, res, next) => {
       data += chunk;
     });
     req.on('end', () => {
-      (req as any).rawBody = data;
+      (req as Request & { rawBody: string }).rawBody = data;
       try {
         req.body = JSON.parse(data);
       } catch (error) {
@@ -301,13 +301,13 @@ const io = new SocketIOServer(server, {
   transports: ['websocket', 'polling'],
 });
 
-// Import and initialize enhanced WebSocket service
-import { EnhancedWebSocketService } from '@/services/websocket/enhanced-websocket';
+// Import and initialize WebSocket service
+import { WebSocketService } from '@/services/websocket/websocket';
 import { WebSocketManager } from '@/services/websocket/websocket-manager';
 
-// Initialize enhanced WebSocket service and singleton manager
-const enhancedWebSocketService = new EnhancedWebSocketService(io);
-WebSocketManager.initialize(enhancedWebSocketService);
+// Initialize WebSocket service and singleton manager
+const webSocketService = new WebSocketService(io);
+WebSocketManager.initialize(webSocketService);
 
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
@@ -435,7 +435,7 @@ const startServer = async () => {
       });
       
       logger.info(`🚀 Server running on port ${config.port}`);
-      logger.info(`📖 API documentation: http://localhost:${config.port}/api/${config.apiVersion}`);
+      logger.info(`📖 API documentation: ${config.baseUrl}/api/${config.apiVersion}`);
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
@@ -456,8 +456,9 @@ const startServer = async () => {
             await enhancedTelegramBot.launch();
             logger.info('🤖 Enhanced Telegram bot started in polling mode');
           }
-        } catch (error: any) {
-          logger.error('Enhanced Telegram bot failed to start:', error.message);
+        } catch (error: unknown) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          logger.error('Enhanced Telegram bot failed to start:', err.message);
         }
       };
       launchEnhancedBot();
@@ -467,7 +468,7 @@ const startServer = async () => {
         startBookingReminderWorker();
         logger.info('⏰ Booking reminder worker started');
       } catch (e) {
-        logger.warn('Failed to start booking reminder worker', { error: (e as any)?.message });
+        logger.warn('Failed to start booking reminder worker', { error: (e as Error)?.message });
       }
 
       // Start subscription worker
@@ -475,7 +476,7 @@ const startServer = async () => {
         subscriptionWorker.start();
         logger.info('💳 Subscription worker started');
       } catch (e) {
-        logger.warn('Failed to start subscription worker', { error: (e as any)?.message });
+        logger.warn('Failed to start subscription worker', { error: (e as Error)?.message });
       }
     });
 

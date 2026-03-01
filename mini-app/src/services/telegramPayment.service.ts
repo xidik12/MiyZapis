@@ -26,7 +26,7 @@ export interface PaymentResult {
   data?: {
     telegramPaymentChargeId: string;
     providerPaymentChargeId: string;
-    orderInfo?: any;
+    orderInfo?: Record<string, unknown>;
     shippingOptionId?: string;
   };
   error?: string;
@@ -95,7 +95,7 @@ class TelegramPaymentService {
   /**
    * Create invoice URL via backend API
    */
-  private async createInvoiceUrl(params: any): Promise<string> {
+  private async createInvoiceUrl(params: Record<string, unknown>): Promise<string> {
     const response = await fetch(`${this.apiBaseUrl}/payments/create-invoice`, {
       method: 'POST',
       headers: {
@@ -175,7 +175,7 @@ class TelegramPaymentService {
   /**
    * Process successful payment (server-side)
    */
-  async processSuccessfulPayment(paymentData: any): Promise<boolean> {
+  async processSuccessfulPayment(paymentData: Record<string, unknown>): Promise<boolean> {
     try {
       const response = await fetch(`${this.apiBaseUrl}/payments/process-payment`, {
         method: 'POST',

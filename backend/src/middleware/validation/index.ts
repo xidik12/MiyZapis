@@ -8,7 +8,7 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
   
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map(error => ({
-      field: error.type === 'field' ? (error as any).path : error.type,
+      field: error.type === 'field' ? (error as { path?: string }).path : error.type,
       message: error.msg
     }));
     

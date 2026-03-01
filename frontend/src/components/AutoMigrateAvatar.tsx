@@ -96,14 +96,15 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
           throw new Error('Migration returned empty result');
         }
 
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         console.error('❌ Auto-migration failed:', error);
 
         setMigrationStatus({
           isChecking: false,
           isMigrating: false,
           completed: false,
-          error: error.message
+          error: err.message
         });
 
         onMigrationComplete?.(false);

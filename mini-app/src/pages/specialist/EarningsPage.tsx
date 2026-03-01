@@ -114,7 +114,7 @@ export const EarningsPage: React.FC = () => {
           : trends?.trends || trends?.months || trends?.data || trends?.entries || [];
         if (Array.isArray(entries)) {
           setMonthlyBreakdown(
-            entries.map((item: any) => ({
+            entries.map((item: unknown) => ({
               month: item.month || item.date || '',
               label: item.label || item.month || item.date || '',
               amount: Number(item.amount) || Number(item.revenue) || Number(item.earnings) || 0,

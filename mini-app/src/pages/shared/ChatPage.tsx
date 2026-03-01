@@ -46,7 +46,7 @@ export const ChatPage: React.FC = () => {
 
   // Subscribe to real-time messages
   useEffect(() => {
-    const handleNewMessage = (data: any) => {
+    const handleNewMessage = (data: unknown) => {
       if (data.conversationId === conversationId) {
         dispatch(addMessage(data));
         if (conversationId) {

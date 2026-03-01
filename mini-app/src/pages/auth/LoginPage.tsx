@@ -19,7 +19,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 /** Map backend userType to role for mini-app compatibility */
-function normalizeUser(user: any): any {
+function normalizeUser(user: Record<string, unknown>): Record<string, unknown> {
   if (user && !user.role && user.userType) {
     return { ...user, role: user.userType.toLowerCase() };
   }
@@ -115,7 +115,7 @@ export const LoginPage: React.FC = () => {
     return () => {};
   }, [GOOGLE_CLIENT_ID]);
 
-  const handleGoogleResponse = useCallback(async (response: any) => {
+  const handleGoogleResponse = useCallback(async (response: Record<string, unknown>) => {
     if (!response?.credential) return;
     setGoogleLoading(true);
 

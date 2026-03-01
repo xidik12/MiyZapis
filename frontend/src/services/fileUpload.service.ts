@@ -53,14 +53,15 @@ export class FileUploadService {
 
       console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
       return response.data[0]; // Return the first uploaded file
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
         apiError: error.apiError,
-        response: error.response?.data,
-        message: error.message
+        response: err.response?.data,
+        message: err.message
       });
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload file';
       throw new Error(errorMessage);
     }
   }
@@ -70,8 +71,9 @@ export class FileUploadService {
     try {
       const uploadPromises = files.map(file => this.uploadFile(file, options));
       return await Promise.all(uploadPromises);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Failed to upload files';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = err.message || 'Failed to upload files';
       throw new Error(errorMessage);
     }
   }
@@ -146,8 +148,9 @@ export class FileUploadService {
 
       console.log('✅ External image saved to backend:', response.data.url);
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }
@@ -164,8 +167,9 @@ export class FileUploadService {
       }
 
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to delete file';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to delete file';
       throw new Error(errorMessage);
     }
   }
@@ -179,8 +183,9 @@ export class FileUploadService {
       }
 
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get file info';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get file info';
       throw new Error(errorMessage);
     }
   }
@@ -235,8 +240,9 @@ export class FileUploadService {
       }
 
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get presigned upload URL';
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }
   }

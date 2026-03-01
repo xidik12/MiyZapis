@@ -83,7 +83,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
         });
         // servicePerformance contains popular services data
         const services = data.servicePerformance || data.revenueByService || data.popularServices || [];
-        setPopularServices(services.map((s: any) => ({
+        setPopularServices(services.map((s: Record<string, unknown>) => ({
           name: s.name || s.serviceName || '',
           bookings: Number(s.bookings) || Number(s.count) || 0,
           amount: Number(s.revenue) || Number(s.amount) || Number(s.totalRevenue) || 0,
@@ -98,7 +98,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
         // Backend wraps as { revenue: { breakdown: [...], totalRevenue, ... } }
         const revObj = rRaw?.revenue || rRaw;
         const breakdown = revObj?.breakdown || revObj?.months || revObj?.revenueTrend || (Array.isArray(revObj) ? revObj : []);
-        setRevenueData(breakdown.map((item: any) => ({
+        setRevenueData(breakdown.map((item: unknown) => ({
           month: item.month || item.date || item.label || '',
           amount: Number(item.revenue) || Number(item.amount) || 0,
         })));

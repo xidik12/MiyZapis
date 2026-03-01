@@ -297,7 +297,7 @@ export class AdminController {
       startDate.setDate(startDate.getDate() - periodDays);
 
       // Build where clause
-      const where: any = {
+      const where: Record<string, unknown> = {
         createdAt: { gte: startDate }
       };
       
@@ -337,10 +337,10 @@ export class AdminController {
       });
 
       // Get user platform distribution - simplified without authToken table
-      const platformStats: any[] = [];
+      const platformStats: Record<string, unknown>[] = [];
 
       res.json(createSuccessResponse({
-        userTrends: serializeQueryResult(userTrends as any[]),
+        userTrends: serializeQueryResult(userTrends as Record<string, unknown>[]),
         engagementStats: serializeBigInt(engagementStats),
         geographicStats: serializeBigInt(geographicStats),
         platformStats
@@ -457,10 +457,10 @@ export class AdminController {
 
       res.json(createSuccessResponse({
         statusStats: serializeBigInt(statusStats),
-        bookingTrends: serializeQueryResult(bookingTrends as any[]),
+        bookingTrends: serializeQueryResult(bookingTrends as Record<string, unknown>[]),
         popularServices: serializeBigInt(popularServicesWithDetails),
-        hourlyStats: serializeQueryResult(hourlyStats as any[]),
-        categoryRevenue: serializeQueryResult(categoryRevenue as any[])
+        hourlyStats: serializeQueryResult(hourlyStats as Record<string, unknown>[]),
+        categoryRevenue: serializeQueryResult(categoryRevenue as Record<string, unknown>[])
       }));
 
     } catch (error) {
@@ -572,10 +572,10 @@ export class AdminController {
         : 0;
 
       res.json(createSuccessResponse({
-        revenueTrends: serializeQueryResult(revenueTrends as any[]),
+        revenueTrends: serializeQueryResult(revenueTrends as Record<string, unknown>[]),
         paymentMethodStats: serializeBigInt(paymentMethodStats),
         currencyStats: serializeBigInt(currencyStats),
-        topEarningSpecialists: serializeQueryResult(topEarningSpecialists as any[]),
+        topEarningSpecialists: serializeQueryResult(topEarningSpecialists as Record<string, unknown>[]),
         refundStats: serializeBigInt({
           ...refundStats,
           refundRate: Math.round(refundRate * 100) / 100
@@ -621,7 +621,7 @@ export class AdminController {
         return;
       }
 
-      let updateData: any = {};
+      let updateData: Record<string, unknown> = {};
       
       switch (action) {
         case 'activate':
@@ -839,7 +839,7 @@ export class AdminController {
       const skip = (pageNum - 1) * limitNum;
 
       // Build where clause
-      const where: any = {};
+      const where: Record<string, unknown> = {};
 
       // Search filter
       if (search) {

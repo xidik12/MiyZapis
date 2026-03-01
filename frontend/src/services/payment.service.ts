@@ -21,7 +21,7 @@ export class PaymentService {
     qrCodeData?: string;
     paymentId?: string;
     message: string;
-    booking: any;
+    booking: Record<string, unknown>;
     finalAmount: number;
     usedWalletAmount: number;
   }> {
@@ -32,7 +32,7 @@ export class PaymentService {
       qrCodeData?: string;
       paymentId?: string;
       message: string;
-      booking: any;
+      booking: Record<string, unknown>;
       finalAmount: number;
       usedWalletAmount: number;
     }>(`/crypto-payments/bookings/${data.bookingId}/deposit`, {
@@ -60,10 +60,10 @@ export class PaymentService {
     paymentId: string;
     status: string;
     paymentMethod: string;
-    cryptoPayment?: any;
-    paypalPayment?: any;
-    wayforpayPayment?: any;
-    walletTransaction?: any;
+    cryptoPayment?: Record<string, unknown>;
+    paypalPayment?: Record<string, unknown>;
+    wayforpayPayment?: Record<string, unknown>;
+    walletTransaction?: Record<string, unknown>;
     totalPaid: number;
     remainingAmount: number;
     paymentUrl?: string;
@@ -78,10 +78,10 @@ export class PaymentService {
       paymentId: string;
       status: string;
       paymentMethod: string;
-      cryptoPayment?: any;
-      paypalPayment?: any;
-      wayforpayPayment?: any;
-      walletTransaction?: any;
+      cryptoPayment?: Record<string, unknown>;
+      paypalPayment?: Record<string, unknown>;
+      wayforpayPayment?: Record<string, unknown>;
+      walletTransaction?: Record<string, unknown>;
       totalPaid: number;
       remainingAmount: number;
       paymentUrl?: string;
@@ -119,7 +119,7 @@ export class PaymentService {
     paymentId?: string;
     status?: string;
     paymentMethod?: string;
-    cryptoPayment?: any;
+    cryptoPayment?: Record<string, unknown>;
     charge?: {
       id: string;
       code: string;
@@ -127,7 +127,7 @@ export class PaymentService {
       qrCodeUrl?: string;
       expiresAt: Date;
     };
-    walletTransaction?: any;
+    walletTransaction?: Record<string, unknown>;
     totalPaid?: number;
     remainingAmount?: number;
     paymentUrl?: string;
@@ -190,11 +190,11 @@ export class PaymentService {
   // Process deposit payment (legacy method for compatibility)
   async processDeposit(data: ProcessPaymentRequest): Promise<{
     paymentIntent: PaymentIntent;
-    booking: any; // Booking type
+    booking: Record<string, unknown>; // Booking type
   }> {
     const response = await apiClient.post<{
       paymentIntent: PaymentIntent;
-      booking: any;
+      booking: Record<string, unknown>;
     }>('/payments/process-deposit', data);
 
     if (!response.success || !response.data) {
@@ -207,12 +207,12 @@ export class PaymentService {
   async processFullPayment(data: ProcessPaymentRequest): Promise<{
     payment: Payment;
     loyaltyPointsEarned: number;
-    booking: any; // Booking type
+    booking: Record<string, unknown>; // Booking type
   }> {
     const response = await apiClient.post<{
       payment: Payment;
       loyaltyPointsEarned: number;
-      booking: any;
+      booking: Record<string, unknown>;
     }>('/payments/process-full-payment', data);
     
     if (!response.success || !response.data) {
@@ -340,11 +340,11 @@ export class PaymentService {
   // Add payment method
   async addPaymentMethod(paymentMethodId: string): Promise<{
     message: string;
-    paymentMethod: any;
+    paymentMethod: Record<string, unknown>;
   }> {
     const response = await apiClient.post<{
       message: string;
-      paymentMethod: any;
+      paymentMethod: Record<string, unknown>;
     }>('/payments/methods', { paymentMethodId });
     
     if (!response.success || !response.data) {
@@ -472,7 +472,7 @@ export class PaymentService {
   }
 
   // Handle Stripe webhook (internal use)
-  async handleWebhook(eventType: string, data: any): Promise<{ received: boolean }> {
+  async handleWebhook(eventType: string, data: unknown): Promise<{ received: boolean }> {
     const response = await apiClient.post<{ received: boolean }>('/payments/webhook', {
       type: eventType,
       data
@@ -662,12 +662,12 @@ export class PaymentService {
   }): Promise<{
     success: boolean;
     message: string;
-    booking?: any;
+    booking?: Record<string, unknown>;
   }> {
     const response = await apiClient.post<{
       success: boolean;
       message: string;
-      booking?: any;
+      booking?: Record<string, unknown>;
     }>(`/crypto-payments/onramp/session/${sessionId}/complete`, data);
 
     if (!response.success || !response.data) {
@@ -712,14 +712,14 @@ export class PaymentService {
     message: string;
     appliedAmount: number;
     remainingBalance: number;
-    booking: any;
+    booking: Record<string, unknown>;
   }> {
     const response = await apiClient.post<{
       success: boolean;
       message: string;
       appliedAmount: number;
       remainingBalance: number;
-      booking: any;
+      booking: Record<string, unknown>;
     }>(`/crypto-payments/wallet/apply/${bookingId}`);
 
     if (!response.success || !response.data) {
@@ -739,10 +739,10 @@ export class PaymentService {
     totalEarnings: number;
     pendingEarnings: number;
     completedEarnings: number;
-    statistics: any;
+    statistics: Record<string, unknown>;
   }> {
     const params = new URLSearchParams();
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         params.append(key, value.toString());
@@ -754,7 +754,7 @@ export class PaymentService {
       totalEarnings: number;
       pendingEarnings: number;
       completedEarnings: number;
-      statistics: any;
+      statistics: Record<string, unknown>;
     }>(`/payments/earnings/my?${params}`);
     
     if (!response.success || !response.data) {
@@ -793,10 +793,10 @@ export class PaymentService {
     pendingRevenue: number;
     paidRevenue: number;
     monthlyBreakdown: Array<{ month: string; revenue: number; bookings: number }>;
-    trends: any;
+    trends: Record<string, unknown>;
   }> {
     const params = new URLSearchParams();
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         params.append(key, value.toString());
@@ -808,7 +808,7 @@ export class PaymentService {
       pendingRevenue: number;
       paidRevenue: number;
       monthlyBreakdown: Array<{ month: string; revenue: number; bookings: number }>;
-      trends: any;
+      trends: Record<string, unknown>;
     }>(`/payments/earnings/revenue?${params}`);
     
     if (!response.success || !response.data) {
@@ -922,8 +922,8 @@ export class PaymentService {
     id: string;
     status: string;
     intent: string;
-    purchaseUnits?: any[];
-    paymentSource?: any;
+    purchaseUnits?: Record<string, unknown>[];
+    paymentSource?: Record<string, unknown>;
     createTime?: string;
     updateTime?: string;
   }> {
@@ -932,8 +932,8 @@ export class PaymentService {
         id: string;
         status: string;
         intent: string;
-        purchaseUnits?: any[];
-        paymentSource?: any;
+        purchaseUnits?: Record<string, unknown>[];
+        paymentSource?: Record<string, unknown>;
         createTime?: string;
         updateTime?: string;
       };
@@ -956,14 +956,14 @@ export class PaymentService {
     refund: {
       id: string;
       status: string;
-      amount?: any;
+      amount?: Record<string, unknown>;
     };
   }> {
     const response = await apiClient.post<{
       refund: {
         id: string;
         status: string;
-        amount?: any;
+        amount?: Record<string, unknown>;
       };
     }>('/payments/paypal/refund', {
       captureId: data.captureId,
@@ -1004,7 +1004,7 @@ export class PaymentService {
     invoice: {
       orderReference: string;
       paymentUrl: string;
-      formData?: any; // Form data for POST submission
+      formData?: Record<string, string>; // Form data for POST submission
     };
     paymentUrl: string;
   }> {
@@ -1014,7 +1014,7 @@ export class PaymentService {
       invoice: {
         orderReference: string;
         paymentUrl: string;
-        formData?: any;
+        formData?: Record<string, string>;
       };
       paymentUrl: string;
     }>('/payments/wayforpay/create-invoice', {

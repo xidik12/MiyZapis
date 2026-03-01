@@ -22,6 +22,7 @@ import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
+import { formatDate } from '@/utils/dateUtils';
 import { reviewsStrings, commonStrings } from '@/utils/translations';
 
 interface ReviewItem {
@@ -162,10 +163,7 @@ export const ReviewsPage: React.FC = () => {
     </div>
   );
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+  // Using shared formatDate from @/utils/dateUtils
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;

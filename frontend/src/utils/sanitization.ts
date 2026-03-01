@@ -125,7 +125,7 @@ export const sanitizeSearchQuery = (query: string | undefined | null): string =>
  * Sanitize number input - ensures it's a valid number
  * Use for: price, duration, etc.
  */
-export const sanitizeNumber = (value: any, defaultValue: number = 0): number => {
+export const sanitizeNumber = (value: unknown, defaultValue: number = 0): number => {
   const num = Number(value);
   return isFinite(num) && num >= 0 ? num : defaultValue;
 };
@@ -134,7 +134,7 @@ export const sanitizeNumber = (value: any, defaultValue: number = 0): number => 
  * Sanitize JSON string - safely parse and validate
  * Use for: JSON data from user
  */
-export const sanitizeJSON = <T = any>(json: string | undefined | null, defaultValue: T): T => {
+export const sanitizeJSON = <T = unknown>(json: string | undefined | null, defaultValue: T): T => {
   if (!json || typeof json !== 'string') return defaultValue;
 
   try {
@@ -150,7 +150,7 @@ export const sanitizeJSON = <T = any>(json: string | undefined | null, defaultVa
  * Recursively sanitize all string values in an object
  * Use for: complex user input objects
  */
-export const sanitizeObjectStrings = (obj: any): any => {
+export const sanitizeObjectStrings = (obj: unknown): unknown => {
   if (typeof obj === 'string') {
     return sanitizeText(obj);
   }
@@ -160,10 +160,10 @@ export const sanitizeObjectStrings = (obj: any): any => {
   }
 
   if (obj !== null && typeof obj === 'object') {
-    const sanitized: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        sanitized[key] = sanitizeObjectStrings(obj[key]);
+    const sanitized: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        sanitized[key] = sanitizeObjectStrings((obj as Record<string, unknown>)[key]);
       }
     }
     return sanitized;
@@ -210,10 +210,10 @@ export const containsDangerousContent = (text: string | undefined | null): boole
  * Use for: tags, categories, etc.
  */
 export const sanitizeArray = (
-  arr: any[] | undefined | null,
+  arr: unknown[] | undefined | null,
   maxLength: number = 50,
-  itemSanitizer: (item: any) => any = sanitizeText
-): any[] => {
+  itemSanitizer: (item: unknown) => unknown = sanitizeText
+): unknown[] => {
   if (!Array.isArray(arr)) return [];
 
   return arr

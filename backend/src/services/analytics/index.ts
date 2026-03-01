@@ -362,10 +362,10 @@ export class AnalyticsService {
           acc[serviceId].averageRating += booking.review.rating;
         }
         return acc;
-      }, {} as any);
+      }, {} as Record<string, Record<string, unknown>>);
 
       // Calculate averages and format data
-      const servicePerformance = Object.values(serviceGroups).map((group: any) => ({
+      const servicePerformance = Object.values(serviceGroups).map((group: Record<string, unknown>) => ({
         service: group.service,
         bookingCount: group.bookings.length,
         revenue: group.revenue,
@@ -488,14 +488,14 @@ export class AnalyticsService {
           acc[customerId].lastBooking = booking.createdAt;
         }
         return acc;
-      }, {} as any);
+      }, {} as Record<string, Record<string, unknown>>);
 
       const customers = Object.values(customerGroups);
-      const newCustomers = customers.filter((customer: any) => 
+      const newCustomers = customers.filter((customer: Record<string, unknown>) =>
         customer.bookingCount === 1
       ).length;
 
-      const repeatCustomers = customers.filter((customer: any) => 
+      const repeatCustomers = customers.filter((customer: Record<string, unknown>) =>
         customer.bookingCount > 1
       ).length;
 
@@ -507,12 +507,12 @@ export class AnalyticsService {
           retentionRate: customers.length > 0 ? (repeatCustomers / customers.length) * 100 : 0
         },
         topCustomers: customers
-          .sort((a: any, b: any) => b.totalSpent - a.totalSpent)
+          .sort((a: Record<string, unknown>, b: Record<string, unknown>) => (b.totalSpent as number) - (a.totalSpent as number))
           .slice(0, 10),
         customersByBookingCount: {
           oneTime: newCustomers,
           repeat: repeatCustomers,
-          frequent: customers.filter((customer: any) => customer.bookingCount >= 5).length
+          frequent: customers.filter((customer: Record<string, unknown>) => (customer.bookingCount as number) >= 5).length
         }
       };
     } catch (error) {
@@ -874,14 +874,14 @@ export class AnalyticsService {
 
   // Helper methods
   private buildDateFilter(fromDate?: string, toDate?: string) {
-    const filter: any = {};
+    const filter: { gte?: Date; lte?: Date } = {};
     if (fromDate) filter.gte = new Date(fromDate);
     if (toDate) filter.lte = new Date(toDate);
     return Object.keys(filter).length > 0 ? filter : undefined;
   }
 
-  private groupDataByPeriod(data: any[], period: 'day' | 'week' | 'month', dateField: string) {
-    const grouped: Record<string, any[]> = {};
+  private groupDataByPeriod(data: Record<string, unknown>[], period: 'day' | 'week' | 'month', dateField: string) {
+    const grouped: Record<string, Record<string, unknown>[]> = {};
     
     data.forEach(item => {
       const date = new Date(item[dateField]);
@@ -912,7 +912,7 @@ export class AnalyticsService {
     }));
   }
 
-  private groupRevenueByPeriod(data: any[], period: 'day' | 'week' | 'month', dateField: string) {
+  private groupRevenueByPeriod(data: Record<string, unknown>[], period: 'day' | 'week' | 'month', dateField: string) {
     const grouped = this.groupDataByPeriod(data, period, dateField);
     return grouped.map(group => ({
       period: group.period,
@@ -921,7 +921,7 @@ export class AnalyticsService {
     }));
   }
 
-  private groupRatingByPeriod(reviews: any[], period: 'day' | 'week' | 'month') {
+  private groupRatingByPeriod(reviews: Record<string, unknown>[], period: 'day' | 'week' | 'month') {
     const grouped = this.groupDataByPeriod(reviews, period, 'createdAt');
     return grouped.map(group => ({
       period: group.period,
@@ -930,7 +930,7 @@ export class AnalyticsService {
     }));
   }
 
-  private groupRevenueByCategory(bookings: any[]) {
+  private groupRevenueByCategory(bookings: Array<{ service: { category: string }; totalAmount: unknown }>) {
     const categoryGroups = bookings.reduce((acc, booking) => {
       const category = booking.service.category;
       if (!acc[category]) {
@@ -948,7 +948,7 @@ export class AnalyticsService {
     }));
   }
 
-  private groupByStatus(bookings: any[]) {
+  private groupByStatus(bookings: Array<{ status: string }>) {
     return bookings.reduce((acc, booking) => {
       const status = booking.status;
       acc[status] = (acc[status] || 0) + 1;

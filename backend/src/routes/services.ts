@@ -6,11 +6,11 @@ import { cacheMiddleware } from '@/middleware/cache';
 const router = Router();
 
 // Public routes (with caching for frequently accessed data)
-router.get('/', ServiceController.searchServices);
-router.get('/location', ServiceController.getServicesByLocation); // Must be before /:serviceId
+router.get('/', cacheMiddleware(120, 'services'), ServiceController.searchServices);
+router.get('/location', cacheMiddleware(120, 'services-location'), ServiceController.getServicesByLocation); // Must be before /:serviceId
 router.get('/categories', cacheMiddleware(1800, 'categories'), ServiceController.getCategories);
 router.get('/popular', cacheMiddleware(120, 'popular'), ServiceController.getPopularServices);
-router.get('/loyalty-points', ServiceController.getLoyaltyPointsServices);
+router.get('/loyalty-points', cacheMiddleware(300, 'loyalty-services'), ServiceController.getLoyaltyPointsServices);
 router.get('/:serviceId', cacheMiddleware(300, 'service'), ServiceController.getService);
 
 // Protected routes - require authentication

@@ -1,6 +1,7 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 import { config } from '@/config';
 
 // Custom log format
@@ -76,7 +77,7 @@ export const logger = winston.createLogger({
 });
 
 // Add request logging helper
-export const requestLogger = (req: any, res: any, next: any) => {
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   
   res.on('finish', () => {
@@ -118,6 +119,18 @@ export const loggerStream = {
   write: (message: string) => {
     logger.info(message.trim());
   },
+};
+
+// Type-safe error helpers for catch blocks with `error: unknown`
+export const toError = (error: unknown): Error => {
+  if (error instanceof Error) return error;
+  return new Error(typeof error === 'string' ? error : 'Unknown error');
+};
+
+export const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
 };
 
 export default logger;

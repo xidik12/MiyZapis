@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 // Optional AWS SDK import
-let AWS: any = null;
+let AWS: unknown = null;
 try {
   AWS = require('aws-sdk');
 } catch (error) {
@@ -14,7 +14,7 @@ try {
 
 export class FileUploadService {
   private prisma: PrismaClient;
-  private s3?: any;
+  private s3?: unknown;
   private useS3: boolean;
 
   constructor(prisma: PrismaClient) {

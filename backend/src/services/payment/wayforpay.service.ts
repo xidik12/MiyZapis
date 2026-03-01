@@ -37,7 +37,7 @@ interface WayForPayResponse {
   invoiceUrl?: string;
   paymentUrl?: string;
   orderId?: string;
-  formData?: any; // Form data for POST submission
+  formData?: Record<string, string>; // Form data for POST submission
   reasonCode?: number;
   reason?: string;
 }

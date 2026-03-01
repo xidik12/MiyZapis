@@ -263,7 +263,7 @@ export class UserService {
     currentPoints: number;
     totalEarned: number;
     totalRedeemed: number;
-    recentTransactions: any[];
+    recentTransactions: Record<string, unknown>[];
   }> {
     try {
       const user = await prisma.user.findUnique({
@@ -325,7 +325,7 @@ export class UserService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Record<string, unknown> = {
         isActive: true,
       };
 

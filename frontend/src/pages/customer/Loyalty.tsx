@@ -5,6 +5,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
 import { RewardsService, LoyaltyReward, RewardRedemption } from '@/services/rewards.service';
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
+import { formatDate as sharedFormatDate } from '@/utils/dateUtils';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
@@ -151,7 +152,7 @@ const CustomerLoyalty: React.FC = () => {
         fetchLoyaltyData(),
         fetchRewards()
       ]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error redeeming reward:', error);
       const message = error?.apiError?.message || (t('loyalty.error.redeem') || 'Failed to redeem reward');
       toast.error(message);
@@ -162,14 +163,8 @@ const CustomerLoyalty: React.FC = () => {
 
   const formatPoints = utilFormatPoints;
 
-  const formatDate = (dateString: string) => {
-    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
-    return new Date(dateString).toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+  // Using shared formatDate from @/utils/dateUtils
+  const formatDate = (dateString: string) => sharedFormatDate(dateString, language);
 
   const interpolate = (tpl: string, vars: Record<string, string | number>) =>
     (tpl || '').replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));

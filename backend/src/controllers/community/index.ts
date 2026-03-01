@@ -128,7 +128,7 @@ export class CommunityController {
       );
 
       // Build where clause
-      const where: any = {
+      const where: Record<string, unknown> = {
         isPublished: true,
         isDeleted: false,
       };
@@ -149,7 +149,7 @@ export class CommunityController {
       }
 
       // Build order by
-      let orderBy: any = { createdAt: 'desc' };
+      let orderBy: Record<string, string> = { createdAt: 'desc' };
       if (sortBy === 'likeCount') {
         orderBy = { likeCount: sortOrder };
       } else if (sortBy === 'commentCount') {
@@ -216,7 +216,7 @@ export class CommunityController {
         likeCount: post.likeCount,
         commentCount: post.commentCount,
         isPinned: post.isPinned,
-        isLiked: req.user ? (post.likes as any[]).length > 0 : false,
+        isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
@@ -317,7 +317,7 @@ export class CommunityController {
         likeCount: post.likeCount,
         commentCount: post.commentCount,
         isPinned: post.isPinned,
-        isLiked: req.user ? (post.likes as any[]).length > 0 : false,
+        isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
@@ -515,7 +515,7 @@ export class CommunityController {
       } = req.body as UpdatePostData;
 
       // Build update data
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (title !== undefined) updateData.title = title.trim();
       if (content !== undefined) updateData.content = content.trim();
       if (price !== undefined) updateData.price = price;
@@ -811,7 +811,7 @@ export class CommunityController {
       });
 
       // Format comments
-      const formatComment = (comment: any) => ({
+      const formatComment = (comment: Record<string, unknown>) => ({
         id: comment.id,
         postId: comment.postId,
         author: comment.author,

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { paypalService } from '@/services/payment/paypal.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 
 export class PayPalController {
@@ -17,8 +17,8 @@ export class PayPalController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -107,11 +107,12 @@ export class PayPalController {
           approvalUrl: paypalOrder.approvalUrl
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Failed to create PayPal order', {
         userId: req.user?.id,
         bookingId: req.body.bookingId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -135,8 +136,8 @@ export class PayPalController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -188,11 +189,12 @@ export class PayPalController {
           captureId: capturedOrder.captureId
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Failed to capture PayPal order', {
         userId: req.user?.id,
         orderId: req.body.orderId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -244,11 +246,12 @@ export class PayPalController {
           order: orderDetails
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Failed to get PayPal order details', {
         userId: req.user?.id,
         orderId: req.params.orderId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -272,8 +275,8 @@ export class PayPalController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -325,11 +328,12 @@ export class PayPalController {
           refund
         }, req.headers['x-request-id'] as string)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Failed to process PayPal refund', {
         userId: req.user?.id,
         captureId: req.body.captureId,
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json(
@@ -348,7 +352,7 @@ export class PayPalController {
       const signature = req.headers['paypal-transmission-sig'] as string;
       const webhookId = req.headers['paypal-webhook-id'] as string;
       // Use the raw body preserved by webhookRawBodyParser middleware
-      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
+      const rawBody = (req as Request & { rawBody?: string }).rawBody || JSON.stringify(req.body);
 
       logger.info('[PayPal] Webhook received', {
         eventType: req.body.event_type,
@@ -356,7 +360,7 @@ export class PayPalController {
         hasSignature: !!signature,
         hasWebhookId: !!webhookId,
         headers: Object.keys(req.headers),
-        hasRawBody: !!(req as any).rawBody
+        hasRawBody: !!(req as Request & { rawBody?: string }).rawBody
       });
 
       // For development/testing: Allow webhooks without signature verification
@@ -559,9 +563,10 @@ export class PayPalController {
       }
 
       res.status(200).json({ received: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('[PayPal] Webhook processing failed', {
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? err.message : error,
       });
 
       res.status(500).json({

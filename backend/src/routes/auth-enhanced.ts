@@ -3,18 +3,18 @@ import cors from 'cors';
 import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { body, validationResult } from 'express-validator';
-import { EnhancedAuthService } from '@/services/auth/enhanced';
+import { AuthService } from '@/services/auth';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
+import { ValidatorError } from '@/types';
 
 const router = express.Router();
 
 // Enhanced CORS options for OAuth routes
 const oauthCorsOptions = {
   origin: [
-    'http://localhost:3000',
-    'http://localhost:5173', 
+    ...config.security.corsOrigin,
     'https://miyzapis.com',
     'https://www.miyzapis.com',
     'https://miyzapis-frontend-production.up.railway.app',
@@ -97,26 +97,27 @@ router.post('/register', validateRegistration, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+            field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+            message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
           }))
         )
       );
     }
 
-    const result = await EnhancedAuthService.register(req.body);
+    const result = await AuthService.register(req.body);
 
     res.status(201).json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Registration error:', error);
 
     let errorCode = 'REGISTRATION_FAILED';
     let errorMessage = 'Registration failed';
 
-    if (error.message === 'EMAIL_ALREADY_EXISTS') {
+    if (err.message === 'EMAIL_ALREADY_EXISTS') {
       errorCode = 'EMAIL_ALREADY_EXISTS';
       errorMessage = 'Email address is already registered';
-    } else if (error.message === 'TELEGRAM_ID_ALREADY_EXISTS') {
+    } else if (err.message === 'TELEGRAM_ID_ALREADY_EXISTS') {
       errorCode = 'TELEGRAM_ID_ALREADY_EXISTS';
       errorMessage = 'Telegram account is already linked to another user';
     }
@@ -136,29 +137,30 @@ router.post('/login', validateLogin, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+            field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+            message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
           }))
         )
       );
     }
 
-    const result = await EnhancedAuthService.login(req.body);
+    const result = await AuthService.login(req.body);
 
     res.json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Login error:', error);
 
     let errorCode = 'LOGIN_FAILED';
     let errorMessage = 'Login failed';
 
-    if (error.message === 'INVALID_CREDENTIALS') {
+    if (err.message === 'INVALID_CREDENTIALS') {
       errorCode = 'INVALID_CREDENTIALS';
       errorMessage = 'Invalid email or password';
-    } else if (error.message === 'EMAIL_NOT_VERIFIED') {
+    } else if (err.message === 'EMAIL_NOT_VERIFIED') {
       errorCode = 'EMAIL_NOT_VERIFIED';
       errorMessage = 'Please verify your email address before logging in';
-    } else if (error.message === 'ACCOUNT_DEACTIVATED') {
+    } else if (err.message === 'ACCOUNT_DEACTIVATED') {
       errorCode = 'ACCOUNT_DEACTIVATED';
       errorMessage = 'Your account has been deactivated';
     }
@@ -178,15 +180,15 @@ router.post('/verify-email', validateEmailVerification, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+            field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+            message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
           }))
         )
       );
     }
 
     const { token } = req.body;
-    const result = await EnhancedAuthService.verifyEmail(token);
+    const result = await AuthService.verifyEmail(token);
 
     if (!result.success) {
       return res.status(400).json(
@@ -199,7 +201,7 @@ router.post('/verify-email', validateEmailVerification, async (req, res) => {
       user: result.user,
       tokens: result.tokens,
     }));
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Email verification error:', error);
     res.status(500).json(
       createErrorResponse('EMAIL_VERIFICATION_FAILED', 'Email verification failed', req.id)
@@ -218,7 +220,7 @@ router.post('/resend-verification', async (req, res) => {
       );
     }
 
-    const result = await EnhancedAuthService.resendVerificationEmail(email);
+    const result = await AuthService.resendVerificationEmail(email);
 
     if (!result.success) {
       return res.status(400).json(
@@ -227,7 +229,7 @@ router.post('/resend-verification', async (req, res) => {
     }
 
     return res.json(createSuccessResponse({ message: result.message }));
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Resend verification error:', error);
     return res.status(500).json(
       createErrorResponse('RESEND_FAILED', 'Failed to resend verification email', req.id)
@@ -246,8 +248,8 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+            field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+            message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
           }))
         )
       );
@@ -279,20 +281,21 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
       picture: payload.picture!,
     };
 
-    const result = await EnhancedAuthService.authenticateWithGoogle(googleData, userType);
+    const result = await AuthService.authenticateWithGoogle(googleData, userType);
 
     res.json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Google authentication error:', {
-      error: error.message,
-      stack: error.stack,
+      error: err.message,
+      stack: err.stack,
       googleEmail: payload?.email,
       userType,
       requestId: req.id
     });
 
     // Return more specific error message
-    const errorMessage = error.message || 'Google authentication failed';
+    const errorMessage = err.message || 'Google authentication failed';
     res.status(500).json(
       createErrorResponse('GOOGLE_AUTH_FAILED', errorMessage, req.id)
     );
@@ -310,29 +313,30 @@ router.post('/telegram', validateTelegramAuth, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+            field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+            message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
           }))
         )
       );
     }
 
-    const result = await EnhancedAuthService.authenticateWithTelegram(req.body);
+    const result = await AuthService.authenticateWithTelegram(req.body);
 
     res.json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Telegram authentication error:', error);
 
     let errorCode = 'TELEGRAM_AUTH_FAILED';
     let errorMessage = 'Telegram authentication failed';
 
-    if (error.message === 'INVALID_TELEGRAM_AUTH') {
+    if (err.message === 'INVALID_TELEGRAM_AUTH') {
       errorCode = 'INVALID_TELEGRAM_AUTH';
       errorMessage = 'Invalid Telegram authentication data';
-    } else if (error.message === 'TELEGRAM_AUTH_EXPIRED') {
+    } else if (err.message === 'TELEGRAM_AUTH_EXPIRED') {
       errorCode = 'TELEGRAM_AUTH_EXPIRED';
       errorMessage = 'Telegram authentication data has expired';
-    } else if (error.message === 'ACCOUNT_DEACTIVATED') {
+    } else if (err.message === 'ACCOUNT_DEACTIVATED') {
       errorCode = 'ACCOUNT_DEACTIVATED';
       errorMessage = 'Your account has been deactivated';
     }
@@ -443,16 +447,17 @@ router.post('/telegram/webapp', async (req, res): Promise<void> => {
     const loginCheckString = Object.keys(telegramFields).sort().map(k => `${k}=${telegramFields[k]}`).join('\n');
     telegramData.hash = crypto.createHmac('sha256', loginSecretKey).update(loginCheckString).digest('hex');
 
-    const result = await EnhancedAuthService.authenticateWithTelegram(telegramData);
+    const result = await AuthService.authenticateWithTelegram(telegramData);
 
     res.json(createSuccessResponse(result));
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Telegram WebApp authentication error:', error);
 
     let errorCode = 'TELEGRAM_AUTH_FAILED';
     let errorMessage = 'Telegram authentication failed';
 
-    if (error.message === 'ACCOUNT_DEACTIVATED') {
+    if (err.message === 'ACCOUNT_DEACTIVATED') {
       errorCode = 'ACCOUNT_DEACTIVATED';
       errorMessage = 'Your account has been deactivated';
     }
@@ -464,7 +469,7 @@ router.post('/telegram/webapp', async (req, res): Promise<void> => {
 // Get Google OAuth URL for frontend
 router.get('/google/url', (req, res) => {
   try {
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
+    const redirectUri = config.google.redirectUri || `${config.frontend.url}/auth/google/callback`;
     
     const url = googleClient.generateAuthUrl({
       access_type: 'offline',
@@ -473,7 +478,7 @@ router.get('/google/url', (req, res) => {
     });
 
     res.json(createSuccessResponse({ url }));
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Google URL generation error:', error);
     res.status(500).json(
       createErrorResponse('URL_GENERATION_FAILED', 'Failed to generate Google OAuth URL', req.id)

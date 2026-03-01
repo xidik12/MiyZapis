@@ -6,6 +6,7 @@ import { logger } from '@/utils/logger';
 import { sanitizeSearchQuery, sanitizeText, sanitizeNumber } from '@/utils/sanitization';
 import { config } from '@/config';
 import { searchRateLimit } from '@/middleware/security';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
  * GET /locations/search
  * Search locations using Google Places Autocomplete API
  */
-router.get('/search', async (req: Request, res: Response) => {
+router.get('/search', cacheMiddleware(120, 'location-search'), async (req: Request, res: Response) => {
   try {
     const { q, types = 'address' } = req.query;
 
@@ -116,7 +117,7 @@ router.get('/search', async (req: Request, res: Response) => {
     } else {
       return res.json(createSuccessResponse({ predictions: [] }));
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error searching locations:', error);
     return res.status(500).json(
       createErrorResponse(
@@ -132,7 +133,7 @@ router.get('/search', async (req: Request, res: Response) => {
  * GET /locations/geocode
  * Get detailed location information from place ID or address
  */
-router.get('/geocode', async (req: Request, res: Response) => {
+router.get('/geocode', cacheMiddleware(300, 'geocode'), async (req: Request, res: Response) => {
   try {
     const { placeId, address } = req.query;
 
@@ -179,7 +180,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
         let country = '';
         let postalCode = '';
 
-        addressComponents.forEach((component: any) => {
+        addressComponents.forEach((component: { long_name: string; short_name: string; types: string[] }) => {
           const types = component.types;
 
           if (types.includes('street_number')) {
@@ -233,7 +234,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
         let country = '';
         let postalCode = '';
 
-        addressComponents.forEach((component: any) => {
+        addressComponents.forEach((component: { long_name: string; short_name: string; types: string[] }) => {
           const types = component.types;
 
           if (types.includes('street_number')) {
@@ -276,7 +277,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
         req.headers['x-request-id'] as string
       )
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error geocoding location:', error);
     return res.status(500).json(
       createErrorResponse(
@@ -397,7 +398,7 @@ router.get('/nearby', async (req: Request, res: Response) => {
       searchCenter: { latitude, longitude },
       radius: radiusKm,
     }));
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error fetching nearby locations:', error);
     return res.status(500).json(
       createErrorResponse(
@@ -413,7 +414,7 @@ router.get('/nearby', async (req: Request, res: Response) => {
  * GET /locations/cities
  * Get list of cities with specialists
  */
-router.get('/cities', async (req: Request, res: Response) => {
+router.get('/cities', cacheMiddleware(300, 'cities'), async (req: Request, res: Response) => {
   try {
     const { search, limit = '50' } = req.query;
     const limitNum = parseInt(limit as string, 10) || 50;
@@ -432,7 +433,7 @@ router.get('/cities', async (req: Request, res: Response) => {
     // Limit results to prevent abuse (max 100)
     const safeLimitNum = Math.min(Math.max(1, limitNum), 100);
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       city: {
         not: null,
       },
@@ -473,7 +474,7 @@ router.get('/cities', async (req: Request, res: Response) => {
       cities,
       total: cities.length,
     }));
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error fetching cities:', error);
     return res.status(500).json(
       createErrorResponse(
@@ -489,7 +490,7 @@ router.get('/cities', async (req: Request, res: Response) => {
  * GET /locations/reverse-geocode
  * Reverse geocode coordinates to address
  */
-router.get('/reverse-geocode', async (req: Request, res: Response) => {
+router.get('/reverse-geocode', cacheMiddleware(300, 'reverse-geocode'), async (req: Request, res: Response) => {
   try {
     const { lat, lng } = req.query;
 
@@ -555,7 +556,7 @@ router.get('/reverse-geocode', async (req: Request, res: Response) => {
       let country = '';
       let postalCode = '';
 
-      addressComponents.forEach((component: any) => {
+      addressComponents.forEach((component: { long_name: string; short_name: string; types: string[] }) => {
         const types = component.types;
 
         if (types.includes('street_number')) {
@@ -597,7 +598,7 @@ router.get('/reverse-geocode', async (req: Request, res: Response) => {
         req.headers['x-request-id'] as string
       )
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error reverse geocoding:', error);
     return res.status(500).json(
       createErrorResponse(

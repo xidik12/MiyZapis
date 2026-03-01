@@ -84,14 +84,15 @@ async function createRailwayAdmin(options: CreateAdminOptions) {
     console.log('• Keep admin credentials secure');
     console.log('• Monitor admin access logs');
     
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     console.error('\n❌ ERROR CREATING RAILWAY ADMIN:');
     console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.error('Error:', error.message);
+    console.error('Error:', err.message);
     
-    if (error.code === 'P2002') {
+    if (err.code === 'P2002') {
       console.error('This email is already in use. Try a different email.');
-    } else if (error.code === 'P1001') {
+    } else if (err.code === 'P1001') {
       console.error('Cannot connect to database. Check DATABASE_URL environment variable.');
     } else {
       console.error('Full error details:', error);

@@ -172,7 +172,7 @@ class SocketService {
 
     // Notification events
     // Backend may emit a generic 'notification' event
-    this.socket.on('notification', (data: any) => {
+    this.socket.on('notification', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notification:', data);
       }
@@ -198,28 +198,28 @@ class SocketService {
 
     // Optional notification read events (if server emits)
     // Underscore variant from backend
-    this.socket.on('notification_read', (data: any) => {
+    this.socket.on('notification_read', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notification read:', data);
       }
       this.emit('notification:read', data);
     });
 
-    this.socket.on('notification:read', (data: any) => {
+    this.socket.on('notification:read', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notification read:', data);
       }
       this.emit('notification:read', data);
     });
 
-    this.socket.on('notification:mark_all_read', (data: any) => {
+    this.socket.on('notification:mark_all_read', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notifications mark all read:', data);
       }
       this.emit('notification:mark_all_read', data);
     });
 
-    this.socket.on('notification:deleted', (data: any) => {
+    this.socket.on('notification:deleted', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notification deleted:', data);
       }
@@ -227,7 +227,7 @@ class SocketService {
     });
 
     // Server initial unread notifications count
-    this.socket.on('unread_notifications', (data: any) => {
+    this.socket.on('unread_notifications', (data: unknown) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Unread notifications count:', data);
       }
@@ -294,7 +294,7 @@ class SocketService {
 
     // Subscribe to both specific and general payment events
     this.on('payment:completed', handler);
-    this.on('notification', (data: any) => {
+    this.on('notification', (data: unknown) => {
       if (data.type === 'PAYMENT_COMPLETED' && data.data?.paymentId === paymentId) {
         handler(data.data);
       }
@@ -395,7 +395,7 @@ class SocketService {
   }
 
   // Send data to server
-  send(event: string, data?: any): void {
+  send(event: string, data?: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
       

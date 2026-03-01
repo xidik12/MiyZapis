@@ -1,135 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { socketService, subscribeToPaymentUpdates, ensureSocketConnection } from '../../services/socket.service';
+import { socketService, subscribeToPaymentUpdates } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
 import { waitlistService } from '../../services/waitlist.service';
 import { paymentService } from '../../services/payment.service';
-import { paypalService } from '../../services/paypal.service';
-import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
-import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
-import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
+import { loyaltyService } from '@/services/loyalty.service';
+import { RewardsService } from '@/services/rewards.service';
+import { filterSlotsByDuration } from '../../utils/timeSlotUtils';
 import { environment } from '@/config/environment';
 import { logger } from '@/utils/logger';
-import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon, ArrowPathIcon } from '@/components/icons';
+import { ArrowLeftIcon } from '@/components/icons';
 import { fireSuccessConfetti } from '@/utils/confetti';
 import { PageLoader } from '@/components/ui';
-import { RecurringBookingModal, type RecurrenceData } from '@/components/modals/RecurringBookingModal';
+import type { RecurrenceData } from '@/components/modals/RecurringBookingModal';
 
-interface BookingStep {
-  id: string;
-  title: string;
-  completed: boolean;
-}
+// Booking sub-components
+import { useBookingState } from './hooks/useBookingState';
+import type { BookingStep } from './types';
+import BookingProgress from './components/BookingProgress';
+import NavigationButtons from './components/NavigationButtons';
+import WaitlistModal from './components/WaitlistModal';
+import ServiceSelect from './steps/ServiceSelect';
+import DateTimePicker from './steps/DateTimePicker';
+import BookingDetails from './steps/BookingDetails';
+import PaymentStep from './steps/PaymentStep';
+import Confirmation from './steps/Confirmation';
 
 const BookingFlow: React.FC = () => {
   const { serviceId: paramServiceId, specialistId } = useParams();
   const [searchParams] = useSearchParams();
   const queryServiceId = searchParams.get('service');
-  
+
   // Always prioritize service ID from URL params, then query params, then specialist route
   const serviceId = paramServiceId || queryServiceId;
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const user = useAppSelector(selectUser);
-  
-  const [specialist, setSpecialist] = useState<any>(null);
-  const [service, setService] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [availableDates, setAvailableDates] = useState<Array<{
-    date: string;
-    dayName: string;
-    workingHours: string;
-    availableSlots: number;
-    totalSlots: number;
-  }>>([]);
-  const [bookingNotes, setBookingNotes] = useState('');
-  const [participantCount, setParticipantCount] = useState(1);
-  const [bookingResult, setBookingResult] = useState<any>(null);
-  const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
-  const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
-  const [pointsToEarn, setPointsToEarn] = useState<number>(0);
-  const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
-  const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
 
-  // Recurring booking states
-  const [isRecurring, setIsRecurring] = useState<boolean>(false);
-  const [recurrenceData, setRecurrenceData] = useState<RecurrenceData | null>(null);
-  const [showRecurringModal, setShowRecurringModal] = useState<boolean>(false);
-
-  // Payment states
-  const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal'>('crypto');
-  const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
-  const [paymentResult, setPaymentResult] = useState<any>(null);
-  const [showQRCode, setShowQRCode] = useState<boolean>(false);
-  const [paymentOptions, setPaymentOptions] = useState<any>(null);
-  const [paymentTimeoutId, setPaymentTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
-  const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
-  const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
-
-  // Waitlist states
-  const [showWaitlistModal, setShowWaitlistModal] = useState<boolean>(false);
-  const [waitlistNotes, setWaitlistNotes] = useState<string>('');
-  const [waitlistPreferredTime, setWaitlistPreferredTime] = useState<string>('');
-  const [waitlistLoading, setWaitlistLoading] = useState<boolean>(false);
-  const [waitlistJoined, setWaitlistJoined] = useState<boolean>(false);
+  const { bookingState: state, dispatch } = useBookingState();
 
   // Ref to prevent duplicate booking submissions
   const bookingInProgressRef = useRef<boolean>(false);
 
-
-  // Reset payment state when payment method changes
-  useEffect(() => {
-    logger.debug(`🔄 BookingFlow: Payment method changed to ${paymentMethod}, resetting payment state`);
-    setPaymentResult(null);
-    setShowQRCode(false);
-    setPaymentTimeRemaining(0);
-    if (paymentTimeoutId) {
-      clearTimeout(paymentTimeoutId);
-      setPaymentTimeoutId(null);
-    }
-    if (pollingIntervalId) {
-      clearInterval(pollingIntervalId);
-      setPollingIntervalId(null);
-    }
-  }, [paymentMethod]);
-
-  // Cleanup timeouts and socket listeners on component unmount
-  useEffect(() => {
-    return () => {
-      if (paymentTimeoutId) {
-        clearTimeout(paymentTimeoutId);
-      }
-      if (pollingIntervalId) {
-        clearInterval(pollingIntervalId);
-      }
-      // Clean up any active socket listeners
-      socketService.off('payment:completed');
-      socketService.off('notification:new');
-    };
-  }, [paymentTimeoutId, pollingIntervalId]);
+  // Helper to get specialist ID from various sources
+  const getSpecialistId = useCallback(() => {
+    return state.specialist?.id || state.service?.specialistId || state.service?.specialist?.id || specialistId;
+  }, [state.specialist, state.service, specialistId]);
 
   // Calculate discount preview
-  const calculateDiscount = () => {
-    if (!selectedRedemptionId) return 0;
+  const calculateDiscount = useCallback(() => {
+    if (!state.selectedRedemptionId) return 0;
 
-    const selectedRedemption = redemptions.find(r => r.id === selectedRedemptionId);
-    if (!selectedRedemption || !service) return 0;
+    const selectedRedemption = state.redemptions.find(r => r.id === state.selectedRedemptionId);
+    if (!selectedRedemption || !state.service) return 0;
 
-    const basePrice = (service?.price ?? service?.basePrice ?? 0);
+    const basePrice = (state.service?.price ?? state.service?.basePrice ?? 0);
     const reward = selectedRedemption.reward;
 
     switch (reward.type) {
@@ -142,13 +73,13 @@ const BookingFlow: React.FC = () => {
       default:
         return 0;
     }
-  };
+  }, [state.selectedRedemptionId, state.redemptions, state.service]);
 
   const discount = calculateDiscount();
-  const finalPrice = Math.max(0, ((service?.price ?? service?.basePrice ?? 0) - discount));
+  const finalPrice = Math.max(0, ((state.service?.price ?? state.service?.basePrice ?? 0) - discount));
 
   // Conditionally include payment step based on configuration
-  const allSteps: BookingStep[] = [
+  const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
     { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
     { id: 'details', title: t('booking.bookingDetails'), completed: false },
@@ -156,162 +87,174 @@ const BookingFlow: React.FC = () => {
     { id: 'confirmation', title: t('booking.confirmation'), completed: false },
   ];
 
-  const steps: BookingStep[] = allSteps;
+  // ─── Effects ───────────────────────────────────────────────────────────────
 
+  // Reset payment state when payment method changes
+  useEffect(() => {
+    logger.debug(`BookingFlow: Payment method changed to ${state.paymentMethod}, resetting payment state`);
+    dispatch({ type: 'SET_PAYMENT_RESULT', payload: null });
+    dispatch({ type: 'SET_SHOW_QR_CODE', payload: false });
+    dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: 0 });
+    if (state.paymentTimeoutId) {
+      clearTimeout(state.paymentTimeoutId);
+      dispatch({ type: 'SET_PAYMENT_TIMEOUT_ID', payload: null });
+    }
+    if (state.pollingIntervalId) {
+      clearInterval(state.pollingIntervalId);
+      dispatch({ type: 'SET_POLLING_INTERVAL_ID', payload: null });
+    }
+  }, [state.paymentMethod]);
+
+  // Cleanup timeouts and socket listeners on component unmount
+  useEffect(() => {
+    return () => {
+      if (state.paymentTimeoutId) {
+        clearTimeout(state.paymentTimeoutId);
+      }
+      if (state.pollingIntervalId) {
+        clearInterval(state.pollingIntervalId);
+      }
+      socketService.off('payment:completed');
+      socketService.off('notification:new');
+    };
+  }, [state.paymentTimeoutId, state.pollingIntervalId]);
+
+  // Fetch booking data (specialist + service)
   useEffect(() => {
     const fetchBookingData = async () => {
       if (!serviceId && !specialistId) return;
 
       try {
-        setLoading(true);
-        
+        dispatch({ type: 'SET_LOADING', payload: true });
+
         if (serviceId) {
-          // Primary flow: fetch by service ID
           try {
-            logger.debug('🔍 BookingFlow: Fetching service with ID:', serviceId);
+            logger.debug('BookingFlow: Fetching service with ID:', serviceId);
             const serviceData = await serviceService.getService(serviceId);
-            logger.debug('✅ BookingFlow: Service fetched successfully:', serviceData);
-            setService(serviceData);
-            
-            // Fetch specialist data from the service
+            logger.debug('BookingFlow: Service fetched successfully:', serviceData);
+            dispatch({ type: 'SET_SERVICE', payload: serviceData });
+
             const currentSpecialistId = serviceData.specialistId || serviceData.specialist?.id;
             if (currentSpecialistId) {
-              logger.debug('🔍 BookingFlow: Fetching specialist with ID:', currentSpecialistId);
+              logger.debug('BookingFlow: Fetching specialist with ID:', currentSpecialistId);
               const specialistData = await specialistService.getPublicProfile(currentSpecialistId);
-              logger.debug('✅ BookingFlow: Specialist fetched successfully:', specialistData);
-              setSpecialist(specialistData);
+              logger.debug('BookingFlow: Specialist fetched successfully:', specialistData);
+              dispatch({ type: 'SET_SPECIALIST', payload: specialistData });
             } else if (serviceData.specialist) {
-              // Use embedded specialist data if available
-              logger.debug('✅ BookingFlow: Using embedded specialist data:', serviceData.specialist);
-              setSpecialist(serviceData.specialist);
+              logger.debug('BookingFlow: Using embedded specialist data:', serviceData.specialist);
+              dispatch({ type: 'SET_SPECIALIST', payload: serviceData.specialist });
             } else {
-              logger.warn('⚠️ BookingFlow: Service has no specialistId or specialist data:', serviceData);
+              logger.warn('BookingFlow: Service has no specialistId or specialist data:', serviceData);
             }
           } catch (error) {
             logger.warn('Service not found by ID, trying specialist approach:', error);
-            // If service fetch fails, try to find specialist services
             if (specialistId) {
               const specialistData = await specialistService.getPublicProfile(specialistId);
-              setSpecialist(specialistData);
-              
+              dispatch({ type: 'SET_SPECIALIST', payload: specialistData });
+
               const services = await specialistService.getSpecialistServices(specialistId);
               if (services.length > 0) {
-                // Find service by ID or use first service
                 const foundService = services.find(s => s.id === serviceId) || services[0];
-                setService(foundService);
+                dispatch({ type: 'SET_SERVICE', payload: foundService });
               }
             }
           }
         } else if (specialistId) {
-          // Fallback: fetch by specialist ID (for backward compatibility)
           const specialistData = await specialistService.getPublicProfile(specialistId);
-          setSpecialist(specialistData);
-          
-          // Fetch specialist's first service
+          dispatch({ type: 'SET_SPECIALIST', payload: specialistData });
+
           const services = await specialistService.getSpecialistServices(specialistId);
           if (services.length > 0) {
-            setService(services[0]); // Select first service by default
+            dispatch({ type: 'SET_SERVICE', payload: services[0] });
           }
         }
-
       } catch (error) {
         logger.error('Error fetching booking data:', error);
       } finally {
-        setLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
     fetchBookingData();
   }, [specialistId, serviceId]);
 
-  // Fetch loyalty data and calculate points to earn
+  // Fetch loyalty data
   useEffect(() => {
     const fetchLoyaltyData = async () => {
-      if (!user || !service) return;
-      
+      if (!user || !state.service) return;
+
       try {
         const loyalty = await loyaltyService.getUserLoyalty().catch(() => null);
-        setLoyaltyData(loyalty);
+        dispatch({ type: 'SET_LOYALTY_DATA', payload: loyalty });
 
-        // Calculate points to earn (typically 1% of service price)
-        const servicePrice = service.price || service.basePrice || 0;
-        const earnedPoints = Math.floor(servicePrice * 0.01); // 1 point per 1 currency unit spent
-        setPointsToEarn(earnedPoints);
+        const servicePrice = state.service.price || state.service.basePrice || 0;
+        const earnedPoints = Math.floor(servicePrice * 0.01);
+        dispatch({ type: 'SET_POINTS_TO_EARN', payload: earnedPoints });
       } catch (error) {
         logger.error('Error fetching loyalty data:', error);
       }
     };
 
     fetchLoyaltyData();
-  }, [user, service]);
+  }, [user, state.service]);
 
-  // Fetch user's approved redemptions and filter for this specialist/service
+  // Fetch user's approved redemptions
   useEffect(() => {
     const fetchRedemptions = async () => {
-      if (!service) return;
+      if (!state.service) return;
       try {
         const items = await RewardsService.getUserRedemptions();
-        const currentSpecialistId = service?.specialistId || service?.specialist?.id;
+        const currentSpecialistId = state.service?.specialistId || state.service?.specialist?.id;
         const approved = items.filter(r => r.status === 'APPROVED');
         const applicable = approved.filter(r => {
-          // Specialist match
           if (currentSpecialistId && r.reward.specialistId !== currentSpecialistId) return false;
-
-          // Service restriction
           if (r.reward.serviceIds) {
             try {
               const allowed = JSON.parse(r.reward.serviceIds as any);
-              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(service.id)) return false;
+              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(state.service.id)) return false;
             } catch (_) {}
           }
-
-          // Not expired
           if (r.expiresAt && new Date(r.expiresAt) < new Date()) return false;
           return true;
         });
-        setRedemptions(applicable);
+        dispatch({ type: 'SET_REDEMPTIONS', payload: applicable });
       } catch (e) {
         // non-fatal
       }
     };
     fetchRedemptions();
-  }, [service]);
+  }, [state.service]);
 
-  // Payment options removed - using direct Coinbase Commerce only
-
+  // Fetch available dates
   useEffect(() => {
-    // Fetch available dates when specialist is loaded
     const fetchAvailableDates = async () => {
-      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-      
+      const currentSpecialistId = getSpecialistId();
       if (!currentSpecialistId) {
-        logger.debug('🔍 BookingFlow: Cannot fetch dates - specialistId not found');
+        logger.debug('BookingFlow: Cannot fetch dates - specialistId not found');
         return;
       }
 
       try {
-        logger.debug('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
+        logger.debug('BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
         const dateData = await specialistService.getAvailableDates(currentSpecialistId);
-        logger.debug('✅ BookingFlow: Available dates received:', dateData.availableDates);
+        logger.debug('BookingFlow: Available dates received:', dateData.availableDates);
         const dates = dateData.availableDates || [];
-        setAvailableDates(dates);
+        dispatch({ type: 'SET_AVAILABLE_DATES', payload: dates });
 
-        // Auto-select the first available date if none is selected
-        if (!selectedDate && dates.length > 0) {
+        if (!state.selectedDate && dates.length > 0) {
           const firstDate = new Date(dates[0].date);
-          logger.debug('📅 BookingFlow: Auto-selecting first available date:', firstDate);
-          setSelectedDate(firstDate);
+          logger.debug('BookingFlow: Auto-selecting first available date:', firstDate);
+          dispatch({ type: 'SET_SELECTED_DATE', payload: firstDate });
         }
       } catch (error) {
-        logger.error('❌ BookingFlow: Error fetching available dates:', error);
-        setAvailableDates([]);
+        logger.error('BookingFlow: Error fetching available dates:', error);
+        dispatch({ type: 'SET_AVAILABLE_DATES', payload: [] });
       }
     };
 
     fetchAvailableDates();
 
-    // Subscribe to availability updates (if backend emits)
-    const sid = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    const sid = getSpecialistId();
     if (sid && socketService.isSocketConnected()) {
       try {
         socketService.subscribeToAvailability(sid);
@@ -319,12 +262,11 @@ const BookingFlow: React.FC = () => {
         logger.warn('Failed to subscribe to availability updates:', error);
       }
     }
-    const onAvail = (data: any) => {
+    const onAvail = (data: unknown) => {
       const sidData = data?.specialistId || data?.id;
       if (!sid || sidData !== sid) return;
-      // If current selected date matches update, refresh slots/dates
       try {
-        if (selectedDate) {
+        if (state.selectedDate) {
           refreshSlots();
         }
       } catch {}
@@ -340,103 +282,129 @@ const BookingFlow: React.FC = () => {
         }
       }
     };
-  }, [specialist, service, specialistId]);
+  }, [state.specialist, state.service, specialistId]);
 
+  // Fetch available time slots when date is selected
   useEffect(() => {
-    // Fetch available time slots when date is selected
     const fetchAvailableSlots = async () => {
-      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-      
-      if (!currentSpecialistId || !selectedDate) {
-        logger.debug('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
-        setSlotsLoading(false);
+      const currentSpecialistId = getSpecialistId();
+
+      if (!currentSpecialistId || !state.selectedDate) {
+        logger.debug('BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', state.selectedDate);
+        dispatch({ type: 'SET_SLOTS_LOADING', payload: false });
         return;
       }
 
-      setSlotsLoading(true);
+      dispatch({ type: 'SET_SLOTS_LOADING', payload: true });
       try {
-        logger.debug('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
-        const dateStr = selectedDate.toISOString().split('T')[0];
+        const dateStr = state.selectedDate.toISOString().split('T')[0];
         const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
-        logger.debug('✅ BookingFlow: Available slots received:', slots);
 
-        // Filter slots based on service duration to ensure consecutive availability
-        const serviceDuration = service?.duration || 60;
+        const serviceDuration = state.service?.duration || 60;
         const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
-        logger.debug('🔍 BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
+        logger.debug('BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
 
-        setAvailableSlots(filteredSlots);
+        dispatch({ type: 'SET_AVAILABLE_SLOTS', payload: filteredSlots });
       } catch (error) {
-        logger.error('❌ BookingFlow: Error fetching available slots:', error);
-        // Don't show any slots if there's an error - better to show empty than incorrect availability
-        setAvailableSlots([]);
+        logger.error('BookingFlow: Error fetching available slots:', error);
+        dispatch({ type: 'SET_AVAILABLE_SLOTS', payload: [] });
         toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
       } finally {
-        setSlotsLoading(false);
+        dispatch({ type: 'SET_SLOTS_LOADING', payload: false });
       }
     };
 
     fetchAvailableSlots();
 
-    // Auto-refresh slots every 30 seconds to catch newly booked slots
     const refreshInterval = setInterval(() => {
-      if (currentStep === 1 && selectedDate) {
-        logger.debug('🔄 BookingFlow: Auto-refreshing available slots...');
+      if (state.currentStep === 1 && state.selectedDate) {
+        logger.debug('BookingFlow: Auto-refreshing available slots...');
         fetchAvailableSlots();
       }
-    }, 30000); // Refresh every 30 seconds
+    }, 30000);
 
     return () => clearInterval(refreshInterval);
-  }, [specialist, service, specialistId, selectedDate, currentStep]);
+  }, [state.specialist, state.service, specialistId, state.selectedDate, state.currentStep]);
+
+  // ─── Handlers ──────────────────────────────────────────────────────────────
+
+  const refreshSlots = async () => {
+    try {
+      const currentSpecialistId = getSpecialistId();
+      if (!currentSpecialistId || !state.selectedDate) return;
+      const dateStr = state.selectedDate.toISOString().split('T')[0];
+      const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
+
+      const serviceDuration = state.service?.duration || 60;
+      const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', payload: filteredSlots });
+    } catch (e) {}
+  };
+
+  const handlePaymentTimeout = async () => {
+    logger.debug('BookingFlow: Payment timeout reached');
+
+    try {
+      if (state.paymentTimeoutId) {
+        clearTimeout(state.paymentTimeoutId);
+        dispatch({ type: 'SET_PAYMENT_TIMEOUT_ID', payload: null });
+      }
+
+      dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: 0 });
+      toast.error(t('booking.paymentExpired') || 'Payment time expired. Your booking slot has been released. Please start over.');
+      dispatch({ type: 'SET_PAYMENT_RESULT', payload: null });
+      dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
+      dispatch({ type: 'SET_CURRENT_STEP', payload: 1 });
+      await refreshSlots();
+    } catch (error) {
+      logger.error('BookingFlow: Error handling payment timeout:', error);
+    }
+  };
 
   const handleNextStep = async () => {
-    // Security check: Prevent bypassing payment step (only if payments are enabled)
-    if (environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'payment') {
-      // Payment step - user cannot proceed without completing payment
-      if (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')) {
+    if (environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'payment') {
+      if (!state.paymentResult || (state.paymentResult.requiresPayment && state.paymentResult.status !== 'COMPLETED')) {
         toast.error(t('booking.completePaymentFirst') || 'Please complete payment before proceeding to confirmation.');
         return;
       }
     }
 
-    // If payments are disabled and we're moving from details to confirmation, create booking
-    if (!environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'details' && steps[currentStep + 1]?.id === 'confirmation') {
-      // Prevent duplicate submissions
+    if (!environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'details' && steps[state.currentStep + 1]?.id === 'confirmation') {
       if (bookingInProgressRef.current) {
-        logger.warn('⚠️ BookingFlow: Booking already in progress, ignoring duplicate submission');
+        logger.warn('BookingFlow: Booking already in progress, ignoring duplicate submission');
         return;
       }
 
       try {
         bookingInProgressRef.current = true;
-        setPaymentLoading(true);
-        const [hours, minutes] = selectedTime!.split(':').map(Number);
-        const scheduledAt = new Date(selectedDate!);
+        dispatch({ type: 'SET_PAYMENT_LOADING', payload: true });
+        const [hours, minutes] = state.selectedTime!.split(':').map(Number);
+        const scheduledAt = new Date(state.selectedDate!);
         scheduledAt.setHours(hours, minutes, 0, 0);
 
         const bookingData = {
-          serviceId: service.id,
+          serviceId: state.service.id,
           scheduledAt: scheduledAt.toISOString(),
-          duration: service.duration || 60,
-          customerNotes: bookingNotes || undefined,
-          participantCount: participantCount,
+          duration: state.service.duration || 60,
+          customerNotes: state.bookingNotes || undefined,
+          participantCount: state.participantCount,
           loyaltyPointsUsed: 0,
-          rewardRedemptionId: selectedRedemptionId || undefined
+          rewardRedemptionId: state.selectedRedemptionId || undefined
         };
 
-        logger.debug('📝 BookingFlow: Creating free booking (payments disabled)', bookingData);
+        logger.debug('BookingFlow: Creating free booking (payments disabled)', bookingData);
 
-        let result: any;
-        if (isRecurring && recurrenceData) {
-          logger.debug('📝 BookingFlow: Creating recurring booking series', recurrenceData);
+        let result: Record<string, unknown>;
+        if (state.isRecurring && state.recurrenceData) {
+          logger.debug('BookingFlow: Creating recurring booking series', state.recurrenceData);
           const recurringResult = await bookingService.createRecurringBooking({
             ...bookingData,
             recurrence: {
-              frequency: recurrenceData.frequency,
-              daysOfWeek: recurrenceData.daysOfWeek,
-              endType: recurrenceData.endType,
-              occurrences: recurrenceData.occurrences,
-              endDate: recurrenceData.endDate,
+              frequency: state.recurrenceData.frequency,
+              daysOfWeek: state.recurrenceData.daysOfWeek,
+              endType: state.recurrenceData.endType,
+              occurrences: state.recurrenceData.occurrences,
+              endDate: state.recurrenceData.endDate,
             },
           });
           result = {
@@ -447,350 +415,270 @@ const BookingFlow: React.FC = () => {
         } else {
           result = await bookingService.createBooking(bookingData);
         }
-        logger.debug('✅ BookingFlow: Booking created successfully:', result);
+        logger.debug('BookingFlow: Booking created successfully:', result);
 
-        setBookingResult(result);
-        toast.success(isRecurring && recurrenceData
+        dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
+        toast.success(state.isRecurring && state.recurrenceData
           ? `${t('booking.recurringCreated') || 'Recurring booking created!'} ${(result as any).childrenCount || 0} ${t('booking.additionalScheduled') || 'additional bookings scheduled.'}`
           : (t('booking.manualBookingMessage') || 'Booking created successfully!'));
         fireSuccessConfetti();
         bookingInProgressRef.current = false;
-        setPaymentLoading(false);
-        setCurrentStep(currentStep + 1);
-      } catch (error: any) {
-        logger.error('❌ BookingFlow: Error creating booking:', error);
+        dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
+        dispatch({ type: 'SET_CURRENT_STEP', payload: state.currentStep + 1 });
+      } catch (error: unknown) {
+        logger.error('BookingFlow: Error creating booking:', error);
 
-        // Check if it's a 409 conflict and booking was already created
-        if (error?.response?.status === 409 && bookingResult) {
-          logger.debug('✅ BookingFlow: Ignoring 409 error - booking already succeeded');
+        if (error?.response?.status === 409 && state.bookingResult) {
+          logger.debug('BookingFlow: Ignoring 409 error - booking already succeeded');
           bookingInProgressRef.current = false;
-          setPaymentLoading(false);
-          setCurrentStep(currentStep + 1);
+          dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
+          dispatch({ type: 'SET_CURRENT_STEP', payload: state.currentStep + 1 });
           return;
         }
 
         toast.error(error.message || t('booking.createFailed') || 'Failed to create booking');
         bookingInProgressRef.current = false;
-        setPaymentLoading(false);
+        dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
         return;
       }
       return;
     }
 
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (state.currentStep < steps.length - 1) {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: state.currentStep + 1 });
     }
   };
 
   const handlePrevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const refreshSlots = async () => {
-    try {
-      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-      if (!currentSpecialistId || !selectedDate) return;
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
-
-      // Filter slots based on service duration
-      const serviceDuration = service?.duration || 60;
-      const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
-      setAvailableSlots(filteredSlots);
-    } catch (e) {}
-  };
-
-  // Handle payment timeout
-  const handlePaymentTimeout = async () => {
-    logger.debug('⏰ BookingFlow: Payment timeout reached');
-
-    try {
-      // Clear any existing timeouts
-      if (paymentTimeoutId) {
-        clearTimeout(paymentTimeoutId);
-        setPaymentTimeoutId(null);
-      }
-
-      setPaymentTimeRemaining(0);
-
-      // Show timeout message
-      toast.error(t('booking.paymentExpired') || 'Payment time expired. Your booking slot has been released. Please start over.');
-
-      // Reset payment states
-      setPaymentResult(null);
-      setPaymentLoading(false);
-
-      // Go back to time selection to choose a new slot
-      setCurrentStep(1);
-
-      // Refresh available slots
-      await refreshSlots();
-
-    } catch (error) {
-      logger.error('❌ BookingFlow: Error handling payment timeout:', error);
+    if (state.currentStep > 0) {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: state.currentStep - 1 });
     }
   };
 
   const handleBookingSubmit = async () => {
-    // Prevent duplicate submissions
     if (bookingInProgressRef.current) {
-      logger.warn('⚠️ BookingFlow: Booking already in progress, ignoring duplicate submission');
+      logger.warn('BookingFlow: Booking already in progress, ignoring duplicate submission');
       return;
     }
 
-    const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    const currentSpecialistId = getSpecialistId();
 
-    logger.debug('📋 BookingFlow: Starting booking process...');
-    logger.debug('🔍 BookingFlow: Booking data check:', {
-      specialist: !!specialist,
-      service: !!service,
-      selectedDate: selectedDate,
-      selectedTime: selectedTime,
+    logger.debug('BookingFlow: Starting booking process...');
+    logger.debug('BookingFlow: Booking data check:', {
+      specialist: !!state.specialist,
+      service: !!state.service,
+      selectedDate: state.selectedDate,
+      selectedTime: state.selectedTime,
       currentSpecialistId
     });
 
-    if (!specialist || !service || !selectedDate || !selectedTime) {
-      logger.error('❌ BookingFlow: Missing required booking data');
+    if (!state.specialist || !state.service || !state.selectedDate || !state.selectedTime) {
+      logger.error('BookingFlow: Missing required booking data');
       return;
     }
 
     try {
-      // Set ref immediately to prevent race condition
       bookingInProgressRef.current = true;
-      setPaymentLoading(true);
+      dispatch({ type: 'SET_PAYMENT_LOADING', payload: true });
 
-      // Step 1: Check slot availability before starting payment process
-      logger.debug('🕒 BookingFlow: Checking slot availability...');
-      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, selectedDate);
-      const serviceDuration = service.duration || 60;
+      logger.debug('BookingFlow: Checking slot availability...');
+      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, state.selectedDate);
+      const serviceDuration = state.service.duration || 60;
       const filteredAvailableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
 
-      if (!filteredAvailableSlots.includes(selectedTime)) {
+      if (!filteredAvailableSlots.includes(state.selectedTime)) {
         throw new Error('SLOT_NO_LONGER_AVAILABLE');
       }
-      logger.debug('✅ BookingFlow: Slot still available, proceeding with payment...');
+      logger.debug('BookingFlow: Slot still available, proceeding with payment...');
 
-      // Optimistic UI update: Immediately remove the selected slot to prevent double booking
-      logger.debug('🔒 BookingFlow: Optimistically removing slot from UI');
-      setAvailableSlots(prev => prev.filter(slot => slot !== selectedTime));
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', payload: state.availableSlots.filter(slot => slot !== state.selectedTime) });
 
-      // Combine date and time into scheduledAt DateTime
-      const [hours, minutes] = selectedTime.split(':').map(Number);
-      const scheduledAt = new Date(selectedDate);
+      const [hours, minutes] = state.selectedTime.split(':').map(Number);
+      const scheduledAt = new Date(state.selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
 
-      // Step 2: Start payment process (will check wallet first if useWalletFirst=true)
-      logger.debug('💳 BookingFlow: Creating payment intent...');
-      logger.debug('💰 BookingFlow: Wallet-first enabled:', useWalletFirst);
+      logger.debug('BookingFlow: Creating payment intent...');
+      logger.debug('BookingFlow: Wallet-first enabled:', state.useWalletFirst);
       if (user?.walletBalance > 0) {
-        logger.debug('💰 BookingFlow: User wallet balance: $', user.walletBalance);
+        logger.debug('BookingFlow: User wallet balance: $', user.walletBalance);
       }
 
-      // Deposit amount is $1 = 100 cents (finalPrice is already in cents)
-      const depositAmount = 100; // $1 deposit in cents
+      const depositAmount = 100;
 
       const paymentData = {
-        serviceId: service.id,
+        serviceId: state.service.id,
         specialistId: currentSpecialistId,
         scheduledAt: scheduledAt.toISOString(),
-        duration: service.duration || 60,
-        customerNotes: bookingNotes || undefined,
+        duration: state.service.duration || 60,
+        customerNotes: state.bookingNotes || undefined,
         loyaltyPointsUsed: 0,
-        useWalletFirst,
-        amount: depositAmount, // $1 deposit in cents
-        currency: service.currency || 'USD',
-        serviceName: service.name,
-        specialistName: specialist.user?.firstName && specialist.user?.lastName
-          ? `${specialist.user.firstName} ${specialist.user.lastName}`
-          : specialist.businessName || 'Specialist',
-        ...(service.isGroupSession && { participantCount })
+        useWalletFirst: state.useWalletFirst,
+        amount: depositAmount,
+        currency: state.service.currency || 'USD',
+        serviceName: state.service.name,
+        specialistName: state.specialist.user?.firstName && state.specialist.user?.lastName
+          ? `${state.specialist.user.firstName} ${state.specialist.user.lastName}`
+          : state.specialist.businessName || 'Specialist',
+        ...(state.service.isGroupSession && { participantCount: state.participantCount })
       };
 
       let depositResult;
-      if (paymentMethod === 'paypal') {
-        // Handle PayPal payment
-        logger.debug('💳 BookingFlow: Creating PayPal order...');
+      if (state.paymentMethod === 'paypal') {
+        logger.debug('BookingFlow: Creating PayPal order...');
 
-        // Deposit is always $1 USD (100 cents) regardless of service currency
-        // PayPal doesn't support UAH, so always use USD for deposits
         const paypalOrderData = {
-          bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: depositAmount, // Always 100 cents = $1.00 USD
-          currency: 'USD', // Always USD for deposits
-          description: `${service.name} - ${paymentData.specialistName}`,
+          bookingId: `booking-${Date.now()}`,
+          amount: depositAmount,
+          currency: 'USD',
+          description: `${state.service.name} - ${paymentData.specialistName}`,
           bookingData: {
-            serviceId: service.id,
+            serviceId: state.service.id,
             specialistId: currentSpecialistId,
             scheduledAt: scheduledAt.toISOString(),
-            duration: service.duration || 60,
-            customerNotes: bookingNotes || undefined,
-            serviceName: service.name,
+            duration: state.service.duration || 60,
+            customerNotes: state.bookingNotes || undefined,
+            serviceName: state.service.name,
             specialistName: paymentData.specialistName,
-            servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD',
+            servicePrice: state.service.price,
+            serviceCurrency: state.service.currency || 'USD',
             loyaltyPointsUsed: 0,
-            rewardRedemptionId: selectedRedemptionId || undefined
+            rewardRedemptionId: state.selectedRedemptionId || undefined
           }
         };
 
         const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
-        logger.debug('✅ BookingFlow: PayPal order created:', paypalResult);
+        logger.debug('BookingFlow: PayPal order created:', paypalResult);
 
-        // For PayPal, open approval URL in new window or redirect
         if (paypalResult.approvalUrl) {
-          // Open PayPal in new window
           window.open(paypalResult.approvalUrl, '_blank');
 
-          // Immediately show payment pending confirmation
-          setCurrentStep(4);
-          setBookingResult({
-            status: 'PENDING_PAYMENT',
-            paymentMethod: 'paypal',
-            service,
-            specialist,
-            scheduledAt: scheduledAt.toISOString(),
-            message: 'Payment link opened. Complete payment to confirm your booking.'
+          dispatch({ type: 'SET_CURRENT_STEP', payload: 4 });
+          dispatch({
+            type: 'SET_BOOKING_RESULT',
+            payload: {
+              status: 'PENDING_PAYMENT',
+              paymentMethod: 'paypal',
+              service: state.service,
+              specialist: state.specialist,
+              scheduledAt: scheduledAt.toISOString(),
+              message: 'Payment link opened. Complete payment to confirm your booking.'
+            }
           });
 
-          setPaymentResult({
-            paymentUrl: paypalResult.approvalUrl,
-            finalAmount: depositAmount,
-            status: 'pending',
-            remainingAmount: depositAmount,
-            paymentMethod: 'PAYPAL',
-            message: 'Payment processing. You will receive an email confirmation once payment is verified.'
+          dispatch({
+            type: 'SET_PAYMENT_RESULT',
+            payload: {
+              paymentUrl: paypalResult.approvalUrl,
+              finalAmount: depositAmount,
+              status: 'pending',
+              remainingAmount: depositAmount,
+              paymentMethod: 'PAYPAL',
+              message: 'Payment processing. You will receive an email confirmation once payment is verified.'
+            }
           });
 
-          setPaymentLoading(false);
-          // Return early - no need for timeout/socket logic since we're showing immediate confirmation
+          dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
           return;
         } else {
           throw new Error('PayPal order created but no approval URL received');
         }
       } else {
-        // Handle crypto payment with Coinbase Commerce
-        logger.debug('💳 BookingFlow: Creating Coinbase Commerce charge...');
+        logger.debug('BookingFlow: Creating Coinbase Commerce charge...');
         depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
-        logger.debug('✅ BookingFlow: Coinbase charge created:', depositResult);
+        logger.debug('BookingFlow: Coinbase charge created:', depositResult);
       }
 
-      // Store payment result for UI
-      setPaymentResult(depositResult);
+      dispatch({ type: 'SET_PAYMENT_RESULT', payload: depositResult });
 
-      // Start payment timeout for external payments (15 minutes)
       if (depositResult.requiresPayment) {
-        const timeoutDuration = 15 * 60 * 1000; // 15 minutes in milliseconds
-        setPaymentTimeRemaining(timeoutDuration);
+        const timeoutDuration = 15 * 60 * 1000;
+        dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: timeoutDuration });
 
-        // Start countdown timer
-        const countdownInterval = setInterval(() => {
-          setPaymentTimeRemaining(prev => {
-            if (prev <= 1000) {
-              clearInterval(countdownInterval);
-              handlePaymentTimeout();
-              return 0;
-            }
-            return prev - 1000;
-          });
+        let remaining = timeoutDuration;
+        const countdownTimer = setInterval(() => {
+          remaining -= 1000;
+          if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            handlePaymentTimeout();
+          } else {
+            dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: remaining });
+          }
         }, 1000);
 
-        // Set main timeout
         const timeoutId = setTimeout(() => {
-          clearInterval(countdownInterval);
+          clearInterval(countdownTimer);
           handlePaymentTimeout();
         }, timeoutDuration);
 
-        setPaymentTimeoutId(timeoutId);
+        dispatch({ type: 'SET_PAYMENT_TIMEOUT_ID', payload: timeoutId });
 
-        // Listen for payment completion via socket
-        const handlePaymentCompleted = (paymentData: any) => {
-          logger.debug('💳 BookingFlow: Payment completed via socket:', paymentData);
+        const handlePaymentCompleted = (paymentEventData: Record<string, unknown>) => {
+          logger.debug('BookingFlow: Payment completed via socket:', paymentEventData);
 
-          if (paymentData.paymentId === depositResult.paymentId) {
-            // Clear timeout using fresh timeoutId reference
+          if (paymentEventData.paymentId === depositResult.paymentId) {
             clearTimeout(timeoutId);
-            clearInterval(countdownInterval);
-            setPaymentTimeoutId(null);
-            setPaymentTimeRemaining(0);
+            clearInterval(countdownTimer);
+            dispatch({ type: 'SET_PAYMENT_TIMEOUT_ID', payload: null });
+            dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: 0 });
 
-            // Update payment result
-            setPaymentResult({
-              ...depositResult,
-              status: 'COMPLETED',
-              requiresPayment: false
+            dispatch({
+              type: 'SET_PAYMENT_RESULT',
+              payload: {
+                ...depositResult,
+                status: 'COMPLETED',
+                requiresPayment: false
+              }
             });
 
-            // Booking should be created by webhook, fetch the booking result
-            if (paymentData.bookingId) {
-              bookingService.getBooking(paymentData.bookingId)
+            if (paymentEventData.bookingId) {
+              bookingService.getBooking(paymentEventData.bookingId)
                 .then(booking => {
-                  logger.debug('✅ BookingFlow: Booking created via webhook:', booking);
-                  setBookingResult(booking);
-                  // Navigate to confirmation
-                  setCurrentStep(steps.length - 1);
+                  logger.debug('BookingFlow: Booking created via webhook:', booking);
+                  dispatch({ type: 'SET_BOOKING_RESULT', payload: booking });
+                  dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
                   toast.success(t('booking.paymentConfirmed') || 'Payment completed! Your booking is confirmed.');
                   fireSuccessConfetti();
                 })
                 .catch(err => {
-                  logger.error('❌ BookingFlow: Error fetching booking after payment:', err);
+                  logger.error('BookingFlow: Error fetching booking after payment:', err);
                   toast.error(t('booking.paymentNoDetails') || 'Payment completed but booking details unavailable. Check your bookings page.');
                 });
             } else {
-              // Navigate to confirmation even without booking details
-              setCurrentStep(steps.length - 1);
+              dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
               toast.success(t('booking.paymentProcessing') || 'Payment completed! Your booking is being processed.');
             }
 
-            // Clean up listeners and polling using enhanced cleanup
             cleanupSocketListeners();
-            if (pollingIntervalId) {
-              clearInterval(pollingIntervalId);
-              setPollingIntervalId(null);
+            if (state.pollingIntervalId) {
+              clearInterval(state.pollingIntervalId);
+              dispatch({ type: 'SET_POLLING_INTERVAL_ID', payload: null });
             }
           }
         };
 
-        // Also listen to notifications for payment completion (fallback)
-        const handleNotificationReceived = (notificationData: any) => {
-          logger.debug('💳 BookingFlow: Notification received via socket:', notificationData);
-
-          // Check if this is a payment completion notification
+        const handleNotificationReceived = (notificationData: Record<string, unknown>) => {
+          logger.debug('BookingFlow: Notification received via socket:', notificationData);
           if (notificationData.type === 'PAYMENT_COMPLETED' && notificationData.data) {
-            const paymentData = notificationData.data;
-            handlePaymentCompleted(paymentData);
+            handlePaymentCompleted(notificationData.data);
           }
         };
 
-        // Enhanced WebSocket subscription with auto-reconnection
-        logger.debug('💳 BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
+        logger.debug('BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
         const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId, handlePaymentCompleted);
-
-        // Also listen to general notifications as fallback
         socketService.on('notification:new', handleNotificationReceived);
 
-        // Store unsubscribe function for cleanup
         const cleanupSocketListeners = () => {
           unsubscribePayment();
           socketService.off('notification:new', handleNotificationReceived);
         };
 
-        // Update existing cleanup to use the new function
-        const originalHandlePaymentCompleted = handlePaymentCompleted;
-        const enhancedHandlePaymentCompleted = (paymentData: any) => {
-          originalHandlePaymentCompleted(paymentData);
-          cleanupSocketListeners();
-        };
-
-        // Set up polling as fallback mechanism
         const pollPaymentStatus = async () => {
           try {
-            logger.debug('🔍 BookingFlow: Polling payment status for:', depositResult.paymentId);
+            logger.debug('BookingFlow: Polling payment status for:', depositResult.paymentId);
             const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId);
 
             if (paymentStatus.status === 'PAID' || paymentStatus.status === 'COMPLETED') {
-              logger.debug('✅ BookingFlow: Payment confirmed via polling:', paymentStatus);
+              logger.debug('BookingFlow: Payment confirmed via polling:', paymentStatus);
               handlePaymentCompleted({
                 paymentId: depositResult.paymentId,
                 bookingId: paymentStatus.bookingId,
@@ -800,157 +688,118 @@ const BookingFlow: React.FC = () => {
                 type: 'DEPOSIT',
                 confirmedAt: new Date(),
               });
-              return true; // Stop polling
+              return true;
             }
           } catch (error) {
-            logger.warn('🔍 BookingFlow: Error polling payment status:', error);
+            logger.warn('BookingFlow: Error polling payment status:', error);
           }
-          return false; // Continue polling
+          return false;
         };
 
-        // Start polling every 10 seconds as fallback
         const pollingInterval = setInterval(async () => {
           const completed = await pollPaymentStatus();
           if (completed) {
             clearInterval(pollingInterval);
-            setPollingIntervalId(null);
+            dispatch({ type: 'SET_POLLING_INTERVAL_ID', payload: null });
           }
         }, 10000);
 
-        setPollingIntervalId(pollingInterval);
-
-        // Clear polling when component unmounts or payment times out
-        const originalTimeoutHandler = () => {
-          clearInterval(pollingInterval);
-          setPollingIntervalId(null);
-          handlePaymentTimeout();
-        };
-
-        // Update the timeout to clear polling - but handlePaymentCompleted already clears it
-        // No need to recreate timeout since handlePaymentCompleted handles cleanup
+        dispatch({ type: 'SET_POLLING_INTERVAL_ID', payload: pollingInterval });
       }
 
-      // Step 3: Handle payment result
       if (depositResult.status === 'COMPLETED') {
-        // Payment completed with wallet balance - create booking immediately
-        logger.debug('💰 BookingFlow: Payment completed with wallet, creating booking...');
-        const bookingData = {
-          serviceId: service.id,
+        logger.debug('BookingFlow: Payment completed with wallet, creating booking...');
+        const bookingPaymentData = {
+          serviceId: state.service.id,
           scheduledAt: scheduledAt.toISOString(),
-          duration: service.duration || 60,
-          customerNotes: bookingNotes || undefined,
+          duration: state.service.duration || 60,
+          customerNotes: state.bookingNotes || undefined,
           loyaltyPointsUsed: 0,
-          rewardRedemptionId: selectedRedemptionId
+          rewardRedemptionId: state.selectedRedemptionId
         };
 
         const bookingResult = await bookingService.createBookingWithPayment({
-          ...bookingData,
+          ...bookingPaymentData,
           paymentId: depositResult.paymentId
         });
-        logger.debug('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
-        setBookingResult(bookingResult);
+        logger.debug('BookingFlow: Booking created after wallet payment:', bookingResult);
+        dispatch({ type: 'SET_BOOKING_RESULT', payload: bookingResult });
         fireSuccessConfetti();
-
-        // Navigate to confirmation step
-        setCurrentStep(steps.length - 1);
+        dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
       } else {
-        // Payment requires crypto/external payment - navigate to payment step to show payment interface
-        logger.debug('⏳ BookingFlow: External payment required, navigating to payment step');
-        logger.debug('💳 BookingFlow: Payment details:', {
-          amount: depositResult.finalAmount,
-          paymentUrl: depositResult.paymentUrl,
-          qrCode: !!depositResult.qrCodeData,
-          status: depositResult.status
-        });
-
-        // Navigate to payment step (step 3) to show payment interface
-        setCurrentStep(3);
+        logger.debug('BookingFlow: External payment required, navigating to payment step');
+        dispatch({ type: 'SET_CURRENT_STEP', payload: 3 });
       }
 
       return depositResult;
-    } catch (error: any) {
-      logger.error('❌ BookingFlow: Error in booking/payment flow:', error);
+    } catch (error: unknown) {
+      logger.error('BookingFlow: Error in booking/payment flow:', error);
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
 
-      // Refresh slots to show current availability after any error
-      logger.debug('🔄 BookingFlow: Refreshing slots after error');
+      logger.debug('BookingFlow: Refreshing slots after error');
       await refreshSlots();
 
       if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        setCurrentStep(1); // Go back to time selection
-        setConflictHint({ active: true, lastTried: selectedTime });
+        dispatch({ type: 'SET_CURRENT_STEP', payload: 1 });
+        dispatch({ type: 'SET_CONFLICT_HINT', payload: { active: true, lastTried: state.selectedTime } });
       } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
-        // Check if booking was actually created (duplicate submission case)
-        // If bookingResult is already set, the first request succeeded, so don't show error
-        if (!bookingResult) {
+        if (!state.bookingResult) {
           toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-          setCurrentStep(1); // Go back to time selection
-          setConflictHint({ active: true, lastTried: selectedTime });
+          dispatch({ type: 'SET_CURRENT_STEP', payload: 1 });
+          dispatch({ type: 'SET_CONFLICT_HINT', payload: { active: true, lastTried: state.selectedTime } });
         } else {
-          // Booking already succeeded, ignore the duplicate 409 error
-          logger.debug('✅ BookingFlow: Ignoring 409 error - booking already succeeded');
+          logger.debug('BookingFlow: Ignoring 409 error - booking already succeeded');
         }
       } else {
         toast.error(error?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
       }
     } finally {
       bookingInProgressRef.current = false;
-      setPaymentLoading(false);
+      dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
     }
   };
 
-  // Handle joining the waitlist
   const handleJoinWaitlist = async () => {
-    if (!user || !service || !selectedDate) return;
+    if (!user || !state.service || !state.selectedDate) return;
 
-    const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    const currentSpecialistId = getSpecialistId();
     if (!currentSpecialistId) return;
 
-    setWaitlistLoading(true);
+    dispatch({ type: 'SET_WAITLIST_LOADING', payload: true });
     try {
       await waitlistService.joinWaitlist({
-        serviceId: service.id,
+        serviceId: state.service.id,
         specialistId: currentSpecialistId,
-        preferredDate: selectedDate.toISOString(),
-        preferredTime: waitlistPreferredTime || undefined,
-        notes: waitlistNotes || undefined,
+        preferredDate: state.selectedDate.toISOString(),
+        preferredTime: state.waitlistPreferredTime || undefined,
+        notes: state.waitlistNotes || undefined,
       });
-      setWaitlistJoined(true);
-      setShowWaitlistModal(false);
-      setWaitlistNotes('');
-      setWaitlistPreferredTime('');
+      dispatch({ type: 'SET_WAITLIST_JOINED', payload: true });
+      dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: false });
+      dispatch({ type: 'SET_WAITLIST_NOTES', payload: '' });
+      dispatch({ type: 'SET_WAITLIST_PREFERRED_TIME', payload: '' });
       toast.success(t('waitlist.joinedSuccess') || 'You have been added to the waitlist! We will notify you when a slot becomes available.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       const code = error?.apiError?.code || error?.response?.data?.error?.code;
       if (code === 'ALREADY_ON_WAITLIST') {
-        // Already on waitlist -- mark as joined, the API interceptor may already show a toast
-        setWaitlistJoined(true);
-        setShowWaitlistModal(false);
+        dispatch({ type: 'SET_WAITLIST_JOINED', payload: true });
+        dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: false });
       }
-      // Other errors are shown by the API interceptor
     } finally {
-      setWaitlistLoading(false);
+      dispatch({ type: 'SET_WAITLIST_LOADING', payload: false });
     }
   };
 
-  // Convert available dates to Date objects for display
-  const getDisplayDates = () => {
-    return availableDates.map(dateInfo => ({
-      date: new Date(dateInfo.date),
-      dateInfo
-    }));
-  };
+  // ─── Render Guards ─────────────────────────────────────────────────────────
 
-  if (loading) {
+  if (state.loading) {
     return <PageLoader />;
   }
 
-  if (!specialist || !service) {
-    logger.debug('❌ BookingFlow: Missing data - specialist:', specialist, 'service:', service);
-    logger.debug('🔍 BookingFlow: Service ID from params:', serviceId);
-    logger.debug('🔍 BookingFlow: Specialist ID from params:', specialistId);
+  if (!state.specialist || !state.service) {
+    logger.debug('BookingFlow: Missing data - specialist:', state.specialist, 'service:', state.service);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -968,22 +817,20 @@ const BookingFlow: React.FC = () => {
     );
   }
 
-  // Prevent specialists from booking their own services (client-side UX guard)
   const isOwnService = Boolean(
     user?.userType === 'specialist' &&
     user?.id &&
     (
-      specialist?.user?.id === user.id ||
-      service?.specialist?.user?.id === user.id
+      state.specialist?.user?.id === user.id ||
+      state.service?.specialist?.user?.id === user.id
     )
   );
-  
-  // Debug logging for specialists
-  if (user?.userType === 'specialist' && (specialist || service)) {
-    logger.debug('🔍 BookingFlow: Specialist booking check:', {
+
+  if (user?.userType === 'specialist' && (state.specialist || state.service)) {
+    logger.debug('BookingFlow: Specialist booking check:', {
       userId: user.id,
-      specialistUserId: specialist?.user?.id,
-      serviceSpecialistUserId: service?.specialist?.user?.id,
+      specialistUserId: state.specialist?.user?.id,
+      serviceSpecialistUserId: state.service?.specialist?.user?.id,
       isOwnService
     });
   }
@@ -1009,1198 +856,132 @@ const BookingFlow: React.FC = () => {
     );
   }
 
+  // ─── Step Rendering ────────────────────────────────────────────────────────
+
   const renderStepContent = () => {
-    const currentStepId = steps[currentStep]?.id;
+    const currentStepId = steps[state.currentStep]?.id;
 
     switch (currentStepId) {
-      case 'service': // Service Selection
+      case 'service':
+        return <ServiceSelect service={state.service} />;
+
+      case 'datetime':
         return (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {t('booking.selectedService')}
-              </h3>
-              
-              <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {service.name}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {service.description}
-                    </p>
-                    <div className="flex items-center mt-2 text-sm text-gray-500">
-                      <ClockIcon className="w-4 h-4 mr-1" />
-                      <span>{service.duration} {t('time.minutes')}</span>
-                    </div>
-                  </div>
-                  <div className="text-right ml-4">
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DateTimePicker
+            availableDates={state.availableDates}
+            selectedDate={state.selectedDate}
+            onDateSelect={(date) => {
+              dispatch({ type: 'SET_SELECTED_DATE', payload: date });
+              dispatch({ type: 'SET_WAITLIST_JOINED', payload: false });
+            }}
+            selectedTime={state.selectedTime}
+            onTimeSelect={(time) => dispatch({ type: 'SET_SELECTED_TIME', payload: time })}
+            availableSlots={state.availableSlots}
+            slotsLoading={state.slotsLoading}
+            service={state.service}
+            conflictHint={state.conflictHint}
+            onConflictHintDismiss={() => {
+              dispatch({ type: 'SET_CONFLICT_HINT', payload: { active: false } });
+              toast.success(t('booking.timeUpdated') || 'Time updated -- review and proceed when ready');
+            }}
+            user={user as Record<string, unknown> | null}
+            waitlistJoined={state.waitlistJoined}
+            onShowWaitlist={() => dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: true })}
+          />
         );
 
-      case 'datetime': // Date & Time Selection
+      case 'details':
         return (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {t('booking.selectDate')}
-              </h3>
-              
-              {getDisplayDates().length > 0 ? (
-                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-                  {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
-                    <button
-                      key={date.toISOString()}
-                      onClick={() => { setSelectedDate(date); setWaitlistJoined(false); }}
-                      className={`p-2 sm:p-3 text-xs sm:text-sm rounded-xl border transition-colors relative mobile-touch-target ${
-                        selectedDate?.toDateString() === date.toDateString()
-                          ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
-                      }`}
-                      title={`${dateInfo.availableSlots} available slots (${dateInfo.workingHours})`}
-                    >
-                      <div className="text-center">
-                        <div className="font-medium text-sm sm:text-base">{date.getDate()}</div>
-                        <div className="text-xs opacity-75">
-                          {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
-                        </div>
-                        <div className="text-xs text-primary-600 font-medium mt-1">
-                          {dateInfo.availableSlots} slots
-                        </div>
-                      </div>
-                      {dateInfo.availableSlots === 1 && (
-                        <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400 mb-2">
-                    {t('booking.noAvailableDates')}
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500">
-                    {t('booking.noSlotsInNext30Days') || 'The specialist has no available time slots in the next 30 days'}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {selectedDate && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                  {t('booking.selectTime')}
-                </h3>
-                {conflictHint.active && (
-                  <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl mb-4">
-                    <div className="text-sm">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
-                    <button
-                      onClick={() => {
-                        if (!availableSlots || availableSlots.length === 0) return;
-                        const idx = conflictHint.lastTried ? availableSlots.indexOf(conflictHint.lastTried) : -1;
-                        const next = idx >= 0 && idx < availableSlots.length - 1 ? availableSlots[idx + 1] : availableSlots[0];
-                        setSelectedTime(next);
-                        setConflictHint({ active: false });
-                        toast.success(t('booking.timeUpdated') || 'Time updated — review and proceed when ready');
-                      }}
-                      className="btn btn-error btn-sm text-white"
-                    >
-                      {t('booking.tryNextAvailable') || 'Try next available'}
-                    </button>
-                  </div>
-                )}
-
-                {slotsLoading ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {t('booking.loadingSlots') || 'Loading available times...'}
-                    </p>
-                  </div>
-                ) : availableSlots.length > 0 ? (
-                  <div className="space-y-4">
-                    {(() => {
-                      const groups: { label: string; slots: typeof availableSlots } = [] as any;
-                      const morning: typeof availableSlots = [];
-                      const afternoon: typeof availableSlots = [];
-                      const evening: typeof availableSlots = [];
-
-                      availableSlots.forEach((slot: any) => {
-                        const time = typeof slot === 'string' ? slot : slot.time;
-                        const hour = parseInt(time.split(':')[0], 10);
-                        if (hour < 12) morning.push(slot);
-                        else if (hour < 17) afternoon.push(slot);
-                        else evening.push(slot);
-                      });
-
-                      const sections = [
-                        { label: t('booking.morning') || 'Morning', slots: morning },
-                        { label: t('booking.afternoon') || 'Afternoon', slots: afternoon },
-                        { label: t('booking.evening') || 'Evening', slots: evening },
-                      ].filter(s => s.slots.length > 0);
-
-                      return sections.map(section => (
-                        <div key={section.label}>
-                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{section.label}</h4>
-                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                            {section.slots.map((slot: any) => {
-                              const time = typeof slot === 'string' ? slot : slot.time;
-                              const count = typeof slot === 'string' ? undefined : slot.count;
-                              const serviceDuration = service?.duration || 60;
-                              const endTime = calculateEndTime(time, serviceDuration);
-
-                              return (
-                                <button
-                                  key={time}
-                                  onClick={() => setSelectedTime(time)}
-                                  className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-colors mobile-touch-target ${
-                                    selectedTime === time
-                                      ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                                      : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
-                                  }`}
-                                >
-                                  <div className="text-center">
-                                    <div className="font-medium">{time}</div>
-                                    {serviceDuration > 15 && (
-                                      <div className="text-xs opacity-75">to {endTime}</div>
-                                    )}
-                                  </div>
-                                  {count === 1 && (
-                                    <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
-                      {t('booking.noAvailableSlots')}
-                    </p>
-                    {user && !waitlistJoined && (
-                      <button
-                        onClick={() => setShowWaitlistModal(true)}
-                        className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors shadow-sm"
-                      >
-                        <ClockIcon className="w-4 h-4 mr-2" />
-                        {t('waitlist.joinWaitlist') || 'Join Waitlist'}
-                      </button>
-                    )}
-                    {waitlistJoined && (
-                      <div className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl">
-                        <CheckCircleIcon className="w-4 h-4 mr-2" />
-                        {t('waitlist.alreadyJoined') || 'You are on the waitlist for this date'}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <BookingDetails
+            service={state.service}
+            specialist={state.specialist}
+            selectedDate={state.selectedDate}
+            selectedTime={state.selectedTime}
+            bookingNotes={state.bookingNotes}
+            onBookingNotesChange={(v) => dispatch({ type: 'SET_BOOKING_NOTES', payload: v })}
+            participantCount={state.participantCount}
+            onParticipantCountChange={(v) => dispatch({ type: 'SET_PARTICIPANT_COUNT', payload: v })}
+            isRecurring={state.isRecurring}
+            recurrenceData={state.recurrenceData}
+            showRecurringModal={state.showRecurringModal}
+            onToggleRecurring={() => {
+              if (state.isRecurring) {
+                dispatch({ type: 'SET_IS_RECURRING', payload: false });
+                dispatch({ type: 'SET_RECURRENCE_DATA', payload: null });
+              } else {
+                dispatch({ type: 'SET_IS_RECURRING', payload: true });
+                dispatch({ type: 'SET_SHOW_RECURRING_MODAL', payload: true });
+              }
+            }}
+            onShowRecurringModal={() => dispatch({ type: 'SET_SHOW_RECURRING_MODAL', payload: true })}
+            onCloseRecurringModal={() => {
+              dispatch({ type: 'SET_SHOW_RECURRING_MODAL', payload: false });
+              if (!state.recurrenceData) {
+                dispatch({ type: 'SET_IS_RECURRING', payload: false });
+              }
+            }}
+            onSaveRecurrence={(data: RecurrenceData) => {
+              dispatch({ type: 'SET_RECURRENCE_DATA', payload: data });
+              dispatch({ type: 'SET_IS_RECURRING', payload: true });
+            }}
+            redemptions={state.redemptions}
+            selectedRedemptionId={state.selectedRedemptionId}
+            onSelectedRedemptionIdChange={(v) => dispatch({ type: 'SET_SELECTED_REDEMPTION_ID', payload: v })}
+            discount={discount}
+            finalPrice={finalPrice}
+            loyaltyData={state.loyaltyData}
+            pointsToEarn={state.pointsToEarn}
+          />
         );
 
-      case 'details': // Booking Details
+      case 'payment':
         return (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {t('booking.bookingDetails')}
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Participant Count for Group Sessions */}
-                {service?.isGroupSession && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('booking.participantCount')}
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="number"
-                        min="1"
-                        max={service.maxParticipants || 999}
-                        value={participantCount}
-                        onChange={(e) => setParticipantCount(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                      />
-                      {service.maxParticipants && (
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {t('booking.participantCountHint', { max: service.maxParticipants })}
-                        </span>
-                      )}
-                    </div>
-                    {service.minParticipants && participantCount < service.minParticipants && (
-                      <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
-                        {t('booking.minParticipantsWarning', { min: service.minParticipants })}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('booking.additionalNotes')}
-                  </label>
-                  <textarea
-                    value={bookingNotes}
-                    onChange={(e) => setBookingNotes(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder={t('booking.notesPlaceholder')}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Recurring Booking Toggle */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-                    <ArrowPathIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {t('booking.makeRecurring') || 'Make this recurring'}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {t('booking.makeRecurringDesc') || 'Automatically schedule this booking on a regular basis'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isRecurring}
-                  onClick={() => {
-                    if (isRecurring) {
-                      setIsRecurring(false);
-                      setRecurrenceData(null);
-                    } else {
-                      setIsRecurring(true);
-                      setShowRecurringModal(true);
-                    }
-                  }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                    isRecurring ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      isRecurring ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Recurrence Summary */}
-              {isRecurring && recurrenceData && (
-                <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-primary-900 dark:text-primary-300">
-                        {recurrenceData.frequency === 'daily' && 'Every day'}
-                        {recurrenceData.frequency === 'weekly' && (
-                          recurrenceData.daysOfWeek && recurrenceData.daysOfWeek.length > 0
-                            ? `Every week on ${recurrenceData.daysOfWeek.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}`
-                            : 'Every week'
-                        )}
-                        {recurrenceData.frequency === 'biweekly' && 'Every 2 weeks'}
-                        {recurrenceData.frequency === 'monthly' && 'Every month'}
-                      </p>
-                      <p className="text-xs text-primary-700 dark:text-primary-400 mt-0.5">
-                        {recurrenceData.endType === 'never' && 'Repeats indefinitely (up to 52 times)'}
-                        {recurrenceData.endType === 'after' && `${recurrenceData.occurrences || 10} occurrences`}
-                        {recurrenceData.endType === 'on' && recurrenceData.endDate && `Until ${recurrenceData.endDate}`}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowRecurringModal(true)}
-                      className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                    >
-                      {t('common.edit') || 'Edit'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {isRecurring && !recurrenceData && (
-                <div className="mt-4">
-                  <button
-                    onClick={() => setShowRecurringModal(true)}
-                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                  >
-                    {t('booking.configureRecurrence') || 'Configure recurrence pattern...'}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Recurring Booking Modal */}
-            <RecurringBookingModal
-              isOpen={showRecurringModal}
-              onClose={() => {
-                setShowRecurringModal(false);
-                if (!recurrenceData) {
-                  setIsRecurring(false);
-                }
-              }}
-              onSave={(data: RecurrenceData) => {
-                setRecurrenceData(data);
-                setIsRecurring(true);
-              }}
-              initialData={recurrenceData || undefined}
-            />
-
-            {/* Reward Selection */}
-            {redemptions.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <GiftIcon className="w-6 h-6 mr-3 text-purple-600" />
-                  {t('booking.applyReward') || 'Apply a Reward'}
-                </h4>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('booking.selectReward') || 'Choose a reward to apply'}
-                    </label>
-                    <select
-                      value={selectedRedemptionId}
-                      onChange={(e) => setSelectedRedemptionId(e.target.value)}
-                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 ${
-                        selectedRedemptionId ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700' : ''
-                      } text-gray-900 dark:text-white`}
-                    >
-                      <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
-                      {redemptions.map(r => (
-                        <option key={r.id} value={r.id}>
-                          {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
-                          {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Show confirmation when reward is selected */}
-                  {selectedRedemptionId && discount > 0 && (
-                    <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                      <div className="flex items-center">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                            {t('booking.rewardApplied') || 'Reward Applied!'}
-                          </p>
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Booking Summary */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {t('booking.summary')}
-              </h3>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.specialist')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {specialist.user?.firstName} {specialist.user?.lastName}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.service')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {service.name}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.dateTime')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {selectedDate?.toLocaleDateString(language || 'en')} {selectedTime}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.duration')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {service.duration} {t('time.minutes')}
-                  </span>
-                </div>
-
-                {isRecurring && recurrenceData && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">{t('booking.recurrence') || 'Recurrence'}</span>
-                    <span className="font-medium text-primary-600 dark:text-primary-400">
-                      {recurrenceData.frequency === 'daily' && 'Daily'}
-                      {recurrenceData.frequency === 'weekly' && 'Weekly'}
-                      {recurrenceData.frequency === 'biweekly' && 'Biweekly'}
-                      {recurrenceData.frequency === 'monthly' && 'Monthly'}
-                      {recurrenceData.endType === 'after' && ` (${recurrenceData.occurrences}x)`}
-                      {recurrenceData.endType === 'on' && recurrenceData.endDate && ` until ${recurrenceData.endDate}`}
-                    </span>
-                  </div>
-                )}
-
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                  {/* Show discount breakdown if reward is selected */}
-                  {discount > 0 && (
-                    <>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                        </span>
-                      </div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-green-600 dark:text-green-400">{t('booking.discount') || 'Reward Discount'}</span>
-                        <span className="text-sm text-green-600 dark:text-green-400">
-                          -{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                        </span>
-                      </div>
-                      <div className="border-t border-gray-100 dark:border-gray-800 pt-2 mb-2"></div>
-                    </>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                    </span>
-                  </div>
-                  
-                  {/* Loyalty Points to Earn */}
-                  {loyaltyData && pointsToEarn > 0 && (
-                    <div className="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                      <div className="flex items-center space-x-2">
-                        <GiftIcon className="h-4 w-4 text-purple-500" />
-                        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
-                          Points you'll earn
-                        </span>
-                      </div>
-                      <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                        +{pointsToEarn} points
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Current Loyalty Points */}
-                  {loyaltyData && (
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Your current points
-                      </span>
-                      <span className="text-xs text-gray-600 dark:text-gray-300">
-                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <PaymentStep
+            service={state.service}
+            specialist={state.specialist}
+            selectedDate={state.selectedDate}
+            selectedTime={state.selectedTime}
+            paymentMethod={state.paymentMethod}
+            onPaymentMethodChange={(m) => dispatch({ type: 'SET_PAYMENT_METHOD', payload: m })}
+            useWalletFirst={state.useWalletFirst}
+            onUseWalletFirstChange={(v) => dispatch({ type: 'SET_USE_WALLET_FIRST', payload: v })}
+            paymentLoading={state.paymentLoading}
+            paymentResult={state.paymentResult}
+            paymentOptions={state.paymentOptions}
+            showQRCode={state.showQRCode}
+            onToggleQRCode={() => dispatch({ type: 'SET_SHOW_QR_CODE', payload: !state.showQRCode })}
+            paymentTimeRemaining={state.paymentTimeRemaining}
+            onBookingSubmit={handleBookingSubmit}
+            stepsLength={steps.length}
+            onSetCurrentStep={(s) => dispatch({ type: 'SET_CURRENT_STEP', payload: s })}
+            onSetBookingResult={(r) => dispatch({ type: 'SET_BOOKING_RESULT', payload: r })}
+            onSetPaymentResult={(r) => dispatch({ type: 'SET_PAYMENT_RESULT', payload: r })}
+            redemptions={state.redemptions}
+            selectedRedemptionId={state.selectedRedemptionId}
+            onSelectedRedemptionIdChange={(v) => dispatch({ type: 'SET_SELECTED_REDEMPTION_ID', payload: v })}
+            discount={discount}
+            finalPrice={finalPrice}
+            loyaltyData={state.loyaltyData}
+            pointsToEarn={state.pointsToEarn}
+          />
         );
 
-      case 'payment': // Payment
+      case 'confirmation':
         return (
-          <div className="space-y-6">
-            {/* Payment Summary */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
-                {t('booking.payment')}
-              </h3>
-              
-              {/* Order Summary */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
-                  <span className="font-bold text-gray-900 dark:text-white">
-                    {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                  </span>
-                </div>
-
-                {/* Show discount breakdown in order summary */}
-                {discount > 0 && (
-                  <div className="text-sm space-y-1 mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
-                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                      <span>Original Price:</span>
-                      <span>{formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}</span>
-                    </div>
-                    <div className="flex justify-between text-green-600 dark:text-green-400">
-                      <span>Reward Discount:</span>
-                      <span>-{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Duration:</span>
-                    <span>{service.duration} minutes</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Date:</span>
-                    <span>{selectedDate?.toLocaleDateString()} at {selectedTime}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Specialist:</span>
-                    <span>{specialist.user?.firstName} {specialist.user?.lastName}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Loyalty Benefits */}
-              {loyaltyData && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="h-8 w-8 bg-purple-500 rounded-xl flex items-center justify-center">
-                      <GiftIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Loyalty Rewards</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {loyaltyData.tier?.name || 'Bronze'} Member Benefits
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                        +{pointsToEarn}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Points to earn</p>
-                    </div>
-                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Current points</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-purple-600 dark:text-purple-400 text-center mt-3">
-                    After this booking: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
-                  </p>
-                </div>
-              )}
-              
-              {/* Reward Redemption Selection */}
-              {redemptions.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
-                    <GiftIcon className="w-5 h-5 mr-2 text-purple-600" />
-                    {t('booking.applyReward') || 'Apply a reward'}
-                  </h4>
-                  <select
-                    value={selectedRedemptionId}
-                    onChange={(e) => setSelectedRedemptionId(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-xl ${
-                      selectedRedemptionId
-                        ? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20'
-                        : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700'
-                    } text-gray-900 dark:text-white`}
-                  >
-                    <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
-                    {redemptions.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
-                        {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Show confirmation when reward is selected */}
-                  {selectedRedemptionId && discount > 0 && (
-                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                            {t('booking.rewardApplied') || 'Reward Applied!'}
-                          </p>
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Payment Method Selection */}
-              <div className="mb-6">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <CreditCardIcon className="w-5 h-5 mr-2 text-blue-600" />
-                  Payment Method
-                </h4>
-
-                <div className="space-y-3">
-                  {/* Crypto Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="crypto"
-                      checked={paymentMethod === 'crypto'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-                          <CreditCardIcon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cryptocurrency Payment</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Secure payment via Coinbase Commerce</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Supports Bitcoin, Ethereum, and other cryptocurrencies</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* PayPal Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="paypal"
-                      checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Pay with PayPal, credit cards, or bank account</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Fast and secure traditional payment</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Wallet First Option */}
-              <div className="mb-6">
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={useWalletFirst}
-                    onChange={(e) => setUseWalletFirst(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Use my wallet balance first (if available)
-                  </span>
-                </label>
-              </div>
-
-              {/* Payment Information */}
-              {paymentOptions && (
-                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
-                  <div className="text-sm">
-                    <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
-                    <div className="space-y-1 text-blue-800 dark:text-blue-200">
-                      <div>Deposit Amount: ${paymentOptions.depositConfiguration.amountUSD}</div>
-                      <div>Currency: USD</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Show payment interface if payment result exists */}
-              {paymentResult ? (
-                <div className="space-y-4">
-                  {/* Payment Section for all external payments */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                      💳 Complete Your {
-                        paymentMethod === 'paypal' ? 'PayPal' :
-                        'Cryptocurrency'
-                      } Payment
-                    </h4>
-                    {paymentResult.message && (
-                      <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                        {paymentResult.message}
-                      </p>
-                    )}
-
-                    {/* PayPal Payment Interface */}
-                    {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                        </p>
-                        <a
-                          href={paymentResult.paymentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => {
-                            // Immediately show payment pending confirmation
-                            setCurrentStep(4);
-                            setBookingResult({
-                              status: 'PENDING_PAYMENT',
-                              paymentMethod: 'paypal',
-                              service,
-                              specialist,
-                              scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
-                              message: 'Payment link opened. Complete payment to confirm your booking.'
-                            });
-                            setPaymentResult({
-                              status: 'pending',
-                              message: 'Payment processing. You will receive an email confirmation once payment is verified.'
-                            });
-                          }}
-                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
-                        >
-                          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                          </svg>
-                          Pay with PayPal
-                        </a>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          You'll receive an email confirmation once payment is verified.
-                        </p>
-                      </div>
-                    )}
-
-                      {/* Crypto Payment Interface (existing logic) */}
-                      {paymentMethod === 'crypto' && (
-                        <>
-                          {/* Payment URL for direct crypto payments */}
-                          {paymentResult.paymentUrl && (
-                            <div className="mb-4">
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
-                              </p>
-                              <a
-                                href={paymentResult.paymentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => {
-                                  // Immediately show payment pending confirmation
-                                  setCurrentStep(4);
-                                  setBookingResult({
-                                    status: 'PENDING_PAYMENT',
-                                    paymentMethod: 'crypto',
-                                    service,
-                                    specialist,
-                                    scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
-                                    message: 'Payment link opened. Complete payment to confirm your booking.'
-                                  });
-                                  setPaymentResult({
-                                    status: 'pending',
-                                    message: 'Payment processing. You will receive an email confirmation once payment is verified.'
-                                  });
-                                }}
-                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                              >
-                                <CreditCardIcon className="w-4 h-4 mr-2" />
-                                Pay with Crypto
-                              </a>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                You'll receive an email confirmation once payment is verified.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Coinbase Onramp Session */}
-                          {paymentResult.onrampSession && (
-                            <div className="mb-4">
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                Don't have crypto? Buy and pay in one step:
-                              </p>
-                              <a
-                                href={paymentResult.onrampSession.onrampURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
-                              >
-                                <CreditCardIcon className="w-4 h-4 mr-2" />
-                                Buy Crypto & Pay
-                              </a>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* QR Code Display */}
-                          {paymentResult.qrCodeData && (
-                            <div className="mt-4">
-                              <button
-                                onClick={() => setShowQRCode(!showQRCode)}
-                                className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                              >
-                                {showQRCode ? 'Hide' : 'Show'} QR Code
-                              </button>
-                              {showQRCode && (
-                                <div className="mt-3 text-center">
-                                  <img
-                                    src={paymentResult.qrCodeData}
-                                    alt="Payment QR Code"
-                                    className="max-w-48 h-auto border border-gray-200 rounded mx-auto"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                            {paymentTimeRemaining > 0 && (
-                              <p className="font-medium text-orange-600 dark:text-orange-400">
-                                ⏱️ Time remaining: {Math.floor(paymentTimeRemaining / 60000)}:{String(Math.floor((paymentTimeRemaining % 60000) / 1000)).padStart(2, '0')}
-                              </p>
-                            )}
-                            <p>📧 You'll receive confirmation once payment is verified.</p>
-                            <p className="text-xs text-gray-400 mt-1">Your booking slot is temporarily reserved during payment.</p>
-                          </div>
-                        </>
-                      )}
-                  </div>
-
-                  {/* Payment Complete Section */}
-                  {!paymentResult.requiresPayment && paymentResult.status === 'COMPLETED' && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4">
-                      <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                        ✅ Payment Complete
-                      </h4>
-                      <p className="text-sm text-green-800 dark:text-green-200">
-                        {paymentResult.message || 'Payment processed successfully with wallet balance'}
-                      </p>
-                      <button
-                        onClick={() => setCurrentStep(steps.length - 1)}
-                        className="mt-3 bg-green-600 text-white py-2 px-4 rounded-xl hover:bg-green-700 transition-colors"
-                      >
-                        View Booking Details
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={handleBookingSubmit}
-                  disabled={paymentLoading}
-                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-xl hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                >
-                  {paymentLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      {paymentMethod === 'paypal' ? (
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                        </svg>
-                      ) : (
-                        <CreditCardIcon className="w-5 h-5 mr-2" />
-                      )}
-                      {paymentMethod === 'paypal' ? 'Pay with PayPal' : t('booking.confirmBooking')}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'confirmation': // Confirmation
-        const booking = bookingResult?.booking || bookingResult;
-        const isAutoBooked = booking?.status === 'CONFIRMED';
-        const isPending = booking?.status === 'PENDING';
-        const isPendingPayment = booking?.status === 'PENDING_PAYMENT';
-        const needsPayment = paymentResult?.requiresPayment;
-        const hasPaymentUrl = paymentResult?.paymentUrl;
-        const hasOnrampSession = paymentResult?.onrampSession;
-
-        return (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
-              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
-
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
-              </h3>
-
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {isAutoBooked
-                  ? t('booking.autoBookingConfirmed')
-                  : isPendingPayment
-                  ? 'Your payment is being processed. You will receive an email confirmation once the payment is verified and your booking is confirmed.'
-                  : t('booking.manualBookingMessage')
-                }
-              </p>
-
-              {/* Recurring Booking Summary */}
-              {isRecurring && bookingResult?.childrenCount !== undefined && (
-                <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-4 mb-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <ArrowPathIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                    <h4 className="font-semibold text-primary-900 dark:text-primary-100">
-                      {t('booking.recurringCreated') || 'Recurring Booking Created'}
-                    </h4>
-                  </div>
-                  <p className="text-sm text-primary-800 dark:text-primary-200">
-                    {bookingResult.message || `${bookingResult.childrenCount} additional bookings have been scheduled.`}
-                  </p>
-                </div>
-              )}
-
-              {/* Payment Required Section */}
-              {needsPayment && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                    💳 Payment Required
-                  </h4>
-
-                  {paymentResult?.message && (
-                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                      {paymentResult.message}
-                    </p>
-                  )}
-
-                  {hasPaymentUrl && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Amount: ${paymentResult.finalAmount ? (paymentResult.finalAmount / 100).toFixed(2) : 'N/A'}
-                      </p>
-                      <a
-                        href={paymentResult.paymentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                      >
-                        <CreditCardIcon className="w-4 h-4 mr-2" />
-                        Complete Payment
-                      </a>
-                    </div>
-                  )}
-
-                  {hasOnrampSession && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Fiat-to-Crypto Session Created
-                      </p>
-                      <a
-                        href={paymentResult.onrampSession.onrampURL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
-                      >
-                        💰 Complete Fiat Payment
-                      </a>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-
-                  {paymentResult?.qrCodeData && (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setShowQRCode(!showQRCode)}
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        {showQRCode ? 'Hide' : 'Show'} QR Code
-                      </button>
-                      {showQRCode && (
-                        <div className="mt-2 flex justify-center">
-                          <img
-                            src={paymentResult.qrCodeData}
-                            alt="Payment QR Code"
-                            className="max-w-48 h-auto border border-gray-200 rounded"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Payment Complete Section */}
-              {!needsPayment && paymentResult && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6">
-                  <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                    ✅ Payment Complete
-                  </h4>
-                  <p className="text-sm text-green-800 dark:text-green-200">
-                    {paymentResult.message || 'Payment processed successfully'}
-                  </p>
-                </div>
-              )}
-
-              {/* Loyalty Points Earned Notification */}
-              {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
-                  <div className="flex items-center justify-center space-x-3 mb-2">
-                    <div className="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center">
-                      <GiftIcon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-semibold text-purple-600 dark:text-purple-400">
-                        🎉 You earned {pointsToEarn} loyalty points!
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        New balance: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <button
-                      onClick={() => navigate('/customer/loyalty')}
-                      className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
-                    >
-                      <StarIcon className="h-4 w-4 mr-1" />
-                      View Loyalty Dashboard
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {isPending && !isPendingPayment && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    {t('booking.waitingForSpecialistConfirmation')}
-                  </p>
-                </div>
-              )}
-
-              {isPendingPayment && paymentResult?.message && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    {paymentResult.message}
-                  </p>
-                </div>
-              )}
-
-              <button
-                onClick={() => navigate('/customer/bookings')}
-                className="bg-primary-600 text-white py-2 px-6 rounded-xl hover:bg-primary-700 transition-colors"
-              >
-                {t('booking.viewBookings')}
-              </button>
-            </div>
-            
-            {/* Booking Details */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {t('booking.bookingDetails')}
-              </h4>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.bookingId')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {booking?.id || t('common.notAvailable') || 'N/A'}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.status')}</span>
-                  <span className={`font-medium ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {isAutoBooked ? t('booking.confirmed') : t('booking.pending')}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.specialist')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {specialist.user?.firstName} {specialist.user?.lastName}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.service')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {service.name}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.dateTime')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {selectedDate?.toLocaleDateString(language || 'en')} {selectedTime}
-                  </span>
-                </div>
-
-                {/* Specialist Contact Information */}
-                {isAutoBooked && (
-                  <>
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
-
-                    <div className="mb-2">
-                      <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
-                        {t('booking.specialistContact') || 'Specialist Contact Information'}
-                      </h5>
-                    </div>
-
-                    {specialist.businessPhone && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">{t('booking.phone') || 'Phone'}</span>
-                        <a
-                          href={`tel:${specialist.businessPhone}`}
-                          className="font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                        >
-                          {specialist.businessPhone}
-                        </a>
-                      </div>
-                    )}
-
-                    {specialist.preciseAddress && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">{t('booking.location') || 'Location'}</span>
-                        <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                          {specialist.preciseAddress}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">{t('booking.paymentAmount') || 'Payment Amount'}</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {formatPrice(finalPrice, service.currency as 'USD' | 'EUR' | 'UAH' || 'USD')}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <Confirmation
+            service={state.service}
+            specialist={state.specialist}
+            selectedDate={state.selectedDate}
+            selectedTime={state.selectedTime}
+            bookingResult={state.bookingResult}
+            paymentResult={state.paymentResult}
+            showQRCode={state.showQRCode}
+            onToggleQRCode={() => dispatch({ type: 'SET_SHOW_QR_CODE', payload: !state.showQRCode })}
+            isRecurring={state.isRecurring}
+            loyaltyData={state.loyaltyData}
+            pointsToEarn={state.pointsToEarn}
+            finalPrice={finalPrice}
+          />
         );
 
       default:
@@ -2220,66 +1001,24 @@ const BookingFlow: React.FC = () => {
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             {t('navigation.back')}
           </button>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t('booking.bookService')}
           </h1>
-          
+
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {specialist.user?.firstName} {specialist.user?.lastName} - {translateProfession(specialist.businessName, t)}
+            {state.specialist.user?.firstName} {state.specialist.user?.lastName} - {translateProfession(state.specialist.businessName, t)}
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-center justify-between overflow-x-auto pb-2 px-1">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center min-w-0">
-                <div
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 ${
-                    index <= currentStep
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-                <div className="ml-2 sm:ml-3 hidden sm:block">
-                  <p
-                    className={`text-xs sm:text-sm font-medium whitespace-nowrap ${
-                      index <= currentStep
-                        ? 'text-primary-600'
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}
-                  >
-                    {step.title}
-                  </p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-4 sm:w-8 md:w-12 h-0.5 mx-1 sm:mx-2 md:mx-4 flex-shrink-0 ${
-                      index < currentStep
-                        ? 'bg-primary-600'
-                        : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          {/* Mobile step indicator */}
-          <div className="sm:hidden mt-2 text-center">
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
-            </p>
-          </div>
-        </div>
+        <BookingProgress steps={steps} currentStep={state.currentStep} />
 
         {/* Step Content */}
         <div className="mb-8 min-h-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
-              key={steps[currentStep]?.id}
+              key={steps[state.currentStep]?.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -2291,170 +1030,32 @@ const BookingFlow: React.FC = () => {
         </div>
 
         {/* Navigation Buttons */}
-        {currentStep < steps.length - 1 && (
-          <div className="pb-safe-bottom">
-            {/* Helper text for disabled Next button */}
-            {(() => {
-              const currentStepId = steps[currentStep]?.id;
-              let helperText = '';
-
-              if (currentStepId === 'datetime' && (!selectedDate || !selectedTime)) {
-                if (!selectedDate) helperText = t('booking.selectDateFirst') || 'Please select a date first';
-                else if (!selectedTime) helperText = t('booking.selectTimeFirst') || 'Please select a time slot';
-              } else if (currentStepId === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED'))) {
-                helperText = t('booking.completePaymentFirst') || 'Please complete payment to continue';
-              }
-
-              return helperText ? (
-                <div className="mb-3 text-center">
-                  <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl inline-block">
-                    ℹ️ {helperText}
-                  </p>
-                </div>
-              ) : null;
-            })()}
-
-            <div className="flex justify-between gap-3 sm:gap-4">
-              <button
-                onClick={handlePrevStep}
-                disabled={currentStep === 0 || paymentLoading}
-                className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-colors flex-shrink-0 mobile-touch-target ${
-                  currentStep === 0 || paymentLoading
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
-                }`}
-              >
-                <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                <span className="text-sm sm:text-base">{t('navigation.prev') || 'Prev'}</span>
-              </button>
-
-              <button
-                onClick={handleNextStep}
-                disabled={
-                  paymentLoading ||
-                  (steps[currentStep]?.id === 'datetime' && (!selectedDate || !selectedTime)) ||
-                  (steps[currentStep]?.id === 'details' && !service) ||
-                  (steps[currentStep]?.id === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
-                }
-                className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
-              >
-                {paymentLoading && (
-                  <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                <span className="text-sm sm:text-base">
-                  {paymentLoading ? (t('booking.processing') || 'Processing...') : (t('navigation.next') || 'Next')}
-                </span>
-                {!paymentLoading && <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />}
-              </button>
-            </div>
-          </div>
-        )}
+        <NavigationButtons
+          steps={steps}
+          currentStep={state.currentStep}
+          paymentLoading={state.paymentLoading}
+          selectedDate={state.selectedDate}
+          selectedTime={state.selectedTime}
+          service={state.service}
+          paymentResult={state.paymentResult}
+          onNext={handleNextStep}
+          onPrev={handlePrevStep}
+        />
       </div>
 
       {/* Waitlist Modal */}
-      <AnimatePresence>
-        {showWaitlistModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowWaitlistModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                {t('waitlist.joinWaitlist') || 'Join Waitlist'}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {t('waitlist.joinDescription') || 'Get notified when a slot opens up for this date.'}
-              </p>
-
-              {/* Date confirmation */}
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 mb-4">
-                <div className="flex items-center text-sm">
-                  <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
-                  <span className="text-gray-700 dark:text-gray-300 font-medium">
-                    {selectedDate?.toLocaleDateString(language || 'en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                  </span>
-                </div>
-                <div className="flex items-center text-sm mt-1">
-                  <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {service?.name} ({service?.duration} {t('time.minutes') || 'min'})
-                  </span>
-                </div>
-              </div>
-
-              {/* Preferred time */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('waitlist.preferredTime') || 'Preferred time (optional)'}
-                </label>
-                <select
-                  value={waitlistPreferredTime}
-                  onChange={(e) => setWaitlistPreferredTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
-                >
-                  <option value="">{t('waitlist.anyTime') || 'Any time'}</option>
-                  <option value="morning">{t('booking.morning') || 'Morning'}</option>
-                  <option value="afternoon">{t('booking.afternoon') || 'Afternoon'}</option>
-                  <option value="evening">{t('booking.evening') || 'Evening'}</option>
-                </select>
-              </div>
-
-              {/* Notes */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('waitlist.notes') || 'Notes (optional)'}
-                </label>
-                <textarea
-                  value={waitlistNotes}
-                  onChange={(e) => setWaitlistNotes(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
-                  placeholder={t('waitlist.notesPlaceholder') || 'Any additional preferences...'}
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowWaitlistModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
-                >
-                  {t('actions.cancel') || 'Cancel'}
-                </button>
-                <button
-                  onClick={handleJoinWaitlist}
-                  disabled={waitlistLoading}
-                  className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium flex items-center justify-center"
-                >
-                  {waitlistLoading ? (
-                    <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  ) : (
-                    <ClockIcon className="w-4 h-4 mr-2" />
-                  )}
-                  {waitlistLoading
-                    ? (t('waitlist.joining') || 'Joining...')
-                    : (t('waitlist.joinWaitlist') || 'Join Waitlist')}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <WaitlistModal
+        show={state.showWaitlistModal}
+        onClose={() => dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: false })}
+        onJoin={handleJoinWaitlist}
+        selectedDate={state.selectedDate}
+        service={state.service}
+        waitlistPreferredTime={state.waitlistPreferredTime}
+        onPreferredTimeChange={(v) => dispatch({ type: 'SET_WAITLIST_PREFERRED_TIME', payload: v })}
+        waitlistNotes={state.waitlistNotes}
+        onNotesChange={(v) => dispatch({ type: 'SET_WAITLIST_NOTES', payload: v })}
+        waitlistLoading={state.waitlistLoading}
+      />
     </div>
   );
 };

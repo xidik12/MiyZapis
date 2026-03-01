@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, RequestHandler } from 'express';
 import { body } from 'express-validator';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { prisma } from '@/config/database';
@@ -37,7 +37,7 @@ router.get('/vapid-key', (_req: Request, res: Response) => {
 router.post(
   '/subscribe',
   [
-    authenticateToken as any,
+    authenticateToken as RequestHandler,
     body('subscription').isObject().withMessage('Subscription object is required'),
     body('subscription.endpoint').isURL().withMessage('Valid endpoint URL is required'),
     body('subscription.keys').isObject().withMessage('Subscription keys are required'),
@@ -46,7 +46,7 @@ router.post(
   ],
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as Request & { user?: { id: string } }).user?.id;
       if (!userId) {
         res.status(401).json(
           createErrorResponse('AUTHENTICATION_REQUIRED', 'User not authenticated')
@@ -77,12 +77,12 @@ router.post(
 router.post(
   '/unsubscribe',
   [
-    authenticateToken as any,
+    authenticateToken as RequestHandler,
     body('endpoint').isURL().withMessage('Valid endpoint URL is required'),
   ],
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as Request & { user?: { id: string } }).user?.id;
       if (!userId) {
         res.status(401).json(
           createErrorResponse('AUTHENTICATION_REQUIRED', 'User not authenticated')

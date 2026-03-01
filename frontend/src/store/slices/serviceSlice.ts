@@ -30,8 +30,9 @@ export const searchServices = createAsyncThunk(
   async (filters: SearchFilters, { rejectWithValue }) => {
     try {
       return await serviceService.searchServices(filters);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to search services');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to search services');
     }
   }
 );
@@ -41,8 +42,9 @@ export const fetchCategories = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await serviceService.getCategories();
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch categories');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch categories');
     }
   }
 );
@@ -52,8 +54,9 @@ export const fetchService = createAsyncThunk(
   async (serviceId: string, { rejectWithValue }) => {
     try {
       return await serviceService.getService(serviceId);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch service');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch service');
     }
   }
 );
@@ -63,8 +66,9 @@ export const fetchFeaturedServices = createAsyncThunk(
   async (limit: number = 10, { rejectWithValue }) => {
     try {
       return await serviceService.getFeaturedServices(limit);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch featured services');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch featured services');
     }
   }
 );

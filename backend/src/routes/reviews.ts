@@ -19,6 +19,7 @@ import { createSuccessResponse, createErrorResponse, calculatePaginationOffset, 
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
 import { ReviewController } from '@/controllers/reviews';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -48,7 +49,7 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
     const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
 
     // Build order by clause
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Record<string, string> = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
     } else if (sortBy === 'likes' || sortBy === 'helpful') {
@@ -187,8 +188,8 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
   }
 });
 
-// Get service reviews
-router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: Response) => {
+// Get service reviews (public, cached 60s)
+router.get('/service/:id', cacheMiddleware(60, 'service-reviews'), validateGetServiceReviews, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -217,7 +218,7 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
     const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       booking: {
         serviceId: id
       },
@@ -246,7 +247,7 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
     }
 
     // Build order by clause
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Record<string, string> = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
     } else if (sortBy === 'likes' || sortBy === 'helpful') {
@@ -567,7 +568,7 @@ router.put('/:id', authenticateToken, validateUpdateReview, requireOwnership('re
     }
 
     const { id } = req.params;
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     // Only update provided fields
     if (req.body.rating !== undefined) updateData.rating = req.body.rating;
@@ -717,8 +718,8 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
   }
 });
 
-// Get specialist reviews
-router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request, res: Response) => {
+// Get specialist reviews (public, cached 60s)
+router.get('/specialist/:id', cacheMiddleware(60, 'specialist-reviews'), validateGetSpecialistReviews, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -747,7 +748,7 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
     const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       specialistId: id,
       isPublic: true
     };
@@ -773,7 +774,7 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
     }
 
     // Build order by clause
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Record<string, string> = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
     } else if (sortBy === 'likes' || sortBy === 'helpful') {
@@ -952,7 +953,7 @@ router.post('/:reviewId/response/react', authenticateToken, ReviewController.rea
 router.post('/:id/report', authenticateToken, validateReportReview, ReviewController.reportReview);
 
 // Review comments endpoints (Reddit-style threading)
-router.get('/:reviewId/comments', ReviewController.getReviewComments);
+router.get('/:reviewId/comments', cacheMiddleware(60, 'review-comments'), ReviewController.getReviewComments);
 router.post('/:reviewId/comments', authenticateToken, ReviewController.createReviewComment);
 router.post('/:reviewId/comments/:commentId/react', authenticateToken, ReviewController.reactToComment);
 router.delete('/:reviewId/comments/:commentId', authenticateToken, ReviewController.deleteComment);
@@ -963,6 +964,6 @@ router.get('/enhanced/:id', ReviewController.getReview);
 router.post('/enhanced', authenticateToken, validateCreateReview, ReviewController.createReview);
 router.put('/enhanced/:id', authenticateToken, validateUpdateReview, ReviewController.updateReview);
 router.delete('/enhanced/:id', authenticateToken, ReviewController.deleteReview);
-router.get('/specialist/:specialistId/stats', ReviewController.getSpecialistReviewStats);
+router.get('/specialist/:specialistId/stats', cacheMiddleware(60, 'specialist-review-stats'), ReviewController.getSpecialistReviewStats);
 
 export default router;

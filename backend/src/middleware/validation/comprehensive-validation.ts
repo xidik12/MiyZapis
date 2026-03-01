@@ -1,7 +1,7 @@
 import { body, param, query, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { createErrorResponse } from '@/utils/response';
-import { ErrorCodes } from '@/types';
+import { ErrorCodes, ValidatorError } from '@/types';
 
 // Enhanced validation chains
 export const validationChains = {
@@ -565,8 +565,8 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
 
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map(error => ({
-      field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-      message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+      field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+      message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
       code: 'INVALID_VALUE',
       value: 'value' in error ? error.value : undefined
     }));
@@ -585,7 +585,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
 };
 
 // Combined validation middleware creator
-export const validate = (validations: any[]) => {
+export const validate = (validations: unknown[]) => {
   return [
     ...validations,
     handleValidationErrors

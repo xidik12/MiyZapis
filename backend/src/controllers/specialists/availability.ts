@@ -7,7 +7,7 @@ import {
 } from '@/services/specialist/availability';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
 
@@ -149,10 +149,11 @@ export class AvailabilityController {
           availability,
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get specialist availability error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -163,7 +164,7 @@ export class AvailabilityController {
         return;
       }
 
-      if (error.message === 'SPECIALIST_NOT_ACTIVE') {
+      if (err.message === 'SPECIALIST_NOT_ACTIVE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
@@ -199,8 +200,8 @@ export class AvailabilityController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -266,10 +267,11 @@ export class AvailabilityController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Create availability block error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -280,7 +282,7 @@ export class AvailabilityController {
         return;
       }
 
-      if (error.message === 'INVALID_DATE_RANGE') {
+      if (err.message === 'INVALID_DATE_RANGE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -291,7 +293,7 @@ export class AvailabilityController {
         return;
       }
 
-      if (error.message === 'OVERLAPPING_AVAILABILITY_BLOCK') {
+      if (err.message === 'OVERLAPPING_AVAILABILITY_BLOCK') {
         res.status(409).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_CONFLICT,
@@ -327,8 +329,8 @@ export class AvailabilityController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
-              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -428,10 +430,11 @@ export class AvailabilityController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Update availability block error:', error);
 
-      if (error.message === 'AVAILABILITY_BLOCK_NOT_FOUND') {
+      if (err.message === 'AVAILABILITY_BLOCK_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -442,7 +445,7 @@ export class AvailabilityController {
         return;
       }
 
-      if (error.message === 'INVALID_DATE_RANGE') {
+      if (err.message === 'INVALID_DATE_RANGE') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -534,10 +537,11 @@ export class AvailabilityController {
           message: 'Availability block deleted successfully',
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Delete availability block error:', error);
 
-      if (error.message === 'AVAILABILITY_BLOCK_NOT_FOUND') {
+      if (err.message === 'AVAILABILITY_BLOCK_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -638,7 +642,7 @@ export class AvailabilityController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get availability blocks error:', error);
 
       res.status(500).json(
@@ -757,7 +761,7 @@ export class AvailabilityController {
       }
 
       // Parse working hours
-      let workingHours: any = {};
+      let workingHours: Record<string, unknown> = {};
       if (specialist.workingHours) {
         try {
           workingHours = typeof specialist.workingHours === 'string' 
@@ -896,10 +900,11 @@ export class AvailabilityController {
           cacheMaxAge: 30 // Suggest 30 second cache only
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Get available slots error:', error);
 
-      if (error.message === 'SPECIALIST_NOT_FOUND') {
+      if (err.message === 'SPECIALIST_NOT_FOUND') {
         res.status(404).json(
           createErrorResponse(
             ErrorCodes.RESOURCE_NOT_FOUND,
@@ -998,7 +1003,7 @@ export class AvailabilityController {
       }
 
       // Parse working hours
-      let workingHours: any = {};
+      let workingHours: Record<string, unknown> = {};
       if (specialist.workingHours) {
         try {
           workingHours = typeof specialist.workingHours === 'string' 
@@ -1124,7 +1129,7 @@ export class AvailabilityController {
           }
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get available dates error:', error);
 
       res.status(500).json(
@@ -1204,7 +1209,7 @@ export class AvailabilityController {
           },
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Check time slot availability error:', error);
 
       res.status(500).json(

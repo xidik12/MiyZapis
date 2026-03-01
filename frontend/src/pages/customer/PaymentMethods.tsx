@@ -45,7 +45,7 @@ const PaymentMethods: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleSavePaymentMethod = async (paymentData: any) => {
+  const handleSavePaymentMethod = async (paymentData: Record<string, unknown>) => {
     try {
       setLoading(true);
 

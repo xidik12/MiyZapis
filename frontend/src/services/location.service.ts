@@ -72,7 +72,7 @@ class LocationService {
         throw new Error('Either placeId or address is required');
       }
 
-      const params: any = {};
+      const params: Record<string, unknown> = {};
       if (placeId) params.placeId = placeId;
       if (address) params.address = sanitizeText(address);
 
@@ -106,7 +106,7 @@ class LocationService {
    */
   async getCities(search?: string, limit: number = 50): Promise<CityData[]> {
     try {
-      const params: any = { limit };
+      const params: Record<string, unknown> = { limit };
       if (search) params.search = sanitizeSearchQuery(search);
 
       const response = await api.get('/locations/cities', { params });

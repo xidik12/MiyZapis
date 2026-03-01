@@ -208,7 +208,7 @@ export const testFactories = {
 
 // Create test data helper
 export class TestDataBuilder {
-  private data: any = {};
+  private data: Record<string, unknown> = {};
 
   async createCustomer() {
     const userData = testFactories.user.customer();
@@ -222,7 +222,8 @@ export class TestDataBuilder {
     const user = await testPrisma.user.create({ data: userData });
     
     const specialistData = testFactories.specialist(user.id);
-    const specialist = await testPrisma.specialist.create({ data: specialistData as any });
+    const specialist = await testPrisma.specialist.create({ data: specialistData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+      as any });
     
     this.data.specialist = { ...user, specialistProfile: specialist };
     return this;
@@ -241,7 +242,8 @@ export class TestDataBuilder {
     }
 
     const serviceData = testFactories.service(this.data.specialist.specialistProfile.id);
-    const service = await testPrisma.service.create({ data: serviceData as any });
+    const service = await testPrisma.service.create({ data: serviceData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+      as any });
     this.data.service = service;
     return this;
   }
@@ -263,7 +265,8 @@ export class TestDataBuilder {
       this.data.service.id
     );
     
-    const booking = await testPrisma.booking.create({ data: bookingData as any });
+    const booking = await testPrisma.booking.create({ data: bookingData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+      as any });
     this.data.booking = booking;
     return this;
   }
@@ -376,7 +379,7 @@ export class TestDataBuilder {
 }
 
 // JWT token helpers for tests
-export function createTestJWT(user: any) {
+export function createTestJWT(user: Record<string, unknown>) {
   const jwt = require('jsonwebtoken');
   const payload = {
     userId: user.id,
@@ -391,7 +394,7 @@ export function createTestJWT(user: any) {
 }
 
 // API test helpers
-export function createAuthHeaders(user: any) {
+export function createAuthHeaders(user: Record<string, unknown>) {
   const token = createTestJWT(user);
   return {
     'Authorization': `Bearer ${token}`,
@@ -437,7 +440,7 @@ export function setupTestEnvironment() {
   process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
   
   // Mock external services
-  jest.mock('@/services/email/enhanced-email', () => ({
+  jest.mock('@/services/email', () => ({
     emailService: mockServices.email,
   }));
   
@@ -449,8 +452,8 @@ export function setupTestEnvironment() {
     PaymentService: mockServices.payment,
   }));
   
-  jest.mock('@/services/fileUpload/enhanced-upload', () => ({
-    EnhancedFileUploadService: mockServices.upload,
+  jest.mock('@/services/fileUpload', () => ({
+    FileUploadService: mockServices.upload,
   }));
 }
 

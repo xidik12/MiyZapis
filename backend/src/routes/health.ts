@@ -17,11 +17,12 @@ router.get('/health', async (req, res) => {
       version: process.env.npm_package_version,
       database: 'connected'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: error.message,
+      error: err.message,
       database: 'disconnected'
     });
   }
@@ -37,12 +38,13 @@ router.get('/health/db', async (req, res) => {
       timestamp: new Date().toISOString(),
       version: result
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     res.status(503).json({
       status: 'unhealthy',
       database: 'postgresql',
       timestamp: new Date().toISOString(),
-      error: error.message
+      error: err.message
     });
   }
 });

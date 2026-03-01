@@ -24,8 +24,9 @@ export const fetchSpecialistProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await specialistService.getProfile();
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch specialist profile');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch specialist profile');
     }
   }
 );
@@ -35,8 +36,9 @@ export const updateSpecialistProfile = createAsyncThunk(
   async (data: Partial<Specialist>, { rejectWithValue }) => {
     try {
       return await specialistService.updateProfile(data);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update specialist profile');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to update specialist profile');
     }
   }
 );
@@ -46,8 +48,9 @@ export const fetchSpecialistServices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await specialistService.getServices();
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch specialist services');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch specialist services');
     }
   }
 );
@@ -57,8 +60,9 @@ export const createSpecialistService = createAsyncThunk(
   async (data: Partial<Service>, { rejectWithValue }) => {
     try {
       return await specialistService.createService(data);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create service');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to create service');
     }
   }
 );
@@ -71,8 +75,9 @@ export const updateSpecialistService = createAsyncThunk(
   ) => {
     try {
       return await specialistService.updateService(serviceId, data);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update service');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to update service');
     }
   }
 );
@@ -83,8 +88,9 @@ export const deleteSpecialistService = createAsyncThunk(
     try {
       await specialistService.deleteService(serviceId);
       return serviceId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete service');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to delete service');
     }
   }
 );
@@ -94,8 +100,9 @@ export const fetchSpecialistAnalytics = createAsyncThunk(
   async (period: 'week' | 'month' | 'quarter' | 'year' = 'month', { rejectWithValue }) => {
     try {
       return await specialistService.getAnalytics(period);
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch analytics');
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      return rejectWithValue(err.message || 'Failed to fetch analytics');
     }
   }
 );

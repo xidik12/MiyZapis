@@ -76,7 +76,7 @@ const CustomerFavorites: React.FC = () => {
         setCurrentPage(newPage);
         fetchFavorites(newPage);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to remove specialist from favorites:', error);
       // The Redux slice will automatically revert optimistic updates on error
     }
@@ -96,7 +96,7 @@ const CustomerFavorites: React.FC = () => {
         setCurrentPage(newPage);
         fetchFavorites(newPage);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to remove service from favorites:', error);
       // The Redux slice will automatically revert optimistic updates on error
     }
@@ -363,7 +363,7 @@ const CustomerFavorites: React.FC = () => {
                                 </div>
                         <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
                           {(() => {
-                            let specs: any = specialist.specialties;
+                            let specs: unknown = specialist.specialties;
                             if (!specs) return null;
                             if (Array.isArray(specs)) return specs.join(', ');
                             if (typeof specs === 'string') {

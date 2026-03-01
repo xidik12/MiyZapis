@@ -47,7 +47,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
     fetchTransactions();
   }, []);
 
-  const handleFilterChange = (key: keyof TransactionFilters, value: any) => {
+  const handleFilterChange = (key: keyof TransactionFilters, value: unknown) => {
     const newFilters = { ...filters, [key]: value, offset: 0 };
     setFilters(newFilters);
     fetchTransactions(newFilters);
