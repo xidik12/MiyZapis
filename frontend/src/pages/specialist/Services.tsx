@@ -650,35 +650,36 @@ const SpecialistServices: React.FC = () => {
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+      const errResponse = (error as any)?.response;
       logger.error('Service deletion failed:', {
         serviceId,
         error: message,
-        response: err.response?.data,
-        status: err.response?.status
+        response: errResponse?.data,
+        status: errResponse?.status
       });
 
       // Handle 404 error - service already deleted
-      if (err.response?.status === 404) {
+      if (errResponse?.status === 404) {
         logger.debug('Service already deleted (404), removing from local state');
         // Remove the service from local state since it's already deleted on backend
         setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
         // toast.info('Service was already deleted. Refreshing the list.');
         return; // Exit early, don't show error
       }
-      
+
       // More user-friendly error messages for other errors
-      let errorMessage = err.message || 'Failed to delete service';
-      
+      let errorMessage = message || 'Failed to delete service';
+
       // Check for specific backend error details
-      if (err.response?.data?.error) {
-        errorMessage = `Backend Error: ${err.response.data.error}`;
-      } else if (err.response?.data?.message) {
-        errorMessage = `Backend Error: ${err.response.data.message}`;
-      } else if (err.response?.status === 500) {
+      if (errResponse?.data?.error) {
+        errorMessage = `Backend Error: ${errResponse.data.error}`;
+      } else if (errResponse?.data?.message) {
+        errorMessage = `Backend Error: ${errResponse.data.message}`;
+      } else if (errResponse?.status === 500) {
         errorMessage = 'Server error occurred while deleting service. This may be due to existing bookings or database dependencies. Please try again later or contact support.';
-      } else if (err.message?.includes('existing bookings')) {
+      } else if (message?.includes('existing bookings')) {
         errorMessage = 'Cannot delete service because it has existing bookings. Please cancel all bookings first or contact support.';
-      } else if (err.message?.includes('dependencies')) {
+      } else if (message?.includes('dependencies')) {
         errorMessage = 'Cannot delete service due to existing dependencies. Please contact support for assistance.';
       }
       

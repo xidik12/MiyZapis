@@ -578,8 +578,8 @@ const SpecialistSchedule: React.FC = () => {
       setPreSelectedTime(undefined);
       toast.success(t('specialist.schedule.toast.saved'));
     } catch (error: unknown) {
-      console.error('Error adding time slot:', err);
-      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to add time slot. Please try again.';
+      console.error('Error adding time slot:', error);
+      const errorMessage = (error as any)?.response?.data?.error?.message || (error instanceof Error ? error.message : String(error)) || 'Failed to add time slot. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -626,8 +626,8 @@ const SpecialistSchedule: React.FC = () => {
       setError(null);
       toast.success(t('specialist.schedule.toast.saved'));
     } catch (error: unknown) {
-      console.error('Error editing time slot:', err);
-      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to edit time slot. Please try again.';
+      console.error('Error editing time slot:', error);
+      const errorMessage = (error as any)?.response?.data?.error?.message || (error instanceof Error ? error.message : String(error)) || 'Failed to edit time slot. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -647,8 +647,8 @@ const SpecialistSchedule: React.FC = () => {
       setError(null);
       toast.success(t('specialist.schedule.toast.saved'));
     } catch (error: unknown) {
-      console.error('Error deleting time slot:', err);
-      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to delete time slot. Please try again.';
+      console.error('Error deleting time slot:', error);
+      const errorMessage = (error as any)?.response?.data?.error?.message || (error instanceof Error ? error.message : String(error)) || 'Failed to delete time slot. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

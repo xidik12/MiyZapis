@@ -167,7 +167,7 @@ const SpecialistReviews: React.FC = () => {
       // Call backend API
       await reviewsService.reactToReview(reviewId, reaction);
     } catch (error: unknown) {
-      console.error('Error reacting to review:', err);
+      console.error('Error reacting to review:', error);
       // Revert optimistic update on error
       loadReviews();
     }
@@ -203,7 +203,7 @@ const SpecialistReviews: React.FC = () => {
       // Call backend API
       await reviewsService.reactToResponse(review.id, reaction);
     } catch (error: unknown) {
-      console.error('Error reacting to response:', err);
+      console.error('Error reacting to response:', error);
       // Revert optimistic update on error
       loadReviews();
     }

@@ -119,7 +119,7 @@ const CustomerReviews: React.FC = () => {
 
       await reviewsService.reactToReview(reviewId, reaction);
     } catch (error: unknown) {
-      console.error('Error reacting to review:', err);
+      console.error('Error reacting to review:', error);
       // Reload reviews on error to revert optimistic update
       setPage(1);
     }
@@ -152,7 +152,7 @@ const CustomerReviews: React.FC = () => {
 
       await reviewsService.reactToResponse(reviewId, reaction);
     } catch (error: unknown) {
-      console.error('Error reacting to response:', err);
+      console.error('Error reacting to response:', error);
       // Reload reviews on error to revert optimistic update
       setPage(1);
     }

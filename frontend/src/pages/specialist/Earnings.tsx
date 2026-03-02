@@ -303,8 +303,8 @@ const SpecialistEarnings: React.FC = () => {
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('Error loading earnings:', err);
-        
+        console.error('Error loading earnings:', error);
+
         // Set fallback data instead of showing error
         const fallbackEarnings: EarningsData = {
           totalEarnings: 0,
@@ -321,12 +321,12 @@ const SpecialistEarnings: React.FC = () => {
           bestDay: t('earnings.noData'),
           avgSessionValue: 0
         };
-        
+
         setEarningsData(fallbackEarnings);
         setMonthlyEarnings([]);
-        
+
         // Only show error if it's not a network/auth issue
-        if (!err.message?.includes('Network') && !err.message?.includes('401') && !err.message?.includes('Authentication')) {
+        if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {
           setErrors(prev => ({ 
             ...prev, 
             earnings: 'Some data may be unavailable. Please try refreshing the page.',
@@ -370,7 +370,7 @@ const SpecialistEarnings: React.FC = () => {
         setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
       } catch (error: unknown) {
-        console.error('Error loading recent completed bookings:', err);
+        console.error('Error loading recent completed bookings:', error);
         
         setPayoutHistory([]);
         setErrors(prev => ({ ...prev, payments: 'Recent earnings temporarily unavailable.' }));
@@ -385,7 +385,7 @@ const SpecialistEarnings: React.FC = () => {
         const summary = await expenseService.getExpenseSummary();
         setExpenseSummary(summary);
       } catch (error: unknown) {
-        console.error('Error loading expense summary:', err);
+        console.error('Error loading expense summary:', error);
         setExpenseSummary(null);
       } finally {
         setLoadingExpenses(false);
