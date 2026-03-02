@@ -99,10 +99,10 @@ const CreatePostPage: React.FC = () => {
       console.log('[Community Upload] Upload complete, form data updated');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[Community Upload] Upload failed:', err);
-      const message = message || t('community.form.imageUploadFailed') || 'Failed to upload image';
-      setUploadError(message);
-      toast.error(message);
+      console.error('[Community Upload] Upload failed:', error);
+      const errorMsg = message || t('community.form.imageUploadFailed') || 'Failed to upload image';
+      setUploadError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       console.log('[Community Upload] Cleanup');
       setIsUploadingImages(false);
