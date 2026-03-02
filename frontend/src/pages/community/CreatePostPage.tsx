@@ -49,9 +49,9 @@ const CreatePostPage: React.FC = () => {
           contactEmail: data.contactEmail || '',
           images: data.images || [],
         });
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
-        toast.error(err.message || t('community.loadFailed') || 'Failed to load post');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        toast.error(message || t('community.loadFailed') || 'Failed to load post');
         navigate('/community');
       } finally {
         setLoading(false);
@@ -97,10 +97,10 @@ const CreatePostPage: React.FC = () => {
         images: [...(prev.images || []), ...uploadedUrls],
       }));
       console.log('[Community Upload] Upload complete, form data updated');
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('[Community Upload] Upload failed:', err);
-      const message = err.message || t('community.form.imageUploadFailed') || 'Failed to upload image';
+      const message = message || t('community.form.imageUploadFailed') || 'Failed to upload image';
       setUploadError(message);
       toast.error(message);
     } finally {
@@ -160,9 +160,9 @@ const CreatePostPage: React.FC = () => {
 
       toast.success(isEditing ? t('community.postUpdated') || 'Post updated' : t('community.postCreated') || 'Post published');
       navigate(`/community/post/${result.id}`);
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      toast.error(err.message || t('community.publishFailed') || 'Failed to publish post');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message || t('community.publishFailed') || 'Failed to publish post');
     } finally {
       setLoading(false);
     }

@@ -182,7 +182,7 @@ export const CreatePostPage: React.FC = () => {
           navigate('/community');
         }
       }
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       const msg = err?.response?.data?.message || err?.message || cp('failedToPublish');
       dispatch(addToast({ type: 'error', title: c('error'), message: msg }));
       hapticFeedback.notificationError();

@@ -38,7 +38,7 @@ const CustomerHelpSupport: React.FC = () => {
       } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to fetch help data:', error);
-        setError(err.message || 'Failed to load help data');
+        setError(message || 'Failed to load help data');
         // Set empty arrays on error to show empty states
         setFaqs([]);
         setContactMethods([]);

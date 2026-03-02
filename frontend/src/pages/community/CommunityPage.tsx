@@ -73,9 +73,9 @@ const CommunityPage: React.FC = () => {
 
       setTotalPages(response.pagination.totalPages);
       setCurrentPage(page);
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      setError(err.message || 'Failed to load posts');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message || 'Failed to load posts');
     } finally {
       setLoading(false);
       setLoadingMore(false);

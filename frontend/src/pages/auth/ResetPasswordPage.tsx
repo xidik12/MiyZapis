@@ -53,7 +53,7 @@ const ResetPasswordPage: React.FC = () => {
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
       console.error('Password reset failed:', error);
-      setError(err.message || 'Failed to reset password. Please try again.');
+      setError(message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

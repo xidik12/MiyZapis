@@ -701,12 +701,12 @@ Performance:
           });
         }
         
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('Error loading analytics:', err);
         
         // Only show error if it's not a network/auth issue - provide fallback data instead
-        if (!err.message?.includes('Network') && !err.message?.includes('401') && !err.message?.includes('Authentication')) {
+        if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {
           setError('Some analytics data may be unavailable. Please try refreshing the page.');
         }
 

@@ -34,9 +34,9 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
       const data = await adminAnalyticsService.getSystemHealth();
       setHealth(data);
       setLastUpdated(new Date());
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      setError(err.message || 'Failed to fetch system health');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message || 'Failed to fetch system health');
       console.error('System health error:', err);
     } finally {
       setLoading(false);

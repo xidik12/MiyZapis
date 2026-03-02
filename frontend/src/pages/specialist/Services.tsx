@@ -99,9 +99,9 @@ const SpecialistServices: React.FC = () => {
         })));
         logger.debug('Total services loaded:', servicesData?.length || 0);
         setServices(Array.isArray(servicesData) ? servicesData : []);
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
-        setError(err.message || 'Failed to load services');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        setError(message || 'Failed to load services');
         logger.error('Error loading services:', err);
       } finally {
         setLoading(false);
@@ -119,9 +119,9 @@ const SpecialistServices: React.FC = () => {
         setCategoriesError(null);
         const categoriesData = await serviceService.getCategories();
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
-        setCategoriesError(err.message || 'Failed to load categories');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        setCategoriesError(message || 'Failed to load categories');
         logger.error('Error loading categories:', err);
         // Fallback to empty array if API fails
         setCategories([]);
@@ -559,10 +559,10 @@ const SpecialistServices: React.FC = () => {
         setServices(prev => [updatedService, ...prev]);
       }
       closeModal();
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       logger.error('Error saving service:', err);
-      setError(err.message || 'Failed to save service');
+      setError(message || 'Failed to save service');
     } finally {
       setIsSubmitting(false); // Always clear loading state
     }
@@ -648,11 +648,11 @@ const SpecialistServices: React.FC = () => {
       logger.debug('Service deletion verified: Service no longer exists on backend');
       // toast.success('Service deleted successfully and verified!');
 
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       logger.error('Service deletion failed:', {
         serviceId,
-        error: err.message,
+        error: message,
         response: err.response?.data,
         status: err.response?.status
       });
@@ -705,10 +705,10 @@ const SpecialistServices: React.FC = () => {
       setServices(prev => prev.map(service =>
         service.id === serviceId ? updatedService : service
       ));
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       logger.error('Error toggling service status:', err);
-      setError(err.message || 'Failed to update service status');
+      setError(message || 'Failed to update service status');
     }
   };
 

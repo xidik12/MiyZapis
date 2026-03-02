@@ -301,8 +301,8 @@ const SpecialistEarnings: React.FC = () => {
         setEarningsData(transformedEarnings);
         setMonthlyEarnings(monthlyBreakdown);
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('Error loading earnings:', err);
         
         // Set fallback data instead of showing error
@@ -369,7 +369,7 @@ const SpecialistEarnings: React.FC = () => {
         
         setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
-      } catch (err: unknown) {
+      } catch (error: unknown) {
         console.error('Error loading recent completed bookings:', err);
         
         setPayoutHistory([]);
@@ -384,7 +384,7 @@ const SpecialistEarnings: React.FC = () => {
 
         const summary = await expenseService.getExpenseSummary();
         setExpenseSummary(summary);
-      } catch (err: unknown) {
+      } catch (error: unknown) {
         console.error('Error loading expense summary:', err);
         setExpenseSummary(null);
       } finally {

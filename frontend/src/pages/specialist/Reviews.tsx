@@ -36,10 +36,10 @@ const SpecialistReviews: React.FC = () => {
         const profile = await specialistService.getProfile();
         const specialistData = profile.specialist || profile;
         setSpecialistId(specialistData.id);
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('[Reviews] Error loading specialist profile:', err);
-        setError(err.message || 'Failed to load specialist profile');
+        setError(message || 'Failed to load specialist profile');
       }
     };
 
@@ -119,10 +119,10 @@ const SpecialistReviews: React.FC = () => {
 
         setHasMore(paginationData?.hasNext || false);
 
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('[Reviews] Error loading reviews:', err);
-        setError(err.message || 'Failed to load reviews');
+        setError(message || 'Failed to load reviews');
       } finally {
         setLoading(false);
       }
@@ -166,7 +166,7 @@ const SpecialistReviews: React.FC = () => {
 
       // Call backend API
       await reviewsService.reactToReview(reviewId, reaction);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       console.error('Error reacting to review:', err);
       // Revert optimistic update on error
       loadReviews();
@@ -202,7 +202,7 @@ const SpecialistReviews: React.FC = () => {
 
       // Call backend API
       await reviewsService.reactToResponse(review.id, reaction);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       console.error('Error reacting to response:', err);
       // Revert optimistic update on error
       loadReviews();

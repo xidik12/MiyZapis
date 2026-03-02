@@ -73,10 +73,10 @@ const CustomerReviews: React.FC = () => {
             recommendationRate
           });
         }
-      } catch (err: unknown) {
-        const err = err instanceof Error ? err : new Error(String(err));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('[Reviews] Error loading reviews:', err);
-        setError(err.message || 'Failed to load reviews');
+        setError(message || 'Failed to load reviews');
       } finally {
         setLoading(false);
       }
@@ -118,7 +118,7 @@ const CustomerReviews: React.FC = () => {
       ));
 
       await reviewsService.reactToReview(reviewId, reaction);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       console.error('Error reacting to review:', err);
       // Reload reviews on error to revert optimistic update
       setPage(1);
@@ -151,7 +151,7 @@ const CustomerReviews: React.FC = () => {
       }));
 
       await reviewsService.reactToResponse(reviewId, reaction);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       console.error('Error reacting to response:', err);
       // Reload reviews on error to revert optimistic update
       setPage(1);

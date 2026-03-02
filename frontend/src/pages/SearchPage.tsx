@@ -95,7 +95,7 @@ const SearchPage: React.FC = () => {
           { id: 'all', name: t('category.all') },
           ...(Array.isArray(categoriesData) ? categoriesData : [])
         ]);
-      } catch (err: unknown) {
+      } catch (error: unknown) {
         logger.error('Failed to fetch categories:', err);
         // Fallback to default categories
         setCategories([

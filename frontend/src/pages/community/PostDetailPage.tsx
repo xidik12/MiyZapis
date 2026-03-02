@@ -43,9 +43,9 @@ const PostDetailPage: React.FC = () => {
       setError(null);
       const data = await communityService.getPostById(postId, { skipCache: true });
       setPost(data);
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      setError(err.message || 'Failed to load post');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message || 'Failed to load post');
     } finally {
       setLoading(false);
     }
@@ -120,9 +120,9 @@ const PostDetailPage: React.FC = () => {
       setCommentText('');
       loadComments();
       toast.success(t('community.commentAdded') || 'Comment added');
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      toast.error(err.message || t('community.commentFailed') || 'Failed to add comment');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message || t('community.commentFailed') || 'Failed to add comment');
     }
   };
 
@@ -140,9 +140,9 @@ const PostDetailPage: React.FC = () => {
       setActiveReply(null);
       loadComments();
       toast.success(t('community.commentAdded') || 'Comment added');
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      toast.error(err.message || t('community.commentFailed') || 'Failed to add reply');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message || t('community.commentFailed') || 'Failed to add reply');
     }
   };
 
@@ -153,9 +153,9 @@ const PostDetailPage: React.FC = () => {
       await communityService.deletePost(post.id);
       toast.success(t('community.postDeleted') || 'Post deleted');
       navigate('/community', { replace: true, state: { refresh: true } });
-    } catch (err: unknown) {
-      const err = err instanceof Error ? err : new Error(String(err));
-      toast.error(err.message || t('community.deleteFailed') || 'Failed to delete post');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message || t('community.deleteFailed') || 'Failed to delete post');
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
