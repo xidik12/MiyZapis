@@ -1422,6 +1422,8 @@ const uk: Record<string, string> = {
   'booking.selectTime': 'Оберіть час',
   'booking.noAvailableSlots': 'Немає вільних слотів',
   'booking.noAvailableDates': 'Немає доступних дат',
+  'booking.noSlotsInNext30Days': 'У спеціаліста немає вільних часових слотів протягом найближчих 30 днів',
+  'booking.loadingDates': 'Завантаження доступних дат...',
   'booking.notesPlaceholder': 'Додайте будь-які особливі примітки або побажання...',
   'booking.summary': 'Підсумок бронювання',
   'booking.dateTime': 'Дата та час',

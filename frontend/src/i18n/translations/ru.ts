@@ -1422,6 +1422,8 @@ const ru: Record<string, string> = {
   'booking.selectTime': 'Выберите время',
   'booking.noAvailableSlots': 'Нет свободных слотов',
   'booking.noAvailableDates': 'Нет доступных дат',
+  'booking.noSlotsInNext30Days': 'У специалиста нет свободных временных слотов в ближайшие 30 дней',
+  'booking.loadingDates': 'Загрузка доступных дат...',
   'booking.notesPlaceholder': 'Добавьте любые особые заметки или пожелания...',
   'booking.summary': 'Итоги бронирования',
   'booking.dateTime': 'Дата и время',

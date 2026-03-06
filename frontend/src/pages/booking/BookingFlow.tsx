@@ -234,6 +234,7 @@ const BookingFlow: React.FC = () => {
         return;
       }
 
+      dispatch({ type: 'SET_DATES_LOADING', payload: true });
       try {
         logger.debug('BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
         const dateData = await specialistService.getAvailableDates(currentSpecialistId);
@@ -249,6 +250,8 @@ const BookingFlow: React.FC = () => {
       } catch (error) {
         logger.error('BookingFlow: Error fetching available dates:', error);
         dispatch({ type: 'SET_AVAILABLE_DATES', payload: [] });
+      } finally {
+        dispatch({ type: 'SET_DATES_LOADING', payload: false });
       }
     };
 
@@ -869,6 +872,7 @@ const BookingFlow: React.FC = () => {
         return (
           <DateTimePicker
             availableDates={state.availableDates}
+            datesLoading={state.datesLoading}
             selectedDate={state.selectedDate}
             onDateSelect={(date) => {
               dispatch({ type: 'SET_SELECTED_DATE', payload: date });

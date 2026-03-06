@@ -13,6 +13,7 @@ const initialState: BookingState = {
   selectedTime: '',
   availableSlots: [],
   availableDates: [],
+  datesLoading: false,
   slotsLoading: false,
   conflictHint: { active: false },
 
@@ -69,6 +70,8 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return { ...state, availableSlots: action.payload };
     case 'SET_AVAILABLE_DATES':
       return { ...state, availableDates: action.payload };
+    case 'SET_DATES_LOADING':
+      return { ...state, datesLoading: action.payload };
     case 'SET_SLOTS_LOADING':
       return { ...state, slotsLoading: action.payload };
     case 'SET_CONFLICT_HINT':

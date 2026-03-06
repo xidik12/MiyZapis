@@ -1422,6 +1422,8 @@ const en: Record<string, string> = {
   'booking.selectTime': 'Select Time',
   'booking.noAvailableSlots': 'No available slots',
   'booking.noAvailableDates': 'No available dates',
+  'booking.noSlotsInNext30Days': 'The specialist has no available time slots in the next 30 days',
+  'booking.loadingDates': 'Loading available dates...',
   'booking.notesPlaceholder': 'Add any special notes or requests...',
   'booking.summary': 'Booking Summary',
   'booking.dateTime': 'Date & Time',

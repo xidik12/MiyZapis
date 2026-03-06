@@ -6,6 +6,7 @@ import type { AvailableDateInfo, ConflictHint } from '../types';
 
 interface DateTimePickerProps {
   availableDates: AvailableDateInfo[];
+  datesLoading?: boolean;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
   selectedTime: string;
@@ -22,6 +23,7 @@ interface DateTimePickerProps {
 
 const DateTimePicker: React.FC<DateTimePickerProps> = ({
   availableDates,
+  datesLoading = false,
   selectedDate,
   onDateSelect,
   selectedTime,
@@ -51,7 +53,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           {t('booking.selectDate')}
         </h3>
 
-        {getDisplayDates().length > 0 ? (
+        {datesLoading ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t('booking.loadingDates') || 'Loading available dates...'}
+            </p>
+          </div>
+        ) : getDisplayDates().length > 0 ? (
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
             {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
               <button
@@ -85,7 +94,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
               {t('booking.noAvailableDates')}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500">
-              {t('booking.noSlotsInNext30Days') || 'The specialist has no available time slots in the next 30 days'}
+              {t('booking.noSlotsInNext30Days')}
             </p>
           </div>
         )}

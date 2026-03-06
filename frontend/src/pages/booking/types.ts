@@ -33,6 +33,7 @@ export interface BookingState {
   selectedTime: string;
   availableSlots: string[];
   availableDates: AvailableDateInfo[];
+  datesLoading: boolean;
   slotsLoading: boolean;
   conflictHint: ConflictHint;
 
@@ -80,6 +81,7 @@ export type BookingAction =
   | { type: 'SET_SELECTED_TIME'; payload: string }
   | { type: 'SET_AVAILABLE_SLOTS'; payload: string[] }
   | { type: 'SET_AVAILABLE_DATES'; payload: AvailableDateInfo[] }
+  | { type: 'SET_DATES_LOADING'; payload: boolean }
   | { type: 'SET_SLOTS_LOADING'; payload: boolean }
   | { type: 'SET_CONFLICT_HINT'; payload: ConflictHint }
   | { type: 'SET_BOOKING_NOTES'; payload: string }
