@@ -505,10 +505,11 @@ export const debugApiConnection = async () => {
     logger.info('Health Check Response:', healthResponse.data);
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
+    const response = (error as any)?.response;
     logger.error('Health Check Failed:', {
-      status: err.response?.status,
-      statusText: err.response?.statusText,
-      data: err.response?.data,
+      status: response?.status,
+      statusText: response?.statusText,
+      data: response?.data,
       message: err.message
     });
   }
@@ -519,10 +520,11 @@ export const debugApiConnection = async () => {
     logger.info('API v1 Response:', apiResponse.data);
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
+    const response = (error as any)?.response;
     logger.error('API v1 Check Failed:', {
-      status: err.response?.status,
-      statusText: err.response?.statusText,
-      data: err.response?.data,
+      status: response?.status,
+      statusText: response?.statusText,
+      data: response?.data,
       message: err.message
     });
   }
@@ -587,10 +589,11 @@ export const runFullDiagnostics = async () => {
       logger.info(`${endpoint}: ${response.status} - ${response.statusText}`);
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       logger.error(`${endpoint} failed:`, {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
+        status: response?.status,
+        statusText: response?.statusText,
+        data: response?.data,
         message: err.message
       });
     }

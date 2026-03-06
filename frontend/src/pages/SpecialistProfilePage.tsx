@@ -114,10 +114,11 @@ const SpecialistProfilePage: React.FC = () => {
       }
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       // Handle specific error cases
-      if (err.response?.status === 409) {
+      if (response?.status === 409) {
         toast.info(t('specialist.favorites.conflict') || 'You cannot favorite your own profile or this specialist is already in your favorites.');
-      } else if (err.response?.status === 401) {
+      } else if (response?.status === 401) {
         toast.info(t('specialist.favorites.loginRequired') || 'Please log in to add favorites.');
       } else {
         toast.error(t('specialist.favorites.updateError') || 'Failed to update favorites. Please try again.');

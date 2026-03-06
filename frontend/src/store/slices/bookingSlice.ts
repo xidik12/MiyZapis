@@ -53,27 +53,28 @@ export const createBooking = createAsyncThunk(
       return await bookingService.createBooking(data);
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       // Handle specific error types
-      if (err.response?.status === 409) {
+      if (response?.status === 409) {
         return rejectWithValue({
           message: 'This time slot is no longer available. Please choose a different time.',
           type: 'BOOKING_CONFLICT',
           status: 409
         });
       }
-      
-      if (err.response?.status === 400) {
+
+      if (response?.status === 400) {
         return rejectWithValue({
-          message: err.response.data?.error || 'Invalid booking data. Please check your selection.',
+          message: response.data?.error || 'Invalid booking data. Please check your selection.',
           type: 'VALIDATION_ERROR',
           status: 400
         });
       }
-      
+
       return rejectWithValue({
         message: err.message || 'Failed to create booking',
         type: 'UNKNOWN_ERROR',
-        status: err.response?.status || 500
+        status: response?.status || 500
       });
     }
   }

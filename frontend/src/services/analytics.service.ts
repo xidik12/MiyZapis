@@ -181,8 +181,9 @@ export class AnalyticsService {
         console.log('🔍 Trying specialist analytics endpoint...');
         response = await apiClient.get<AnalyticsOverview>(`${API_ENDPOINTS.ANALYTICS.SPECIALIST_OVERVIEW}?${params}`);
       } catch (specialistError: unknown) {
-        console.log('🔍 Specialist analytics failed, trying general analytics:', specialistError.response?.status);
-        if (specialistError.response?.status === 404) {
+        const specialistResponse = (specialistError as any)?.response;
+        console.log('🔍 Specialist analytics failed, trying general analytics:', specialistResponse?.status);
+        if (specialistResponse?.status === 404) {
           // If specialist endpoint doesn't exist, try the general one
           response = await apiClient.get<AnalyticsOverview>(`${API_ENDPOINTS.ANALYTICS.OVERVIEW}?${params}`);
         } else {
@@ -195,13 +196,14 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get analytics overview';
+      const response = (error as any)?.response;
+      const errorMessage = response?.data?.error?.message || err.message || 'Failed to get analytics overview';
       console.error('Analytics overview API call failed:', errorMessage);
       console.error('Error details:', {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        headers: err.response?.headers
+        status: response?.status,
+        statusText: response?.statusText,
+        data: response?.data,
+        headers: response?.headers
       });
       throw new Error(errorMessage);
     }
@@ -225,7 +227,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get booking analytics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get booking analytics';
       throw new Error(errorMessage);
     }
   }
@@ -248,7 +250,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get revenue analytics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get revenue analytics';
       throw new Error(errorMessage);
     }
   }
@@ -271,7 +273,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get customer analytics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get customer analytics';
       throw new Error(errorMessage);
     }
   }
@@ -294,7 +296,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get performance analytics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get performance analytics';
       throw new Error(errorMessage);
     }
   }
@@ -317,7 +319,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get service analytics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get service analytics';
       throw new Error(errorMessage);
     }
   }
@@ -378,7 +380,7 @@ export class AnalyticsService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get real-time metrics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get real-time metrics';
       throw new Error(errorMessage);
     }
   }

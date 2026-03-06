@@ -69,7 +69,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       }
     } catch (error: unknown) {
       console.error('Failed to create referral:', error);
-      const errorMessage = error?.apiError?.message || t('referral.errors.createFailed');
+      const errorMessage = error instanceof Error ? error.message : t('referral.errors.createFailed');
       toast.error(errorMessage);
     } finally {
       setCreating(false);

@@ -102,7 +102,7 @@ const SpecialistServices: React.FC = () => {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         setError(message || 'Failed to load services');
-        logger.error('Error loading services:', err);
+        logger.error('Error loading services:', error);
       } finally {
         setLoading(false);
       }
@@ -122,7 +122,7 @@ const SpecialistServices: React.FC = () => {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         setCategoriesError(message || 'Failed to load categories');
-        logger.error('Error loading categories:', err);
+        logger.error('Error loading categories:', error);
         // Fallback to empty array if API fails
         setCategories([]);
       } finally {
@@ -561,7 +561,7 @@ const SpecialistServices: React.FC = () => {
       closeModal();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Error saving service:', err);
+      logger.error('Error saving service:', error);
       setError(message || 'Failed to save service');
     } finally {
       setIsSubmitting(false); // Always clear loading state
@@ -708,7 +708,7 @@ const SpecialistServices: React.FC = () => {
       ));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Error toggling service status:', err);
+      logger.error('Error toggling service status:', error);
       setError(message || 'Failed to update service status');
     }
   };

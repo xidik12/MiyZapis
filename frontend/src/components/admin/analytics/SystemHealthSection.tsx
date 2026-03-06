@@ -37,7 +37,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       setError(message || 'Failed to fetch system health');
-      console.error('System health error:', err);
+      console.error('System health error:', error);
     } finally {
       setLoading(false);
     }

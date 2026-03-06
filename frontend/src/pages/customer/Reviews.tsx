@@ -75,7 +75,7 @@ const CustomerReviews: React.FC = () => {
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('[Reviews] Error loading reviews:', err);
+        console.error('[Reviews] Error loading reviews:', error);
         setError(message || 'Failed to load reviews');
       } finally {
         setLoading(false);

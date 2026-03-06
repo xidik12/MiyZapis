@@ -222,8 +222,8 @@ export class TestDataBuilder {
     const user = await testPrisma.user.create({ data: userData });
     
     const specialistData = testFactories.specialist(user.id);
-    const specialist = await testPrisma.specialist.create({ data: specialistData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
-      as any });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+    const specialist = await testPrisma.specialist.create({ data: specialistData as any });
     
     this.data.specialist = { ...user, specialistProfile: specialist };
     return this;
@@ -242,8 +242,8 @@ export class TestDataBuilder {
     }
 
     const serviceData = testFactories.service(this.data.specialist.specialistProfile.id);
-    const service = await testPrisma.service.create({ data: serviceData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
-      as any });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+    const service = await testPrisma.service.create({ data: serviceData as any });
     this.data.service = service;
     return this;
   }
@@ -265,8 +265,8 @@ export class TestDataBuilder {
       this.data.service.id
     );
     
-    const booking = await testPrisma.booking.create({ data: bookingData // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
-      as any });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test factory data is intentionally partial
+    const booking = await testPrisma.booking.create({ data: bookingData as any });
     this.data.booking = booking;
     return this;
   }

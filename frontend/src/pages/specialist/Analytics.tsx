@@ -703,7 +703,7 @@ Performance:
         
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('Error loading analytics:', err);
+        console.error('Error loading analytics:', error);
         
         // Only show error if it's not a network/auth issue - provide fallback data instead
         if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {

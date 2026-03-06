@@ -490,7 +490,7 @@ const SpecialistClients: React.FC = () => {
       setAllClients(clients);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[Clients] Error loading client data:', err);
+      console.error('[Clients] Error loading client data:', error);
       setError(message || 'Failed to load clients');
     } finally {
       setLoading(false);

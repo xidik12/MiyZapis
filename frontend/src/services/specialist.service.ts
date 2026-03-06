@@ -267,22 +267,23 @@ export class SpecialistService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       logger.error('API: Service deletion error:', {
         serviceId,
         error: err.message,
-        response: err.response?.data,
-        status: err.response?.status
+        response: response?.data,
+        status: response?.status
       });
-      
+
       // Provide more specific error messages based on status code
-      if (err.response?.status === 500) {
+      if (response?.status === 500) {
         throw new Error('Server error occurred while deleting service. This may be due to existing bookings or dependencies.');
-      } else if (err.response?.status === 404) {
+      } else if (response?.status === 404) {
         throw new Error('Service not found or already deleted.');
-      } else if (err.response?.status === 403) {
+      } else if (response?.status === 403) {
         throw new Error('You do not have permission to delete this service.');
       }
-      
+
       throw new Error(err.message || 'Failed to delete service');
     }
   }

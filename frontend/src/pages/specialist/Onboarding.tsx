@@ -215,7 +215,7 @@ const SpecialistOnboarding: React.FC = () => {
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to save basic info', err);
+      logger.error('Onboarding: failed to save basic info', error);
       setError(message || 'Failed to save profile information');
       return false;
     } finally {
@@ -244,7 +244,7 @@ const SpecialistOnboarding: React.FC = () => {
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to create service', err);
+      logger.error('Onboarding: failed to create service', error);
       setError(message || 'Failed to create service');
       return false;
     } finally {
@@ -326,7 +326,7 @@ const SpecialistOnboarding: React.FC = () => {
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to save schedule', err);
+      logger.error('Onboarding: failed to save schedule', error);
       setError(message || 'Failed to save schedule');
       return false;
     } finally {
@@ -351,7 +351,7 @@ const SpecialistOnboarding: React.FC = () => {
       return true;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to upload avatar', err);
+      logger.error('Onboarding: failed to upload avatar', error);
       setError(message || 'Failed to upload avatar');
       return false;
     } finally {

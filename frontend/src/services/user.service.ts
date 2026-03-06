@@ -40,7 +40,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user profile';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get user profile';
       throw new Error(errorMessage);
     }
   }
@@ -55,7 +55,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to update profile';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
       throw new Error(errorMessage);
     }
   }
@@ -77,7 +77,7 @@ export class UserService {
       return { avatarUrl: uploadedFile.url || uploadedFile.path };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload avatar';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload avatar';
       throw new Error(errorMessage);
     }
   }
@@ -100,7 +100,7 @@ export class UserService {
       return { avatarUrl: response.data.url };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }
@@ -115,7 +115,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user preferences';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get user preferences';
       throw new Error(errorMessage);
     }
   }
@@ -130,7 +130,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to update preferences';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update preferences';
       throw new Error(errorMessage);
     }
   }
@@ -145,7 +145,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to generate link code';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate link code';
       throw new Error(errorMessage);
     }
   }
@@ -160,7 +160,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to link Telegram account';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to link Telegram account';
       throw new Error(errorMessage);
     }
   }
@@ -175,7 +175,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to unlink Telegram account';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to unlink Telegram account';
       throw new Error(errorMessage);
     }
   }
@@ -190,7 +190,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to delete account';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete account';
       throw new Error(errorMessage);
     }
   }
@@ -211,7 +211,7 @@ export class UserService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user statistics';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get user statistics';
       throw new Error(errorMessage);
     }
   }

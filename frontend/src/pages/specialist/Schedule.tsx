@@ -459,7 +459,7 @@ const SpecialistSchedule: React.FC = () => {
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('Error loading availability blocks:', err);
+        console.error('Error loading availability blocks:', error);
         setError(message || 'Failed to load schedule');
       } finally {
         setLoading(false);
@@ -532,7 +532,7 @@ const SpecialistSchedule: React.FC = () => {
       setError(null);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('Error generating availability:', err);
+      console.error('Error generating availability:', error);
       setError(message || 'Failed to generate availability from working hours');
     } finally {
       setOperationInProgress(false);

@@ -59,16 +59,17 @@ export class BookingService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       console.error('❌ BookingService: Booking creation failed:', error);
-      
+
       // Re-throw with proper error structure for Redux to handle
-      if (err.response) {
+      if (response) {
         throw error; // Already has response structure
       } else {
         const wrappedError = new Error(err.message || 'Failed to create booking');
-        (wrappedError as any).response = { 
-          status: err.message?.includes('conflicts detected') ? 409 : 500, 
-          data: { error: err.message } 
+        (wrappedError as any).response = {
+          status: err.message?.includes('conflicts detected') ? 409 : 500,
+          data: { error: err.message }
         };
         throw wrappedError;
       }
@@ -112,8 +113,9 @@ export class BookingService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       console.error('BookingService: Recurring booking creation failed:', error);
-      if (err.response) {
+      if (response) {
         throw error;
       }
       const wrappedError = new Error(err.message || 'Failed to create recurring booking');

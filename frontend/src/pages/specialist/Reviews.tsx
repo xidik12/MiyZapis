@@ -38,7 +38,7 @@ const SpecialistReviews: React.FC = () => {
         setSpecialistId(specialistData.id);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('[Reviews] Error loading specialist profile:', err);
+        console.error('[Reviews] Error loading specialist profile:', error);
         setError(message || 'Failed to load specialist profile');
       }
     };
@@ -121,7 +121,7 @@ const SpecialistReviews: React.FC = () => {
 
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('[Reviews] Error loading reviews:', err);
+        console.error('[Reviews] Error loading reviews:', error);
         setError(message || 'Failed to load reviews');
       } finally {
         setLoading(false);
@@ -168,8 +168,8 @@ const SpecialistReviews: React.FC = () => {
       await reviewsService.reactToReview(reviewId, reaction);
     } catch (error: unknown) {
       console.error('Error reacting to review:', error);
-      // Revert optimistic update on error
-      loadReviews();
+      // Revert optimistic update on error by resetting page to trigger useEffect reload
+      setPage(1);
     }
   };
 
@@ -204,8 +204,8 @@ const SpecialistReviews: React.FC = () => {
       await reviewsService.reactToResponse(review.id, reaction);
     } catch (error: unknown) {
       console.error('Error reacting to response:', error);
-      // Revert optimistic update on error
-      loadReviews();
+      // Revert optimistic update on error by resetting page to trigger useEffect reload
+      setPage(1);
     }
   };
 

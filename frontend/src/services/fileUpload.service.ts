@@ -57,11 +57,9 @@ export class FileUploadService {
       const err = error instanceof Error ? error : new Error(String(error));
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
-        apiError: error.apiError,
-        response: err.response?.data,
         message: err.message
       });
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload file';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
       throw new Error(errorMessage);
     }
   }
@@ -150,7 +148,7 @@ export class FileUploadService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }
@@ -169,7 +167,7 @@ export class FileUploadService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to delete file';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete file';
       throw new Error(errorMessage);
     }
   }
@@ -185,7 +183,7 @@ export class FileUploadService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get file info';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get file info';
       throw new Error(errorMessage);
     }
   }
@@ -242,7 +240,7 @@ export class FileUploadService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get presigned upload URL';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }
   }

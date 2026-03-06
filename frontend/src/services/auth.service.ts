@@ -35,13 +35,12 @@ export class AuthService {
       return userData;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       // Extract the most detailed error message available
-      const errorDetails = err.response?.data?.errors?.details ||
-                          err.response?.data?.error?.details ||
-                          error.apiError?.details ||
-                          err.response?.data?.errors?.message ||
-                          err.response?.data?.error?.message ||
-                          error.apiError?.message ||
+      const errorDetails = response?.data?.errors?.details ||
+                          response?.data?.error?.details ||
+                          response?.data?.errors?.message ||
+                          response?.data?.error?.message ||
                           err.message ||
                           'Registration failed';
       throw new Error(errorDetails);
@@ -55,23 +54,22 @@ export class AuthService {
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Login failed');
       }
-      
+
       // Transform backend user format to frontend format
       const userData = response.data;
       if (userData.user) {
         userData.user = this.transformUserFromBackend(userData.user);
       }
-      
+
       return userData;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       // Extract the most detailed error message available
-      const errorDetails = err.response?.data?.errors?.details ||
-                          err.response?.data?.error?.details ||
-                          error.apiError?.details ||
-                          err.response?.data?.errors?.message ||
-                          err.response?.data?.error?.message ||
-                          error.apiError?.message ||
+      const errorDetails = response?.data?.errors?.details ||
+                          response?.data?.error?.details ||
+                          response?.data?.errors?.message ||
+                          response?.data?.error?.message ||
                           err.message ||
                           'Login failed';
       throw new Error(errorDetails);
@@ -120,7 +118,7 @@ export class AuthService {
       return userData;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Google authentication failed';
+      const errorMessage = err.message || 'Google authentication failed';
       throw new Error(errorMessage);
     }
   }
@@ -142,7 +140,7 @@ export class AuthService {
       return userData;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Telegram authentication failed';
+      const errorMessage = err.message || 'Telegram authentication failed';
       throw new Error(errorMessage);
     }
   }
@@ -250,8 +248,9 @@ export class AuthService {
       return response.data;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
+      const response = (error as any)?.response;
       // If 404, try different endpoints that might be available
-      if (err.response?.status === 404) {
+      if (response?.status === 404) {
         console.log('Fallback: Trying alternative password setup methods');
 
         // Try change-password endpoint
@@ -323,7 +322,7 @@ export class AuthService {
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
       // Extract error message from API response
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to get user profile';
+      const errorMessage = err.message || 'Failed to get user profile';
       throw new Error(errorMessage);
     }
   }
@@ -354,7 +353,7 @@ export class AuthService {
       return { avatarUrl: uploadedFile.url || uploadedFile.path };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to upload avatar';
+      const errorMessage = err.message || 'Failed to upload avatar';
       throw new Error(errorMessage);
     }
   }
@@ -377,7 +376,7 @@ export class AuthService {
       return { avatarUrl: response.data.url };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = error.apiError?.message || err.response?.data?.error?.message || err.message || 'Failed to save external image';
+      const errorMessage = err.message || 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }

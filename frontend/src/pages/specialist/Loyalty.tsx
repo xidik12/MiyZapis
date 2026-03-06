@@ -204,7 +204,7 @@ const SpecialistLoyalty: React.FC = () => {
       await fetchRedeemData();
     } catch (error: unknown) {
       console.error('Failed to redeem reward:', error);
-      const message = error?.apiError?.message || (t('loyalty.error.redeem') || 'Failed to redeem reward');
+      const message = error instanceof Error ? error.message : (t('loyalty.error.redeem') || 'Failed to redeem reward');
       toast.error(message);
     } finally {
       setRedeemingId(null);
