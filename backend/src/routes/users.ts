@@ -95,6 +95,9 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
       loyaltyPoints: user.loyaltyPoints,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
+      profileComplete: user.userType === 'SPECIALIST'
+        ? (user.specialist?.onboardingCompleted ?? false)
+        : true,
       specialist: user.specialist ? {
         id: user.specialist.id,
         businessName: user.specialist.businessName,
@@ -104,6 +107,7 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
         reviewCount: user.specialist.reviewCount,
         completedBookings: user.specialist.completedBookings,
         isVerified: user.specialist.isVerified,
+        onboardingCompleted: user.specialist.onboardingCompleted,
         recentServices: user.specialist.services,
         recentReviews: user.specialist.reviews
       } : null,

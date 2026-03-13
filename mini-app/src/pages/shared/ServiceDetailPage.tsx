@@ -29,6 +29,7 @@ import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { serviceDetailStrings, commonStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
+import { apiService } from '@/services/api.service';
 
 export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -117,10 +118,21 @@ export const ServiceDetailPage: React.FC = () => {
     hapticFeedback.selectionChanged();
   };
 
-  const handleFavoriteToggle = () => {
-    setIsFavorite(!isFavorite);
+  const handleFavoriteToggle = async () => {
+    if (!id) return;
+    const newState = !isFavorite;
+    setIsFavorite(newState);
     hapticFeedback.impactLight();
-    // TODO: Implement favorite functionality
+    try {
+      if (newState) {
+        await apiService.addFavorite({ targetId: id, type: 'service' });
+      } else {
+        await apiService.removeFavorite(id, 'service');
+      }
+    } catch (err) {
+      console.warn('Failed to toggle favorite:', err);
+      setIsFavorite(!newState); // revert on error
+    }
   };
 
   const images = selectedService.images || [];

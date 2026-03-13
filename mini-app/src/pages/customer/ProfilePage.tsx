@@ -35,6 +35,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { updateProfileAsync, logout } from '@/store/slices/authSlice';
+import { apiService } from '@/services/api.service';
 import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
 import { useLocale, t } from '@/hooks/useLocale';
@@ -50,6 +51,7 @@ export const ProfilePage: React.FC = () => {
   const { bookings } = useSelector((state: RootState) => state.bookings);
   const isSpecialist = user?.role === 'specialist';
 
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
@@ -99,13 +101,35 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleAvatarUpload = () => {
-    // TODO: Implement avatar upload functionality
     hapticFeedback.impactLight();
-    dispatch(addToast({
-      type: 'info',
-      title: t(commonStrings, 'comingSoon', locale),
-      message: t(profileStrings, 'avatarUpload', locale),
-    }));
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Please select a JPEG, PNG, or WebP image' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Image must be smaller than 5 MB' }));
+      return;
+    }
+
+    try {
+      const { url } = await apiService.uploadFile(file, 'avatar');
+      await dispatch(updateProfileAsync({ avatar: url })).unwrap();
+      hapticFeedback.notificationSuccess();
+      dispatch(addToast({ type: 'success', title: t(profileStrings, 'profile', locale), message: 'Avatar updated!' }));
+    } catch (err) {
+      console.warn('Avatar upload failed:', err);
+      hapticFeedback.notificationError();
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: 'Failed to upload avatar' }));
+    }
+    // Reset input so re-selecting the same file triggers change
+    e.target.value = '';
   };
 
   const getCompletedBookingsCount = () => {
@@ -172,6 +196,13 @@ export const ProfilePage: React.FC = () => {
               >
                 <Camera size={12} className="text-accent-primary" />
               </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarFileChange}
+                className="hidden"
+              />
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold">

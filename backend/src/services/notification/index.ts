@@ -771,6 +771,41 @@ export class NotificationService {
     }
   }
 
+  // Schedule a review request notification 2 hours after booking completion
+  async scheduleReviewRequest(bookingId: string): Promise<void> {
+    try {
+      const booking = await this.prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          customer: true,
+          service: true,
+        },
+      });
+
+      if (!booking) {
+        logger.warn('Booking not found for review request', { bookingId });
+        return;
+      }
+
+      // Send review request notification to customer
+      await this.sendNotification(booking.customerId, {
+        type: 'REVIEW_REQUEST',
+        title: 'How was your experience?',
+        message: `Your appointment for "${booking.service.name}" is complete! We'd love to hear your feedback.`,
+        data: {
+          bookingId: booking.id,
+          serviceId: booking.serviceId,
+          serviceName: booking.service.name,
+          actionUrl: `/customer/reviews?bookingId=${booking.id}`,
+        },
+      });
+
+      logger.info('Review request sent', { bookingId, customerId: booking.customerId });
+    } catch (error) {
+      logger.error('Error scheduling review request:', error);
+    }
+  }
+
   // Booking-specific notification helpers
   async sendBookingNotification(
     bookingId: string,

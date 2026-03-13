@@ -105,6 +105,7 @@ model User {
   expenses             Expense[]              @relation("SpecialistExpenses")
   pushSubscriptions    PushSubscription[]
   waitlists            Waitlist[]
+  clientNotes          ClientNote[] @relation("ClientNotes")
 
   // Community relations
   posts                Post[]                 @relation("UserPosts")
@@ -137,6 +138,7 @@ model Specialist {
   
   // Business profile
   businessName String?
+  slug          String?  @unique
   bio          String?
   bioUk        String? // Ukrainian bio
   bioRu        String? // Russian bio
@@ -177,7 +179,11 @@ model Specialist {
   privacy        String? // JSON string for privacy settings
   socialMedia    String? // JSON string for social media profiles
   autoBooking    Boolean @default(false) // Auto-approve bookings without manual confirmation
+  allowPayAtVenue Boolean @default(false)
   cancellationWindowHours Int @default(24) // Hours before booking that cancellation is allowed (2, 6, 12, 24, 48)
+
+  // Onboarding
+  onboardingCompleted Boolean @default(false)
 
   // Verification details
   verifiedDate   DateTime? // Date when verified
@@ -204,6 +210,8 @@ model Specialist {
   availabilityBlocks AvailabilityBlock[]
   analytics          SpecialistAnalytics[]
   favorites          FavoriteSpecialist[] @relation("SpecialistFavorites")
+  clientNotes        ClientNote[]
+  beforeAfterPhotos  BeforeAfterPhoto[]
 
   // Indexes for performance
   @@index([city, isVerified])
@@ -241,6 +249,9 @@ model Service {
 
   // Service details
   duration       Int    // Duration in minutes
+  prepTime        Int     @default(0)
+  cleanupTime     Int     @default(0)
+  rebookCycleDays Int?
 
   // Location details (shown to customer after payment)
   serviceLocation String? // Physical address or location details for this service
@@ -384,6 +395,7 @@ model Booking {
   cryptoPayments    CryptoPayment[]
   walletTransactions WalletTransaction[]
   onrampSessions    OnrampSession[]
+  beforeAfterPhotos BeforeAfterPhoto[]
 
   @@map("bookings")
 }
@@ -1942,4 +1954,35 @@ model Waitlist {
   @@index([userId])
   @@index([status])
   @@map("waitlists")
+}
+
+model ClientNote {
+  id            String   @id @default(cuid())
+  specialistId  String
+  customerId    String
+  content       String
+  category      String   @default("general") // general, allergy, preference, formula, medical
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  specialist    Specialist @relation(fields: [specialistId], references: [id])
+  customer      User       @relation("ClientNotes", fields: [customerId], references: [id])
+
+  @@index([specialistId, customerId])
+}
+
+model BeforeAfterPhoto {
+  id            String   @id @default(cuid())
+  specialistId  String
+  bookingId     String?
+  beforeUrl     String
+  afterUrl      String
+  caption       String?
+  isPublic      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  specialist    Specialist @relation(fields: [specialistId], references: [id])
+  booking       Booking?   @relation(fields: [bookingId], references: [id])
+
+  @@index([specialistId])
 }

@@ -6,7 +6,7 @@ import {
   MagnifyingGlassIcon,
   CalendarIcon,
   BellIcon,
-  UserIcon,
+  Cog6ToothIcon,
 } from '@/components/icons';
 
 interface NavItem {
@@ -21,7 +21,7 @@ const items: NavItem[] = [
   { nameKey: 'customer.nav.searchServices', fallback: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { nameKey: 'customer.nav.bookings', fallback: 'Bookings', href: '/customer/bookings', icon: CalendarIcon },
   { nameKey: 'customer.nav.notifications', fallback: 'Alerts', href: '/customer/notifications', icon: BellIcon },
-  { nameKey: 'customer.nav.profile', fallback: 'Profile', href: '/customer/profile', icon: UserIcon },
+  { nameKey: 'customer.nav.settings', fallback: 'Settings', href: '/customer/settings', icon: Cog6ToothIcon },
 ];
 
 export const MobileBottomNav: React.FC = () => {

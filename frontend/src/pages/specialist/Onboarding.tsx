@@ -383,7 +383,13 @@ const SpecialistOnboarding: React.FC = () => {
         success = await saveAvatar();
         break;
       case 4:
-        // Done step -> go to dashboard
+        // Done step -> mark onboarding complete on backend, refresh auth state, go to dashboard
+        try {
+          await specialistService.completeOnboarding();
+          await dispatch(getCurrentUser()).unwrap();
+        } catch (err) {
+          logger.warn('Onboarding: failed to mark onboarding complete on backend', err);
+        }
         navigate('/specialist/dashboard');
         return;
     }

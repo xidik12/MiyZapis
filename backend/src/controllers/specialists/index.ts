@@ -1475,4 +1475,333 @@ export class SpecialistController {
       );
     }
   }
+
+  // Complete specialist onboarding
+  static async completeOnboarding(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id || req.userId;
+      if (!userId) {
+        res.status(401).json(
+          createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId },
+      });
+
+      if (!specialist) {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist profile not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      await prisma.specialist.update({
+        where: { id: specialist.id },
+        data: { onboardingCompleted: true },
+      });
+
+      logger.info('Specialist onboarding completed', { userId, specialistId: specialist.id });
+
+      res.json(createSuccessResponse({ message: 'Onboarding completed successfully', onboardingCompleted: true }));
+    } catch (error: unknown) {
+      logger.error('Complete onboarding error:', error);
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to complete onboarding', req.headers['x-request-id'] as string)
+      );
+    }
+  }
+
+  // Get specialist by slug
+  static async getBySlug(req: Request, res: Response): Promise<void> {
+    try {
+      const { slug } = req.params;
+
+      if (!slug) {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Slug is required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({
+        where: { slug },
+        include: {
+          user: {
+            select: {
+              id: true, email: true, firstName: true, lastName: true, avatar: true,
+              userType: true, isActive: true, createdAt: true,
+            },
+          },
+        },
+      });
+
+      if (!specialist || !specialist.user.isActive) {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      res.json(createSuccessResponse({ specialist }));
+    } catch (error) {
+      logger.error('Get specialist by slug error:', error);
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get specialist', req.headers['x-request-id'] as string)
+      );
+    }
+  }
+
+  // Get client notes
+  static async getClientNotes(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { customerId } = req.params;
+      const notes = await prisma.clientNote.findMany({
+        where: { specialistId: specialist.id, customerId },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      res.json(createSuccessResponse({ notes }));
+    } catch (error) {
+      logger.error('Get client notes error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get client notes', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Create client note
+  static async createClientNote(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { customerId } = req.params;
+      const { content, category } = req.body;
+
+      if (!content || content.trim().length === 0) {
+        res.status(400).json(createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Note content is required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const note = await prisma.clientNote.create({
+        data: {
+          specialistId: specialist.id,
+          customerId,
+          content: content.trim(),
+          category: category || 'general',
+        },
+      });
+
+      res.status(201).json(createSuccessResponse({ note }));
+    } catch (error) {
+      logger.error('Create client note error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to create client note', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Update client note
+  static async updateClientNote(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { noteId } = req.params;
+      const { content, category } = req.body;
+
+      const note = await prisma.clientNote.findUnique({ where: { id: noteId } });
+      if (!note || note.specialistId !== specialist.id) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Note not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const updated = await prisma.clientNote.update({
+        where: { id: noteId },
+        data: {
+          ...(content !== undefined && { content: content.trim() }),
+          ...(category !== undefined && { category }),
+        },
+      });
+
+      res.json(createSuccessResponse({ note: updated }));
+    } catch (error) {
+      logger.error('Update client note error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to update client note', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Delete client note
+  static async deleteClientNote(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { noteId } = req.params;
+      const note = await prisma.clientNote.findUnique({ where: { id: noteId } });
+      if (!note || note.specialistId !== specialist.id) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Note not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      await prisma.clientNote.delete({ where: { id: noteId } });
+      res.json(createSuccessResponse({ message: 'Note deleted successfully' }));
+    } catch (error) {
+      logger.error('Delete client note error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to delete client note', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Get before/after photos
+  static async getBeforeAfterPhotos(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const photos = await prisma.beforeAfterPhoto.findMany({
+        where: { specialistId: specialist.id },
+        include: { booking: { select: { id: true, service: { select: { name: true } }, scheduledAt: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      res.json(createSuccessResponse({ photos }));
+    } catch (error) {
+      logger.error('Get before/after photos error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get photos', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Create before/after photo
+  static async createBeforeAfterPhoto(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { bookingId, beforeUrl, afterUrl, caption, isPublic } = req.body;
+
+      if (!beforeUrl || !afterUrl) {
+        res.status(400).json(createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Before and after URLs are required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const photo = await prisma.beforeAfterPhoto.create({
+        data: {
+          specialistId: specialist.id,
+          bookingId: bookingId || null,
+          beforeUrl,
+          afterUrl,
+          caption: caption || null,
+          isPublic: isPublic !== false,
+        },
+      });
+
+      res.status(201).json(createSuccessResponse({ photo }));
+    } catch (error) {
+      logger.error('Create before/after photo error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to create photo', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Delete before/after photo
+  static async deleteBeforeAfterPhoto(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const specialist = await prisma.specialist.findUnique({ where: { userId: req.user.id } });
+      if (!specialist) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const { photoId } = req.params;
+      const photo = await prisma.beforeAfterPhoto.findUnique({ where: { id: photoId } });
+      if (!photo || photo.specialistId !== specialist.id) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Photo not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      await prisma.beforeAfterPhoto.delete({ where: { id: photoId } });
+      res.json(createSuccessResponse({ message: 'Photo deleted successfully' }));
+    } catch (error) {
+      logger.error('Delete before/after photo error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to delete photo', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Get public before/after photos for a specialist (no auth required)
+  static async getPublicBeforeAfterPhotos(req: Request, res: Response): Promise<void> {
+    try {
+      const { specialistId } = req.params;
+
+      if (!specialistId) {
+        res.status(400).json(createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Specialist ID is required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const photos = await prisma.beforeAfterPhoto.findMany({
+        where: { specialistId, isPublic: true },
+        include: { booking: { select: { id: true, service: { select: { name: true } }, scheduledAt: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+
+      res.json(createSuccessResponse({ photos }));
+    } catch (error) {
+      logger.error('Get public before/after photos error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get photos', req.headers['x-request-id'] as string));
+    }
+  }
 }

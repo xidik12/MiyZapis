@@ -10,7 +10,7 @@ import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { Logo } from '@/components/ui/Logo';
 import { MobileBottomNav } from './MobileBottomNav';
-import { HouseIcon as HomeIcon, CalendarIcon, UserIcon, Cog6ToothIcon, StarIcon, HeartIcon, QuestionMarkCircleIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ClockIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, Cog6ToothIcon, StarIcon, HeartIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -93,12 +93,6 @@ const navigation: SidebarNavItem[] = [
     nameKey: 'customer.nav.referrals',
     href: '/customer/referrals',
     icon: ShareIcon,
-  },
-  {
-    name: 'Profile',
-    nameKey: 'customer.nav.profile',
-    href: '/customer/profile',
-    icon: UserIcon,
   },
   {
     name: 'Settings',

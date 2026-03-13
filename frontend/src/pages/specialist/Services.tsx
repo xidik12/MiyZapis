@@ -48,6 +48,10 @@ interface Service {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // Prep/Cleanup/Rebook
+  prepTime?: number;
+  cleanupTime?: number;
+  rebookCycleDays?: number;
 }
 
 const sampleServices: Service[] = [
@@ -214,6 +218,10 @@ const SpecialistServices: React.FC = () => {
     isGroupSession: false,
     maxParticipants: undefined as number | undefined,
     minParticipants: 1,
+    // Prep/Cleanup/Rebook
+    prepTime: 0,
+    cleanupTime: 0,
+    rebookCycleDays: undefined as number | undefined,
   });
 
   // Location state for LocationPicker
@@ -274,6 +282,10 @@ const SpecialistServices: React.FC = () => {
       isGroupSession: false,
       maxParticipants: undefined,
       minParticipants: 1,
+      // Prep/Cleanup/Rebook
+      prepTime: 0,
+      cleanupTime: 0,
+      rebookCycleDays: undefined,
     });
     setLocationData({
       address: '',
@@ -338,6 +350,10 @@ const SpecialistServices: React.FC = () => {
       discountValidFrom: service.discountValidFrom ? service.discountValidFrom.split('T')[0] : '',
       discountValidUntil: service.discountValidUntil ? service.discountValidUntil.split('T')[0] : '',
       discountDescription: service.discountDescription || '',
+      // Prep/Cleanup/Rebook
+      prepTime: (service as any).prepTime || 0,
+      cleanupTime: (service as any).cleanupTime || 0,
+      rebookCycleDays: (service as any).rebookCycleDays || undefined,
     };
 
     logger.debug('Form data being set:', formDataToSet);
@@ -533,6 +549,10 @@ const SpecialistServices: React.FC = () => {
       isGroupSession: formData.isGroupSession,
       maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
       minParticipants: formData.isGroupSession ? formData.minParticipants : 1,
+      // Prep/Cleanup/Rebook
+      prepTime: formData.prepTime || 0,
+      cleanupTime: formData.cleanupTime || 0,
+      rebookCycleDays: formData.rebookCycleDays || undefined,
     };
 
     logger.debug('Service data being sent to backend:', serviceData);
@@ -599,93 +619,28 @@ const SpecialistServices: React.FC = () => {
     setError(null);
 
     try {
-      logger.debug('Starting service deletion for ID:', serviceId);
+      logger.debug('Deleting service:', serviceId);
 
-      // Debug: Check if service exists before deletion
-      const servicesBefore = services.length;
-      const serviceToDelete = services.find(s => s.id === serviceId);
-      logger.debug('Pre-deletion state:', {
-        totalServices: servicesBefore,
-        serviceToDelete: serviceToDelete ? { id: serviceToDelete.id, name: serviceToDelete.name } : 'NOT FOUND',
-        allServiceIds: services.map(s => s.id)
-      });
+      await specialistService.deleteService(serviceId);
 
-      const result = await specialistService.deleteService(serviceId);
-      logger.debug('Backend deletion result:', result);
-
-      // Verify deletion by fetching services again from backend
-      logger.debug('Verifying deletion by re-fetching services...');
+      // Re-fetch services list from backend (soft-delete excludes deleted services)
       const refreshedServices = await specialistService.getServices();
-      logger.debug('Post-deletion verification:', {
-        backendServicesCount: refreshedServices.length,
-        deletedServiceStillExists: refreshedServices.some(s => s.id === serviceId),
-        backendServiceIds: refreshedServices.map(s => s.id)
-      });
-
-      // Check if service was actually deleted from backend
-      const serviceStillExists = refreshedServices.some(s => s.id === serviceId);
-
-      if (serviceStillExists) {
-        // Backend says success but service still exists - this is the bug!
-        logger.error('DELETION BUG DETECTED: Backend returned success but service still exists!', {
-          serviceId,
-          backendResponse: result,
-          serviceStillInBackend: true
-        });
-
-        // Update UI to reflect actual backend state
-        setServices(refreshedServices);
-
-        throw new Error(
-          `Deletion failed: Backend returned success but service still exists in database. ` +
-          `This indicates a backend bug. Please check server logs and database state. ` +
-          `Service ID: ${serviceId}`
-        );
-      }
-
-      // If we reach here, deletion was actually successful
-      setServices(refreshedServices); // Use fresh data from backend
-      logger.debug('Service deletion verified: Service no longer exists on backend');
-      // toast.success('Service deleted successfully and verified!');
+      setServices(refreshedServices);
+      logger.debug('Service deleted successfully, refreshed list:', refreshedServices.length);
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       const errResponse = (error as any)?.response;
-      logger.error('Service deletion failed:', {
-        serviceId,
-        error: message,
-        response: errResponse?.data,
-        status: errResponse?.status
-      });
+      logger.error('Service deletion failed:', { serviceId, error: message, status: errResponse?.status });
 
-      // Handle 404 error - service already deleted
+      // Handle 404 - service already deleted
       if (errResponse?.status === 404) {
-        logger.debug('Service already deleted (404), removing from local state');
-        // Remove the service from local state since it's already deleted on backend
         setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
-        // toast.info('Service was already deleted. Refreshing the list.');
-        return; // Exit early, don't show error
+        return;
       }
 
-      // More user-friendly error messages for other errors
-      let errorMessage = message || 'Failed to delete service';
-
-      // Check for specific backend error details
-      if (errResponse?.data?.error) {
-        errorMessage = `Backend Error: ${errResponse.data.error}`;
-      } else if (errResponse?.data?.message) {
-        errorMessage = `Backend Error: ${errResponse.data.message}`;
-      } else if (errResponse?.status === 500) {
-        errorMessage = 'Server error occurred while deleting service. This may be due to existing bookings or database dependencies. Please try again later or contact support.';
-      } else if (message?.includes('existing bookings')) {
-        errorMessage = 'Cannot delete service because it has existing bookings. Please cancel all bookings first or contact support.';
-      } else if (message?.includes('dependencies')) {
-        errorMessage = 'Cannot delete service due to existing dependencies. Please contact support for assistance.';
-      }
-      
+      const errorMessage = errResponse?.data?.error || errResponse?.data?.message || message || 'Failed to delete service';
       setError(errorMessage);
-      // Prefer toast but leave developer console logs
-      // toast.error(`Deletion failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -1335,6 +1290,55 @@ const SpecialistServices: React.FC = () => {
                       className={`w-full px-4 py-3 rounded-xl border ${formErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                     />
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
+                  </div>
+                </div>
+
+                {/* Prep Time, Cleanup Time, Rebook Reminder */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('services.prepTime') || 'Prep Time (min)'}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="120"
+                      value={formData.prepTime || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, prepTime: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">{t('services.prepTimeHint') || 'Time needed before the service starts'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('services.cleanupTime') || 'Cleanup Time (min)'}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="120"
+                      value={formData.cleanupTime || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cleanupTime: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">{t('services.cleanupTimeHint') || 'Time needed after service for cleanup'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('services.rebookCycleDays') || 'Rebooking Reminder (days)'}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={formData.rebookCycleDays || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, rebookCycleDays: e.target.value ? parseInt(e.target.value) : undefined }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      placeholder={t('services.rebookCycleDaysPlaceholder') || 'e.g., 28 for monthly'}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">{t('services.rebookCycleDaysHint') || 'Remind client to rebook after this many days'}</p>
                   </div>
                 </div>
               </div>

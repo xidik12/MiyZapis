@@ -78,16 +78,41 @@ const BookingFlow: React.FC = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((state.service?.price ?? state.service?.basePrice ?? 0) - discount));
 
-  // Conditionally include payment step based on configuration
-  const steps: BookingStep[] = [
-    { id: 'service', title: t('booking.selectService'), completed: false },
-    { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
-    { id: 'details', title: t('booking.bookingDetails'), completed: false },
-    ...(environment.PAYMENTS_ENABLED ? [{ id: 'payment', title: t('booking.payment'), completed: false }] : []),
-    { id: 'confirmation', title: t('booking.confirmation'), completed: false },
-  ];
+  // Streamlined 3-step flow when service is pre-selected and not a group session
+  // Full flow for complex bookings (no service pre-selected, or group sessions)
+  const isSimplifiedFlow = Boolean(serviceId && state.service && !state.service.isGroupSession);
+
+  const steps: BookingStep[] = isSimplifiedFlow
+    ? [
+        { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
+        ...(environment.PAYMENTS_ENABLED
+          ? [{ id: 'payment', title: t('booking.detailsAndPayment') || 'Details & Payment', completed: false }]
+          : [{ id: 'details', title: t('booking.bookingDetails'), completed: false }]),
+        { id: 'confirmation', title: t('booking.confirmation'), completed: false },
+      ]
+    : [
+        { id: 'service', title: t('booking.selectService'), completed: false },
+        { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
+        { id: 'details', title: t('booking.bookingDetails'), completed: false },
+        ...(environment.PAYMENTS_ENABLED ? [{ id: 'payment', title: t('booking.payment'), completed: false }] : []),
+        { id: 'confirmation', title: t('booking.confirmation'), completed: false },
+      ];
 
   // ─── Effects ───────────────────────────────────────────────────────────────
+
+  // Save abandoned booking state to localStorage
+  useEffect(() => {
+    if (serviceId && state.service) {
+      const abandonedBooking = {
+        serviceId,
+        specialistId: state.service?.specialistId || state.service?.specialist?.id,
+        specialistName: state.specialist?.user?.firstName,
+        serviceName: state.service?.name,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem('miyzapis_abandoned_booking', JSON.stringify(abandonedBooking));
+    }
+  }, [serviceId, state.service, state.specialist]);
 
   // Reset payment state when payment method changes
   useEffect(() => {
@@ -212,7 +237,9 @@ const BookingFlow: React.FC = () => {
             try {
               const allowed = JSON.parse(r.reward.serviceIds as any);
               if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(state.service.id)) return false;
-            } catch (_) {}
+            } catch (_) {
+              // Ignore malformed serviceIds JSON
+            }
           }
           if (r.expiresAt && new Date(r.expiresAt) < new Date()) return false;
           return true;
@@ -272,7 +299,9 @@ const BookingFlow: React.FC = () => {
         if (state.selectedDate) {
           refreshSlots();
         }
-      } catch {}
+      } catch (err) {
+        logger.warn('BookingFlow: Error refreshing slots on availability update:', err);
+      }
     };
     socketService.on('availability:updated', onAvail as any);
     return () => {
@@ -341,7 +370,9 @@ const BookingFlow: React.FC = () => {
       const serviceDuration = state.service?.duration || 60;
       const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
       dispatch({ type: 'SET_AVAILABLE_SLOTS', payload: filteredSlots });
-    } catch (e) {}
+    } catch (e) {
+      logger.warn('BookingFlow: Error refreshing time slots:', e);
+    }
   };
 
   const handlePaymentTimeout = async () => {
@@ -365,7 +396,7 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleNextStep = async () => {
-    if (environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'payment') {
+    if (environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'payment' && state.paymentMethod !== 'pay_at_venue') {
       if (!state.paymentResult || (state.paymentResult.requiresPayment && state.paymentResult.status !== 'COMPLETED')) {
         toast.error(t('booking.completePaymentFirst') || 'Please complete payment before proceeding to confirmation.');
         return;
@@ -421,6 +452,7 @@ const BookingFlow: React.FC = () => {
         logger.debug('BookingFlow: Booking created successfully:', result);
 
         dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
+        localStorage.removeItem('miyzapis_abandoned_booking');
         toast.success(state.isRecurring && state.recurrenceData
           ? `${t('booking.recurringCreated') || 'Recurring booking created!'} ${(result as any).childrenCount || 0} ${t('booking.additionalScheduled') || 'additional bookings scheduled.'}`
           : (t('booking.manualBookingMessage') || 'Booking created successfully!'));
@@ -504,6 +536,56 @@ const BookingFlow: React.FC = () => {
       logger.debug('BookingFlow: Wallet-first enabled:', state.useWalletFirst);
       if (user?.walletBalance > 0) {
         logger.debug('BookingFlow: User wallet balance: $', user.walletBalance);
+      }
+
+      // Pay at venue — create booking directly without payment
+      if (state.paymentMethod === 'pay_at_venue') {
+        const [hours, minutes] = state.selectedTime.split(':').map(Number);
+        const scheduledAtVenue = new Date(state.selectedDate);
+        scheduledAtVenue.setHours(hours, minutes, 0, 0);
+
+        const bookingData = {
+          serviceId: state.service.id,
+          scheduledAt: scheduledAtVenue.toISOString(),
+          duration: state.service.duration || 60,
+          customerNotes: state.bookingNotes || undefined,
+          participantCount: state.participantCount,
+          loyaltyPointsUsed: 0,
+          rewardRedemptionId: state.selectedRedemptionId || undefined,
+          paymentMethod: 'PAY_AT_VENUE',
+        };
+
+        logger.debug('BookingFlow: Creating pay-at-venue booking', bookingData);
+
+        let result: Record<string, unknown>;
+        if (state.isRecurring && state.recurrenceData) {
+          const recurringResult = await bookingService.createRecurringBooking({
+            ...bookingData,
+            recurrence: {
+              frequency: state.recurrenceData.frequency,
+              daysOfWeek: state.recurrenceData.daysOfWeek,
+              endType: state.recurrenceData.endType,
+              occurrences: state.recurrenceData.occurrences,
+              endDate: state.recurrenceData.endDate,
+            },
+          });
+          result = {
+            booking: recurringResult.parentBooking,
+            childrenCount: recurringResult.childrenCount,
+            message: recurringResult.message,
+          };
+        } else {
+          result = await bookingService.createBooking(bookingData);
+        }
+
+        dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
+        localStorage.removeItem('miyzapis_abandoned_booking');
+        toast.success(t('booking.bookingConfirmedPayAtVenue') || 'Booking confirmed! Pay at the venue.');
+        fireSuccessConfetti();
+        bookingInProgressRef.current = false;
+        dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
+        dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
+        return;
       }
 
       const depositAmount = 100;
@@ -638,6 +720,7 @@ const BookingFlow: React.FC = () => {
                 .then(booking => {
                   logger.debug('BookingFlow: Booking created via webhook:', booking);
                   dispatch({ type: 'SET_BOOKING_RESULT', payload: booking });
+                  localStorage.removeItem('miyzapis_abandoned_booking');
                   dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
                   toast.success(t('booking.paymentConfirmed') || 'Payment completed! Your booking is confirmed.');
                   fireSuccessConfetti();
@@ -727,6 +810,7 @@ const BookingFlow: React.FC = () => {
         });
         logger.debug('BookingFlow: Booking created after wallet payment:', bookingResult);
         dispatch({ type: 'SET_BOOKING_RESULT', payload: bookingResult });
+        localStorage.removeItem('miyzapis_abandoned_booking');
         fireSuccessConfetti();
         dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
       } else {
@@ -967,6 +1051,21 @@ const BookingFlow: React.FC = () => {
             finalPrice={finalPrice}
             loyaltyData={state.loyaltyData}
             pointsToEarn={state.pointsToEarn}
+            showInlineDetails={isSimplifiedFlow}
+            bookingNotes={state.bookingNotes}
+            onBookingNotesChange={(v) => dispatch({ type: 'SET_BOOKING_NOTES', payload: v })}
+            isRecurring={state.isRecurring}
+            recurrenceData={state.recurrenceData}
+            onToggleRecurring={() => {
+              if (state.isRecurring) {
+                dispatch({ type: 'SET_IS_RECURRING', payload: false });
+                dispatch({ type: 'SET_RECURRENCE_DATA', payload: null });
+              } else {
+                dispatch({ type: 'SET_IS_RECURRING', payload: true });
+                dispatch({ type: 'SET_SHOW_RECURRING_MODAL', payload: true });
+              }
+            }}
+            onShowRecurringModal={() => dispatch({ type: 'SET_SHOW_RECURRING_MODAL', payload: true })}
           />
         );
 

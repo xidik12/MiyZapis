@@ -102,6 +102,25 @@ export class SpecialistService {
     };
   }
 
+  private static async generateSlug(businessName: string, excludeId?: string): Promise<string> {
+    let slug = businessName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    if (!slug) slug = 'specialist';
+
+    // Check uniqueness
+    const existing = await prisma.specialist.findUnique({ where: { slug } });
+    if (existing && existing.id !== excludeId) {
+      slug = `${slug}-${Math.floor(Math.random() * 9999)}`;
+    }
+
+    return slug;
+  }
+
   private static parseJsonField<T>(field: string | null, defaultValue: T): T {
     if (!field) return defaultValue;
     try {
@@ -208,6 +227,14 @@ export class SpecialistService {
             },
           },
         },
+      });
+
+      // Auto-generate slug from businessName
+      const businessNameForSlug = data.businessName || `${user.firstName} ${user.lastName}`;
+      const slug = await SpecialistService.generateSlug(businessNameForSlug, specialist.id);
+      await prisma.specialist.update({
+        where: { id: specialist.id },
+        data: { slug },
       });
 
       // Update user type to SPECIALIST if they were a CUSTOMER
@@ -379,6 +406,15 @@ export class SpecialistService {
           },
         },
         });
+
+        // If businessName changed, regenerate slug
+        if (data.businessName !== undefined) {
+          const newSlug = await SpecialistService.generateSlug(data.businessName, updatedSpecialist.id);
+          await tx.specialist.update({
+            where: { id: updatedSpecialist.id },
+            data: { slug: newSlug },
+          });
+        }
 
         return updatedSpecialist as SpecialistWithUser;
       });

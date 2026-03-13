@@ -9,6 +9,9 @@ interface CreateServiceData {
   basePrice: number;
   currency?: string;
   duration: number;
+  prepTime?: number;
+  cleanupTime?: number;
+  rebookCycleDays?: number;
   requirements?: string[];
   deliverables?: string[];
   images?: string[];
@@ -44,6 +47,9 @@ interface UpdateServiceData {
   basePrice?: number;
   currency?: string;
   duration?: number;
+  prepTime?: number;
+  cleanupTime?: number;
+  rebookCycleDays?: number;
   requirements?: string[];
   deliverables?: string[];
   images?: string[];
@@ -100,6 +106,9 @@ export class ServiceService {
           basePrice: data.basePrice,
           currency: data.currency || 'USD',
           duration: data.duration,
+          prepTime: data.prepTime || 0,
+          cleanupTime: data.cleanupTime || 0,
+          rebookCycleDays: data.rebookCycleDays || null,
           serviceLocation: data.serviceLocation || null,
           locationNotes: data.locationNotes || null,
           latitude: data.latitude || null,
@@ -205,6 +214,9 @@ export class ServiceService {
       if (data.duration !== undefined) {
         updateData.duration = data.duration;
       }
+      if (data.prepTime !== undefined) updateData.prepTime = data.prepTime;
+      if (data.cleanupTime !== undefined) updateData.cleanupTime = data.cleanupTime;
+      if (data.rebookCycleDays !== undefined) updateData.rebookCycleDays = data.rebookCycleDays;
       if (data.serviceLocation !== undefined) updateData.serviceLocation = data.serviceLocation;
       if (data.locationNotes !== undefined) updateData.locationNotes = data.locationNotes;
       if (data.latitude !== undefined) updateData.latitude = data.latitude;
@@ -590,7 +602,8 @@ export class ServiceService {
     sortBy: 'price' | 'rating' | 'newest' = 'newest',
     page: number = 1,
     limit: number = 20,
-    city?: string
+    city?: string,
+    availableWithin?: string
   ): Promise<{
     services: ServiceWithDetails[];
     total: number;
@@ -633,6 +646,43 @@ export class ServiceService {
         where.basePrice = {};
         if (minPrice !== undefined) where.basePrice.gte = minPrice;
         if (maxPrice !== undefined) where.basePrice.lte = maxPrice;
+      }
+
+      // Filter by availability window
+      if (availableWithin) {
+        const now = new Date();
+        let windowEnd: Date;
+
+        switch (availableWithin) {
+          case 'now':
+            // Available within the next 2 hours
+            windowEnd = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            break;
+          case 'today':
+            windowEnd = new Date(now);
+            windowEnd.setHours(23, 59, 59, 999);
+            break;
+          case 'thisWeek': {
+            windowEnd = new Date(now);
+            const daysUntilSunday = 7 - windowEnd.getDay();
+            windowEnd.setDate(windowEnd.getDate() + daysUntilSunday);
+            windowEnd.setHours(23, 59, 59, 999);
+            break;
+          }
+          default:
+            windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        }
+
+        where.specialist = {
+          ...where.specialist as Record<string, unknown>,
+          availabilityBlocks: {
+            some: {
+              isAvailable: true,
+              startDateTime: { lte: windowEnd },
+              endDateTime: { gte: now },
+            },
+          },
+        };
       }
 
       let orderBy: Record<string, string> = {};

@@ -22,6 +22,19 @@ export class SpecialistService {
     return response.data;
   }
 
+  // Get specialist by slug (for /s/:slug routing)
+  async getBySlug(slug: string): Promise<Specialist | null> {
+    try {
+      const response = await apiClient.get<{ specialist: Record<string, unknown> }>(`/specialists/by-slug/${slug}`);
+      if (!response.success || !response.data) {
+        return null;
+      }
+      return (response.data.specialist || response.data) as Specialist;
+    } catch {
+      return null;
+    }
+  }
+
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
     const response = await apiClient.get<{ specialist: Record<string, unknown> }>(`/specialists/${specialistId}/public`);
@@ -757,6 +770,92 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to search specialists');
     }
+    return response.data;
+  }
+  // Get client notes
+  async getClientNotes(customerId: string): Promise<{ notes: Array<{ id: string; content: string; category: string; updatedAt: string }> }> {
+    const response = await apiClient.get<{ notes: Array<{ id: string; content: string; category: string; updatedAt: string }> }>(`/specialists/clients/${customerId}/notes`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get client notes');
+    }
+    return response.data;
+  }
+
+  // Create client note
+  async createClientNote(customerId: string, content: string, category: string = 'general'): Promise<{ note: { id: string; content: string; category: string; updatedAt: string } }> {
+    const response = await apiClient.post<{ note: { id: string; content: string; category: string; updatedAt: string } }>(`/specialists/clients/${customerId}/notes`, { content, category });
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create client note');
+    }
+    return response.data;
+  }
+
+  // Delete client note
+  async deleteClientNote(noteId: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/specialists/clients/notes/${noteId}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to delete client note');
+    }
+    return response.data;
+  }
+
+  // Complete specialist onboarding
+  async completeOnboarding(): Promise<{ message: string; onboardingCompleted: boolean }> {
+    const response = await apiClient.post<{ message: string; onboardingCompleted: boolean }>('/specialists/onboarding/complete');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to complete onboarding');
+    }
+    return response.data;
+  }
+
+  // Get specialist by slug
+  async getBySlug(slug: string): Promise<Specialist> {
+    const response = await apiClient.get<{ specialist: Specialist }>(`/specialists/by-slug/${slug}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Specialist not found');
+    }
+    return response.data.specialist || response.data;
+  }
+
+  // Get public before/after photos for a specialist
+  async getPublicBeforeAfterPhotos(specialistId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get<{ photos: any[] }>(`/specialists/${specialistId}/before-after`);
+      return response.data?.photos || [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Client notes CRUD
+  async getClientNotes(customerId: string): Promise<any> {
+    const response = await apiClient.get(`/specialists/clients/${customerId}/notes`);
+    return response.data;
+  }
+
+  async createClientNote(customerId: string, content: string, category: string = 'general'): Promise<any> {
+    const response = await apiClient.post(`/specialists/clients/${customerId}/notes`, { content, category });
+    return response.data;
+  }
+
+  async deleteClientNote(noteId: string): Promise<any> {
+    const response = await apiClient.delete(`/specialists/clients/notes/${noteId}`);
+    return response.data;
+  }
+
+  // Before/after photos management
+  async getBeforeAfterPhotos(): Promise<any[]> {
+    const response = await apiClient.get<{ photos: any[] }>('/specialists/portfolio/before-after');
+    return response.data?.photos || [];
+  }
+
+  async createBeforeAfterPhoto(data: { bookingId?: string; beforeUrl: string; afterUrl: string; caption?: string; isPublic?: boolean }): Promise<any> {
+    const response = await apiClient.post('/specialists/portfolio/before-after', data);
+    return response.data;
+  }
+
+  async deleteBeforeAfterPhoto(photoId: string): Promise<any> {
+    const response = await apiClient.delete(`/specialists/portfolio/before-after/${photoId}`);
     return response.data;
   }
 }

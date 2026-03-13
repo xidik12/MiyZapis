@@ -32,6 +32,7 @@ import {
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistProfileStrings, commonStrings } from '@/utils/translations';
+import { apiService } from '@/services/api.service';
 
 export const SpecialistProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -121,10 +122,21 @@ export const SpecialistProfilePage: React.FC = () => {
     hapticFeedback.selectionChanged();
   };
 
-  const handleFavoriteToggle = () => {
-    setIsFavorite(!isFavorite);
+  const handleFavoriteToggle = async () => {
+    if (!id) return;
+    const newState = !isFavorite;
+    setIsFavorite(newState);
     hapticFeedback.impactLight();
-    // TODO: Implement favorite functionality
+    try {
+      if (newState) {
+        await apiService.addFavorite({ targetId: id, type: 'specialist' });
+      } else {
+        await apiService.removeFavorite(id, 'specialist');
+      }
+    } catch (err) {
+      console.warn('Failed to toggle favorite:', err);
+      setIsFavorite(!newState); // revert on error
+    }
   };
 
   const TabButton: React.FC<{

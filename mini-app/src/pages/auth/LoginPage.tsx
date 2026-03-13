@@ -153,7 +153,9 @@ export const LoginPage: React.FC = () => {
                 hash: initDataUnsafe?.hash || 'mini-app-link',
               }),
             });
-          } catch {}
+          } catch (linkErr) {
+            console.warn('Failed to link Telegram account:', linkErr);
+          }
         }
 
         dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));
@@ -249,7 +251,9 @@ export const LoginPage: React.FC = () => {
                 hash: initDataUnsafe?.hash || 'mini-app-link',
               }),
             });
-          } catch {}
+          } catch (linkErr) {
+            console.warn('Failed to link Telegram account:', linkErr);
+          }
         }
 
         dispatch(addToast({ type: 'success', title: s('welcomeUser'), message: `${s('signedInAs')} ${user.firstName}` }));

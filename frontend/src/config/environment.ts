@@ -166,7 +166,7 @@ export const STORAGE_KEYS = {
   USER_PREFERENCES: 'user_preferences',
   CART: 'booking_cart',
   LAST_SEARCH: 'last_search',
-  ONBOARDING_COMPLETED: 'onboarding_completed',
+  ONBOARDING_COMPLETED: 'onboarding_completed', // Deprecated: onboarding state now tracked server-side
 };
 
 // Application constants

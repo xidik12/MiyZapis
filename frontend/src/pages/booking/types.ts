@@ -49,7 +49,7 @@ export interface BookingState {
 
   // Payment
   useWalletFirst: boolean;
-  paymentMethod: 'crypto' | 'paypal';
+  paymentMethod: 'crypto' | 'paypal' | 'pay_at_venue';
   paymentLoading: boolean;
   paymentResult: Record<string, unknown>;
   showQRCode: boolean;
@@ -91,7 +91,7 @@ export type BookingAction =
   | { type: 'SET_RECURRENCE_DATA'; payload: RecurrenceData | null }
   | { type: 'SET_SHOW_RECURRING_MODAL'; payload: boolean }
   | { type: 'SET_USE_WALLET_FIRST'; payload: boolean }
-  | { type: 'SET_PAYMENT_METHOD'; payload: 'crypto' | 'paypal' }
+  | { type: 'SET_PAYMENT_METHOD'; payload: 'crypto' | 'paypal' | 'pay_at_venue' }
   | { type: 'SET_PAYMENT_LOADING'; payload: boolean }
   | { type: 'SET_PAYMENT_RESULT'; payload: unknown }
   | { type: 'SET_SHOW_QR_CODE'; payload: boolean }

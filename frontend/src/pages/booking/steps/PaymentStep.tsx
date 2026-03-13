@@ -1,9 +1,10 @@
 import React from 'react';
-import { CreditCardIcon, GiftIcon } from '@/components/icons';
+import { CreditCardIcon, GiftIcon, ArrowPathIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import type { UserLoyalty } from '@/services/loyalty.service';
 import type { RewardRedemption } from '@/services/rewards.service';
+import type { RecurrenceData } from '@/components/modals/RecurringBookingModal';
 
 interface PaymentStepProps {
   service: Record<string, unknown>;
@@ -12,8 +13,8 @@ interface PaymentStepProps {
   selectedTime: string;
 
   // Payment
-  paymentMethod: 'crypto' | 'paypal';
-  onPaymentMethodChange: (method: 'crypto' | 'paypal') => void;
+  paymentMethod: 'crypto' | 'paypal' | 'pay_at_venue';
+  onPaymentMethodChange: (method: 'crypto' | 'paypal' | 'pay_at_venue') => void;
   useWalletFirst: boolean;
   onUseWalletFirstChange: (value: boolean) => void;
   paymentLoading: boolean;
@@ -40,6 +41,15 @@ interface PaymentStepProps {
   // Loyalty
   loyaltyData: UserLoyalty | null;
   pointsToEarn: number;
+
+  // Inline details (for simplified 3-step flow)
+  showInlineDetails?: boolean;
+  bookingNotes?: string;
+  onBookingNotesChange?: (value: string) => void;
+  isRecurring?: boolean;
+  recurrenceData?: RecurrenceData | null;
+  onToggleRecurring?: () => void;
+  onShowRecurringModal?: () => void;
 }
 
 const PaymentStep: React.FC<PaymentStepProps> = ({
@@ -69,12 +79,86 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   finalPrice,
   loyaltyData,
   pointsToEarn,
+  showInlineDetails,
+  bookingNotes,
+  onBookingNotesChange,
+  isRecurring,
+  recurrenceData,
+  onToggleRecurring,
+  onShowRecurringModal,
 }) => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
   return (
     <div className="space-y-6">
+      {/* Inline Details Section (simplified 3-step flow) */}
+      {showInlineDetails && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            {t('booking.bookingDetails')}
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('booking.additionalNotes')}
+              </label>
+              <textarea
+                value={bookingNotes || ''}
+                onChange={(e) => onBookingNotesChange?.(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                placeholder={t('booking.notesPlaceholder')}
+              />
+            </div>
+            {/* Recurring toggle */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                  <ArrowPathIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('booking.makeRecurring') || 'Make this recurring'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isRecurring}
+                onClick={onToggleRecurring}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isRecurring ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isRecurring ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+            {isRecurring && recurrenceData && (
+              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-primary-900 dark:text-primary-300">
+                    {recurrenceData.frequency === 'weekly' ? 'Weekly' : recurrenceData.frequency === 'daily' ? 'Daily' : recurrenceData.frequency === 'biweekly' ? 'Biweekly' : 'Monthly'}
+                    {recurrenceData.endType === 'after' && ` (${recurrenceData.occurrences}x)`}
+                  </p>
+                  <button onClick={onShowRecurringModal} className="text-sm text-primary-600 hover:underline">
+                    {t('common.edit') || 'Edit'}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isRecurring && !recurrenceData && (
+              <button onClick={onShowRecurringModal} className="text-sm text-primary-600 hover:underline">
+                {t('booking.configureRecurrence') || 'Configure recurrence pattern...'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Payment Summary */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
@@ -219,7 +303,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 name="paymentMethod"
                 value="crypto"
                 checked={paymentMethod === 'crypto'}
-                onChange={(e) => onPaymentMethodChange(e.target.value as 'crypto' | 'paypal')}
+                onChange={(e) => onPaymentMethodChange(e.target.value as 'crypto' | 'paypal' | 'pay_at_venue')}
                 className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <div className="flex-1">
@@ -243,7 +327,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 name="paymentMethod"
                 value="paypal"
                 checked={paymentMethod === 'paypal'}
-                onChange={(e) => onPaymentMethodChange(e.target.value as 'crypto' | 'paypal')}
+                onChange={(e) => onPaymentMethodChange(e.target.value as 'crypto' | 'paypal' | 'pay_at_venue')}
                 className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <div className="flex-1">
@@ -261,6 +345,35 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 </div>
               </div>
             </label>
+
+            {/* Pay at Venue Option */}
+            {(specialist as any).allowPayAtVenue && (
+              <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="pay_at_venue"
+                  checked={paymentMethod === 'pay_at_venue'}
+                  onChange={(e) => onPaymentMethodChange(e.target.value as 'crypto' | 'paypal' | 'pay_at_venue')}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{t('booking.payAtVenue') || 'Pay at Venue'}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{t('booking.payAtVenueDesc') || 'Pay with cash or card when you arrive'}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('booking.payAtVenueNote') || 'No online payment required'}</div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            )}
           </div>
         </div>
 
@@ -292,8 +405,46 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           </div>
         )}
 
-        {/* Show payment interface if payment result exists */}
-        {paymentResult ? (
+        {/* Pay at Venue - Direct booking without payment */}
+        {paymentMethod === 'pay_at_venue' ? (
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4">
+              <div className="flex items-start space-x-3">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h4 className="font-semibold text-green-900 dark:text-green-100">
+                    {t('booking.payAtVenueConfirm') || 'Pay when you arrive'}
+                  </h4>
+                  <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                    {t('booking.payAtVenueInfo') || 'No payment is required now. You will pay directly to the specialist at the venue using cash or card.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={onBookingSubmit}
+              disabled={paymentLoading}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            >
+              {paymentLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {t('booking.processing') || 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  {t('booking.confirmBookingPayLater') || 'Confirm Booking — Pay at Venue'}
+                </>
+              )}
+            </button>
+          </div>
+        ) : /* Show payment interface if payment result exists */
+        paymentResult ? (
           <div className="space-y-4">
             {/* Payment Section for all external payments */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">

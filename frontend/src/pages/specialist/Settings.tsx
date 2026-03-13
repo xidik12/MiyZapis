@@ -42,6 +42,9 @@ const SpecialistSettings: React.FC = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isUnlinkingTelegram, setIsUnlinkingTelegram] = useState(false);
 
+  // Specialist profile state (for booking link, payment options, etc.)
+  const [specialist, setSpecialist] = useState<any>(null);
+
   // Active tab state
   const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'security' | 'accounts' | 'notifications' | 'privacy' | 'business' | 'language'>('profile');
 
@@ -57,6 +60,7 @@ const SpecialistSettings: React.FC = () => {
     const loadSpecialistSettings = async () => {
       try {
         const profile = await specialistService.getProfile();
+        setSpecialist(profile);
         setSettings(prev => ({
           ...prev,
           accountSettings: {
@@ -894,6 +898,7 @@ const SpecialistSettings: React.FC = () => {
 
                 {/* Business Settings */}
                 {activeTab === 'business' && (
+                <>
                 <div id="business" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -938,8 +943,72 @@ const SpecialistSettings: React.FC = () => {
                         {t('settings.cancellationWindowDesc')}
                       </p>
                     </div>
+
+                    {/* Pay at Venue Option */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {t('settings.allowPayAtVenue') || 'Allow Pay at Venue'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {t('settings.allowPayAtVenueDescription') || 'Let clients choose to pay in person when they arrive'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await specialistService.updateProfile({ allowPayAtVenue: !specialist?.allowPayAtVenue } as any);
+                              setSpecialist((prev: any) => prev ? { ...prev, allowPayAtVenue: !prev.allowPayAtVenue } : prev);
+                              toast.success(t('settings.saved') || 'Setting saved');
+                            } catch {
+                              toast.error(t('settings.saveFailed') || 'Failed to save');
+                            }
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            specialist?.allowPayAtVenue ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              specialist?.allowPayAtVenue ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Booking Link Section */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <LinkIcon className="w-5 h-5 mr-2 text-primary-600" />
+                    {t('settings.bookingLink') || 'Your Booking Link'}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    {t('settings.bookingLinkDescription') || 'Share this link on Instagram, Telegram, or WhatsApp so clients can book directly.'}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={specialist?.slug ? `${window.location.origin}/s/${specialist.slug}` : `${window.location.origin}/specialist/${specialist?.id || ''}`}
+                      className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300"
+                    />
+                    <button
+                      onClick={() => {
+                        const url = specialist?.slug ? `${window.location.origin}/s/${specialist.slug}` : `${window.location.origin}/specialist/${specialist?.id || ''}`;
+                        navigator.clipboard.writeText(url);
+                        toast.success(t('settings.linkCopied') || 'Link copied to clipboard!');
+                      }}
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium whitespace-nowrap"
+                    >
+                      {t('actions.copy') || 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                </>
                 )}
 
                 {/* Language & Currency Settings */}

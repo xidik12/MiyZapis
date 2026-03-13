@@ -436,7 +436,7 @@ export class AuthService {
       // Set default values for missing frontend properties
       totalBookings: backendUser.totalBookings || 0,
       memberSince: backendUser.createdAt || backendUser.memberSince,
-      profileComplete: backendUser.profileComplete !== undefined ? backendUser.profileComplete : true,
+      profileComplete: backendUser.profileComplete !== undefined ? backendUser.profileComplete : (backendUser.userType?.toLowerCase() === 'customer' || backendUser.userType === 'CUSTOMER' ? true : false),
       isVerified: backendUser.isEmailVerified || backendUser.isVerified || false,
       preferences: backendUser.preferences || {
         language: backendUser.language || 'en',

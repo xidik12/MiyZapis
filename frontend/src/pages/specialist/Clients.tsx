@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { bookingService } from '@/services/booking.service';
+import { specialistService } from '@/services/specialist.service';
+import { toast } from 'react-toastify';
 import { Booking } from '@/types';
 import {
   MagnifyingGlassIcon,
@@ -275,7 +277,16 @@ const ClientCard: React.FC<{
   onSendMessage: () => void;
   formatPrice: (p: number) => string;
   index: number;
-}> = ({ client, isExpanded, onToggle, onViewBookings, onSendMessage, formatPrice, index }) => {
+  // Notes props
+  notes: Array<{ id: string; content: string; category: string; updatedAt: string }>;
+  loadingNotes: boolean;
+  newNote: string;
+  noteCategory: string;
+  onNewNoteChange: (value: string) => void;
+  onNoteCategoryChange: (value: string) => void;
+  onCreateNote: () => void;
+  onDeleteNote: (noteId: string) => void;
+}> = ({ client, isExpanded, onToggle, onViewBookings, onSendMessage, formatPrice, index, notes, loadingNotes, newNote, noteCategory, onNewNoteChange, onNoteCategoryChange, onCreateNote, onDeleteNote }) => {
   const { t } = useLanguage();
 
   return (
@@ -425,6 +436,82 @@ const ClientCard: React.FC<{
                   ))}
                 </div>
               )}
+
+              {/* Client Notes */}
+              <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                  {t('clients.notes') || 'Notes'}
+                </h4>
+
+                {/* Add note form */}
+                <div className="flex items-start space-x-2 mb-3">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder={t('clients.addNotePlaceholder') || 'Add a note (allergies, preferences, formulas...)'}
+                      value={newNote}
+                      onChange={(e) => onNewNoteChange(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && onCreateNote()}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
+                    />
+                    <div className="flex items-center mt-1 space-x-1">
+                      {['general', 'allergy', 'preference', 'formula'].map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => onNoteCategoryChange(cat)}
+                          className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                            (noteCategory || 'general') === cat
+                              ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
+                              : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={onCreateNote}
+                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    {t('actions.add') || 'Add'}
+                  </button>
+                </div>
+
+                {/* Notes list */}
+                {loadingNotes ? (
+                  <div className="text-sm text-gray-400 animate-pulse">{t('common.loading') || 'Loading notes...'}</div>
+                ) : notes.length > 0 ? (
+                  <div className="space-y-2">
+                    {notes.map((note) => (
+                      <div key={note.id} className="flex items-start justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-0.5">
+                            <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                              note.category === 'allergy' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
+                              note.category === 'preference' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                              note.category === 'formula' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' :
+                              'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            }`}>
+                              {note.category}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{note.content}</p>
+                        </div>
+                        <button
+                          onClick={() => onDeleteNote(note.id)}
+                          className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <XIcon className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">{t('clients.noNotes') || 'No notes yet'}</p>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -473,6 +560,12 @@ const SpecialistClients: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>('lastVisitDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
+
+  // Notes state
+  const [clientNotes, setClientNotes] = useState<Record<string, Array<{ id: string; content: string; category: string; updatedAt: string }>>>({});
+  const [newNote, setNewNote] = useState<Record<string, string>>({});
+  const [noteCategory, setNoteCategory] = useState<Record<string, string>>({});
+  const [loadingNotes, setLoadingNotes] = useState<Record<string, boolean>>({});
 
   // ---------------------------------------------------------------------------
   // Data Fetching
@@ -571,7 +664,13 @@ const SpecialistClients: React.FC = () => {
   };
 
   const handleToggleExpand = (clientId: string) => {
-    setExpandedClientId((prev) => (prev === clientId ? null : clientId));
+    setExpandedClientId((prev) => {
+      const newId = prev === clientId ? null : clientId;
+      if (newId && !clientNotes[newId]) {
+        loadClientNotes(newId);
+      }
+      return newId;
+    });
   };
 
   const handleViewBookings = (client: Client) => {
@@ -581,6 +680,47 @@ const SpecialistClients: React.FC = () => {
 
   const handleSendMessage = (client: Client) => {
     navigate(`/specialist/messages?recipientId=${client.id}&recipientName=${encodeURIComponent(client.name)}`);
+  };
+
+  // Notes handlers
+  const loadClientNotes = async (clientId: string) => {
+    try {
+      setLoadingNotes(prev => ({ ...prev, [clientId]: true }));
+      const response = await specialistService.getClientNotes(clientId);
+      setClientNotes(prev => ({ ...prev, [clientId]: response?.notes || [] }));
+    } catch {
+      // Silently fail - notes are supplementary
+    } finally {
+      setLoadingNotes(prev => ({ ...prev, [clientId]: false }));
+    }
+  };
+
+  const handleCreateNote = async (clientId: string) => {
+    const content = newNote[clientId]?.trim();
+    if (!content) return;
+
+    try {
+      const response = await specialistService.createClientNote(clientId, content, noteCategory[clientId] || 'general');
+      setClientNotes(prev => ({
+        ...prev,
+        [clientId]: [response?.note || { id: Date.now().toString(), content, category: noteCategory[clientId] || 'general', updatedAt: new Date().toISOString() }, ...(prev[clientId] || [])],
+      }));
+      setNewNote(prev => ({ ...prev, [clientId]: '' }));
+    } catch {
+      toast.error('Failed to save note');
+    }
+  };
+
+  const handleDeleteNote = async (clientId: string, noteId: string) => {
+    try {
+      await specialistService.deleteClientNote(noteId);
+      setClientNotes(prev => ({
+        ...prev,
+        [clientId]: (prev[clientId] || []).filter(n => n.id !== noteId),
+      }));
+    } catch {
+      toast.error('Failed to delete note');
+    }
   };
 
   // ---------------------------------------------------------------------------
@@ -765,6 +905,14 @@ const SpecialistClients: React.FC = () => {
                           onSendMessage={() => handleSendMessage(client)}
                           formatPrice={formatPrice}
                           index={idx}
+                          notes={clientNotes[client.id] || []}
+                          loadingNotes={loadingNotes[client.id] || false}
+                          newNote={newNote[client.id] || ''}
+                          noteCategory={noteCategory[client.id] || 'general'}
+                          onNewNoteChange={(value) => setNewNote(prev => ({ ...prev, [client.id]: value }))}
+                          onNoteCategoryChange={(value) => setNoteCategory(prev => ({ ...prev, [client.id]: value }))}
+                          onCreateNote={() => handleCreateNote(client.id)}
+                          onDeleteNote={(noteId) => handleDeleteNote(client.id, noteId)}
                         />
                       ))}
                     </AnimatePresence>

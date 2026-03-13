@@ -111,6 +111,20 @@ const validateUpdateAvailabilityBlock = [
     .withMessage('Recurring days must contain valid day names'),
 ];
 
+// Public: Get specialist by slug
+router.get('/by-slug/:slug', cacheMiddleware(300, 'specialist-slug'), SpecialistController.getBySlug);
+
+// Client notes (specialist only)
+router.get('/clients/:customerId/notes', authenticateToken, requireSpecialist, SpecialistController.getClientNotes);
+router.post('/clients/:customerId/notes', authenticateToken, requireSpecialist, SpecialistController.createClientNote);
+router.put('/clients/notes/:noteId', authenticateToken, requireSpecialist, SpecialistController.updateClientNote);
+router.delete('/clients/notes/:noteId', authenticateToken, requireSpecialist, SpecialistController.deleteClientNote);
+
+// Before/After photos (specialist only)
+router.get('/portfolio/before-after', authenticateToken, requireSpecialist, SpecialistController.getBeforeAfterPhotos);
+router.post('/portfolio/before-after', authenticateToken, requireSpecialist, SpecialistController.createBeforeAfterPhoto);
+router.delete('/portfolio/before-after/:photoId', authenticateToken, requireSpecialist, SpecialistController.deleteBeforeAfterPhoto);
+
 // Protected routes - require authentication (must come before parameterized routes)
 router.get('/my/profile', authenticateToken, requireSpecialist, SpecialistController.getMyProfile);
 router.get('/my/analytics', authenticateToken, requireSpecialist, SpecialistController.getAnalytics);
@@ -143,6 +157,7 @@ router.post('/availability/generate', authenticateToken, AvailabilityController.
 // Protected routes - require specialist access
 router.post('/profile', authenticateToken, SpecialistController.createProfile);
 router.put('/profile', authenticateToken, requireSpecialist, SpecialistController.updateProfile);
+router.post('/onboarding/complete', authenticateToken, requireSpecialist, SpecialistController.completeOnboarding);
 
 // Admin routes (must come before parameterized routes)
 router.put('/:specialistId/verification', authenticateToken, requireAdmin, SpecialistController.toggleVerification);
@@ -152,5 +167,6 @@ router.get('/', cacheMiddleware(120, 'specialists'), SpecialistController.search
 router.get('/:specialistId', cacheMiddleware(300, 'specialist'), SpecialistController.getProfile);
 router.get('/:specialistId/public', cacheMiddleware(300, 'specialist-pub'), SpecialistController.getPublicProfile);
 router.get('/:specialistId/services', cacheMiddleware(300, 'specialist-svc'), SpecialistController.getSpecialistServices);
+router.get('/:specialistId/before-after', cacheMiddleware(300, 'specialist-ba'), SpecialistController.getPublicBeforeAfterPhotos);
 
 export default router;

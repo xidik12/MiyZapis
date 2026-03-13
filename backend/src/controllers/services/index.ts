@@ -435,6 +435,7 @@ export class ServiceController {
         sortBy = 'newest',
         page = 1,
         limit = 20,
+        availableWithin,
       } = req.query;
 
       const result = await ServiceService.searchServices(
@@ -445,7 +446,8 @@ export class ServiceController {
         sortBy as 'price' | 'rating' | 'newest',
         parseInt(page as string, 10),
         parseInt(limit as string, 10),
-        city as string
+        city as string,
+        availableWithin as string
       );
 
       res.json(
@@ -461,6 +463,14 @@ export class ServiceController {
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
             specialistId: service.specialist.id, // Add specialistId for easier frontend access
+            portfolioImages: (() => {
+              try {
+                const imgs = service.specialist.portfolioImages;
+                if (!imgs) return [];
+                const parsed = typeof imgs === 'string' ? JSON.parse(imgs) : imgs;
+                return Array.isArray(parsed) ? parsed.slice(0, 3) : [];
+              } catch { return []; }
+            })(),
             specialist: {
               id: service.specialist.id,
               businessName: service.specialist.businessName,

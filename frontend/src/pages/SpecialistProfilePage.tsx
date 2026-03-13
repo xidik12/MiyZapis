@@ -24,7 +24,9 @@ import { getAbsoluteImageUrl } from '../utils/imageUrl';
 // Note: Use active prop for filled icons: <Icon active />
 
 const SpecialistProfilePage: React.FC = () => {
-  const { specialistId } = useParams();
+  const { specialistId: paramSpecialistId, slug } = useParams();
+  const [resolvedSpecialistId, setResolvedSpecialistId] = useState<string | undefined>(paramSpecialistId);
+  const specialistId = resolvedSpecialistId;
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useAppDispatch();
@@ -34,9 +36,11 @@ const SpecialistProfilePage: React.FC = () => {
   const [specialist, setSpecialist] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
+  const [beforeAfterPhotos, setBeforeAfterPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
+  const [activeTab, setActiveTab] = useState<'portfolio' | 'beforeAfter'>('portfolio');
 
   // Helper function to get localized description with fallbacks
   const getLocalizedDescription = (specialist: Record<string, unknown>) => {
@@ -130,13 +134,32 @@ const SpecialistProfilePage: React.FC = () => {
     }
   };
 
+  // Resolve slug to specialistId
+  useEffect(() => {
+    const resolveSlug = async () => {
+      if (!paramSpecialistId && slug) {
+        try {
+          const slugResponse = await specialistService.getBySlug(slug);
+          if (slugResponse?.id) {
+            setResolvedSpecialistId(slugResponse.id as string);
+          } else {
+            setLoading(false);
+          }
+        } catch {
+          setLoading(false);
+        }
+      }
+    };
+    resolveSlug();
+  }, [paramSpecialistId, slug]);
+
   useEffect(() => {
     const fetchSpecialistData = async () => {
       if (!specialistId) return;
 
       try {
         setLoading(true);
-        
+
         // Fetch specialist profile
         const specialistData = await specialistService.getPublicProfile(specialistId);
         setSpecialist(specialistData);
@@ -152,6 +175,14 @@ const SpecialistProfilePage: React.FC = () => {
         // Fetch specialist services
         const servicesData = await specialistService.getSpecialistServices(specialistId);
         setServices(servicesData || []);
+
+        // Fetch before/after photos (non-critical)
+        try {
+          const baPhotos = await specialistService.getPublicBeforeAfterPhotos(specialistId);
+          setBeforeAfterPhotos(baPhotos || []);
+        } catch {
+          setBeforeAfterPhotos([]);
+        }
 
       } catch (error) {
         // Specialist data fetch failed — loading state will be cleared
@@ -535,6 +566,57 @@ const SpecialistProfilePage: React.FC = () => {
               );
             })()}
 
+            {/* Before/After Gallery */}
+            {beforeAfterPhotos.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+                  {t('specialist.beforeAfter') || 'Before & After'}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {beforeAfterPhotos.map((photo: any, index: number) => (
+                    <div key={photo.id || `ba-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0.5">
+                        <div className="relative aspect-square bg-gray-100 dark:bg-gray-700">
+                          <img
+                            src={getAbsoluteImageUrl(photo.beforeUrl)}
+                            alt="Before"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <span className="absolute bottom-1 left-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-white">
+                            {t('specialist.before') || 'Before'}
+                          </span>
+                        </div>
+                        <div className="relative aspect-square bg-gray-100 dark:bg-gray-700">
+                          <img
+                            src={getAbsoluteImageUrl(photo.afterUrl)}
+                            alt="After"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <span className="absolute bottom-1 left-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-white">
+                            {t('specialist.after') || 'After'}
+                          </span>
+                        </div>
+                      </div>
+                      {photo.caption && (
+                        <div className="px-3 py-2">
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{photo.caption}</p>
+                        </div>
+                      )}
+                      {photo.booking?.service?.name && (
+                        <div className="px-3 pb-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                            {photo.booking.service.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Lightbox */}
             {lightbox.open && lightbox.images.length > 0 && (
               <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
@@ -644,9 +726,17 @@ const SpecialistProfilePage: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </p>
+                            {review.isVerified && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                <CheckBadgeIcon className="w-3 h-3 mr-0.5" />
+                                {t('reviews.verifiedBooking') || 'Verified Booking'}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-1 sm:mt-2 break-words">
                             {review.comment}
                           </p>

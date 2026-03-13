@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon } from '@/components/icons';
+import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
+import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
 import type { UserLoyalty } from '@/services/loyalty.service';
 
 interface ConfirmationProps {
@@ -203,6 +204,56 @@ const Confirmation: React.FC<ConfirmationProps> = ({
             <p className="text-sm text-blue-800 dark:text-blue-200">
               {paymentResult.message}
             </p>
+          </div>
+        )}
+
+        {/* Add to Calendar */}
+        {selectedDate && selectedTime && (
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mb-6">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center justify-center gap-2">
+              <CalendarIcon className="w-4 h-4" />
+              {t('booking.addToCalendar') || 'Add to Calendar'}
+            </h4>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  const [hours, minutes] = selectedTime.split(':').map(Number);
+                  const startDate = new Date(selectedDate);
+                  startDate.setHours(hours, minutes, 0, 0);
+                  const endDate = new Date(startDate.getTime() + ((service.duration as number) || 60) * 60000);
+                  downloadICS({
+                    title: `${service.name} - ${specialist.user?.firstName} ${specialist.user?.lastName}`,
+                    description: `Booking with ${specialist.user?.firstName} ${specialist.user?.lastName}`,
+                    location: (specialist.preciseAddress as string) || (specialist.address as string) || '',
+                    startDate,
+                    endDate,
+                  });
+                }}
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {t('booking.downloadICS') || 'Download .ics'}
+              </button>
+              <a
+                href={(() => {
+                  const [hours, minutes] = selectedTime.split(':').map(Number);
+                  const startDate = new Date(selectedDate);
+                  startDate.setHours(hours, minutes, 0, 0);
+                  const endDate = new Date(startDate.getTime() + ((service.duration as number) || 60) * 60000);
+                  return getGoogleCalendarUrl({
+                    title: `${service.name} - ${specialist.user?.firstName} ${specialist.user?.lastName}`,
+                    description: `Booking with ${specialist.user?.firstName} ${specialist.user?.lastName}`,
+                    location: (specialist.preciseAddress as string) || (specialist.address as string) || '',
+                    startDate,
+                    endDate,
+                  });
+                })()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {t('booking.addToGoogleCalendar') || 'Google Calendar'}
+              </a>
+            </div>
           </div>
         )}
 

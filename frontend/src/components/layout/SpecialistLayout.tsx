@@ -10,7 +10,7 @@ import { Logo } from '@/components/ui/Logo';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, UserIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -121,18 +121,18 @@ const navigation: SidebarNavItem[] = [
     iconActive: ChatBubbleLeftRightIcon,
   },
   {
-    name: 'Profile',
-    nameUk: 'Профіль',
-    href: '/specialist/profile',
-    icon: UserIcon,
-    iconActive: UserIcon,
-  },
-  {
     name: 'Notifications',
     nameUk: 'Сповіщення',
     href: '/specialist/notifications',
     icon: BellIcon,
     iconActive: BellIcon,
+  },
+  {
+    name: 'Settings',
+    nameUk: 'Налаштування',
+    href: '/specialist/settings',
+    icon: Cog6ToothIcon,
+    iconActive: Cog6ToothIcon,
   },
 ];
 
@@ -394,13 +394,57 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 pb-16 lg:pb-0">
           <div key={location.pathname} className="page-enter">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom tab bar for specialists */}
+      <SpecialistMobileBottomNav />
     </div>
+  );
+};
+
+// Specialist-specific mobile bottom navigation
+const specialistBottomNavItems = [
+  { nameKey: 'dashboard.nav.dashboard', fallback: 'Dashboard', href: '/specialist/dashboard', icon: HomeIcon },
+  { nameKey: 'dashboard.nav.bookings', fallback: 'Bookings', href: '/specialist/bookings', icon: CalendarIcon },
+  { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
+  { nameKey: 'dashboard.nav.messages', fallback: 'Messages', href: '/specialist/messages', icon: ChatBubbleLeftRightIcon },
+  { nameKey: 'dashboard.nav.settings', fallback: 'Settings', href: '/specialist/settings', icon: Cog6ToothIcon },
+];
+
+const SpecialistMobileBottomNav: React.FC = () => {
+  const location = useLocation();
+  const { t } = useLanguage();
+
+  return (
+    <nav className="fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 lg:hidden safe-area-bottom">
+      <div className="flex items-center justify-around h-14">
+        {specialistBottomNavItems.map((item) => {
+          const isActive = location.pathname === item.href;
+          const Icon = item.icon;
+          const label = t(item.nameKey) || item.fallback;
+
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                isActive
+                  ? 'text-primary-600 dark:text-primary-400'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-medium leading-tight">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 };
 

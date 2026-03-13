@@ -35,7 +35,8 @@ const AuthCallbackPage = React.lazy(() => import('./pages/auth/AuthCallbackPage'
 // Customer pages
 const CustomerDashboard = React.lazy(() => import('./pages/customer/Dashboard'));
 const CustomerBookings = React.lazy(() => import('./pages/customer/Bookings'));
-const CustomerProfile = React.lazy(() => import('./pages/customer/Profile'));
+// Profile pages removed from nav — redirecting to Settings
+// const CustomerProfile = React.lazy(() => import('./pages/customer/Profile'));
 const CustomerLoyalty = React.lazy(() => import('./pages/customer/Loyalty'));
 const CustomerFavorites = React.lazy(() => import('./pages/customer/Favorites'));
 const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
@@ -49,7 +50,7 @@ const CustomerWallet = React.lazy(() => import('./pages/customer/Wallet'));
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
 const SpecialistBookings = React.lazy(() => import('./pages/specialist/Bookings'));
 const SpecialistServices = React.lazy(() => import('./pages/specialist/Services'));
-const SpecialistProfile = React.lazy(() => import('./pages/specialist/Profile'));
+// const SpecialistProfile = React.lazy(() => import('./pages/specialist/Profile'));
 const SpecialistAnalytics = React.lazy(() => import('./pages/specialist/Analytics'));
 const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'));
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
@@ -121,6 +122,7 @@ const usePageTitle = () => {
       '/specialist/settings': 'Settings - МійЗапис',
       '/specialist/notifications': 'Notifications - МійЗапис',
       '/specialist/onboarding': 'Getting Started - МійЗапис',
+      '/s': 'Specialist Profile - МійЗапис',
       '/community': 'Community - МійЗапис',
       '/admin/dashboard': 'Admin Dashboard - МійЗапис',
     };
@@ -247,18 +249,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/specialist/profile"
-            element={
-              <ProtectedRoute requiredUserType="specialist">
-                <SpecialistLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <SpecialistProfile />
-                  </Suspense>
-                </SpecialistLayout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/specialist/profile" element={<Navigate to="/specialist/settings" replace />} />
           <Route
             path="/specialist/analytics"
             element={
@@ -441,18 +432,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/customer/profile"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerProfile />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/customer/profile" element={<Navigate to="/customer/settings" replace />} />
           <Route
             path="/customer/loyalty"
             element={
@@ -564,7 +544,7 @@ function App() {
           {/* Legacy customer routes - redirect to /customer/ prefixed versions */}
           <Route path="/dashboard" element={<Navigate to="/customer/dashboard" replace />} />
           <Route path="/bookings" element={<Navigate to="/customer/bookings" replace />} />
-          <Route path="/profile" element={<Navigate to="/customer/profile" replace />} />
+          <Route path="/profile" element={<Navigate to="/customer/settings" replace />} />
           <Route path="/loyalty" element={<Navigate to="/customer/loyalty" replace />} />
           <Route path="/favorites" element={<Navigate to="/customer/favorites" replace />} />
           <Route path="/settings" element={<Navigate to="/customer/settings" replace />} />
@@ -634,6 +614,16 @@ function App() {
           } />
           <Route
             path="/specialist/:specialistId"
+            element={
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistProfilePage />
+                </Suspense>
+              </ConditionalLayout>
+            }
+          />
+          <Route
+            path="/s/:slug"
             element={
               <ConditionalLayout>
                 <Suspense fallback={<SuspenseLoader />}>

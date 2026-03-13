@@ -50,5 +50,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={defaultRedirect} replace />;
   }
 
+  // Force specialists who haven't completed onboarding to the onboarding page
+  if (
+    user?.userType === 'specialist' &&
+    user?.profileComplete === false &&
+    location.pathname !== '/specialist/onboarding'
+  ) {
+    return <Navigate to="/specialist/onboarding" replace />;
+  }
+
   return <>{children}</>;
 };

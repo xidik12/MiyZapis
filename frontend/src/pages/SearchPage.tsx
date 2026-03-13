@@ -6,7 +6,7 @@ import { serviceService } from '../services';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
-import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon } from '@/components/icons';
+import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon, CalendarIcon, XIcon } from '@/components/icons';
 ;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
@@ -46,6 +46,7 @@ interface ServiceWithSpecialist {
   _count?: { bookings: number };
   distance?: number;
   isAvailable: boolean;
+  portfolioImages?: Array<{ imageUrl?: string } | string>;
 }
 
 const SearchPage: React.FC = () => {
@@ -84,6 +85,37 @@ const SearchPage: React.FC = () => {
   });
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const [availableWithin, setAvailableWithin] = useState<string>('');
+
+  // Abandoned booking recovery
+  const [abandonedBooking, setAbandonedBooking] = useState<{
+    serviceId: string;
+    specialistName?: string;
+    serviceName?: string;
+    timestamp: number;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('miyzapis_abandoned_booking');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const oneHourAgo = Date.now() - 60 * 60 * 1000;
+        // Show if > 1 hour old and < 7 days old
+        if (parsed.timestamp > oneWeekAgo && parsed.timestamp < oneHourAgo) {
+          setAbandonedBooking(parsed);
+        } else if (parsed.timestamp <= oneWeekAgo) {
+          localStorage.removeItem('miyzapis_abandoned_booking');
+        }
+      }
+    } catch {}
+  }, []);
+
+  const dismissAbandonedBooking = () => {
+    localStorage.removeItem('miyzapis_abandoned_booking');
+    setAbandonedBooking(null);
+  };
 
   // Fetch categories from API
   useEffect(() => {
@@ -153,6 +185,7 @@ const SearchPage: React.FC = () => {
           rating: selectedRating > 0 ? selectedRating : undefined,
           sortBy: sortBy as 'rating' | 'price' | 'reviews' | 'distance',
           sortOrder: 'desc' as const, // Default to descending (best first)
+          availableWithin: availableWithin || undefined,
           distance: selectedDistance > 0 ? selectedDistance : undefined,
         };
         let data: unknown;
@@ -211,7 +244,8 @@ const SearchPage: React.FC = () => {
           },
           _count: service._count,
           distance: undefined, // Not available in backend response
-          isAvailable: true // Assume available if service exists
+          isAvailable: true, // Assume available if service exists
+          portfolioImages: service.specialist?.portfolioImages || service.images || undefined,
         }));
         
         // Optional refine: available now via backend availability (cap calls for perf)
@@ -243,7 +277,7 @@ const SearchPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
+  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow, availableWithin]);
 
   // Fetch on first mount and when deps change
   useEffect(() => {
@@ -280,6 +314,7 @@ const SearchPage: React.FC = () => {
         showFavoritesOnly,
         sortBy,
         availableNow,
+        availableWithin,
       }
     };
     const next = [preset, ...presets.filter(p => p.name !== name)].slice(0, 8);
@@ -300,6 +335,7 @@ const SearchPage: React.FC = () => {
     setShowFavoritesOnly(!!d.showFavoritesOnly);
     setSortBy(d.sortBy ?? 'rating');
     setAvailableNow(!!d.availableNow);
+    setAvailableWithin(d.availableWithin ?? '');
   };
 
   const deletePreset = (name: string) => {
@@ -362,6 +398,26 @@ const SearchPage: React.FC = () => {
       key={service.id}
       className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-white/20 dark:border-gray-700/20"
     >
+      {/* Portfolio thumbnails */}
+      {service.portfolioImages && service.portfolioImages.length > 0 && (
+        <div className="flex space-x-1 overflow-x-auto pb-2 mb-2 -mx-1 px-1 scrollbar-hide">
+          {service.portfolioImages.slice(0, 3).map((img: any, idx: number) => {
+            const imageUrl = typeof img === 'string' ? img : img?.imageUrl || img;
+            if (!imageUrl) return null;
+            return (
+              <div key={idx} className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                <img
+                  src={imageUrl}
+                  alt={`Portfolio ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="relative flex-shrink-0 self-center sm:self-start">
           <Avatar
@@ -439,6 +495,14 @@ const SearchPage: React.FC = () => {
               <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
+              {!isOwnService && service.isAvailable && (
+                <Link
+                  to={`/booking/${service.id}`}
+                  className="mt-1 px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors inline-block"
+                >
+                  {t('actions.quickBook') || 'Quick Book'}
+                </Link>
+              )}
             </div>
           </div>
 
@@ -536,6 +600,29 @@ const SearchPage: React.FC = () => {
             />
           </div>
         </form>
+
+        {/* Quick availability filters */}
+        <div className="flex items-center space-x-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+          {[
+            { value: '', label: t('search.allTimes') || 'All' },
+            { value: 'now', label: t('search.availableNow') || 'Available Now' },
+            { value: 'today', label: t('search.today') || 'Today' },
+            { value: 'thisWeek', label: t('search.thisWeek') || 'This Week' },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setAvailableWithin(filter.value)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+                availableWithin === filter.value
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              {filter.value === 'now' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5" />}
+              {filter.label}
+            </button>
+          ))}
+        </div>
 
         {/* Enhanced Filters and Controls */}
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
@@ -1071,6 +1158,39 @@ const SearchPage: React.FC = () => {
                   {t('actions.tryAgain') || 'Try Again'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Abandoned Booking Banner */}
+        {abandonedBooking && (
+          <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <CalendarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <div>
+                <p className="text-sm font-medium text-primary-900 dark:text-primary-100">
+                  {t('booking.abandoned.title') || 'Continue your booking?'}
+                </p>
+                <p className="text-xs text-primary-700 dark:text-primary-300">
+                  {abandonedBooking.serviceName && abandonedBooking.specialistName
+                    ? `${abandonedBooking.serviceName} with ${abandonedBooking.specialistName}`
+                    : t('booking.abandoned.description') || 'You have an unfinished booking'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Link
+                to={`/booking/${abandonedBooking.serviceId}`}
+                className="px-3 py-1.5 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                {t('booking.abandoned.continue') || 'Continue'}
+              </Link>
+              <button
+                onClick={dismissAbandonedBooking}
+                className="p-1.5 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-800 rounded-lg transition-colors"
+              >
+                <XIcon className="w-4 h-4" />
+              </button>
             </div>
           </div>
         )}
