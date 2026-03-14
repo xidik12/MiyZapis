@@ -149,10 +149,11 @@ router.post('/login', validateLogin, async (req, res) => {
     res.json(createSuccessResponse(result));
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error('Login error:', error);
+    logger.error('Login error:', { message: err.message, stack: err.stack, name: err.name });
 
     let errorCode = 'LOGIN_FAILED';
     let errorMessage = 'Login failed';
+    let statusCode = 401;
 
     if (err.message === 'INVALID_CREDENTIALS') {
       errorCode = 'INVALID_CREDENTIALS';
@@ -163,9 +164,14 @@ router.post('/login', validateLogin, async (req, res) => {
     } else if (err.message === 'ACCOUNT_DEACTIVATED') {
       errorCode = 'ACCOUNT_DEACTIVATED';
       errorMessage = 'Your account has been deactivated';
+    } else {
+      // Debug: include actual error for diagnosis
+      errorCode = 'LOGIN_ERROR';
+      errorMessage = `Login failed: ${err.message}`;
+      statusCode = 500;
     }
 
-    res.status(401).json(createErrorResponse(errorCode, errorMessage, req.id));
+    res.status(statusCode).json(createErrorResponse(errorCode, errorMessage, req.id));
   }
 });
 

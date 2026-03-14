@@ -593,7 +593,7 @@ export class AuthService {
         tokens,
       };
     } catch (error) {
-      logger.error('Login failed:', error);
+      logger.error('Login failed:', { message: (error as Error).message, stack: (error as Error).stack });
       throw error;
     }
   }
