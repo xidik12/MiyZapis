@@ -11,9 +11,14 @@ import { toast } from 'react-toastify';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
-// Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
-import { UserIcon, BellIcon, ShieldCheckIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, CalendarIcon, Cog6ToothIcon, EyeIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EnvelopeIcon, CheckIcon, CameraIcon, TrashIcon, KeyIcon, LockClosedIcon, LinkIcon } from '@/components/icons';
+import { UserIcon, BellIcon, ShieldCheckIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, Cog6ToothIcon, EnvelopeIcon, CameraIcon, TrashIcon, KeyIcon, LockClosedIcon, LinkIcon, ClockIcon, BriefcaseIcon, ImageIcon as PhotoIcon } from '@/components/icons';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { useSpecialistProfile } from '../../hooks/useSpecialistProfile';
+import PersonalInfoTab from '../../components/settings/PersonalInfoTab';
+import ProfessionalTab from '../../components/settings/ProfessionalTab';
+import WorkingHoursTab from '../../components/settings/WorkingHoursTab';
+import PaymentDetailsTab from '../../components/settings/PaymentDetailsTab';
+import PortfolioTab from '../../components/settings/PortfolioTab';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -45,8 +50,12 @@ const SpecialistSettings: React.FC = () => {
   // Specialist profile state (for booking link, payment options, etc.)
   const [specialist, setSpecialist] = useState<any>(null);
 
+  // Specialist profile hook for new tabs
+  const specialistProfile = useSpecialistProfile();
+
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'security' | 'accounts' | 'notifications' | 'privacy' | 'business' | 'language'>('profile');
+  type SettingsTab = 'profile' | 'personal' | 'professional' | 'working-hours' | 'payment-details' | 'portfolio' | 'account' | 'security' | 'accounts' | 'notifications' | 'privacy' | 'business' | 'language';
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
   // Update profileImage when user avatar changes
   useEffect(() => {
@@ -329,94 +338,58 @@ const SpecialistSettings: React.FC = () => {
               {/* Settings Navigation */}
               <div className="lg:col-span-1">
                 <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-                  <button
-                    onClick={() => setActiveTab('profile')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'profile'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <UserIcon className="w-5 h-5 mr-3" />
-                    {t('settings.profile') || 'Profile'}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('account')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'account'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <Cog6ToothIcon className="w-5 h-5 mr-3" />
-                    {t('settings.account')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('security')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'security'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <ShieldCheckIcon className="w-5 h-5 mr-3" />
-                    {t('customer.settings.passwordSecurity')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('accounts')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'accounts'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <LinkIcon className="w-5 h-5 mr-3" />
-                    {t('customer.settings.connectedAccounts')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('notifications')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'notifications'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <BellIcon className="w-5 h-5 mr-3" />
-                    {t('settings.notifications')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('privacy')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'privacy'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <ShieldCheckIcon className="w-5 h-5 mr-3" />
-                    {t('settings.privacy')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('business')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'business'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <CreditCardIcon className="w-5 h-5 mr-3" />
-                    {t('settings.business')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('language')}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      activeTab === 'language'
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <GlobeAltIcon className="w-5 h-5 mr-3" />
-                    {t('settings.language')}
-                  </button>
+                  {/* Profile & Business Group */}
+                  <p className="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                    {language === 'uk' ? 'Профіль' : language === 'ru' ? 'Профиль' : 'Profile & Business'}
+                  </p>
+                  {([
+                    { id: 'profile' as SettingsTab, icon: UserIcon, label: t('settings.profile') || 'Profile' },
+                    { id: 'personal' as SettingsTab, icon: EnvelopeIcon, label: language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Info' },
+                    { id: 'professional' as SettingsTab, icon: BriefcaseIcon, label: language === 'uk' ? 'Професійне' : language === 'ru' ? 'Профессиональное' : 'Professional' },
+                    { id: 'working-hours' as SettingsTab, icon: ClockIcon, label: language === 'uk' ? 'Графік роботи' : language === 'ru' ? 'График работы' : 'Working Hours' },
+                    { id: 'payment-details' as SettingsTab, icon: CreditCardIcon, label: language === 'uk' ? 'Реквізити оплати' : language === 'ru' ? 'Реквизиты оплаты' : 'Payment Details' },
+                    { id: 'portfolio' as SettingsTab, icon: PhotoIcon, label: language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio' },
+                  ]).map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                        activeTab === item.id
+                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5 mr-3" />
+                      {item.label}
+                    </button>
+                  ))}
+
+                  {/* App Settings Group */}
+                  <p className="px-3 pt-4 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                    {language === 'uk' ? 'Налаштування' : language === 'ru' ? 'Настройки' : 'App Settings'}
+                  </p>
+                  {([
+                    { id: 'account' as SettingsTab, icon: Cog6ToothIcon, label: t('settings.account') },
+                    { id: 'security' as SettingsTab, icon: ShieldCheckIcon, label: t('customer.settings.passwordSecurity') },
+                    { id: 'accounts' as SettingsTab, icon: LinkIcon, label: t('customer.settings.connectedAccounts') },
+                    { id: 'notifications' as SettingsTab, icon: BellIcon, label: t('settings.notifications') },
+                    { id: 'privacy' as SettingsTab, icon: ShieldCheckIcon, label: t('settings.privacy') },
+                    { id: 'business' as SettingsTab, icon: CreditCardIcon, label: t('settings.business') },
+                    { id: 'language' as SettingsTab, icon: GlobeAltIcon, label: t('settings.language') },
+                  ]).map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                        activeTab === item.id
+                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5 mr-3" />
+                      {item.label}
+                    </button>
+                  ))}
                 </nav>
               </div>
 
@@ -511,6 +484,65 @@ const SpecialistSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
+
+                {/* Personal Info Tab */}
+                {activeTab === 'personal' && !specialistProfile.loading && (
+                  <PersonalInfoTab
+                    profile={specialistProfile.profile}
+                    onProfileChange={specialistProfile.handleProfileChange}
+                    validationErrors={specialistProfile.validationErrors}
+                    saving={specialistProfile.saving}
+                    onSave={specialistProfile.handleSave}
+                  />
+                )}
+
+                {/* Professional Tab */}
+                {activeTab === 'professional' && !specialistProfile.loading && (
+                  <ProfessionalTab
+                    profile={specialistProfile.profile}
+                    onProfileChange={specialistProfile.handleProfileChange}
+                    validationErrors={specialistProfile.validationErrors}
+                    saving={specialistProfile.saving}
+                    onSave={specialistProfile.handleSave}
+                  />
+                )}
+
+                {/* Working Hours Tab */}
+                {activeTab === 'working-hours' && !specialistProfile.loading && (
+                  <WorkingHoursTab
+                    profile={specialistProfile.profile}
+                    onProfileChange={specialistProfile.handleProfileChange}
+                    saving={specialistProfile.saving}
+                    onSave={specialistProfile.handleSave}
+                  />
+                )}
+
+                {/* Payment Details Tab */}
+                {activeTab === 'payment-details' && !specialistProfile.loading && (
+                  <PaymentDetailsTab
+                    profile={specialistProfile.profile}
+                    onProfileChange={specialistProfile.handleProfileChange}
+                    saving={specialistProfile.saving}
+                    onSave={specialistProfile.handleSave}
+                  />
+                )}
+
+                {/* Portfolio Tab */}
+                {activeTab === 'portfolio' && !specialistProfile.loading && (
+                  <PortfolioTab
+                    profile={specialistProfile.profile}
+                    onProfileChange={specialistProfile.handleProfileChange}
+                    saving={specialistProfile.saving}
+                    onSave={specialistProfile.handleSave}
+                  />
+                )}
+
+                {/* Loading state for profile tabs */}
+                {['personal', 'professional', 'working-hours', 'payment-details', 'portfolio'].includes(activeTab) && specialistProfile.loading && (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-12 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                  </div>
                 )}
 
                 {/* Account Settings */}

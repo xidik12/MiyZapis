@@ -224,7 +224,8 @@ const SpecialistDashboard: React.FC = () => {
 
                   if (responded > created) {
                     const bizMinutes = calcBusinessMinutes(created, responded);
-                    if (bizMinutes > 0) {
+                    // Cap individual response at 24 hours (1440 min) to filter outliers
+                    if (bizMinutes > 0 && bizMinutes <= 1440) {
                       totalResponseTimeMinutes += bizMinutes;
                       responsiveBookings++;
                     }
@@ -581,8 +582,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         />
         <StatCard
           title={t('dashboard.specialist.responseTime')}
-          value={`${dashboardData.stats.responseTime} ${t('time.minutes')}`}
-          change={dashboardData.stats.responseTime > 0 ? `-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}` : ''}
+          value={dashboardData.stats.responseTime >= 60
+            ? `${Math.round(dashboardData.stats.responseTime / 60)} ${t('time.hours') || 'h'}`
+            : `${dashboardData.stats.responseTime} ${t('time.minutes')}`}
+          change={dashboardData.stats.responseTime > 0 ? `${t('dashboard.specialist.improvement') || 'avg response'}` : ''}
           changeType="positive"
           icon={ClockIcon}
           iconBg="bg-info-500"

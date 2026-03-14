@@ -4,6 +4,7 @@ import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, Cal
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
+import { environment } from '@/config/environment';
 import type { UserLoyalty } from '@/services/loyalty.service';
 
 interface ConfirmationProps {
@@ -80,8 +81,8 @@ const Confirmation: React.FC<ConfirmationProps> = ({
           </div>
         )}
 
-        {/* Payment Required Section */}
-        {needsPayment && (
+        {/* Payment Required Section — only when payments are enabled */}
+        {environment.PAYMENTS_ENABLED && needsPayment && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
             <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
               Payment Required
@@ -151,8 +152,8 @@ const Confirmation: React.FC<ConfirmationProps> = ({
           </div>
         )}
 
-        {/* Payment Complete Section */}
-        {!needsPayment && paymentResult && (
+        {/* Payment Complete Section — only when payments are enabled */}
+        {environment.PAYMENTS_ENABLED && !needsPayment && paymentResult && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6">
             <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
               Payment Complete
@@ -163,8 +164,8 @@ const Confirmation: React.FC<ConfirmationProps> = ({
           </div>
         )}
 
-        {/* Loyalty Points Earned Notification */}
-        {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
+        {/* Loyalty Points Earned Notification — only when payments are enabled */}
+        {environment.PAYMENTS_ENABLED && loyaltyData && pointsToEarn > 0 && isAutoBooked && (
           <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-center space-x-3 mb-2">
               <div className="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center">
@@ -199,7 +200,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
           </div>
         )}
 
-        {isPendingPayment && paymentResult?.message && (
+        {environment.PAYMENTS_ENABLED && isPendingPayment && paymentResult?.message && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
             <p className="text-sm text-blue-800 dark:text-blue-200">
               {paymentResult.message}
@@ -340,7 +341,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
               )}
 
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('booking.paymentAmount') || 'Payment Amount'}</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('booking.servicePrice') || 'Service Price'}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {formatPrice(finalPrice, service.currency as 'USD' | 'EUR' | 'UAH' || 'USD')}
                 </span>

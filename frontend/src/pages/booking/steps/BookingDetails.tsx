@@ -3,6 +3,7 @@ import { ArrowPathIcon, GiftIcon, CheckCircleIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { RecurringBookingModal, type RecurrenceData } from '@/components/modals/RecurringBookingModal';
+import { environment } from '@/config/environment';
 import type { UserLoyalty } from '@/services/loyalty.service';
 import type { RewardRedemption } from '@/services/rewards.service';
 
@@ -202,8 +203,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
         initialData={recurrenceData || undefined}
       />
 
-      {/* Reward Selection */}
-      {redemptions.length > 0 && (
+      {/* Reward Selection — only when payments are enabled */}
+      {environment.PAYMENTS_ENABLED && redemptions.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
             <GiftIcon className="w-6 h-6 mr-3 text-purple-600" />
@@ -302,8 +303,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
           )}
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-            {/* Show discount breakdown if reward is selected */}
-            {discount > 0 && (
+            {/* Show discount breakdown if reward is selected (payments enabled only) */}
+            {environment.PAYMENTS_ENABLED && discount > 0 && (
               <>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
@@ -323,12 +324,12 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
             <div className="flex justify-between">
               <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                {formatPrice(environment.PAYMENTS_ENABLED && discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </span>
             </div>
 
-            {/* Loyalty Points to Earn */}
-            {loyaltyData && pointsToEarn > 0 && (
+            {/* Loyalty Points — only when payments are enabled */}
+            {environment.PAYMENTS_ENABLED && loyaltyData && pointsToEarn > 0 && (
               <div className="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex items-center space-x-2">
                   <GiftIcon className="h-4 w-4 text-purple-500" />
@@ -342,8 +343,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
               </div>
             )}
 
-            {/* Current Loyalty Points */}
-            {loyaltyData && (
+            {environment.PAYMENTS_ENABLED && loyaltyData && (
               <div className="flex justify-between mt-1">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   Your current points
