@@ -329,6 +329,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           title: t('notifications.bookingUpdated.title') || 'Booking updated',
           message: interp(t('notifications.bookingUpdated.message') || 'Your booking for {service} on {date} has been updated.', { service, date })
         };
+      case 'booking_request':
+        return {
+          title: t('notifications.booking.request.specialist.title') || 'New Booking Request',
+          message: interp(t('notifications.booking.request.specialist.message') || 'New booking request for {service} on {date} - requires your confirmation.', { service, date })
+        };
       case 'system_announcement':
       default:
         return { title: n.title, message: n.message };

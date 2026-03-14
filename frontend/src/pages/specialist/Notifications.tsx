@@ -26,6 +26,17 @@ const SpecialistNotifications: React.FC = () => {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Translate notification title/message if they look like translation keys
+  const translateField = (value: string): string => {
+    if (!value) return value;
+    // Translation keys use dot notation (e.g. 'notifications.booking.request.specialist.title')
+    if (value.includes('.') && !value.includes(' ')) {
+      const translated = t(value);
+      if (translated && translated !== value) return translated;
+    }
+    return value;
+  };
+
   // Load notifications from service
   const loadNotifications = async () => {
     try {
@@ -41,8 +52,8 @@ const SpecialistNotifications: React.FC = () => {
       const mappedNotifications: Notification[] = response.notifications.map(notif => ({
         id: notif.id,
         type: notif.type as 'booking' | 'payment' | 'review' | 'system' | 'reminder',
-        title: notif.title,
-        message: notif.message,
+        title: translateField(notif.title),
+        message: translateField(notif.message),
         timestamp: notif.createdAt,
         isRead: notif.isRead,
         priority: 'medium' as const, // Default priority

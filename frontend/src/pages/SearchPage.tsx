@@ -354,9 +354,29 @@ const SearchPage: React.FC = () => {
     setShowFavoritesOnly(false);
   };
 
-  // Filter services (favorites, availability)
+  // Filter services (search query, favorites, availability)
   const getFilteredServices = () => {
     let list = services;
+
+    // Client-side search filter
+    if (debouncedSearchQuery) {
+      const q = debouncedSearchQuery.toLowerCase();
+      list = list.filter(service => {
+        const name = (service.name || '').toLowerCase();
+        const description = (service.description || '').toLowerCase();
+        const category = (service.category || '').toLowerCase();
+        const specialistName = `${service.specialist?.firstName || ''} ${service.specialist?.lastName || ''}`.toLowerCase();
+        const businessName = ((service.specialist as any)?.businessName || '').toLowerCase();
+        return (
+          name.includes(q) ||
+          description.includes(q) ||
+          category.includes(q) ||
+          specialistName.includes(q) ||
+          businessName.includes(q)
+        );
+      });
+    }
+
     if (showFavoritesOnly) {
       const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.specialist?.id).filter(Boolean);
       list = list.filter(service => favoriteSpecialistIds.includes(service.specialist?.id));
