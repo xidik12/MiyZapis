@@ -34,7 +34,8 @@ const SpecialistNotifications: React.FC = () => {
       const translated = t(value);
       if (translated && translated !== value) return translated;
     }
-    return value;
+    // Remove stale empty-brace placeholders from old notifications (e.g. "{}" → "")
+    return value.replace(/\{(\w*)\}/g, (_, k) => k ? '' : '').replace(/\s{2,}/g, ' ').trim();
   };
 
   // Load notifications from service

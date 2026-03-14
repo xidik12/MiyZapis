@@ -136,6 +136,24 @@ const SpecialistOnboarding: React.FC = () => {
     }
   }, [user]);
 
+  // Mark onboarding complete when reaching the done screen (step 4)
+  // This ensures all navigation buttons on the done screen work correctly,
+  // since ProtectedRoute checks profileComplete before allowing access.
+  const onboardingMarkedRef = useRef(false);
+  useEffect(() => {
+    if (step === 4 && !onboardingMarkedRef.current) {
+      onboardingMarkedRef.current = true;
+      (async () => {
+        try {
+          await specialistService.completeOnboarding();
+          await dispatch(getCurrentUser()).unwrap();
+        } catch (err) {
+          logger.warn('Onboarding: failed to mark onboarding complete', err);
+        }
+      })();
+    }
+  }, [step, dispatch]);
+
   // -----------------------------------------------------------------------
   // Validation helpers
   // -----------------------------------------------------------------------
@@ -383,13 +401,7 @@ const SpecialistOnboarding: React.FC = () => {
         success = await saveAvatar();
         break;
       case 4:
-        // Done step -> mark onboarding complete on backend, refresh auth state, go to dashboard
-        try {
-          await specialistService.completeOnboarding();
-          await dispatch(getCurrentUser()).unwrap();
-        } catch (err) {
-          logger.warn('Onboarding: failed to mark onboarding complete on backend', err);
-        }
+        // Done step -> navigate to dashboard (onboarding already marked complete via useEffect)
         navigate('/specialist/dashboard');
         return;
     }

@@ -24,6 +24,17 @@ const CustomerNotifications: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
+  // Translate notification title/message if they look like translation keys
+  const translateField = (value: string): string => {
+    if (!value) return value;
+    if (value.includes('.') && !value.includes(' ')) {
+      const translated = t(value);
+      if (translated && translated !== value) return translated;
+    }
+    // Remove stale empty-brace placeholders from old notifications
+    return value.replace(/\{(\w*)\}/g, (_, k) => k ? '' : '').replace(/\s{2,}/g, ' ').trim();
+  };
+
   const loadNotifications = async () => {
     try {
       setLoading(true);
@@ -37,8 +48,8 @@ const CustomerNotifications: React.FC = () => {
       const mappedNotifications: Notification[] = response.notifications.map(notif => ({
         id: notif.id,
         type: notif.type as Notification['type'],
-        title: notif.title,
-        message: notif.message,
+        title: translateField(notif.title),
+        message: translateField(notif.message),
         timestamp: notif.createdAt,
         isRead: notif.isRead,
         priority: 'medium' as const,
@@ -59,8 +70,8 @@ const CustomerNotifications: React.FC = () => {
         const mappedNotifications: Notification[] = response.notifications.map(notif => ({
           id: notif.id,
           type: notif.type as Notification['type'],
-          title: notif.title,
-          message: notif.message,
+          title: translateField(notif.title),
+          message: translateField(notif.message),
           timestamp: notif.createdAt,
           isRead: notif.isRead,
           priority: 'medium' as const,

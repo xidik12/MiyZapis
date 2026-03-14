@@ -283,7 +283,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   const interp = (tpl: string, vars: Record<string, string | number>) =>
-    (tpl || '').replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+    (tpl || '').replace(/\{(\w*)\}/g, (_, k) => k ? String(vars[k] ?? '') : '');
 
   // Translate raw translation keys that the backend may send as titles/messages
   const translateField = (value: string): string => {
