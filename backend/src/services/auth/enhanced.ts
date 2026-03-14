@@ -474,6 +474,7 @@ export class AuthService {
               id: true,
               businessName: true,
               isVerified: true,
+              onboardingCompleted: true,
             },
           },
         },
@@ -567,17 +568,22 @@ export class AuthService {
       const { password, ...userWithoutPassword } = user;
       userWithoutPassword.userType = targetUserType;
 
+      // Compute profileComplete for frontend
+      const profileComplete = targetUserType === 'SPECIALIST'
+        ? (user.specialist?.onboardingCompleted ?? false)
+        : true;
+
       // Create tokens
       const tokens = await this.createTokens(userWithoutPassword);
 
-      logger.info('User logged in successfully', { 
-        userId: user.id, 
+      logger.info('User logged in successfully', {
+        userId: user.id,
         platform: data.platform,
         selectedRole: targetUserType
       });
 
       return {
-        user: userWithoutPassword,
+        user: { ...userWithoutPassword, profileComplete },
         tokens,
       };
     } catch (error) {
@@ -629,6 +635,7 @@ export class AuthService {
               id: true,
               businessName: true,
               isVerified: true,
+              onboardingCompleted: true,
             },
           },
         },
@@ -698,6 +705,7 @@ export class AuthService {
                 id: true,
                 businessName: true,
                 isVerified: true,
+                onboardingCompleted: true,
               },
             },
           },
@@ -794,18 +802,23 @@ export class AuthService {
         throw new Error('ACCOUNT_DEACTIVATED');
       }
 
+      // Compute profileComplete for frontend
+      const profileComplete = user.userType === 'SPECIALIST'
+        ? (user.specialist?.onboardingCompleted ?? false)
+        : true;
+
       // Create tokens
       const tokens = await this.createTokens(user);
 
-      logger.info('Google authentication successful', { 
-        userId: user.id, 
+      logger.info('Google authentication successful', {
+        userId: user.id,
         email: user.email,
         isNewUser,
         tokensCreated: !!tokens.accessToken && !!tokens.refreshToken
       });
 
       return {
-        user,
+        user: { ...user, profileComplete },
         tokens,
         isNewUser,
       };
@@ -900,6 +913,14 @@ export class AuthService {
           subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
+          specialist: {
+            select: {
+              id: true,
+              businessName: true,
+              isVerified: true,
+              onboardingCompleted: true,
+            },
+          },
         },
       });
 
@@ -968,17 +989,22 @@ export class AuthService {
         throw new Error('ACCOUNT_DEACTIVATED');
       }
 
+      // Compute profileComplete for frontend
+      const profileComplete = user.userType === 'SPECIALIST'
+        ? ((user as any).specialist?.onboardingCompleted ?? false)
+        : true;
+
       // Create tokens
       const tokens = await this.createTokens(user);
 
-      logger.info('Telegram authentication successful', { 
-        userId: user.id, 
+      logger.info('Telegram authentication successful', {
+        userId: user.id,
         telegramId: telegramData.telegramId,
-        isNewUser 
+        isNewUser
       });
 
       return {
-        user,
+        user: { ...user, profileComplete },
         tokens,
         isNewUser,
       };
