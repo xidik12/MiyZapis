@@ -98,10 +98,12 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
         recurringDays: []
       });
     } else {
+      const today = new Date();
+      const defaultDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
       setFormData({
-        date: '',
-        startTime: '',
-        endTime: '',
+        date: defaultDate,
+        startTime: '09:00',
+        endTime: '10:00',
         isAvailable: true,
         reason: '',
         isRecurring: false,
