@@ -467,6 +467,11 @@ export class AuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
           specialist: {
@@ -628,6 +633,11 @@ export class AuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
           specialist: {
