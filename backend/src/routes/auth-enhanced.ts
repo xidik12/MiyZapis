@@ -146,7 +146,16 @@ router.post('/login', validateLogin, async (req, res) => {
 
     const result = await AuthService.login(req.body);
 
-    res.json(createSuccessResponse(result));
+    // Convert Prisma Decimal/BigInt to plain JSON-safe values
+    const safeResult = JSON.parse(JSON.stringify(result, (_, v) => {
+      if (typeof v === 'bigint') return v.toString();
+      if (v !== null && typeof v === 'object' && typeof v.toFixed === 'function' && typeof v.toString === 'function' && v.constructor?.name === 'Decimal') {
+        return parseFloat(v.toString());
+      }
+      return v;
+    }));
+
+    res.json(createSuccessResponse(safeResult));
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Login error:', { message: err.message, stack: err.stack, name: err.name });
