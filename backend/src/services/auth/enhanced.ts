@@ -510,31 +510,38 @@ export class AuthService {
 
       // ADMIN users should always keep their admin role
       if (user.userType.toUpperCase() === 'ADMIN') {
-        // Update only last login, preserve admin userType
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            lastLoginAt: new Date(),
-            userType: 'ADMIN', // Ensure admin userType stays uppercase
-          },
-        });
+        try {
+          // Update only last login, preserve admin userType
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLoginAt: new Date(),
+              userType: 'ADMIN',
+            },
+          });
 
-        // Remove password from user object
-        const { password, ...userWithoutPassword } = user;
-        userWithoutPassword.userType = 'ADMIN'; // Normalize
+          // Remove password from user object
+          const { password: _pwd, ...userWithoutPassword } = user;
+          (userWithoutPassword as Record<string, unknown>).userType = 'ADMIN';
 
-        // Create tokens
-        const tokens = await this.createTokens(userWithoutPassword);
+          // Create tokens
+          const tokens = await this.createTokens(userWithoutPassword as Omit<User, 'password'>);
 
-        logger.info('Admin user logged in successfully', {
-          userId: user.id,
-          platform: data.platform,
-        });
+          logger.info('Admin user logged in successfully', {
+            userId: user.id,
+            platform: data.platform,
+          });
 
-        return {
-          user: { ...userWithoutPassword, profileComplete: true },
-          tokens,
-        };
+          const adminUser = { ...userWithoutPassword, profileComplete: true };
+          return { user: adminUser as Omit<User, 'password'>, tokens };
+        } catch (adminErr) {
+          logger.error('ADMIN LOGIN PATH ERROR:', {
+            message: (adminErr as Error).message,
+            stack: (adminErr as Error).stack,
+            name: (adminErr as Error).name,
+          });
+          throw new Error(`ADMIN_LOGIN_ERROR: ${(adminErr as Error).message}`);
+        }
       }
 
       // Check available roles for multi-role support (non-admin users)
