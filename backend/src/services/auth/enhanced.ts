@@ -509,18 +509,19 @@ export class AuthService {
       }
 
       // ADMIN users should always keep their admin role
-      if (user.userType === 'ADMIN') {
+      if (user.userType.toUpperCase() === 'ADMIN') {
         // Update only last login, preserve admin userType
         await prisma.user.update({
           where: { id: user.id },
           data: {
             lastLoginAt: new Date(),
-            // Don't update userType for admin users
+            userType: 'ADMIN', // Ensure admin userType stays uppercase
           },
         });
 
         // Remove password from user object
         const { password, ...userWithoutPassword } = user;
+        userWithoutPassword.userType = 'ADMIN'; // Normalize
 
         // Create tokens
         const tokens = await this.createTokens(userWithoutPassword);
@@ -531,7 +532,7 @@ export class AuthService {
         });
 
         return {
-          user: userWithoutPassword,
+          user: { ...userWithoutPassword, profileComplete: true },
           tokens,
         };
       }
