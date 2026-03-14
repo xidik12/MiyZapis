@@ -508,44 +508,11 @@ export class AuthService {
         throw new Error('EMAIL_NOT_VERIFIED');
       }
 
-      // ADMIN users should always keep their admin role
-      if (user.userType.toUpperCase() === 'ADMIN') {
-        try {
-          // Update only last login, preserve admin userType
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              lastLoginAt: new Date(),
-              userType: 'ADMIN',
-            },
-          });
+      // ADMIN users — use same flow as regular users but preserve admin type
+      const isAdmin = user.userType.toUpperCase() === 'ADMIN';
 
-          // Remove password from user object
-          const { password: _pwd, ...userWithoutPassword } = user;
-          (userWithoutPassword as Record<string, unknown>).userType = 'ADMIN';
-
-          // Create tokens
-          const tokens = await this.createTokens(userWithoutPassword as Omit<User, 'password'>);
-
-          logger.info('Admin user logged in successfully', {
-            userId: user.id,
-            platform: data.platform,
-          });
-
-          const adminUser = { ...userWithoutPassword, profileComplete: true };
-          return { user: adminUser as Omit<User, 'password'>, tokens };
-        } catch (adminErr) {
-          logger.error('ADMIN LOGIN PATH ERROR:', {
-            message: (adminErr as Error).message,
-            stack: (adminErr as Error).stack,
-            name: (adminErr as Error).name,
-          });
-          throw new Error(`ADMIN_LOGIN_ERROR: ${(adminErr as Error).message}`);
-        }
-      }
-
-      // Check available roles for multi-role support (non-admin users)
-      const hasCustomerRole = user.userType === 'CUSTOMER';
+      // Check available roles for multi-role support
+      const hasCustomerRole = user.userType === 'CUSTOMER' || isAdmin;
       const hasSpecialistRole = user.specialist !== null;
 
       // If user has both roles and no specific role is requested, ask for selection
@@ -566,14 +533,15 @@ export class AuthService {
       }
 
       // Update user type if switching roles (for users with multiple roles)
-      const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
+      const targetUserType = isAdmin ? 'ADMIN'
+        : userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
 
       // Update last login and potentially switch active role
       await prisma.user.update({
         where: { id: user.id },
         data: {
           lastLoginAt: new Date(),
-          userType: targetUserType, // Switch active role
+          userType: targetUserType,
         },
       });
 
