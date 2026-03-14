@@ -285,10 +285,22 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const interp = (tpl: string, vars: Record<string, string | number>) =>
     (tpl || '').replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
 
+  // Translate raw translation keys that the backend may send as titles/messages
+  const translateField = (value: string): string => {
+    if (!value) return value;
+    // If it looks like a translation key (dots, no spaces), try to translate
+    if (value.includes('.') && !value.includes(' ')) {
+      const translated = t(value);
+      if (translated && translated !== value) return translated;
+    }
+    return value;
+  };
+
   const localizeNotification = (n: Notification): { title: string; message: string } => {
     const service = n.data?.serviceName || '';
     const date = n.data?.date || '';
-    switch (n.type) {
+    const normalizedType = (n.type || '').toLowerCase();
+    switch (normalizedType) {
       case 'booking_confirmed':
         return {
           title: t('notifications.bookingConfirmed.title') || 'Booking confirmed',
@@ -336,7 +348,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         };
       case 'system_announcement':
       default:
-        return { title: n.title, message: n.message };
+        return { title: translateField(n.title), message: translateField(n.message) };
     }
   };
 
