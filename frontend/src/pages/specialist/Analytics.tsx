@@ -307,7 +307,7 @@ const SpecialistAnalytics: React.FC = () => {
 Analytics Report - Generated ${new Date().toLocaleDateString()}
 
 Overview:
-- Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}
+- Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}
 - Total Bookings: ${analyticsData.overview?.totalBookings || 0}
 - Active Services: ${analyticsData.overview?.activeServices || 0}
 - Avg Rating: ${analyticsData.overview?.averageRating || 'N/A'}
@@ -340,7 +340,7 @@ Performance:
       // Create CSV data
       const csvData = [
         ['Metric', 'Value'],
-        ['Total Revenue', analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'],
+        ['Total Revenue', analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'],
         ['Total Bookings', analyticsData.overview?.totalBookings || 0],
         ['Active Services', analyticsData.overview?.activeServices || 0],
         ['Average Rating', analyticsData.overview?.averageRating || 'N/A'],
@@ -371,7 +371,7 @@ Performance:
   const handleShareAnalytics = async () => {
     try {
       const shareText = `My Analytics Summary:
-📊 Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}
+📊 Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}
 🗓️ Total Bookings: ${analyticsData.overview?.totalBookings || 0}
 ⭐ Average Rating: ${analyticsData.overview?.averageRating || 'N/A'}
 📈 Completion Rate: ${analyticsData.performance?.completionRate || 'N/A'}%`;
@@ -391,7 +391,7 @@ Performance:
       console.error('Error sharing analytics:', error);
       // Fallback: try copying to clipboard
       try {
-        const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
+        const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
         await navigator.clipboard.writeText(shareText);
         // toast.success('Analytics summary copied to clipboard!');
       } catch (clipboardError) {

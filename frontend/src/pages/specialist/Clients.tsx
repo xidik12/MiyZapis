@@ -31,6 +31,7 @@ interface ClientBooking {
   date: string;
   status: string;
   totalAmount: number;
+  currency: string;
   duration: number;
 }
 
@@ -44,6 +45,7 @@ interface Client {
   phone?: string;
   bookingsCount: number;
   totalSpent: number;
+  currency: string;
   lastVisitDate: string;
   isActive: boolean;
   bookings: ClientBooking[];
@@ -85,7 +87,8 @@ const deriveClientsFromBookings = (bookings: Booking[]): Client[] => {
       scheduledAt: booking.scheduledAt,
       date: booking.date,
       status: booking.status,
-      totalAmount: booking.totalAmount || booking.amount || 0,
+      totalAmount: Number(booking.totalAmount || booking.amount || 0),
+      currency: booking.service?.currency || 'USD',
       duration: booking.duration || 0,
     };
 
@@ -112,6 +115,7 @@ const deriveClientsFromBookings = (bookings: Booking[]): Client[] => {
         phone,
         bookingsCount: 1,
         totalSpent: clientBooking.totalAmount,
+        currency: clientBooking.currency,
         lastVisitDate: clientBooking.scheduledAt,
         isActive: false, // will be computed after
         bookings: [clientBooking],
@@ -221,7 +225,7 @@ const StatsBar: React.FC<{
 };
 
 /** Booking history row inside the expanded detail */
-const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: number) => string }> = ({
+const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: number, fromCurrency?: string) => string }> = ({
   booking,
   formatPrice,
 }) => {
@@ -261,7 +265,7 @@ const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: num
           {statusLabel}
         </span>
         <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-          {formatPrice(booking.totalAmount)}
+          {formatPrice(booking.totalAmount, booking.currency)}
         </span>
       </div>
     </div>
@@ -275,7 +279,7 @@ const ClientCard: React.FC<{
   onToggle: () => void;
   onViewBookings: () => void;
   onSendMessage: () => void;
-  formatPrice: (p: number) => string;
+  formatPrice: (p: number, fromCurrency?: string) => string;
   index: number;
   // Notes props
   notes: Array<{ id: string; content: string; category: string; updatedAt: string }>;
@@ -372,7 +376,7 @@ const ClientCard: React.FC<{
           </div>
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
             <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {formatPrice(client.totalSpent)}
+              {formatPrice(client.totalSpent, client.currency)}
             </p>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
               {t('clients.totalSpent') || 'Total Spent'}
@@ -380,7 +384,7 @@ const ClientCard: React.FC<{
           </div>
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
             <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {formatPrice(client.totalSpent / (client.bookingsCount || 1))}
+              {formatPrice(client.totalSpent / (client.bookingsCount || 1), client.currency)}
             </p>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
               {t('clients.avgSpent') || 'Avg / Visit'}

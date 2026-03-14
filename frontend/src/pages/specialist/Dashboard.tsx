@@ -427,7 +427,7 @@ Currency: ${currency}
 STATISTICS
 ==========
 Total Bookings: ${dashboardData.stats.totalBookings || 0}
-Monthly Revenue: ${formatPrice(dashboardData.stats.monthlyRevenue || 0)}
+Monthly Revenue: ${formatPrice(dashboardData.stats.monthlyRevenue || 0, currency)}
 Average Rating: ${dashboardData.stats.rating || 'N/A'}
 Review Count: ${dashboardData.stats.reviewCount || 0}
 Response Time: ${dashboardData.stats.responseTime || 'N/A'} minutes
