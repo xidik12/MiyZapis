@@ -15,11 +15,11 @@ import { logger } from '@/utils/logger';
 export class SpecialistService {
   // Get specialist profile (for specialists accessing their own profile)
   async getProfile(): Promise<Specialist> {
-    const response = await apiClient.get<Specialist>('/specialists/profile');
+    const response = await apiClient.get<{ specialist: Specialist }>('/specialists/profile');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
-    return response.data;
+    return response.data.specialist || response.data;
   }
 
   // Get specialist by slug (for /s/:slug routing)
