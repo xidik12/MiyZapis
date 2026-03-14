@@ -4,7 +4,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
 import { EyeIcon, CalendarIcon, ClockIcon } from '@/components/icons';
 import { Avatar } from '../ui/Avatar';
-import { statusColors, getSpecialistName, getSpecialistAvatar, getTranslatedServiceName, getTranslatedDuration } from '../../utils/bookingUtils';
+import { statusColors, getSpecialistName, getSpecialistAvatar, getTranslatedServiceName, getTranslatedDuration, getBookingCurrency } from '../../utils/bookingUtils';
 
 interface BookingCardsProps {
   bookings: Booking[];
@@ -83,7 +83,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
                 <span>{scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               <div className="text-sm font-bold text-gray-900 dark:text-white">
-                {formatPrice(booking.totalAmount)}
+                {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
               </div>
             </div>
           </div>

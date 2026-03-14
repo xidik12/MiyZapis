@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
+import { getBookingCurrency } from '../../utils/bookingUtils';
 import { XIcon as XMarkIcon, CalendarIcon, ClockIcon, UserIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, StarIcon, ArrowPathIcon } from '@/components/icons';
 import { Avatar } from '../ui/Avatar';
 
@@ -317,7 +318,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div className="flex justify-between">
                 <span>{t('bookings.totalAmount')}:</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {formatPrice(booking.totalAmount)}
+                  {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                 </span>
               </div>
               <div className="flex justify-between">

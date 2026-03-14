@@ -13,7 +13,7 @@ import { CalendarIcon, EyeIcon, ClockIcon, StarIcon, ListBulletsIcon, CheckCircl
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { getTranslatedServiceName, getTranslatedDuration, statusColors } from '../../utils/bookingUtils';
+import { getTranslatedServiceName, getTranslatedDuration, statusColors, getBookingCurrency } from '../../utils/bookingUtils';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { reviewsService } from '../../services/reviews.service';
 import { logger } from '@/utils/logger';
@@ -581,7 +581,7 @@ const CustomerBookings: React.FC = () => {
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{t('bookings.amount')}</p>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {formatPrice(booking.totalAmount || 0)}
+                          {formatPrice(booking.totalAmount || 0, getBookingCurrency(booking))}
                         </p>
                       </div>
                     </div>
@@ -696,7 +696,7 @@ const CustomerBookings: React.FC = () => {
                             {getStatusBadge(booking.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {formatPrice(booking.totalAmount || 0)}
+                            {formatPrice(booking.totalAmount || 0, getBookingCurrency(booking))}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">

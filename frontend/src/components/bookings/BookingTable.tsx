@@ -4,7 +4,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
 import { EyeIcon } from '@/components/icons';
 import { Avatar } from '../ui/Avatar';
-import { statusColors, getSpecialistName, getSpecialistAvatar, getTranslatedServiceName, getTranslatedDuration } from '../../utils/bookingUtils';
+import { statusColors, getSpecialistName, getSpecialistAvatar, getTranslatedServiceName, getTranslatedDuration, getBookingCurrency } from '../../utils/bookingUtils';
 
 interface BookingTableProps {
   bookings: Booking[];
@@ -97,7 +97,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-bold text-gray-900 dark:text-white">
-                    {formatPrice(booking.totalAmount)}
+                    {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </div>
                 </td>
                 <td className="px-6 py-4">
