@@ -170,7 +170,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           <div className="flex justify-between items-center mb-3">
             <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
             <span className="font-bold text-gray-900 dark:text-white">
-              {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+              {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
             </span>
           </div>
 

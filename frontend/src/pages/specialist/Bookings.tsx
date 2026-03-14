@@ -673,7 +673,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
+  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
 };
 
 // Helper to get specialist profile data (may be nested in service or at booking level)

@@ -324,7 +324,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
             <div className="flex justify-between">
               <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatPrice(environment.PAYMENTS_ENABLED && discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                {formatPrice(environment.PAYMENTS_ENABLED && discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
               </span>
             </div>
 

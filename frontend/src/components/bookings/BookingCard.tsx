@@ -36,6 +36,7 @@ export interface BookingData {
     name: string;
     duration?: number;
     price?: number;
+    currency?: string;
   };
   location?: {
     address?: string;
@@ -164,7 +165,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         <div className="flex items-center gap-1.5">
           <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
           <span className="font-bold text-sm text-gray-900 dark:text-white leading-none">
-            {formatPrice(Number(booking.totalPrice) || 0)}
+            {formatPrice(Number(booking.totalPrice) || 0, (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
           </span>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border leading-none ${statusColor}`}>
