@@ -434,6 +434,7 @@ router.get('/cities', async (req: Request, res: Response) => {
     const where: Record<string, unknown> = {
       city: {
         not: null,
+        notIn: [''],
       },
     };
 
