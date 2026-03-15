@@ -125,6 +125,7 @@ const SpecialistOnboarding: React.FC = () => {
   const [profileSaved, setProfileSaved] = useState(false);
   const [serviceSaved, setServiceSaved] = useState(false);
   const [scheduleSaved, setScheduleSaved] = useState(false);
+  const [onboardingReady, setOnboardingReady] = useState(false);
 
   // Pre-fill from existing profile if available
   useEffect(() => {
@@ -147,12 +148,34 @@ const SpecialistOnboarding: React.FC = () => {
         try {
           await specialistService.completeOnboarding();
           await dispatch(getCurrentUser()).unwrap();
+          setOnboardingReady(true);
         } catch (err) {
           logger.warn('Onboarding: failed to mark onboarding complete', err);
+          // Still allow navigation — the user completed all steps
+          setOnboardingReady(true);
         }
       })();
     }
   }, [step, dispatch]);
+
+  // Navigate only after onboarding completion has been persisted
+  const navigateAfterOnboarding = (path: string) => {
+    if (onboardingReady) {
+      navigate(path);
+    } else {
+      // Wait briefly for the async call to finish, then navigate
+      const checkAndNavigate = async () => {
+        try {
+          await specialistService.completeOnboarding();
+          await dispatch(getCurrentUser()).unwrap();
+        } catch {
+          // ignore — best effort
+        }
+        navigate(path);
+      };
+      checkAndNavigate();
+    }
+  };
 
   // -----------------------------------------------------------------------
   // Validation helpers
@@ -1014,19 +1037,19 @@ const SpecialistOnboarding: React.FC = () => {
       {/* Quick links */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
         <button
-          onClick={() => navigate('/specialist/dashboard')}
+          onClick={() => navigateAfterOnboarding('/specialist/dashboard')}
           className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {t('onboarding.goToDashboard') || 'Go to Dashboard'}
         </button>
         <button
-          onClick={() => navigate('/specialist/services')}
+          onClick={() => navigateAfterOnboarding('/specialist/services')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.manageServices') || 'Manage Services'}
         </button>
         <button
-          onClick={() => navigate('/specialist/schedule')}
+          onClick={() => navigateAfterOnboarding('/specialist/schedule')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.viewSchedule') || 'View Schedule'}
