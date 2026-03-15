@@ -199,6 +199,14 @@ export const closeRedisConnection = async (): Promise<void> => {
   }
 };
 
+// Wrap a Redis operation with a timeout to prevent hanging when Redis is unavailable
+function withTimeout<T>(promise: Promise<T>, timeoutMs = 3000, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), timeoutMs))
+  ]);
+}
+
 // Cache utility functions
 export const cacheUtils = {
   // Set cache with expiration
@@ -207,10 +215,10 @@ export const cacheUtils = {
       logger.warn(`Redis not available, cannot set cache key: ${key}`);
       return;
     }
-    
+
     try {
       const serializedValue = JSON.stringify(value);
-      await redis.setex(key, ttlSeconds, serializedValue);
+      await withTimeout(redis.setex(key, ttlSeconds, serializedValue), 3000, undefined);
       logger.debug(`Cache set successfully: ${key} (TTL: ${ttlSeconds}s)`);
     } catch (error) {
       logger.error(`Error setting cache key ${key}:`, error);
@@ -220,9 +228,9 @@ export const cacheUtils = {
   // Get cache value
   get: async <T>(key: string): Promise<T | null> => {
     if (!redis) return null;
-    
+
     try {
-      const value = await redis.get(key);
+      const value = await withTimeout(redis.get(key), 3000, null);
       return value ? JSON.parse(value) as T : null;
     } catch (error) {
       logger.error(`Error getting cache key ${key}:`, error);

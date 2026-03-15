@@ -73,23 +73,30 @@ class RateLimitStore {
     this.resetTime = resetTime;
   }
 
+  private withTimeout<T>(promise: Promise<T>, timeoutMs = 3000): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs))
+    ]);
+  }
+
   async increment(key: string): Promise<{ totalHits: number; timeToExpire?: number }> {
     const storeKey = `${this.prefix}${key}`;
-    
+
     if (redis) {
-      // Use Redis when available
+      // Use Redis when available, with timeout to prevent hanging
       try {
-        const current = await redis.get(storeKey);
+        const current = await this.withTimeout(redis.get(storeKey));
         const totalHits = current ? parseInt(current, 10) + 1 : 1;
-        
+
         if (totalHits === 1) {
-          await redis.setex(storeKey, this.resetTime, '1');
+          await this.withTimeout(redis.setex(storeKey, this.resetTime, '1'));
         } else {
-          await redis.set(storeKey, totalHits.toString());
+          await this.withTimeout(redis.set(storeKey, totalHits.toString()));
         }
 
-        const ttl = await redis.ttl(storeKey);
-        
+        const ttl = await this.withTimeout(redis.ttl(storeKey));
+
         return {
           totalHits,
           timeToExpire: ttl > 0 ? ttl * 1000 : undefined,
@@ -119,10 +126,10 @@ class RateLimitStore {
 
   async decrement(key: string): Promise<void> {
     const storeKey = `${this.prefix}${key}`;
-    
+
     if (redis) {
       try {
-        await redis.decr(storeKey);
+        await this.withTimeout(redis.decr(storeKey));
         return;
       } catch (error) {
         logger.error('Redis rate limit decrement error:', error);
@@ -138,10 +145,10 @@ class RateLimitStore {
 
   async resetKey(key: string): Promise<void> {
     const storeKey = `${this.prefix}${key}`;
-    
+
     if (redis) {
       try {
-        await redis.del(storeKey);
+        await this.withTimeout(redis.del(storeKey));
         return;
       } catch (error) {
         logger.error('Redis rate limit reset error:', error);
