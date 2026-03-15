@@ -588,7 +588,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  POPULAR SERVICES                                             */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800/50">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
         <div>
           <div
             ref={servicesReveal.ref}
@@ -790,7 +790,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  COMMUNITY PREVIEW                                            */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800/50">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
         <div>
           <div
             ref={commReveal.ref}
