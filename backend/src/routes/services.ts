@@ -7,6 +7,7 @@ const router = Router();
 
 // Public routes (with caching for frequently accessed data)
 router.get('/', cacheMiddleware(120, 'services'), ServiceController.searchServices);
+router.get('/search', cacheMiddleware(120, 'services-search'), ServiceController.searchServices);
 router.get('/location', cacheMiddleware(120, 'services-location'), ServiceController.getServicesByLocation); // Must be before /:serviceId
 router.get('/categories', cacheMiddleware(1800, 'categories'), ServiceController.getCategories);
 router.get('/popular', cacheMiddleware(120, 'popular'), ServiceController.getPopularServices);

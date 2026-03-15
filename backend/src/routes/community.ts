@@ -15,6 +15,9 @@ router.get('/posts/preview', cacheMiddleware(60, 'community-preview'), Community
 // Get posts with filters (public, optional auth for like status)
 router.get('/posts', authenticateTokenOptional, CommunityController.getPosts);
 
+// Get bookmarked posts (must be before /:id route)
+router.get('/posts/bookmarked', authenticateToken, CommunityController.getBookmarkedPosts);
+
 // Get single post (public, optional auth for full content)
 router.get('/posts/:id', authenticateTokenOptional, CommunityController.getPostById);
 
@@ -36,6 +39,12 @@ router.delete('/posts/:id', authenticateToken, CommunityController.deletePost);
 
 // Toggle post like
 router.post('/posts/:id/like', authenticateToken, CommunityController.togglePostLike);
+
+// Toggle post bookmark
+router.post('/posts/:id/bookmark', authenticateToken, CommunityController.toggleBookmark);
+
+// Report post
+router.post('/posts/:id/report', authenticateToken, CommunityController.reportPost);
 
 // Create comment
 router.post('/posts/:id/comments', authenticateToken, CommunityController.createComment);

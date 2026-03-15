@@ -33,6 +33,11 @@ const PostDetailPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
 
   const isOwner = post && user ? post.authorId === user.id : false;
 
@@ -189,7 +194,33 @@ const PostDetailPage: React.FC = () => {
             </span>
             <span>{formatDate(comment.createdAt)}</span>
           </div>
-          <p className="mt-1 text-gray-700 dark:text-gray-300">{comment.content}</p>
+          {editingComment === comment.id ? (
+            <div className="mt-1">
+              <textarea
+                value={editCommentText}
+                onChange={(e) => setEditCommentText(e.target.value)}
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                rows={2}
+              />
+              <div className="flex gap-2 mt-1">
+                <button
+                  onClick={async () => {
+                    try {
+                      await communityService.updateComment(comment.id, editCommentText);
+                      setEditingComment(null);
+                      loadComments();
+                    } catch {}
+                  }}
+                  className="text-xs text-primary-500 hover:text-primary-600"
+                >
+                  Save
+                </button>
+                <button onClick={() => setEditingComment(null)} className="text-xs text-gray-500">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{comment.content}</p>
+          )}
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
             <button
               onClick={() => handleCommentLike(comment.id)}
@@ -204,6 +235,32 @@ const PostDetailPage: React.FC = () => {
             >
               {t('community.reply') || 'Reply'}
             </button>
+            {user && comment.author.id === user.id && (
+              <>
+                <button
+                  onClick={() => {
+                    setEditingComment(comment.id);
+                    setEditCommentText(comment.content);
+                  }}
+                  className="text-xs text-gray-500 hover:text-primary-500"
+                >
+                  {t('community.editComment') || 'Edit'}
+                </button>
+                <button
+                  onClick={async () => {
+                    if (window.confirm(t('community.deleteCommentConfirm') || 'Delete this comment?')) {
+                      try {
+                        await communityService.deleteComment(comment.id);
+                        loadComments();
+                      } catch {}
+                    }
+                  }}
+                  className="text-xs text-gray-500 hover:text-red-500"
+                >
+                  {t('community.deleteComment') || 'Delete'}
+                </button>
+              </>
+            )}
           </div>
           {activeReply === comment.id && (
             <div className="mt-3">
@@ -272,13 +329,26 @@ const PostDetailPage: React.FC = () => {
                   className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                     post.type === 'DISCUSSION'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      : post.type === 'RENT'
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                       : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   }`}
                 >
                   {post.type === 'DISCUSSION'
                     ? t('community.type.discussion') || 'Discussion'
+                    : post.type === 'RENT'
+                    ? t('community.type.rent') || 'Rent'
                     : t('community.type.sale') || 'Marketplace'}
                 </span>
+                {(post as any).listingStatus && (post as any).listingStatus !== 'ACTIVE' && (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    (post as any).listingStatus === 'SOLD'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                  }`}>
+                    {(post as any).listingStatus === 'SOLD' ? t('community.listingStatus.sold') || 'Sold' : t('community.listingStatus.rented') || 'Rented'}
+                  </span>
+                )}
                 {post.isPinned && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                     {t('community.pinned') || 'Pinned'}
@@ -304,11 +374,27 @@ const PostDetailPage: React.FC = () => {
                 >
                   {t('common.delete') || 'Delete'}
                 </button>
+                {post.authorId === user?.id && (post.type === 'SALE' || post.type === 'RENT') && (post as any).listingStatus === 'ACTIVE' && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const newStatus = post.type === 'RENT' ? 'RENTED' : 'SOLD';
+                        await communityService.updatePost(post.id, { listingStatus: newStatus } as any);
+                        window.location.reload();
+                      } catch {}
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    {post.type === 'RENT'
+                      ? t('community.markAsRented') || 'Mark as Rented'
+                      : t('community.markAsSold') || 'Mark as Sold'}
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          {post.type === 'SALE' && post.price != null && (
+          {(post.type === 'SALE' || post.type === 'RENT') && post.price != null && (
             <div className="mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
               <div className="text-xl font-bold text-green-700 dark:text-green-300">
                 {post.price.toLocaleString()} {post.currency || 'UAH'}
@@ -376,6 +462,14 @@ const PostDetailPage: React.FC = () => {
               <EyeIcon className="w-5 h-5" />
               <span>{post.viewCount}</span>
             </div>
+            {user && post.authorId !== user.id && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500"
+              >
+                {t('community.report') || 'Report'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -447,6 +541,55 @@ const PostDetailPage: React.FC = () => {
                 {isDeleting
                   ? t('community.deleting') || 'Deleting...'
                   : t('common.delete') || 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('community.report') || 'Report Post'}</h3>
+            <select
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              className="w-full px-3 py-2 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            >
+              <option value="">Select reason</option>
+              <option value="SPAM">{t('community.reportReason.spam') || 'Spam'}</option>
+              <option value="INAPPROPRIATE">{t('community.reportReason.inappropriate') || 'Inappropriate'}</option>
+              <option value="SCAM">{t('community.reportReason.scam') || 'Scam'}</option>
+              <option value="DUPLICATE">{t('community.reportReason.duplicate') || 'Duplicate'}</option>
+              <option value="OTHER">{t('community.reportReason.other') || 'Other'}</option>
+            </select>
+            <textarea
+              value={reportDetails}
+              onChange={(e) => setReportDetails(e.target.value)}
+              placeholder="Additional details (optional)"
+              className="w-full px-3 py-2 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              rows={3}
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowReportModal(false)} className="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                {t('common.cancel') || 'Cancel'}
+              </button>
+              <button
+                onClick={async () => {
+                  if (!reportReason) return;
+                  try {
+                    await communityService.reportPost(post.id, reportReason, reportDetails);
+                    setShowReportModal(false);
+                    setReportReason('');
+                    setReportDetails('');
+                    toast.success(t('community.reportSuccess') || 'Report submitted');
+                  } catch {}
+                }}
+                className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
+                disabled={!reportReason}
+              >
+                {t('community.report') || 'Report'}
               </button>
             </div>
           </div>

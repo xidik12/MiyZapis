@@ -89,6 +89,24 @@ interface SpecialistWithUser extends Specialist {
   };
 }
 
+/**
+ * Strip private/sensitive specialist fields from public responses.
+ * Only reveal these after a booking is CONFIRMED or COMPLETED.
+ */
+export function stripPrivateSpecialistFields(specialist: any) {
+  if (!specialist) return specialist;
+  const {
+    preciseAddress,
+    businessPhone,
+    whatsappNumber,
+    locationNotes,
+    parkingInfo,
+    accessInstructions,
+    ...publicData
+  } = specialist;
+  return publicData;
+}
+
 export class SpecialistService {
   private static getDefaultWorkingHours() {
     return {

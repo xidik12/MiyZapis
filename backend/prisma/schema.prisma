@@ -112,6 +112,8 @@ model User {
   comments             Comment[]              @relation("UserComments")
   postLikes            PostLike[]             @relation("UserPostLikes")
   commentLikes         CommentLike[]          @relation("UserCommentLikes")
+  postBookmarks        PostBookmark[]         @relation("UserPostBookmarks")
+  postReports          PostReport[]           @relation("UserPostReports")
 
   // Review engagement relations
   reviewReactions      ReviewReaction[]       @relation("UserReviewReactions")
@@ -1821,6 +1823,10 @@ model Post {
   contactEmail    String?
   images          String?   // JSON array of image URLs
 
+  // Rent/marketplace fields
+  condition       String?   // NEW, USED, LIKE_NEW
+  listingStatus   String?   @default("ACTIVE") // ACTIVE, SOLD, RENTED
+
   // Metrics
   viewCount       Int       @default(0)
   likeCount       Int       @default(0)
@@ -1838,6 +1844,8 @@ model Post {
   author          User      @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
   comments        Comment[]
   likes           PostLike[]
+  bookmarks       PostBookmark[]
+  reports         PostReport[]
 
   @@index([authorId, isDeleted])
   @@index([type, isPublished, isDeleted])
@@ -1895,6 +1903,35 @@ model CommentLike {
 
   @@unique([commentId, userId])
   @@map("comment_likes")
+}
+
+model PostBookmark {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserPostBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_bookmarks")
+}
+
+model PostReport {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  reason    String
+  details   String?  @db.Text
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserPostReports", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_reports")
 }
 
 // Email delivery logs for deduplication and tracking

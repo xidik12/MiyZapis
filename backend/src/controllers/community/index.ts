@@ -6,7 +6,7 @@ import { logger } from '@/utils/logger';
 
 // Types
 export interface CreatePostData {
-  type: 'DISCUSSION' | 'SALE';
+  type: 'DISCUSSION' | 'SALE' | 'RENT';
   title: string;
   content: string;
   price?: number;
@@ -14,6 +14,7 @@ export interface CreatePostData {
   contactPhone?: string;
   contactEmail?: string;
   images?: string[];
+  condition?: string;
 }
 
 export interface UpdatePostData {
@@ -25,6 +26,8 @@ export interface UpdatePostData {
   contactEmail?: string;
   images?: string[];
   isPublished?: boolean;
+  condition?: string;
+  listingStatus?: string;
 }
 
 export interface CreateCommentData {
@@ -33,7 +36,7 @@ export interface CreateCommentData {
 }
 
 export interface PostFilters {
-  type?: 'DISCUSSION' | 'SALE';
+  type?: 'DISCUSSION' | 'SALE' | 'RENT';
   authorId?: string;
   search?: string;
 }
@@ -133,7 +136,7 @@ export class CommunityController {
         isDeleted: false,
       };
 
-      if (type && ['DISCUSSION', 'SALE'].includes(type as string)) {
+      if (type && ['DISCUSSION', 'SALE', 'RENT'].includes(type as string)) {
         where.type = type;
       }
 
@@ -146,6 +149,15 @@ export class CommunityController {
           { title: { contains: search as string, mode: 'insensitive' } },
           { content: { contains: search as string, mode: 'insensitive' } },
         ];
+      }
+
+      // Price range filter for marketplace posts
+      const { minPrice: minPriceStr, maxPrice: maxPriceStr } = req.query;
+      if (minPriceStr || maxPriceStr) {
+        const priceFilter: Record<string, unknown> = {};
+        if (minPriceStr) priceFilter.gte = parseFloat(minPriceStr as string);
+        if (maxPriceStr) priceFilter.lte = parseFloat(maxPriceStr as string);
+        where.price = priceFilter;
       }
 
       // Build order by
@@ -212,11 +224,14 @@ export class CommunityController {
         contactPhone: showFullContent ? post.contactPhone : null,
         contactEmail: showFullContent ? post.contactEmail : null,
         images: post.images ? JSON.parse(post.images) : [],
+        condition: (post as any).condition,
+        listingStatus: (post as any).listingStatus,
         viewCount: post.viewCount,
         likeCount: post.likeCount,
         commentCount: post.commentCount,
         isPinned: post.isPinned,
         isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
+        isBookmarked: false, // Will be set by frontend from bookmarks list
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
@@ -313,11 +328,14 @@ export class CommunityController {
         contactPhone: showFullContent ? post.contactPhone : null,
         contactEmail: showFullContent ? post.contactEmail : null,
         images: post.images ? JSON.parse(post.images) : [],
+        condition: (post as any).condition,
+        listingStatus: (post as any).listingStatus,
         viewCount: post.viewCount + 1,
         likeCount: post.likeCount,
         commentCount: post.commentCount,
         isPinned: post.isPinned,
         isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
+        isBookmarked: false, // Will be set by frontend from bookmarks list
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
@@ -365,11 +383,11 @@ export class CommunityController {
       } = req.body as CreatePostData;
 
       // Validate required fields
-      if (!type || !['DISCUSSION', 'SALE'].includes(type)) {
+      if (!type || !['DISCUSSION', 'SALE', 'RENT'].includes(type)) {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
-            'Invalid post type. Must be DISCUSSION or SALE',
+            'Invalid post type. Must be DISCUSSION, SALE, or RENT',
             req.headers['x-request-id'] as string
           )
         );
@@ -399,7 +417,7 @@ export class CommunityController {
       }
 
       // For SALE posts, validate price
-      if (type === 'SALE' && price !== undefined && price < 0) {
+      if ((type === 'SALE' || type === 'RENT') && price !== undefined && price < 0) {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -416,11 +434,12 @@ export class CommunityController {
           type,
           title: title.trim(),
           content: content.trim(),
-          price: type === 'SALE' ? price : null,
-          currency: type === 'SALE' ? (currency || 'UAH') : null,
-          contactPhone: type === 'SALE' ? contactPhone : null,
-          contactEmail: type === 'SALE' ? contactEmail : null,
+          price: (type === 'SALE' || type === 'RENT') ? price : null,
+          currency: (type === 'SALE' || type === 'RENT') ? (currency || 'UAH') : null,
+          contactPhone: (type === 'SALE' || type === 'RENT') ? contactPhone : null,
+          contactEmail: (type === 'SALE' || type === 'RENT') ? contactEmail : null,
           images: images ? JSON.stringify(images) : null,
+          condition: (type === 'SALE' || type === 'RENT') ? (req.body as CreatePostData).condition : null,
         },
         include: {
           author: {
@@ -524,6 +543,9 @@ export class CommunityController {
       if (contactEmail !== undefined) updateData.contactEmail = contactEmail;
       if (images !== undefined) updateData.images = JSON.stringify(images);
       if (isPublished !== undefined) updateData.isPublished = isPublished;
+      const { condition, listingStatus } = req.body;
+      if (condition !== undefined) updateData.condition = condition;
+      if (listingStatus !== undefined) updateData.listingStatus = listingStatus;
 
       const updatedPost = await prisma.post.update({
         where: { id },
@@ -1227,6 +1249,176 @@ export class CommunityController {
           'Failed to toggle like',
           req.headers['x-request-id'] as string
         )
+      );
+    }
+  }
+
+  /**
+   * Toggle post bookmark
+   * POST /community/posts/:id/bookmark
+   */
+  static async toggleBookmark(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const { id } = req.params;
+
+      const post = await prisma.post.findFirst({ where: { id, isDeleted: false } });
+      if (!post) {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Post not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const existing = await prisma.postBookmark.findUnique({
+        where: { postId_userId: { postId: id, userId: req.user.id } },
+      });
+
+      let bookmarked: boolean;
+      if (existing) {
+        await prisma.postBookmark.delete({ where: { id: existing.id } });
+        bookmarked = false;
+      } else {
+        await prisma.postBookmark.create({ data: { postId: id, userId: req.user.id } });
+        bookmarked = true;
+      }
+
+      res.json(createSuccessResponse({ bookmarked }));
+    } catch (error) {
+      logger.error('Toggle bookmark error:', error);
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to toggle bookmark', req.headers['x-request-id'] as string)
+      );
+    }
+  }
+
+  /**
+   * Get bookmarked posts
+   * GET /community/posts/bookmarked
+   */
+  static async getBookmarkedPosts(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const { page = 1, limit = 20 } = req.query;
+      const { skip, take } = calculatePaginationOffset(parseInt(page as string, 10), parseInt(limit as string, 10));
+
+      const [bookmarks, totalCount] = await Promise.all([
+        prisma.postBookmark.findMany({
+          where: { userId: req.user.id, post: { isDeleted: false } },
+          include: {
+            post: {
+              include: {
+                author: {
+                  select: { id: true, firstName: true, lastName: true, avatar: true, userType: true },
+                },
+                likes: { where: { userId: req.user.id }, select: { id: true } },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+        }),
+        prisma.postBookmark.count({ where: { userId: req.user.id, post: { isDeleted: false } } }),
+      ]);
+
+      const posts = bookmarks.map(b => ({
+        id: b.post.id,
+        authorId: b.post.authorId,
+        author: (b.post as any).author,
+        type: b.post.type,
+        title: b.post.title,
+        content: b.post.content,
+        price: b.post.price,
+        currency: b.post.currency,
+        images: b.post.images ? JSON.parse(b.post.images) : [],
+        condition: (b.post as any).condition,
+        listingStatus: (b.post as any).listingStatus,
+        viewCount: b.post.viewCount,
+        likeCount: b.post.likeCount,
+        commentCount: b.post.commentCount,
+        isPinned: b.post.isPinned,
+        isLiked: ((b.post as any).likes || []).length > 0,
+        isBookmarked: true,
+        createdAt: b.post.createdAt,
+        updatedAt: b.post.updatedAt,
+      }));
+
+      const paginationMeta = createPaginationMeta(parseInt(page as string, 10), parseInt(limit as string, 10), totalCount);
+
+      res.json(createSuccessResponse({ posts, total: totalCount, pagination: paginationMeta }));
+    } catch (error) {
+      logger.error('Get bookmarked posts error:', error);
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get bookmarked posts', req.headers['x-request-id'] as string)
+      );
+    }
+  }
+
+  /**
+   * Report a post
+   * POST /community/posts/:id/report
+   */
+  static async reportPost(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const { id } = req.params;
+      const { reason, details } = req.body;
+
+      if (!reason || !['SPAM', 'INAPPROPRIATE', 'SCAM', 'DUPLICATE', 'OTHER'].includes(reason)) {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Valid reason is required', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      const post = await prisma.post.findFirst({ where: { id, isDeleted: false } });
+      if (!post) {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Post not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      // Check for duplicate report
+      const existing = await prisma.postReport.findUnique({
+        where: { postId_userId: { postId: id, userId: req.user.id } },
+      });
+
+      if (existing) {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.BUSINESS_RULE_VIOLATION, 'You have already reported this post', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      await prisma.postReport.create({
+        data: { postId: id, userId: req.user.id, reason, details: details || null },
+      });
+
+      res.json(createSuccessResponse({ reported: true }));
+    } catch (error) {
+      logger.error('Report post error:', error);
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to report post', req.headers['x-request-id'] as string)
       );
     }
   }

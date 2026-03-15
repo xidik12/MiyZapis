@@ -1,7 +1,7 @@
 import { apiClient } from './api';
 
 // Types
-export const POST_TYPES = ['DISCUSSION', 'SALE'] as const;
+export const POST_TYPES = ['DISCUSSION', 'SALE', 'RENT'] as const;
 export type PostType = typeof POST_TYPES[number];
 
 export interface PostAuthor {
@@ -30,6 +30,9 @@ export interface Post {
   isPinned?: boolean;
   isLiked?: boolean;
   isPreview?: boolean;
+  condition?: string | null;
+  listingStatus?: string | null;
+  isBookmarked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,6 +79,7 @@ export interface CreatePostData {
   contactPhone?: string;
   contactEmail?: string;
   images?: string[];
+  condition?: string;
 }
 
 export interface UpdatePostData {
@@ -87,6 +91,8 @@ export interface UpdatePostData {
   contactEmail?: string;
   images?: string[];
   isPublished?: boolean;
+  condition?: string;
+  listingStatus?: string;
 }
 
 export interface PostFilters {
@@ -97,6 +103,8 @@ export interface PostFilters {
   limit?: number;
   sortBy?: 'createdAt' | 'likeCount' | 'commentCount' | 'viewCount';
   sortOrder?: 'asc' | 'desc';
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface PaginationMeta {
@@ -163,6 +171,8 @@ class CommunityService {
     if (filters?.limit) params.append('limit', filters.limit.toString());
     if (filters?.sortBy) params.append('sortBy', filters.sortBy);
     if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+    if (filters?.minPrice) params.append('minPrice', filters.minPrice.toString());
+    if (filters?.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
 
     const queryString = params.toString();
     const url = queryString
@@ -310,6 +320,44 @@ class CommunityService {
     const response = await apiClient.post<LikeResponse>(`${this.baseUrl}/comments/${id}/like`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to toggle comment like');
+    }
+    return response.data;
+  }
+
+  /**
+   * Toggle post bookmark
+   */
+  async toggleBookmark(postId: string): Promise<{ bookmarked: boolean }> {
+    const response = await apiClient.post<{ bookmarked: boolean }>(`${this.baseUrl}/posts/${postId}/bookmark`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to toggle bookmark');
+    }
+    return response.data;
+  }
+
+  /**
+   * Get bookmarked posts
+   */
+  async getBookmarkedPosts(page?: number, limit?: number): Promise<GetPostsResponse> {
+    const params = new URLSearchParams();
+    if (page) params.append('page', page.toString());
+    if (limit) params.append('limit', limit.toString());
+    const queryString = params.toString();
+    const url = queryString ? `${this.baseUrl}/posts/bookmarked?${queryString}` : `${this.baseUrl}/posts/bookmarked`;
+    const response = await apiClient.get<GetPostsResponse>(url);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to load bookmarked posts');
+    }
+    return response.data;
+  }
+
+  /**
+   * Report a post
+   */
+  async reportPost(postId: string, reason: string, details?: string): Promise<{ reported: boolean }> {
+    const response = await apiClient.post<{ reported: boolean }>(`${this.baseUrl}/posts/${postId}/report`, { reason, details });
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to report post');
     }
     return response.data;
   }

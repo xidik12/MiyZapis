@@ -19,6 +19,7 @@ import { selectUser } from '../store/slices/authSlice';
 import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon } from '@/components/icons';
 ;
 import { Avatar, PageLoader } from '../components/ui';
+import { ShareButton } from '../components/common/ShareButton';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
 // Note: Use active prop for filled icons: <Icon active />
@@ -425,6 +426,13 @@ const SpecialistProfilePage: React.FC = () => {
                 </button>
               )}
 
+              {/* Share Button */}
+              <ShareButton
+                url={`${window.location.origin}/s/${specialist.slug || specialist.id}`}
+                title={`${specialist.user?.firstName} ${specialist.user?.lastName} — MiyZapys`}
+                text={`${t('share.tellFriend')}: ${specialist.user?.firstName} ${specialist.user?.lastName}`}
+              />
+
               {services.length > 0 ? (
                 isOwnProfile ? (
                   <button
@@ -764,15 +772,72 @@ const SpecialistProfilePage: React.FC = () => {
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-start text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="break-words">{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
+                  <div>
+                    <span className="break-words">{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
+                      {t('location.exactAddressAfterBooking') || 'Exact address provided after booking confirmation'}
+                    </p>
+                  </div>
                 </div>
-                
+
                 <div className="flex items-start text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
                   <span className="break-words">{t('specialist.responseTime')}: {specialist.responseTime || t('common.notAvailable') || 'N/A'} {t('time.minutes')}</span>
                 </div>
               </div>
             </div>
+
+            {/* Social Links */}
+            {(() => {
+              let social: Record<string, string> = {};
+              try {
+                social = typeof specialist.socialMedia === 'string'
+                  ? JSON.parse(specialist.socialMedia)
+                  : (specialist.socialMedia || {});
+              } catch { /* ignore parse errors */ }
+
+              const links = [
+                { key: 'instagram', url: social.instagram, label: 'Instagram', color: 'text-pink-500' },
+                { key: 'facebook', url: social.facebook, label: 'Facebook', color: 'text-blue-600' },
+                { key: 'linkedin', url: social.linkedin, label: 'LinkedIn', color: 'text-blue-700' },
+                { key: 'website', url: social.website, label: 'Website', color: 'text-gray-600 dark:text-gray-400' },
+              ].filter(l => l.url);
+
+              const whatsapp = specialist.whatsappNumber;
+
+              if (links.length === 0 && !whatsapp) return null;
+
+              return (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
+                    {language === 'uk' ? 'Соціальні мережі' : language === 'ru' ? 'Социальные сети' : 'Social Media'}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {links.map(link => (
+                      <a
+                        key={link.key}
+                        href={link.url!.startsWith('http') ? link.url : `https://${link.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${link.color}`}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                    {whatsapp && (
+                      <a
+                        href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-green-600"
+                      >
+                        WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Payment Details */}
             {(hasBankDetails || specialist.paymentQrCodeUrl) && (

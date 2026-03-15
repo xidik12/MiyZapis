@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@/components/icons';
 import { notificationService } from '../../services/notification.service';
+import { socketService } from '../../services/socket.service';
 import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationCenter from './NotificationCenter';
 
@@ -43,11 +44,18 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     return () => clearInterval(interval);
   }, []);
 
-  // Listen for notification changes
+  // Listen for notification changes (local + socket)
   useEffect(() => {
     const unsubscribe = notificationService.addListener(() => {
       loadUnreadCount();
     });
+
+    // Real-time socket subscription
+    const handleSocketNotification = () => {
+      loadUnreadCount();
+    };
+    socketService.on('notification:new', handleSocketNotification);
+
     // Also listen to global updates from NotificationCenter (mark-all, delete-all)
     const onGlobalUpdate = (e: Record<string, unknown>) => {
       const detail = e?.detail || {};
@@ -66,6 +74,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
 
     return () => {
       unsubscribe();
+      socketService.off('notification:new', handleSocketNotification);
       window.removeEventListener('notifications:update', onGlobalUpdate as any);
     };
   }, []);

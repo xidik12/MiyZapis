@@ -2967,6 +2967,87 @@ const ru: Record<string, string> = {
   'admin.analytics.noSpecialists': 'Специалистов не найдено',
   'admin.analytics.referralAnalytics': 'Реферальная аналитика',
   'admin.analytics.referralDescription': 'Отслеживание рефералов и метрики эффективности будут отображаться здесь после полной интеграции реферальной системы.',
+
+  // Share
+  'share.copyLink': 'Копировать ссылку',
+  'share.telegram': 'Telegram',
+  'share.whatsapp': 'WhatsApp',
+  'share.shareProfile': 'Поделиться',
+  'share.tellFriend': 'Расскажите другу',
+  'share.copied': 'Ссылка скопирована!',
+
+  // Popular Services
+  'popularServices.title': 'Популярные услуги',
+  'popularServices.subtitle': 'Самые заказываемые услуги наших клиентов',
+
+  // Search Badges
+  'search.badges.instantBooking': 'Мгновенное бронирование',
+  'search.badges.newSpecialist': 'Новый',
+
+  // Dashboard Reminder
+  'dashboard.reminder.appointmentIn': 'Ваша запись через',
+  'dashboard.reminder.hours': 'часов',
+  'dashboard.reminder.tomorrow': 'Завтра',
+
+  // Dashboard Stats
+  'dashboard.noShowRate': 'Уровень неявки',
+  'dashboard.noShowWarning': 'Обнаружен высокий уровень неявки. Рассмотрите отправку напоминаний клиентам.',
+  'dashboard.shareProfile': 'Поделиться профилем',
+  'dashboard.bookAgain': 'Забронировать снова',
+  'dashboard.weekOverWeek': 'против прошлой недели',
+
+  // Booking
+  'booking.youMightAlsoLike': 'Вам также может понравиться',
+  'booking.tellFriend': 'Поделиться с другом',
+
+  // Phase 2 — Location Privacy
+  'location.exactAddressAfterBooking': 'Точный адрес предоставляется после подтверждения бронирования',
+  'location.appointmentLocation': 'Место вашей записи',
+  'location.locationNotes': 'Примечания к месту',
+  'location.parkingInfo': 'Информация о парковке',
+  'location.accessInstructions': 'Инструкции по доступу',
+  'location.contactDetails': 'Контактные данные',
+
+  // Phase 3 — Search/Marketplace
+  'search.filters.bestRated': 'Лучшие оценки',
+  'search.filters.onSale': 'Скидки',
+  'search.filters.instantBooking': 'Мгновенное бронирование',
+  'search.filters.new': 'Новые',
+  'search.badges.discount': '{{percent}}% СКИДКА',
+  'search.badges.groupSession': 'Группа (до {{max}})',
+  'search.reviewSnippet': 'Топ отзыв',
+
+  // Phase 4 — Community
+  'community.type.rent': 'Аренда',
+  'community.condition.label': 'Состояние',
+  'community.condition.select': 'Выберите состояние',
+  'community.condition.new': 'Новый',
+  'community.condition.used': 'Б/у',
+  'community.condition.likeNew': 'Как новый',
+  'community.listingStatus.active': 'Активный',
+  'community.listingStatus.sold': 'Продано',
+  'community.listingStatus.rented': 'Сдано',
+  'community.markAsSold': 'Отметить как продано',
+  'community.markAsRented': 'Отметить как сдано',
+  'community.priceRange': 'Диапазон цен',
+  'community.minPrice': 'Мин. цена',
+  'community.maxPrice': 'Макс. цена',
+  'community.bookmark': 'Сохранить',
+  'community.bookmarked': 'Сохранено',
+  'community.savedPosts': 'Сохранённые посты',
+  'community.report': 'Пожаловаться',
+  'community.reportSubmitted': 'Жалоба отправлена',
+  'community.reportReason.spam': 'Спам',
+  'community.reportReason.inappropriate': 'Неприемлемый контент',
+  'community.reportReason.scam': 'Мошенничество',
+  'community.reportReason.duplicate': 'Дубликат',
+  'community.reportReason.other': 'Другое',
+  'community.sort.latest': 'Новейшие',
+  'community.sort.popular': 'Самые популярные',
+  'community.sort.discussed': 'Самые обсуждаемые',
+  'community.editComment': 'Редактировать',
+  'community.deleteComment': 'Удалить',
+  'community.deleteCommentConfirm': 'Удалить этот комментарий?',
 };
 
 export default ru;

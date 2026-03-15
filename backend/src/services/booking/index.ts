@@ -10,6 +10,7 @@ import { ReferralProcessingService } from '@/services/referral/processing.servic
 import { Booking, User, Service, Specialist } from '@prisma/client';
 import { generateGroupSessionId, canAccommodateParticipants, logGroupSessionInfo } from '@/utils/groupSessions';
 import { WaitlistService } from '@/services/waitlist';
+import { stripPrivateSpecialistFields } from '@/services/specialist';
 
 interface CreateBookingData {
   customerId: string;
@@ -734,6 +735,11 @@ export class BookingService {
 
       if (!booking) {
         throw new Error('BOOKING_NOT_FOUND');
+      }
+
+      // Strip private specialist fields for non-confirmed bookings
+      if (booking.service?.specialist && !['CONFIRMED', 'COMPLETED'].includes(booking.status)) {
+        (booking as any).service.specialist = stripPrivateSpecialistFields(booking.service.specialist);
       }
 
       return booking as BookingWithDetails;

@@ -223,6 +223,16 @@ const CommunityPage: React.FC = () => {
             >
               {t('community.type.sale') || 'Marketplace'}
             </button>
+            <button
+              onClick={() => handleFilterChange('RENT')}
+              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                activeFilter === 'RENT'
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {t('community.type.rent') || 'Rent'}
+            </button>
           </div>
 
           {/* Search */}
@@ -238,7 +248,55 @@ const CommunityPage: React.FC = () => {
               />
             </div>
           </form>
+
+          {/* Sort Dropdown */}
+          <select
+            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            onChange={(e) => {
+              const value = e.target.value;
+              const filters: Record<string, unknown> = {
+                page: 1,
+                limit: 20,
+                sortBy: value,
+                sortOrder: 'desc',
+              };
+              if (activeFilter !== 'ALL') {
+                filters.type = activeFilter;
+              }
+              if (searchQuery.trim()) {
+                filters.search = searchQuery.trim();
+              }
+              communityService.getPosts(filters, { skipCache: true }).then((response) => {
+                setPosts(response.posts);
+                setTotalPages(response.pagination.totalPages);
+                setCurrentPage(1);
+              }).catch(() => {});
+            }}
+          >
+            <option value="createdAt">{t('community.sort.latest') || 'Latest'}</option>
+            <option value="likeCount">{t('community.sort.popular') || 'Most Popular'}</option>
+            <option value="commentCount">{t('community.sort.discussed') || 'Most Discussed'}</option>
+          </select>
         </div>
+
+        {/* Price Range Filter */}
+        {(activeFilter === 'SALE' || activeFilter === 'RENT') && (
+          <div className="flex items-center gap-2 mt-2 mb-4">
+            <input
+              type="number"
+              placeholder={t('community.minPrice') || 'Min price'}
+              className="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              onChange={() => {/* will be wired to state */}}
+            />
+            <span className="text-gray-400">&mdash;</span>
+            <input
+              type="number"
+              placeholder={t('community.maxPrice') || 'Max price'}
+              className="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              onChange={() => {/* will be wired to state */}}
+            />
+          </div>
+        )}
 
         {/* Error State */}
         {error && (
@@ -302,13 +360,33 @@ const CommunityPage: React.FC = () => {
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           post.type === 'DISCUSSION'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : post.type === 'RENT'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                             : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                         }`}
                       >
                         {post.type === 'DISCUSSION'
                           ? t('community.type.discussion') || 'Discussion'
+                          : post.type === 'RENT'
+                          ? t('community.type.rent') || 'Rent'
                           : t('community.type.sale') || 'Marketplace'}
                       </span>
+                      {(post as any).condition && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                          {(post as any).condition === 'NEW' ? t('community.condition.new') || 'New' :
+                           (post as any).condition === 'LIKE_NEW' ? t('community.condition.likeNew') || 'Like New' :
+                           t('community.condition.used') || 'Used'}
+                        </span>
+                      )}
+                      {(post as any).listingStatus && (post as any).listingStatus !== 'ACTIVE' && (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          (post as any).listingStatus === 'SOLD'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                        }`}>
+                          {(post as any).listingStatus === 'SOLD' ? t('community.listingStatus.sold') || 'Sold' : t('community.listingStatus.rented') || 'Rented'}
+                        </span>
+                      )}
                       {post.isPinned && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                           Pinned
@@ -323,7 +401,7 @@ const CommunityPage: React.FC = () => {
                     </Link>
 
                     {/* Price for Sale posts */}
-                    {post.type === 'SALE' && post.price != null && (
+                    {(post.type === 'SALE' || post.type === 'RENT') && post.price != null && (
                       <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1">
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
                       </p>

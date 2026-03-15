@@ -462,9 +462,36 @@ const SearchPage: React.FC = () => {
 
         <div className="flex-1 min-w-0 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
-              {service.name}
-            </h3>
+            <div className="flex items-center gap-2 min-w-0">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                {service.name}
+              </h3>
+              {(service as any).specialist?.autoBooking && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 whitespace-nowrap">
+                  {t('search.badges.instantBooking') || 'Instant Booking'}
+                </span>
+              )}
+              {(service as any).specialist?.user?.createdAt && (() => {
+                const createdAt = new Date((service as any).specialist.user.createdAt);
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                return createdAt > thirtyDaysAgo;
+              })() && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 whitespace-nowrap">
+                  {t('search.badges.newSpecialist') || 'New'}
+                </span>
+              )}
+              {(service as any).discountPercentage > 0 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  {(service as any).discountPercentage}% OFF
+                </span>
+              )}
+              {(service as any).groupSession && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                  {t('search.badges.groupSession', { max: (service as any).maxGroupSize }) || `Group (up to ${(service as any).maxGroupSize})`}
+                </span>
+              )}
+            </div>
             <div className="flex items-center space-x-1">
               {renderStars(service.rating)}
               <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
@@ -498,6 +525,16 @@ const SearchPage: React.FC = () => {
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
             {service.description}
           </p>
+
+          {(service as any).topReview && (
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <StarIcon className="w-3 h-3 text-yellow-400" />
+              <span>{(service as any).topReview.rating}</span>
+              {(service as any).topReview.comment && (
+                <span className="truncate">"{(service as any).topReview.comment}" — {(service as any).topReview.userName}</span>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
@@ -640,6 +677,29 @@ const SearchPage: React.FC = () => {
             >
               {filter.value === 'now' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5" />}
               {filter.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Quick Filter Tags */}
+        <div className="flex gap-2 overflow-x-auto pb-2 px-1 -mx-1 scrollbar-hide">
+          {[
+            { key: 'bestRated', label: t('search.filters.bestRated') || 'Best Rated', sortParam: 'rating' },
+            { key: 'onSale', label: t('search.filters.onSale') || 'On Sale', filterParam: 'hasDiscount' },
+            { key: 'instantBooking', label: t('search.filters.instantBooking') || 'Instant Booking', filterParam: 'autoBooking' },
+            { key: 'new', label: t('search.filters.new') || 'New', filterParam: 'isNew' },
+          ].map(tag => (
+            <button
+              key={tag.key}
+              onClick={() => {
+                // Toggle quick filter
+                if (tag.sortParam) {
+                  setSortBy(tag.sortParam);
+                }
+              }}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-primary-50 hover:border-primary-300 dark:hover:bg-primary-900/20 dark:hover:border-primary-700 transition-colors"
+            >
+              {tag.label}
             </button>
           ))}
         </div>

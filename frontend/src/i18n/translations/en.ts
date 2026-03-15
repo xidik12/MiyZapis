@@ -2967,6 +2967,87 @@ const en: Record<string, string> = {
   'admin.analytics.noSpecialists': 'No specialists found',
   'admin.analytics.referralAnalytics': 'Referral Analytics',
   'admin.analytics.referralDescription': 'Referral tracking and performance metrics will be displayed here once the referral system is fully integrated.',
+
+  // Share
+  'share.copyLink': 'Copy Link',
+  'share.telegram': 'Telegram',
+  'share.whatsapp': 'WhatsApp',
+  'share.shareProfile': 'Share',
+  'share.tellFriend': 'Tell a Friend',
+  'share.copied': 'Link copied!',
+
+  // Popular Services
+  'popularServices.title': 'Popular Services',
+  'popularServices.subtitle': 'Most booked services by our customers',
+
+  // Search Badges
+  'search.badges.instantBooking': 'Instant Booking',
+  'search.badges.newSpecialist': 'New',
+
+  // Dashboard Reminder
+  'dashboard.reminder.appointmentIn': 'Your appointment is in',
+  'dashboard.reminder.hours': 'hours',
+  'dashboard.reminder.tomorrow': 'Tomorrow',
+
+  // Dashboard Stats
+  'dashboard.noShowRate': 'No-Show Rate',
+  'dashboard.noShowWarning': 'High no-show rate detected. Consider sending reminders to clients.',
+  'dashboard.shareProfile': 'Share Your Profile',
+  'dashboard.bookAgain': 'Book Again',
+  'dashboard.weekOverWeek': 'vs last week',
+
+  // Booking
+  'booking.youMightAlsoLike': 'You Might Also Like',
+  'booking.tellFriend': 'Share with a Friend',
+
+  // Phase 2 — Location Privacy
+  'location.exactAddressAfterBooking': 'Exact address provided after booking confirmation',
+  'location.appointmentLocation': 'Your appointment location',
+  'location.locationNotes': 'Location notes',
+  'location.parkingInfo': 'Parking information',
+  'location.accessInstructions': 'Access instructions',
+  'location.contactDetails': 'Contact details',
+
+  // Phase 3 — Search/Marketplace
+  'search.filters.bestRated': 'Best Rated',
+  'search.filters.onSale': 'On Sale',
+  'search.filters.instantBooking': 'Instant Booking',
+  'search.filters.new': 'New',
+  'search.badges.discount': '{{percent}}% OFF',
+  'search.badges.groupSession': 'Group (up to {{max}})',
+  'search.reviewSnippet': 'Top review',
+
+  // Phase 4 — Community
+  'community.type.rent': 'Rent',
+  'community.condition.label': 'Condition',
+  'community.condition.select': 'Select condition',
+  'community.condition.new': 'New',
+  'community.condition.used': 'Used',
+  'community.condition.likeNew': 'Like New',
+  'community.listingStatus.active': 'Active',
+  'community.listingStatus.sold': 'Sold',
+  'community.listingStatus.rented': 'Rented',
+  'community.markAsSold': 'Mark as Sold',
+  'community.markAsRented': 'Mark as Rented',
+  'community.priceRange': 'Price range',
+  'community.minPrice': 'Min price',
+  'community.maxPrice': 'Max price',
+  'community.bookmark': 'Save',
+  'community.bookmarked': 'Saved',
+  'community.savedPosts': 'Saved Posts',
+  'community.report': 'Report',
+  'community.reportSubmitted': 'Report submitted',
+  'community.reportReason.spam': 'Spam',
+  'community.reportReason.inappropriate': 'Inappropriate',
+  'community.reportReason.scam': 'Scam',
+  'community.reportReason.duplicate': 'Duplicate',
+  'community.reportReason.other': 'Other',
+  'community.sort.latest': 'Latest',
+  'community.sort.popular': 'Most Popular',
+  'community.sort.discussed': 'Most Discussed',
+  'community.editComment': 'Edit',
+  'community.deleteComment': 'Delete',
+  'community.deleteCommentConfirm': 'Delete this comment?',
 };
 
 export default en;

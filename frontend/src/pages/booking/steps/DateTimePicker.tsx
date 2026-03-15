@@ -124,11 +124,19 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           )}
 
           {slotsLoading ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('booking.loadingSlots') || 'Loading available times...'}
-              </p>
+            <div className="space-y-4">
+              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {Array.from({ length: 15 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" style={{ animationDelay: `${i * 50}ms` }} />
+                ))}
+              </div>
+              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" style={{ animationDelay: `${(i + 15) * 50}ms` }} />
+                ))}
+              </div>
             </div>
           ) : availableSlots.length > 0 ? (
             <div className="space-y-4">

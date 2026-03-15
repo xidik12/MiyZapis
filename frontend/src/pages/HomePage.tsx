@@ -60,6 +60,8 @@ const HomePage: React.FC = () => {
   const [communityLoading, setCommunityLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [popularServices, setPopularServices] = useState<any[]>([]);
+  const [popularServicesLoading, setPopularServicesLoading] = useState(true);
   const [topSpecialists, setTopSpecialists] = useState<any[]>([]);
   const [specialistsLoading, setSpecialistsLoading] = useState(true);
   const { t } = useLanguage();
@@ -110,8 +112,21 @@ const HomePage: React.FC = () => {
       }
     };
 
+    const loadPopularServices = async () => {
+      try {
+        setPopularServicesLoading(true);
+        const services = await serviceService.getFeaturedServices(6);
+        if (isMounted) setPopularServices(services);
+      } catch {
+        if (isMounted) setPopularServices([]);
+      } finally {
+        if (isMounted) setPopularServicesLoading(false);
+      }
+    };
+
     loadCommunityPreview();
     loadCategories();
+    loadPopularServices();
     loadTopSpecialists();
 
     return () => {
@@ -265,6 +280,70 @@ const HomePage: React.FC = () => {
                   </Link>
                 );
               })}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* Popular Services */}
+      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-gray-50 dark:bg-gray-800/50 w-full prevent-overflow">
+        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="text-center mb-8 xs:mb-12">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
+              {t('popularServices.title')}
+            </h2>
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
+              {t('popularServices.subtitle')}
+            </p>
+          </div>
+
+          {popularServicesLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm animate-pulse">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : popularServices.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {popularServices.map((service: any) => (
+                <Link
+                  key={service.id}
+                  to={`/booking/${service.id}`}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 group"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 transition-colors truncate">
+                    {service.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate">
+                    {service.specialist?.user?.firstName} {service.specialist?.user?.lastName}
+                    {service.specialist?.isVerified && ' ✓'}
+                  </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1">
+                      <StarIcon className="w-4 h-4 text-yellow-400" active />
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">
+                        {(service.specialist?.rating ?? service.rating ?? 0).toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center">
+                        <ClockIcon className="w-3.5 h-3.5 mr-1" />
+                        {service.duration} {t('time.minutes')}
+                      </span>
+                      <span className="font-semibold text-primary-600 dark:text-primary-400">
+                        {formatPrice(service.basePrice || service.price || 0, service.currency || 'USD')}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           ) : null}
         </div>

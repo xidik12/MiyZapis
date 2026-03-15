@@ -30,12 +30,12 @@ const BookingProgress: React.FC<BookingProgressProps> = ({ steps, currentStep })
                 )}
               </div>
               <p
-                className={`text-[10px] sm:text-xs font-medium mt-1 whitespace-nowrap ${
+                className={`text-xs sm:text-sm mt-1 whitespace-nowrap ${
                   index < currentStep
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-green-600 dark:text-green-400 font-medium'
                     : index === currentStep
-                    ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-gray-400 dark:text-gray-500'
+                    ? 'text-primary-600 dark:text-primary-400 font-bold'
+                    : 'text-gray-400 dark:text-gray-500 font-medium'
                 }`}
               >
                 {step.title}

@@ -1,11 +1,27 @@
 import { Request, Response } from 'express';
-import { SpecialistService } from '@/services/specialist';
+import { SpecialistService, stripPrivateSpecialistFields } from '@/services/specialist';
 import { ServiceService } from '@/services/service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
+
+/**
+ * Strip private fields from a specialist AND from any nested service objects.
+ * `stripPrivateSpecialistFields` only handles specialist-level fields;
+ * services also carry `locationNotes` which must not leak in public responses.
+ */
+function stripForPublicResponse(specialist: any) {
+  const stripped = stripPrivateSpecialistFields(specialist);
+  if (stripped && Array.isArray(stripped.services)) {
+    stripped.services = stripped.services.map((service: any) => {
+      const { locationNotes, ...publicService } = service;
+      return publicService;
+    });
+  }
+  return stripped;
+}
 
 export class SpecialistController {
   // Create specialist profile
@@ -243,7 +259,7 @@ export class SpecialistController {
 
       res.json(
         createSuccessResponse({
-          specialist,
+          specialist: stripForPublicResponse(specialist),
         })
       );
     } catch (error: unknown) {
@@ -291,7 +307,7 @@ export class SpecialistController {
 
       res.json(
         createSuccessResponse({
-          specialist,
+          specialist: stripForPublicResponse(specialist),
         })
       );
     } catch (error: unknown) {
@@ -346,8 +362,13 @@ export class SpecialistController {
         parseInt(limit as string, 10)
       );
 
+      const strippedResult = {
+        ...result,
+        specialists: result.specialists.map(stripForPublicResponse),
+      };
+
       res.json(
-        createSuccessResponse(result, {
+        createSuccessResponse(strippedResult, {
           pagination: {
             currentPage: result.page,
             totalPages: result.totalPages,
@@ -1545,7 +1566,7 @@ export class SpecialistController {
         return;
       }
 
-      res.json(createSuccessResponse({ specialist }));
+      res.json(createSuccessResponse({ specialist: stripForPublicResponse(specialist) }));
     } catch (error) {
       logger.error('Get specialist by slug error:', error);
       res.status(500).json(

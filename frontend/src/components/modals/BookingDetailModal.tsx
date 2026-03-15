@@ -233,12 +233,15 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           )}
 
           {/* Contact Information (for confirmed bookings) */}
-          {booking.status === 'CONFIRMED' && (() => {
+          {['CONFIRMED', 'COMPLETED'].includes(booking.status) && (() => {
             const specProfile = (booking.service as any)?.specialist;
             const specLoc = specProfile ? {
               preciseAddress: specProfile.preciseAddress || specProfile.address,
               businessPhone: specProfile.businessPhone,
               whatsappNumber: specProfile.whatsappNumber,
+              locationNotes: specProfile.locationNotes,
+              parkingInfo: specProfile.parkingInfo,
+              accessInstructions: specProfile.accessInstructions,
             } : (booking.specialist as any)?.location;
             if (!specLoc) return null;
             return (
@@ -295,6 +298,48 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       >
                         {specLoc.whatsappNumber}
                       </a>
+                    </div>
+                  </div>
+                )}
+
+                {specLoc.locationNotes && (
+                  <div className="flex items-start space-x-2">
+                    <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('location.locationNotes') || 'Location notes'}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {specLoc.locationNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {specLoc.parkingInfo && (
+                  <div className="flex items-start space-x-2">
+                    <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('location.parkingInfo') || 'Parking information'}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {specLoc.parkingInfo}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {specLoc.accessInstructions && (
+                  <div className="flex items-start space-x-2">
+                    <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('location.accessInstructions') || 'Access instructions'}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {specLoc.accessInstructions}
+                      </p>
                     </div>
                   </div>
                 )}

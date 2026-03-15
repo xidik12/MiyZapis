@@ -9,6 +9,7 @@ import { analyticsService, bookingService, paymentService, specialistService } f
 import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
 import TrialStatusBanner from '../../components/trial/TrialStatusBanner';
+import { ShareButton } from '../../components/common/ShareButton';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -54,6 +55,7 @@ const SpecialistDashboard: React.FC = () => {
     upcomingAppointments: []
   });
   const [loading, setLoading] = useState(true);
+  const [specialistSlug, setSpecialistSlug] = useState<string>('');
   // Removed sidebarOpen state - layout is handled by SpecialistLayout
 
   // Check if specialist needs onboarding (no services created yet)
@@ -92,11 +94,12 @@ const SpecialistDashboard: React.FC = () => {
         setLoading(true);
         
         // Load data from multiple sources with retry logic - prioritize bookings API for accuracy
-        const [analyticsData, upcomingBookingsData, completedBookingsData, profileData] = await Promise.allSettled([
+        const [analyticsData, upcomingBookingsData, completedBookingsData, profileData, noShowBookingsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'specialist'), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
-          retryRequest(() => specialistService.getProfile(), 2, 1000)
+          retryRequest(() => specialistService.getProfile(), 2, 1000),
+          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'NO_SHOW' }, 'specialist'), 2, 1000),
         ]);
 
         if (analyticsData.status === 'rejected') {
@@ -120,7 +123,13 @@ const SpecialistDashboard: React.FC = () => {
           favoriteCount: 0,
           conversionRate: 0,
           completionRate: 0,
-          repeatClients: 0
+          repeatClients: 0,
+          noShowRate: 0,
+          noShowCount: 0,
+          thisWeekBookings: 0,
+          lastWeekBookings: 0,
+          thisWeekRevenue: 0,
+          lastWeekRevenue: 0,
           // Removed punctuality - no real data available
         };
 
@@ -256,7 +265,37 @@ const SpecialistDashboard: React.FC = () => {
               const repeatCustomers = Array.from(customerCounts.values()).filter(count => count > 1).length;
               stats.repeatClients = Math.round((repeatCustomers / customerCounts.size) * 100);
             }
-            
+
+            // Calculate no-show rate
+            if (noShowBookingsData.status === 'fulfilled' && noShowBookingsData.value) {
+              const noShowBookings = Array.isArray(noShowBookingsData.value.bookings) ? noShowBookingsData.value.bookings : [];
+              stats.noShowCount = noShowBookings.length;
+              const totalForRate = completedBookings.length + noShowBookings.length;
+              if (totalForRate > 0) {
+                stats.noShowRate = Math.round((noShowBookings.length / totalForRate) * 100);
+              }
+            }
+
+            // Week-over-week comparison
+            const now = new Date();
+            const startOfThisWeek = new Date(now);
+            startOfThisWeek.setDate(now.getDate() - now.getDay());
+            startOfThisWeek.setHours(0, 0, 0, 0);
+            const startOfLastWeek = new Date(startOfThisWeek);
+            startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+            completedBookings.forEach(booking => {
+              const completedDate = new Date(booking.completedAt || booking.updatedAt || booking.scheduledAt);
+              const amount = booking.totalAmount || 0;
+              if (completedDate >= startOfThisWeek) {
+                stats.thisWeekBookings++;
+                stats.thisWeekRevenue += amount;
+              } else if (completedDate >= startOfLastWeek && completedDate < startOfThisWeek) {
+                stats.lastWeekBookings++;
+                stats.lastWeekRevenue += amount;
+              }
+            });
+
           } catch (err) {
             console.warn('Error processing completed bookings:', err);
           }
@@ -289,6 +328,12 @@ const SpecialistDashboard: React.FC = () => {
           }
         } catch (e) {
           console.warn('Unable to enhance rating from review stats:', e);
+        }
+
+        // Store specialist slug for share button
+        if (profileData.status === 'fulfilled' && profileData.value) {
+          const prof = profileData.value as any;
+          setSpecialistSlug(prof.slug || prof.id || '');
         }
 
         // Process bookings data correctly: completed for recent, upcoming for appointments
@@ -533,13 +578,20 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
           </Link>
-          <button 
+          <button
             onClick={handleExportReport}
             className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
           >
             <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.exportReport')}
           </button>
+          {specialistSlug && (
+            <ShareButton
+              url={`${window.location.origin}/s/${specialistSlug}`}
+              title={`${user?.firstName} ${user?.lastName} — MiyZapys`}
+              text={t('dashboard.shareProfile') || 'Share Your Profile'}
+            />
+          )}
         </div>
       </div>
 
@@ -556,8 +608,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <StatCard
           title={t('dashboard.specialist.totalBookings')}
           value={dashboardData.stats.totalBookings}
-          change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
-          changeType="positive"
+          change={dashboardData.stats.lastWeekBookings > 0
+            ? `${dashboardData.stats.thisWeekBookings >= dashboardData.stats.lastWeekBookings ? '+' : ''}${Math.round(((dashboardData.stats.thisWeekBookings - dashboardData.stats.lastWeekBookings) / dashboardData.stats.lastWeekBookings) * 100)}% ${t('dashboard.weekOverWeek') || 'vs last week'}`
+            : dashboardData.stats.thisWeekBookings > 0 ? `${dashboardData.stats.thisWeekBookings} ${t('dashboard.weekOverWeek') || 'this week'}` : ''}
+          changeType={dashboardData.stats.thisWeekBookings >= dashboardData.stats.lastWeekBookings ? 'positive' : 'negative'}
           icon={CalendarIcon}
           iconBg="bg-primary-500"
           description={t('dashboard.specialist.allTime')}
@@ -565,11 +619,13 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
           value={formatPrice(dashboardData.stats.monthlyRevenue, currency)}
-          change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
-          changeType="positive"
+          change={dashboardData.stats.lastWeekRevenue > 0
+            ? `${dashboardData.stats.thisWeekRevenue >= dashboardData.stats.lastWeekRevenue ? '+' : ''}${Math.round(((dashboardData.stats.thisWeekRevenue - dashboardData.stats.lastWeekRevenue) / dashboardData.stats.lastWeekRevenue) * 100)}% ${t('dashboard.weekOverWeek') || 'vs last week'}`
+            : dashboardData.stats.thisWeekRevenue > 0 ? `${formatPrice(dashboardData.stats.thisWeekRevenue, currency)} ${t('dashboard.weekOverWeek') || 'this week'}` : ''}
+          changeType={dashboardData.stats.thisWeekRevenue >= dashboardData.stats.lastWeekRevenue ? 'positive' : 'negative'}
           icon={CurrencyDollarIcon}
           iconBg="bg-success-500"
-          description={language === 'uk' ? 'Серпень 2025' : language === 'ru' ? 'Август 2025' : 'August 2025'}
+          description={t('dashboard.specialist.allTime')}
         />
         <StatCard
           title={t('dashboard.specialist.averageRating')}
@@ -630,7 +686,20 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.noShowRate') || 'No-Show Rate'}</span>
+              <span className={`font-semibold ${dashboardData.stats.noShowRate > 20 ? 'text-error-600' : 'text-gray-900 dark:text-white'}`}>
+                {dashboardData.stats.noShowRate}%
+              </span>
+            </div>
           </div>
+          {dashboardData.stats.noShowRate > 20 && (
+            <div className="mt-3 p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {t('dashboard.noShowWarning') || 'High no-show rate detected. Consider sending reminders to clients.'}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="bg-primary-500 rounded-2xl p-6 text-white shadow-lg">

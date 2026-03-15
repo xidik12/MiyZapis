@@ -2967,6 +2967,87 @@ const uk: Record<string, string> = {
   'admin.analytics.noSpecialists': 'Спеціалістів не знайдено',
   'admin.analytics.referralAnalytics': 'Реферальна аналітика',
   'admin.analytics.referralDescription': 'Відстеження рефералів та метрики ефективності відображатимуться тут після повної інтеграції реферальної системи.',
+
+  // Share
+  'share.copyLink': 'Копіювати посилання',
+  'share.telegram': 'Telegram',
+  'share.whatsapp': 'WhatsApp',
+  'share.shareProfile': 'Поділитися',
+  'share.tellFriend': 'Розкажіть другу',
+  'share.copied': 'Посилання скопійовано!',
+
+  // Popular Services
+  'popularServices.title': 'Популярні послуги',
+  'popularServices.subtitle': 'Найбільш замовлювані послуги наших клієнтів',
+
+  // Search Badges
+  'search.badges.instantBooking': 'Миттєве бронювання',
+  'search.badges.newSpecialist': 'Новий',
+
+  // Dashboard Reminder
+  'dashboard.reminder.appointmentIn': 'Ваш запис через',
+  'dashboard.reminder.hours': 'годин',
+  'dashboard.reminder.tomorrow': 'Завтра',
+
+  // Dashboard Stats
+  'dashboard.noShowRate': 'Рівень неявки',
+  'dashboard.noShowWarning': 'Виявлено високий рівень неявки. Розгляньте надсилання нагадувань клієнтам.',
+  'dashboard.shareProfile': 'Поділитися профілем',
+  'dashboard.bookAgain': 'Забронювати знову',
+  'dashboard.weekOverWeek': 'проти минулого тижня',
+
+  // Booking
+  'booking.youMightAlsoLike': 'Вам також може сподобатися',
+  'booking.tellFriend': 'Поділитися з другом',
+
+  // Phase 2 — Location Privacy
+  'location.exactAddressAfterBooking': 'Точна адреса надається після підтвердження бронювання',
+  'location.appointmentLocation': 'Місце вашого запису',
+  'location.locationNotes': 'Примітки щодо місця',
+  'location.parkingInfo': 'Інформація про паркування',
+  'location.accessInstructions': 'Інструкції з доступу',
+  'location.contactDetails': 'Контактні дані',
+
+  // Phase 3 — Search/Marketplace
+  'search.filters.bestRated': 'Найкращі оцінки',
+  'search.filters.onSale': 'Знижки',
+  'search.filters.instantBooking': 'Миттєве бронювання',
+  'search.filters.new': 'Нові',
+  'search.badges.discount': '{{percent}}% ЗНИЖКА',
+  'search.badges.groupSession': 'Група (до {{max}})',
+  'search.reviewSnippet': 'Топ відгук',
+
+  // Phase 4 — Community
+  'community.type.rent': 'Оренда',
+  'community.condition.label': 'Стан',
+  'community.condition.select': 'Оберіть стан',
+  'community.condition.new': 'Новий',
+  'community.condition.used': 'Вживаний',
+  'community.condition.likeNew': 'Як новий',
+  'community.listingStatus.active': 'Активний',
+  'community.listingStatus.sold': 'Продано',
+  'community.listingStatus.rented': 'Здано',
+  'community.markAsSold': 'Позначити як продано',
+  'community.markAsRented': 'Позначити як здано',
+  'community.priceRange': 'Діапазон цін',
+  'community.minPrice': 'Мін. ціна',
+  'community.maxPrice': 'Макс. ціна',
+  'community.bookmark': 'Зберегти',
+  'community.bookmarked': 'Збережено',
+  'community.savedPosts': 'Збережені пости',
+  'community.report': 'Поскаржитись',
+  'community.reportSubmitted': 'Скаргу надіслано',
+  'community.reportReason.spam': 'Спам',
+  'community.reportReason.inappropriate': 'Неприйнятний вміст',
+  'community.reportReason.scam': 'Шахрайство',
+  'community.reportReason.duplicate': 'Дублікат',
+  'community.reportReason.other': 'Інше',
+  'community.sort.latest': 'Найновіші',
+  'community.sort.popular': 'Найпопулярніші',
+  'community.sort.discussed': 'Найобговорюваніші',
+  'community.editComment': 'Редагувати',
+  'community.deleteComment': 'Видалити',
+  'community.deleteCommentConfirm': 'Видалити цей коментар?',
 };
 
 export default uk;

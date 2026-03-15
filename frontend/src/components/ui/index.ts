@@ -13,7 +13,7 @@ export { FullScreenLoader } from './FullScreenLoader';
 export { FullScreenHandshakeLoader } from './FullScreenHandshakeLoader';
 export { LoadingShowcase } from './LoadingShowcase';
 export { ThemeToggle } from './ThemeToggle';
-export { UkrainianElements } from './UkrainianElements';
+export { UkrainianFlag, UkrainianTriezub, SunflowerIcon, UkrainianOrnament, FloatingElements } from './UkrainianElements';
 export { default as EmptyState } from './EmptyState';
 export { Skeleton, SkeletonText } from './Skeleton';
 

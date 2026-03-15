@@ -4,6 +4,8 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
+import { stripPrivateSpecialistFields } from '@/services/specialist';
+import { prisma } from '@/config/database';
 
 export class ServiceController {
   // Create a new service (specialist only)
@@ -450,6 +452,25 @@ export class ServiceController {
         availableWithin as string
       );
 
+      // Batch fetch top reviews for specialists
+      const specialistIds = [...new Set(result.services.map((s: any) => s.specialist?.id).filter(Boolean))];
+      const topReviews = specialistIds.length > 0 ? await prisma.review.findMany({
+        where: {
+          specialistId: { in: specialistIds },
+          isPublic: true,
+          rating: { gte: 4 },
+        },
+        orderBy: { rating: 'desc' },
+        select: {
+          specialistId: true,
+          rating: true,
+          comment: true,
+          customer: { select: { firstName: true } },
+        },
+        distinct: ['specialistId'],
+      }) : [];
+      const reviewMap = new Map(topReviews.map(r => [r.specialistId, r]));
+
       res.json(
         createSuccessResponse({
           services: result.services.map(service => ({
@@ -462,6 +483,18 @@ export class ServiceController {
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
+            discountPercentage: (service as any).discountPercentage || 0,
+            groupSession: (service as any).groupSession || false,
+            maxGroupSize: (service as any).maxGroupSize || 0,
+            topReview: (() => {
+              const review = reviewMap.get((service as any).specialist?.id);
+              if (!review) return null;
+              return {
+                rating: review.rating,
+                comment: review.comment ? review.comment.substring(0, 50) + (review.comment.length > 50 ? '...' : '') : null,
+                userName: review.customer?.firstName || null,
+              };
+            })(),
             specialistId: service.specialist.id, // Add specialistId for easier frontend access
             portfolioImages: (() => {
               try {
@@ -478,11 +511,13 @@ export class ServiceController {
               reviewCount: service.specialist.reviewCount,
               completedBookings: service.specialist.completedBookings, // expose completed jobs count
               isVerified: service.specialist.isVerified,
+              autoBooking: service.specialist.autoBooking, // for "Instant Booking" badge
               user: {
                 id: service.specialist.user.id,
                 firstName: service.specialist.user.firstName,
                 lastName: service.specialist.user.lastName,
                 avatar: service.specialist.user.avatar,
+                createdAt: service.specialist.user.createdAt, // for "New" badge
               },
             },
           })),

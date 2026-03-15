@@ -130,7 +130,7 @@ const CreatePostPage: React.FC = () => {
       toast.error(t('community.form.contentMin') || 'Content must be at least 10 characters');
       return false;
     }
-    if (formData.type === 'SALE' && formData.price !== undefined && formData.price < 0) {
+    if ((formData.type === 'SALE' || formData.type === 'RENT') && formData.price !== undefined && formData.price < 0) {
       toast.error(t('community.form.priceInvalid') || 'Price cannot be negative');
       return false;
     }
@@ -147,10 +147,11 @@ const CreatePostPage: React.FC = () => {
         ...formData,
         title: formData.title.trim(),
         content: formData.content.trim(),
-        price: formData.type === 'SALE' ? formData.price : undefined,
-        currency: formData.type === 'SALE' ? formData.currency : undefined,
-        contactPhone: formData.type === 'SALE' ? formData.contactPhone : undefined,
-        contactEmail: formData.type === 'SALE' ? formData.contactEmail : undefined,
+        price: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.price : undefined,
+        currency: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.currency : undefined,
+        contactPhone: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.contactPhone : undefined,
+        contactEmail: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.contactEmail : undefined,
+        condition: (formData.type === 'SALE' || formData.type === 'RENT') ? (formData as any).condition : undefined,
         images: formData.images && formData.images.length > 0 ? formData.images : undefined,
       };
 
@@ -201,12 +202,16 @@ const CreatePostPage: React.FC = () => {
                       formData.type === type
                         ? type === 'DISCUSSION'
                           ? 'bg-blue-500 text-white'
+                          : type === 'RENT'
+                          ? 'bg-amber-500 text-white'
                           : 'bg-green-500 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {type === 'DISCUSSION'
                       ? t('community.type.discussion') || 'Discussion'
+                      : type === 'RENT'
+                      ? t('community.type.rent') || 'Rent'
                       : t('community.type.sale') || 'Marketplace'}
                   </button>
                 ))}
@@ -241,8 +246,8 @@ const CreatePostPage: React.FC = () => {
               />
             </div>
 
-            {/* Sale Fields */}
-            {formData.type === 'SALE' && (
+            {/* Sale/Rent Fields */}
+            {(formData.type === 'SALE' || formData.type === 'RENT') && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -296,6 +301,25 @@ const CreatePostPage: React.FC = () => {
                     placeholder="email@example.com"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Condition */}
+            {(formData.type === 'SALE' || formData.type === 'RENT') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('community.condition.label') || 'Condition'}
+                </label>
+                <select
+                  value={(formData as any).condition || ''}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, condition: e.target.value || undefined }))}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="">{t('community.condition.select') || 'Select condition'}</option>
+                  <option value="NEW">{t('community.condition.new') || 'New'}</option>
+                  <option value="LIKE_NEW">{t('community.condition.likeNew') || 'Like New'}</option>
+                  <option value="USED">{t('community.condition.used') || 'Used'}</option>
+                </select>
               </div>
             )}
 

@@ -1,10 +1,12 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon } from '@/components/icons';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon, ClockIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
 import { environment } from '@/config/environment';
+import { ShareButton } from '@/components/common/ShareButton';
+import { serviceService } from '@/services';
 import type { UserLoyalty } from '@/services/loyalty.service';
 
 interface ConfirmationProps {
@@ -39,6 +41,15 @@ const Confirmation: React.FC<ConfirmationProps> = ({
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const [similarServices, setSimilarServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    const serviceId = (service as any).id;
+    if (!serviceId) return;
+    serviceService.getSimilarServices(serviceId, 3)
+      .then(services => setSimilarServices(services))
+      .catch(() => setSimilarServices([]));
+  }, [service]);
 
   const booking = bookingResult?.booking || bookingResult;
   const isAutoBooked = booking?.status === 'CONFIRMED';
@@ -264,6 +275,17 @@ const Confirmation: React.FC<ConfirmationProps> = ({
         >
           {t('booking.viewBookings')}
         </button>
+
+        {/* Tell a Friend */}
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.tellFriend') || 'Share with a Friend'}</span>
+          <ShareButton
+            url={`${window.location.origin}/s/${(specialist as any).slug || (specialist as any).id}`}
+            title={`${specialist.user?.firstName} ${specialist.user?.lastName} — MiyZapys`}
+            text={`${t('share.tellFriend')}: ${specialist.user?.firstName} ${specialist.user?.lastName}`}
+            variant="icon"
+          />
+        </div>
       </div>
 
       {/* Booking Details */}
@@ -340,6 +362,47 @@ const Confirmation: React.FC<ConfirmationProps> = ({
                 </div>
               )}
 
+              {specialist.whatsappNumber && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('location.contactDetails') || 'WhatsApp'}</span>
+                  <a
+                    href={`https://wa.me/${specialist.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    {specialist.whatsappNumber}
+                  </a>
+                </div>
+              )}
+
+              {specialist.locationNotes && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('location.locationNotes') || 'Location notes'}</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
+                    {specialist.locationNotes}
+                  </span>
+                </div>
+              )}
+
+              {specialist.parkingInfo && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('location.parkingInfo') || 'Parking information'}</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
+                    {specialist.parkingInfo}
+                  </span>
+                </div>
+              )}
+
+              {specialist.accessInstructions && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('location.accessInstructions') || 'Access instructions'}</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
+                    {specialist.accessInstructions}
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('booking.servicePrice') || 'Service Price'}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
@@ -350,6 +413,38 @@ const Confirmation: React.FC<ConfirmationProps> = ({
           )}
         </div>
       </div>
+
+      {/* You Might Also Like */}
+      {similarServices.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            {t('booking.youMightAlsoLike') || 'You Might Also Like'}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {similarServices.map((svc: any) => (
+              <Link
+                key={svc.id}
+                to={`/booking/${svc.id}`}
+                className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm transition-all"
+              >
+                <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{svc.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                  {svc.specialist?.user?.firstName} {svc.specialist?.user?.lastName}
+                </p>
+                <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <span className="flex items-center">
+                    <ClockIcon className="w-3 h-3 mr-1" />
+                    {svc.duration} min
+                  </span>
+                  <span className="font-semibold text-primary-600 dark:text-primary-400">
+                    {formatPrice(svc.basePrice || svc.price || 0, svc.currency || 'USD')}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

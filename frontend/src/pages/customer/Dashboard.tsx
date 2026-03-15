@@ -53,6 +53,7 @@ interface NextAppointment {
   time: string;
   type: 'online' | 'offline';
   location?: string;
+  scheduledAt?: string;
 }
 
 interface RecentBooking {
@@ -64,6 +65,8 @@ interface RecentBooking {
   status: 'completed' | 'confirmed' | 'pending' | 'cancelled';
   amount: number;
   currency?: 'USD' | 'EUR' | 'UAH';
+  serviceId?: string;
+  specialistId?: string;
 }
 
 interface FavoriteSpecialist {
@@ -187,6 +190,7 @@ const CustomerDashboard: React.FC = () => {
           time: new Date(next.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           type: next.meetingLink ? 'online' : 'offline',
           location: next.location || undefined,
+          scheduledAt: next.scheduledAt,
         } : null);
 
         // Recent completed bookings
@@ -200,6 +204,8 @@ const CustomerDashboard: React.FC = () => {
           status: 'completed' as const,
           amount: b.totalAmount || 0,
           currency: (b.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD',
+          serviceId: b.service?.id || b.serviceId,
+          specialistId: b.specialist?.id || b.specialistId,
         }));
         setRecentBookings(recent);
 
@@ -487,6 +493,32 @@ const CustomerDashboard: React.FC = () => {
             />
         </div>
 
+          {/* Appointment Reminder Countdown */}
+          {nextAppointment?.scheduledAt && (() => {
+            const hoursUntil = Math.max(0, (new Date(nextAppointment.scheduledAt).getTime() - currentTime.getTime()) / (1000 * 60 * 60));
+            if (hoursUntil > 0 && hoursUntil <= 24) {
+              return (
+                <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-3 sm:p-4 flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center">
+                    <ClockIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                      {t('dashboard.reminder.appointmentIn') || 'Your appointment is in'}{' '}
+                      {hoursUntil < 1
+                        ? `${Math.ceil(hoursUntil * 60)} min`
+                        : `${Math.round(hoursUntil)} ${t('dashboard.reminder.hours') || 'hours'}`}
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      {nextAppointment.serviceName} — {nextAppointment.specialistName}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {/* Next Appointment Banner */}
           {nextAppointment && (
             <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
@@ -577,13 +609,21 @@ const CustomerDashboard: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
+                    <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
                       <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                         {formatPrice(booking.amount || 0, booking.currency || 'USD')}
                       </p>
                       <span className={`inline-block px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {getStatusText(booking.status)}
                       </span>
+                      {booking.status === 'completed' && booking.serviceId && (
+                        <button
+                          onClick={() => navigate(`/booking/${booking.serviceId}`)}
+                          className="mt-1 px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                        >
+                          {t('dashboard.bookAgain') || 'Book Again'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
