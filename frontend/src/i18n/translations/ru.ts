@@ -2979,6 +2979,9 @@ const ru: Record<string, string> = {
   // Popular Services
   'popularServices.title': 'Популярные услуги',
   'popularServices.subtitle': 'Самые заказываемые услуги наших клиентов',
+  'popularServices.comingSoon': 'Скоро появится',
+  'popularServices.comingSoonDesc': 'Специалисты добавляют свои услуги. Просмотрите категории, чтобы найти нужное.',
+  'popularServices.browseCategories': 'Просмотреть категории',
 
   // Search Badges
   'search.badges.instantBooking': 'Мгновенное бронирование',

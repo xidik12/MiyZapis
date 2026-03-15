@@ -2979,6 +2979,9 @@ const uk: Record<string, string> = {
   // Popular Services
   'popularServices.title': 'Популярні послуги',
   'popularServices.subtitle': 'Найбільш замовлювані послуги наших клієнтів',
+  'popularServices.comingSoon': 'Скоро з\'явиться',
+  'popularServices.comingSoonDesc': 'Спеціалісти додають свої послуги. Перегляньте категорії, щоб знайти потрібне.',
+  'popularServices.browseCategories': 'Переглянути категорії',
 
   // Search Badges
   'search.badges.instantBooking': 'Миттєве бронювання',

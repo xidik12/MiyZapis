@@ -2979,6 +2979,9 @@ const en: Record<string, string> = {
   // Popular Services
   'popularServices.title': 'Popular Services',
   'popularServices.subtitle': 'Most booked services by our customers',
+  'popularServices.comingSoon': 'Coming Soon',
+  'popularServices.comingSoonDesc': 'Specialists are adding their services. Browse categories to find what you need.',
+  'popularServices.browseCategories': 'Browse Categories',
 
   // Search Badges
   'search.badges.instantBooking': 'Instant Booking',

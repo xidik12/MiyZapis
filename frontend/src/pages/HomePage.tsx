@@ -278,30 +278,12 @@ const HomePage: React.FC = () => {
           background: rgba(255,255,255,0.2);
           border-radius: 3px;
         }
-        .phone-mockup-line {
-          height: 12px;
-          border-radius: 6px;
-          margin: 8px 16px;
-          background: rgba(255,255,255,0.12);
-        }
         .phone-mockup-card {
-          margin: 10px 12px;
-          padding: 10px;
+          margin: 6px 10px;
+          padding: 8px 10px;
           border-radius: 10px;
           background: rgba(255,255,255,0.1);
           border: 1px solid rgba(255,255,255,0.1);
-        }
-        .phone-mockup-avatar {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.2);
-        }
-        .phone-mockup-btn {
-          height: 28px;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.2);
-          margin: 6px 12px;
         }
       `}</style>
 
@@ -406,8 +388,8 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  CATEGORIES SECTION                                           */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow" style={{ backgroundColor: '#F0F9FF' }}>
-        <div className="dark:bg-gray-900" style={{ backgroundColor: 'transparent' }}>
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-900">
+        <div>
           <div
             ref={catReveal.ref}
             className={`w-full max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
@@ -443,9 +425,9 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 border-l-4 border-l-sky-500/50 p-4 min-[400px]:p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
                       >
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#E0F0F8' }}>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-sky-100 dark:bg-sky-900/30">
                           <CategoryIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
                         </div>
                         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-sky-600 transition-colors duration-200">
@@ -476,10 +458,10 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 p-6 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-1"
+                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 border-l-4 border-l-sky-500/50 p-6 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-1"
                         style={{ transitionDelay: `${idx * 50}ms` }}
                       >
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: '#E0F0F8' }}>
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 bg-sky-100 dark:bg-sky-900/30">
                           <CategoryIcon className="w-7 h-7 text-sky-600 dark:text-sky-400" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-sky-600 transition-colors duration-200">
@@ -606,8 +588,8 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  POPULAR SERVICES                                             */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow" style={{ backgroundColor: '#F0F9FF' }}>
-        <div className="dark:bg-gray-800/50" style={{ backgroundColor: 'transparent' }}>
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800/50">
+        <div>
           <div
             ref={servicesReveal.ref}
             className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
@@ -671,7 +653,26 @@ const HomePage: React.FC = () => {
                   </Link>
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 sm:p-10 border border-gray-100 dark:border-gray-700 text-center">
+                <div className="w-16 h-16 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center mx-auto mb-4">
+                  <SparklesIcon className="w-8 h-8 text-sky-400 dark:text-sky-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 mz-heading">
+                  {t('popularServices.comingSoon') || 'Coming Soon'}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                  {t('popularServices.comingSoonDesc') || 'Specialists are adding their services. Check back soon or browse by category above!'}
+                </p>
+                <Link
+                  to="/search"
+                  className="inline-flex items-center gap-2 mt-5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold transition-colors text-sm"
+                >
+                  {t('categories.title') || 'Browse Categories'}
+                  <ArrowRightIcon className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -789,8 +790,8 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  COMMUNITY PREVIEW                                            */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow" style={{ backgroundColor: '#F0F9FF' }}>
-        <div className="dark:bg-gray-800/50" style={{ backgroundColor: 'transparent' }}>
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800/50">
+        <div>
           <div
             ref={commReveal.ref}
             className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${commReveal.isVisible ? 'visible' : ''}`}
@@ -956,36 +957,66 @@ const HomePage: React.FC = () => {
             <div className="relative flex justify-center items-center">
               {/* Phone mockup */}
               <div className="phone-mockup" style={{ animation: 'float-gentle 6s ease-in-out infinite' }}>
-                <div className="pt-6" />
-                <div className="phone-mockup-line" style={{ width: '60%' }} />
-                <div className="phone-mockup-line" style={{ width: '40%' }} />
-                <div className="phone-mockup-card">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="phone-mockup-avatar" />
+                {/* Notch area */}
+                <div className="pt-7" />
+                {/* Header */}
+                <div className="mx-4 mb-3">
+                  <p className="text-white/90 text-[10px] font-semibold tracking-wide">Manage Bookings</p>
+                  <p className="text-white/50 text-[7px] mt-0.5">Today's Schedule</p>
+                </div>
+                {/* Booking card 1 */}
+                <div className="phone-mockup-card" style={{ background: 'rgba(14,165,233,0.2)', borderColor: 'rgba(14,165,233,0.3)' }}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-6 h-6 rounded-full bg-sky-400/40 flex items-center justify-center">
+                      <span className="text-white text-[7px] font-bold">AK</span>
+                    </div>
                     <div>
-                      <div className="h-2 w-16 rounded bg-white/15 mb-1" />
-                      <div className="h-1.5 w-10 rounded bg-white/10" />
+                      <p className="text-white/90 text-[8px] font-medium leading-tight">Anna K.</p>
+                      <p className="text-sky-300/70 text-[6px]">Haircut & Style</p>
                     </div>
                   </div>
-                  <div className="h-1.5 w-full rounded bg-white/8 mb-1" />
-                  <div className="h-1.5 w-3/4 rounded bg-white/8" />
-                </div>
-                <div className="phone-mockup-card">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="phone-mockup-avatar" />
-                    <div>
-                      <div className="h-2 w-20 rounded bg-white/15 mb-1" />
-                      <div className="h-1.5 w-8 rounded bg-white/10" />
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full rounded bg-white/8 mb-1" />
-                  <div className="h-1.5 w-1/2 rounded bg-white/8" />
-                </div>
-                <div className="phone-mockup-btn" />
-                <div className="phone-mockup-card">
                   <div className="flex items-center justify-between">
-                    <div className="h-2 w-14 rounded bg-white/12" />
-                    <div className="h-2 w-8 rounded bg-emerald-400/30" />
+                    <span className="text-white/60 text-[7px]">10:00 AM</span>
+                    <span className="text-[6px] font-semibold text-emerald-300 bg-emerald-400/20 px-1.5 py-0.5 rounded-full">Confirmed</span>
+                  </div>
+                </div>
+                {/* Booking card 2 */}
+                <div className="phone-mockup-card" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)' }}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-6 h-6 rounded-full bg-amber-400/30 flex items-center justify-center">
+                      <span className="text-white text-[7px] font-bold">DM</span>
+                    </div>
+                    <div>
+                      <p className="text-white/90 text-[8px] font-medium leading-tight">David M.</p>
+                      <p className="text-white/50 text-[6px]">Beard Trim</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-[7px]">11:30 AM</span>
+                    <span className="text-[6px] font-semibold text-amber-300 bg-amber-400/20 px-1.5 py-0.5 rounded-full">Pending</span>
+                  </div>
+                </div>
+                {/* Action button */}
+                <div className="mx-3 my-2">
+                  <div className="h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(14,165,233,0.5), rgba(2,132,199,0.5))' }}>
+                    <span className="text-white text-[8px] font-semibold">+ New Booking</span>
+                  </div>
+                </div>
+                {/* Stats row */}
+                <div className="phone-mockup-card" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <div className="flex items-center justify-between">
+                    <div className="text-center">
+                      <p className="text-white font-bold text-[10px]">45+</p>
+                      <p className="text-white/50 text-[5px]">Monthly</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-emerald-300 font-bold text-[10px]">4.8</p>
+                      <p className="text-white/50 text-[5px]">Rating</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sky-300 font-bold text-[10px]">98%</p>
+                      <p className="text-white/50 text-[5px]">On-time</p>
+                    </div>
                   </div>
                 </div>
               </div>
