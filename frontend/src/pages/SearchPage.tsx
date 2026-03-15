@@ -88,6 +88,8 @@ const SearchPage: React.FC = () => {
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [presetName, setPresetName] = useState('');
   const [availableWithin, setAvailableWithin] = useState<string>('');
+  // Quick filter tags state
+  const [activeQuickFilters, setActiveQuickFilters] = useState<Set<string>>(new Set());
 
   // Abandoned booking recovery
   const [abandonedBooking, setAbandonedBooking] = useState<{
@@ -236,23 +238,30 @@ const SearchPage: React.FC = () => {
               firstName: service.specialist?.user?.firstName || '',
               lastName: service.specialist?.user?.lastName || '',
               avatar: service.specialist?.user?.avatar || service.specialist?.avatar || undefined,
-              isVerified: service.specialist?.user?.isVerified || service.specialist?.isVerified || false
+              isVerified: service.specialist?.user?.isVerified || service.specialist?.isVerified || false,
+              createdAt: service.specialist?.user?.createdAt || undefined,
             },
             businessName: service.specialist?.businessName || '',
             location: '', // Backend doesn't seem to have location info yet
             isOnline: true, // Assume online for now
             responseTime: toMinutes(service.specialist?.responseTime) as any, // minutes if available
-            completedBookings: service.specialist?.completedBookings 
-              || service.specialist?.totalBookings 
-              || service._count?.bookings 
+            completedBookings: service.specialist?.completedBookings
+              || service.specialist?.totalBookings
+              || service._count?.bookings
               || 0,
             experience: '', // Not available in backend response
-            rating: service.specialist?.rating || 0
+            rating: service.specialist?.rating || 0,
+            autoBooking: service.specialist?.autoBooking || false,
           },
           _count: service._count,
           distance: undefined, // Not available in backend response
           isAvailable: true, // Assume available if service exists
           portfolioImages: service.specialist?.portfolioImages || service.images || undefined,
+          // Phase 3: marketplace fields from backend
+          discountPercentage: service.discountPercentage || 0,
+          groupSession: service.groupSession || false,
+          maxGroupSize: service.maxGroupSize || 0,
+          topReview: service.topReview || null,
         }));
         
         // Optional refine: available now via backend availability (cap calls for perf)
@@ -392,6 +401,26 @@ const SearchPage: React.FC = () => {
       // Heuristic: treat responseTime <= 30 minutes as available now
       list = list.filter(service => typeof (service as any).specialist?.responseTime === 'number' && (service as any).specialist.responseTime <= 30);
     }
+
+    // Quick filter tags
+    if (activeQuickFilters.has('onSale')) {
+      list = list.filter(service => ((service as any).discountPercentage || 0) > 0);
+    }
+    if (activeQuickFilters.has('instantBooking')) {
+      list = list.filter(service => (service as any).specialist?.autoBooking === true);
+    }
+    if (activeQuickFilters.has('new')) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      list = list.filter(service => {
+        const createdAt = (service as any).specialist?.user?.createdAt;
+        return createdAt && new Date(createdAt) > thirtyDaysAgo;
+      });
+    }
+    if (activeQuickFilters.has('bestRated')) {
+      list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
     return list;
   };
 
@@ -490,12 +519,12 @@ const SearchPage: React.FC = () => {
               )}
               {(service as any).discountPercentage > 0 && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                  {(service as any).discountPercentage}% OFF
+                  {t('search.badges.discount').replace('{{percent}}', String((service as any).discountPercentage))}
                 </span>
               )}
               {(service as any).groupSession && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                  {t('search.badges.groupSession', { max: (service as any).maxGroupSize }) || `Group (up to ${(service as any).maxGroupSize})`}
+                  {t('search.badges.groupSession').replace('{{max}}', String((service as any).maxGroupSize))}
                 </span>
               )}
             </div>
@@ -689,26 +718,38 @@ const SearchPage: React.FC = () => {
         </div>
 
         {/* Quick Filter Tags */}
-        <div className="flex gap-2 overflow-x-auto pb-2 px-1 -mx-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 px-1 -mx-1 scrollbar-hide">
           {[
-            { key: 'bestRated', label: t('search.filters.bestRated') || 'Best Rated', sortParam: 'rating' },
-            { key: 'onSale', label: t('search.filters.onSale') || 'On Sale', filterParam: 'hasDiscount' },
-            { key: 'instantBooking', label: t('search.filters.instantBooking') || 'Instant Booking', filterParam: 'autoBooking' },
-            { key: 'new', label: t('search.filters.new') || 'New', filterParam: 'isNew' },
-          ].map(tag => (
+            { key: 'bestRated', label: t('search.filters.bestRated') || 'Best Rated' },
+            { key: 'onSale', label: t('search.filters.onSale') || 'On Sale' },
+            { key: 'instantBooking', label: t('search.filters.instantBooking') || 'Instant Booking' },
+            { key: 'new', label: t('search.filters.new') || 'New' },
+          ].map(tag => {
+            const isActive = activeQuickFilters.has(tag.key);
+            return (
             <button
               key={tag.key}
               onClick={() => {
-                // Toggle quick filter
-                if (tag.sortParam) {
-                  setSortBy(tag.sortParam);
-                }
+                setActiveQuickFilters(prev => {
+                  const next = new Set(prev);
+                  if (next.has(tag.key)) {
+                    next.delete(tag.key);
+                  } else {
+                    next.add(tag.key);
+                  }
+                  return next;
+                });
               }}
-              className="cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-primary-50 hover:border-primary-300 dark:hover:bg-primary-900/20 dark:hover:border-primary-700 transition-all duration-200"
+              className={`cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
+                isActive
+                  ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-primary-50 hover:border-primary-300 dark:hover:bg-primary-900/20 dark:hover:border-primary-700'
+              }`}
             >
               {tag.label}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* Enhanced Filters and Controls */}

@@ -473,7 +473,19 @@ export class ServiceController {
 
       res.json(
         createSuccessResponse({
-          services: result.services.map(service => ({
+          services: result.services.map(service => {
+            // Compute discount percentage from actual schema fields
+            const svc = service as any;
+            const discountInfo = ServiceService.calculateDiscountedPrice(
+              Number(svc.basePrice) || 0,
+              svc.discountEnabled || false,
+              svc.discountType || null,
+              svc.discountValue ? Number(svc.discountValue) : null,
+              svc.discountValidFrom || null,
+              svc.discountValidUntil || null
+            );
+
+            return {
             id: service.id,
             name: service.name,
             description: service.description,
@@ -483,9 +495,9 @@ export class ServiceController {
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
-            discountPercentage: (service as any).discountPercentage || 0,
-            groupSession: (service as any).groupSession || false,
-            maxGroupSize: (service as any).maxGroupSize || 0,
+            discountPercentage: Math.round(discountInfo.discountPercentage),
+            groupSession: svc.isGroupSession || false,
+            maxGroupSize: svc.maxParticipants || 0,
             topReview: (() => {
               const review = reviewMap.get((service as any).specialist?.id);
               if (!review) return null;
@@ -520,7 +532,8 @@ export class ServiceController {
                 createdAt: service.specialist.user.createdAt, // for "New" badge
               },
             },
-          })),
+          };
+          }),
           total: result.total,
           page: result.page,
           totalPages: result.totalPages,

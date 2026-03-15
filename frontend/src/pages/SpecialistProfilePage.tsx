@@ -16,7 +16,7 @@ import {
   optimisticRemoveSpecialist
 } from '../store/slices/favoritesSlice';
 import { selectUser } from '../store/slices/authSlice';
-import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon } from '@/components/icons';
+import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon, InformationCircleIcon } from '@/components/icons';
 ;
 import { Avatar, PageLoader } from '../components/ui';
 import { ShareButton } from '../components/common/ShareButton';
@@ -774,7 +774,8 @@ const SpecialistProfilePage: React.FC = () => {
                   <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="break-words">{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic flex items-center">
+                      <InformationCircleIcon className="w-3 h-3 mr-1 flex-shrink-0" />
                       {t('location.exactAddressAfterBooking') || 'Exact address provided after booking confirmation'}
                     </p>
                   </div>

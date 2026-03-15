@@ -12,8 +12,9 @@ import {
   ChatBubbleLeftIcon,
   EyeIcon,
   ArrowLeftIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
 
 const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -340,13 +341,13 @@ const PostDetailPage: React.FC = () => {
                     ? t('community.type.rent') || 'Rent'
                     : t('community.type.sale') || 'Marketplace'}
                 </span>
-                {(post as any).listingStatus && (post as any).listingStatus !== 'ACTIVE' && (
+                {post.listingStatus && post.listingStatus !== 'ACTIVE' && (
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    (post as any).listingStatus === 'SOLD'
+                    post.listingStatus === 'SOLD'
                       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                   }`}>
-                    {(post as any).listingStatus === 'SOLD' ? t('community.listingStatus.sold') || 'Sold' : t('community.listingStatus.rented') || 'Rented'}
+                    {post.listingStatus === 'SOLD' ? t('community.listingStatus.sold') || 'Sold' : t('community.listingStatus.rented') || 'Rented'}
                   </span>
                 )}
                 {post.isPinned && (
@@ -374,12 +375,12 @@ const PostDetailPage: React.FC = () => {
                 >
                   {t('common.delete') || 'Delete'}
                 </button>
-                {post.authorId === user?.id && (post.type === 'SALE' || post.type === 'RENT') && (post as any).listingStatus === 'ACTIVE' && (
+                {post.authorId === user?.id && (post.type === 'SALE' || post.type === 'RENT') && post.listingStatus === 'ACTIVE' && (
                   <button
                     onClick={async () => {
                       try {
                         const newStatus = post.type === 'RENT' ? 'RENTED' : 'SOLD';
-                        await communityService.updatePost(post.id, { listingStatus: newStatus } as any);
+                        await communityService.updatePost(post.id, { listingStatus: newStatus });
                         window.location.reload();
                       } catch {}
                     }}
@@ -395,16 +396,41 @@ const PostDetailPage: React.FC = () => {
           </div>
 
           {(post.type === 'SALE' || post.type === 'RENT') && post.price != null && (
-            <div className="mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-              <div className="text-xl font-bold text-green-700 dark:text-green-300">
+            <div className={`mt-4 p-4 rounded-xl ${
+              post.type === 'RENT'
+                ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+            }`}>
+              <div className={`text-xl font-bold ${
+                post.type === 'RENT'
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-green-700 dark:text-green-300'
+              }`}>
                 {post.price.toLocaleString()} {post.currency || 'UAH'}
               </div>
+              {post.condition && (
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    {post.condition === 'NEW' ? t('community.condition.new') || 'New' :
+                     post.condition === 'LIKE_NEW' ? t('community.condition.likeNew') || 'Like New' :
+                     t('community.condition.used') || 'Used'}
+                  </span>
+                </div>
+              )}
               {post.isPreview ? (
-                <p className="text-sm text-green-700 dark:text-green-300 mt-2">
+                <p className={`text-sm mt-2 ${
+                  post.type === 'RENT'
+                    ? 'text-amber-700 dark:text-amber-300'
+                    : 'text-green-700 dark:text-green-300'
+                }`}>
                   {t('community.loginToView') || 'Login to view full content'}
                 </p>
               ) : (
-                <div className="mt-3 text-sm text-green-700 dark:text-green-300 space-y-1">
+                <div className={`mt-3 text-sm space-y-1 ${
+                  post.type === 'RENT'
+                    ? 'text-amber-700 dark:text-amber-300'
+                    : 'text-green-700 dark:text-green-300'
+                }`}>
                   {post.contactPhone && <div>{t('community.form.contactPhone') || 'Contact Phone'}: {post.contactPhone}</div>}
                   {post.contactEmail && <div>{t('community.form.contactEmail') || 'Contact Email'}: {post.contactEmail}</div>}
                 </div>
@@ -462,6 +488,35 @@ const PostDetailPage: React.FC = () => {
               <EyeIcon className="w-5 h-5" />
               <span>{post.viewCount}</span>
             </div>
+            {/* Bookmark */}
+            {isAuthenticated && (
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await communityService.toggleBookmark(post.id);
+                    setPost({ ...post, isBookmarked: response.bookmarked });
+                  } catch (err) {
+                    console.error('Failed to bookmark:', err);
+                  }
+                }}
+                className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${
+                  post.isBookmarked
+                    ? 'text-purple-500'
+                    : 'hover:text-purple-500'
+                }`}
+                title={post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
+              >
+                {post.isBookmarked ? (
+                  <BookmarkIconSolid className="w-5 h-5" />
+                ) : (
+                  <BookmarkIcon className="w-5 h-5" />
+                )}
+                <span className="text-sm">
+                  {post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
+                </span>
+              </button>
+            )}
+
             {user && post.authorId !== user.id && (
               <button
                 onClick={() => setShowReportModal(true)}
@@ -583,7 +638,7 @@ const PostDetailPage: React.FC = () => {
                     setShowReportModal(false);
                     setReportReason('');
                     setReportDetails('');
-                    toast.success(t('community.reportSuccess') || 'Report submitted');
+                    toast.success(t('community.reportSubmitted') || 'Report submitted');
                   } catch {}
                 }}
                 className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"

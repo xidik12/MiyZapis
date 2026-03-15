@@ -151,7 +151,7 @@ const CreatePostPage: React.FC = () => {
         currency: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.currency : undefined,
         contactPhone: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.contactPhone : undefined,
         contactEmail: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.contactEmail : undefined,
-        condition: (formData.type === 'SALE' || formData.type === 'RENT') ? (formData as any).condition : undefined,
+        condition: (formData.type === 'SALE' || formData.type === 'RENT') ? formData.condition : undefined,
         images: formData.images && formData.images.length > 0 ? formData.images : undefined,
       };
 
@@ -311,8 +311,8 @@ const CreatePostPage: React.FC = () => {
                   {t('community.condition.label') || 'Condition'}
                 </label>
                 <select
-                  value={(formData as any).condition || ''}
-                  onChange={(e) => setFormData((prev: any) => ({ ...prev, condition: e.target.value || undefined }))}
+                  value={formData.condition || ''}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, condition: e.target.value || undefined }))}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
                   <option value="">{t('community.condition.select') || 'Select condition'}</option>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
@@ -13,8 +13,12 @@ import {
   ChatBubbleLeftIcon,
   EyeIcon,
   MagnifyingGlassIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+
+type SortBy = 'createdAt' | 'likeCount' | 'commentCount';
+type ViewMode = 'ALL' | PostType | 'SAVED';
 
 const CommunityPage: React.FC = () => {
   const { t } = useLanguage();
@@ -30,16 +34,19 @@ const CommunityPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   // Filter state
-  const [activeFilter, setActiveFilter] = useState<PostType | 'ALL'>(
-    (searchParams.get('type') as PostType) || 'ALL'
+  const [activeFilter, setActiveFilter] = useState<ViewMode>(
+    (searchParams.get('type') as ViewMode) || 'ALL'
   );
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page') || '1', 10)
   );
+  const [sortBy, setSortBy] = useState<SortBy>('createdAt');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
 
   // Fetch posts
-  const fetchPosts = async (page: number = 1, append: boolean = false) => {
+  const fetchPosts = useCallback(async (page: number = 1, append: boolean = false) => {
     try {
       if (append) {
         setLoadingMore(true);
@@ -48,10 +55,31 @@ const CommunityPage: React.FC = () => {
       }
       setError(null);
 
+      // Handle "Saved" tab separately
+      if (activeFilter === 'SAVED') {
+        try {
+          const response = await communityService.getBookmarkedPosts(page, 20);
+          if (append) {
+            setPosts((prev) => [...prev, ...response.posts]);
+          } else {
+            setPosts(response.posts);
+          }
+          setTotalPages(response.pagination.totalPages);
+          setCurrentPage(page);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          setError(message || 'Failed to load saved posts');
+        } finally {
+          setLoading(false);
+          setLoadingMore(false);
+        }
+        return;
+      }
+
       const filters: Record<string, unknown> = {
         page,
         limit: 20,
-        sortBy: 'createdAt',
+        sortBy,
         sortOrder: 'desc',
       };
 
@@ -61,6 +89,16 @@ const CommunityPage: React.FC = () => {
 
       if (searchQuery.trim()) {
         filters.search = searchQuery.trim();
+      }
+
+      // Price range filters (only for SALE/RENT)
+      if ((activeFilter === 'SALE' || activeFilter === 'RENT') && minPrice) {
+        const min = parseFloat(minPrice);
+        if (!isNaN(min) && min >= 0) filters.minPrice = min;
+      }
+      if ((activeFilter === 'SALE' || activeFilter === 'RENT') && maxPrice) {
+        const max = parseFloat(maxPrice);
+        if (!isNaN(max) && max >= 0) filters.maxPrice = max;
       }
 
       const response = await communityService.getPosts(filters, { skipCache: true });
@@ -80,12 +118,11 @@ const CommunityPage: React.FC = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [activeFilter, searchQuery, sortBy, minPrice, maxPrice]);
 
   useEffect(() => {
     fetchPosts(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilter]);
+  }, [fetchPosts]);
 
   useEffect(() => {
     if ((location.state as { refresh?: boolean } | null)?.refresh) {
@@ -111,9 +148,14 @@ const CommunityPage: React.FC = () => {
   };
 
   // Handle filter change
-  const handleFilterChange = (filter: PostType | 'ALL') => {
+  const handleFilterChange = (filter: ViewMode) => {
     setActiveFilter(filter);
     setCurrentPage(1);
+    // Reset price range when switching away from SALE/RENT
+    if (filter !== 'SALE' && filter !== 'RENT') {
+      setMinPrice('');
+      setMaxPrice('');
+    }
     setSearchParams((params) => {
       if (filter === 'ALL') {
         params.delete('type');
@@ -125,10 +167,20 @@ const CommunityPage: React.FC = () => {
     });
   };
 
+  // Handle sort change
+  const handleSortChange = (value: SortBy) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  // Handle price range apply
+  const handlePriceRangeApply = () => {
+    fetchPosts(1);
+  };
+
   // Handle like
   const handleLike = async (postId: string) => {
     if (!isAuthenticated) {
-      // Could show a login modal here
       return;
     }
 
@@ -143,6 +195,23 @@ const CommunityPage: React.FC = () => {
       );
     } catch (err) {
       console.error('Failed to like post:', err);
+    }
+  };
+
+  // Handle bookmark
+  const handleBookmark = async (postId: string) => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await communityService.toggleBookmark(postId);
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? { ...post, isBookmarked: response.bookmarked }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error('Failed to bookmark post:', err);
     }
   };
 
@@ -164,6 +233,9 @@ const CommunityPage: React.FC = () => {
   if (loading && posts.length === 0) {
     return <PageLoader />;
   }
+
+  const filterButtonBase = 'cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200';
+  const filterButtonInactive = 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -192,47 +264,62 @@ const CommunityPage: React.FC = () => {
         {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           {/* Type Filters */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => handleFilterChange('ALL')}
-              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`${filterButtonBase} ${
                 activeFilter === 'ALL'
                   ? 'bg-primary-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
+                  : filterButtonInactive
               }`}
             >
               {t('community.allPosts') || 'All'}
             </button>
             <button
               onClick={() => handleFilterChange('DISCUSSION')}
-              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`${filterButtonBase} ${
                 activeFilter === 'DISCUSSION'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
+                  : filterButtonInactive
               }`}
             >
               {t('community.type.discussion') || 'Discussions'}
             </button>
             <button
               onClick={() => handleFilterChange('SALE')}
-              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`${filterButtonBase} ${
                 activeFilter === 'SALE'
                   ? 'bg-green-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
+                  : filterButtonInactive
               }`}
             >
               {t('community.type.sale') || 'Marketplace'}
             </button>
             <button
               onClick={() => handleFilterChange('RENT')}
-              className={`cursor-pointer px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
+              className={`${filterButtonBase} ${
                 activeFilter === 'RENT'
                   ? 'bg-amber-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:border-primary-300'
+                  : filterButtonInactive
               }`}
             >
               {t('community.type.rent') || 'Rent'}
             </button>
+            {isAuthenticated && (
+              <button
+                onClick={() => handleFilterChange('SAVED')}
+                className={`${filterButtonBase} ${
+                  activeFilter === 'SAVED'
+                    ? 'bg-purple-500 text-white'
+                    : filterButtonInactive
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <BookmarkIconSolid className="w-4 h-4" />
+                  {t('community.savedPosts') || 'Saved Posts'}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Search */}
@@ -251,27 +338,9 @@ const CommunityPage: React.FC = () => {
 
           {/* Sort Dropdown */}
           <select
-            className="cursor-pointer px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200 hover:border-primary-300"
-            onChange={(e) => {
-              const value = e.target.value;
-              const filters: Record<string, unknown> = {
-                page: 1,
-                limit: 20,
-                sortBy: value,
-                sortOrder: 'desc',
-              };
-              if (activeFilter !== 'ALL') {
-                filters.type = activeFilter;
-              }
-              if (searchQuery.trim()) {
-                filters.search = searchQuery.trim();
-              }
-              communityService.getPosts(filters, { skipCache: true }).then((response) => {
-                setPosts(response.posts);
-                setTotalPages(response.pagination.totalPages);
-                setCurrentPage(1);
-              }).catch(() => {});
-            }}
+            value={sortBy}
+            className="cursor-pointer px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200 hover:border-primary-300"
+            onChange={(e) => handleSortChange(e.target.value as SortBy)}
           >
             <option value="createdAt">{t('community.sort.latest') || 'Latest'}</option>
             <option value="likeCount">{t('community.sort.popular') || 'Most Popular'}</option>
@@ -281,20 +350,35 @@ const CommunityPage: React.FC = () => {
 
         {/* Price Range Filter */}
         {(activeFilter === 'SALE' || activeFilter === 'RENT') && (
-          <div className="flex items-center gap-2 mt-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              {t('community.priceRange') || 'Price range'}:
+            </span>
             <input
               type="number"
+              min="0"
               placeholder={t('community.minPrice') || 'Min price'}
-              className="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              onChange={() => {/* will be wired to state */}}
+              value={minPrice}
+              className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              onChange={(e) => setMinPrice(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePriceRangeApply()}
             />
             <span className="text-gray-400">&mdash;</span>
             <input
               type="number"
+              min="0"
               placeholder={t('community.maxPrice') || 'Max price'}
-              className="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              onChange={() => {/* will be wired to state */}}
+              value={maxPrice}
+              className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              onChange={(e) => setMaxPrice(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePriceRangeApply()}
             />
+            <button
+              onClick={handlePriceRangeApply}
+              className="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              {t('common.apply') || 'Apply'}
+            </button>
           </div>
         )}
 
@@ -309,15 +393,23 @@ const CommunityPage: React.FC = () => {
         {posts.length === 0 && !loading ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ChatBubbleLeftIcon className="w-8 h-8 text-gray-400" />
+              {activeFilter === 'SAVED' ? (
+                <BookmarkIcon className="w-8 h-8 text-gray-400" />
+              ) : (
+                <ChatBubbleLeftIcon className="w-8 h-8 text-gray-400" />
+              )}
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              {t('community.noPostsYet') || 'No posts yet'}
+              {activeFilter === 'SAVED'
+                ? t('community.savedPosts') || 'Saved Posts'
+                : t('community.noPostsYet') || 'No posts yet'}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {t('community.beFirstToPost') || 'Be the first to share!'}
+              {activeFilter === 'SAVED'
+                ? t('community.noSavedPostsDesc') || 'Bookmark posts to find them here later'
+                : t('community.beFirstToPost') || 'Be the first to share!'}
             </p>
-            {isAuthenticated && (
+            {isAuthenticated && activeFilter !== 'SAVED' && (
               <Link
                 to="/community/create"
                 className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
@@ -332,8 +424,25 @@ const CommunityPage: React.FC = () => {
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="cursor-pointer bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 p-6 hover:shadow-lg transition-all duration-200"
+                className={`cursor-pointer bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 p-6 hover:shadow-lg transition-all duration-200 relative ${
+                  post.listingStatus && post.listingStatus !== 'ACTIVE' ? 'opacity-75' : ''
+                }`}
               >
+                {/* Listing Status Overlay */}
+                {post.listingStatus && post.listingStatus !== 'ACTIVE' && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
+                      post.listingStatus === 'SOLD'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-orange-500 text-white'
+                    }`}>
+                      {post.listingStatus === 'SOLD'
+                        ? t('community.listingStatus.sold') || 'Sold'
+                        : t('community.listingStatus.rented') || 'Rented'}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-start gap-4">
                   {/* Author Avatar */}
                   <div className="flex-shrink-0">
@@ -371,20 +480,11 @@ const CommunityPage: React.FC = () => {
                           ? t('community.type.rent') || 'Rent'
                           : t('community.type.sale') || 'Marketplace'}
                       </span>
-                      {(post as any).condition && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                          {(post as any).condition === 'NEW' ? t('community.condition.new') || 'New' :
-                           (post as any).condition === 'LIKE_NEW' ? t('community.condition.likeNew') || 'Like New' :
+                      {post.condition && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                          {post.condition === 'NEW' ? t('community.condition.new') || 'New' :
+                           post.condition === 'LIKE_NEW' ? t('community.condition.likeNew') || 'Like New' :
                            t('community.condition.used') || 'Used'}
-                        </span>
-                      )}
-                      {(post as any).listingStatus && (post as any).listingStatus !== 'ACTIVE' && (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          (post as any).listingStatus === 'SOLD'
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                        }`}>
-                          {(post as any).listingStatus === 'SOLD' ? t('community.listingStatus.sold') || 'Sold' : t('community.listingStatus.rented') || 'Rented'}
                         </span>
                       )}
                       {post.isPinned && (
@@ -400,10 +500,15 @@ const CommunityPage: React.FC = () => {
                       </h2>
                     </Link>
 
-                    {/* Price for Sale posts */}
+                    {/* Price for Sale/Rent posts */}
                     {(post.type === 'SALE' || post.type === 'RENT') && post.price != null && (
-                      <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1">
+                      <p className={`text-lg font-bold mt-1 ${
+                        post.type === 'RENT'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-green-600 dark:text-green-400'
+                      }`}>
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
+                        {post.type === 'RENT' && <span className="text-sm font-normal text-gray-500"> / {t('community.perMonth') || 'mo'}</span>}
                       </p>
                     )}
 
@@ -452,6 +557,28 @@ const CommunityPage: React.FC = () => {
                         <EyeIcon className="w-5 h-5" />
                         <span>{post.viewCount}</span>
                       </div>
+
+                      {/* Bookmark Button */}
+                      {isAuthenticated && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBookmark(post.id);
+                          }}
+                          className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${
+                            post.isBookmarked
+                              ? 'text-purple-500'
+                              : 'text-gray-500 dark:text-gray-400 hover:text-purple-500'
+                          }`}
+                          title={post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
+                        >
+                          {post.isBookmarked ? (
+                            <BookmarkIconSolid className="w-5 h-5" />
+                          ) : (
+                            <BookmarkIcon className="w-5 h-5" />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
 

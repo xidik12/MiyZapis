@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon, ClockIcon } from '@/components/icons';
+import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon, ClockIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, InformationCircleIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
@@ -330,80 +330,89 @@ const Confirmation: React.FC<ConfirmationProps> = ({
             </span>
           </div>
 
-          {/* Specialist Contact Information */}
+          {/* Appointment Location Info Card */}
           {isAutoBooked && (
             <>
               <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 
-              <div className="mb-2">
-                <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  {t('booking.specialistContact') || 'Specialist Contact Information'}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 -mx-1">
+                <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
+                  <MapPinIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                  {t('location.appointmentLocation') || 'Your appointment location'}
                 </h5>
+
+                <div className="space-y-3 text-sm">
+                  {specialist.preciseAddress && (
+                    <div className="flex items-start space-x-2">
+                      <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-blue-900 dark:text-blue-100">{t('booking.location') || 'Location'}</span>
+                        <p className="text-blue-800 dark:text-blue-200 break-words">{specialist.preciseAddress}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(specialist.businessPhone || specialist.whatsappNumber) && (
+                    <div className="flex items-start space-x-2">
+                      <PhoneIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-blue-900 dark:text-blue-100">{t('location.contactDetails') || 'Contact details'}</span>
+                        {specialist.businessPhone && (
+                          <p className="text-blue-800 dark:text-blue-200">
+                            <a href={`tel:${specialist.businessPhone}`} className="hover:underline">
+                              {specialist.businessPhone}
+                            </a>
+                          </p>
+                        )}
+                        {specialist.whatsappNumber && (
+                          <p className="text-green-700 dark:text-green-300">
+                            <a
+                              href={`https://wa.me/${(specialist.whatsappNumber as string).replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              WhatsApp: {specialist.whatsappNumber}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {specialist.locationNotes && (
+                    <div className="flex items-start space-x-2">
+                      <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-blue-900 dark:text-blue-100">{t('location.locationNotes') || 'Location notes'}</span>
+                        <p className="text-blue-800 dark:text-blue-200 break-words">{specialist.locationNotes}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {specialist.parkingInfo && (
+                    <div className="flex items-start space-x-2">
+                      <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-blue-900 dark:text-blue-100">{t('location.parkingInfo') || 'Parking information'}</span>
+                        <p className="text-blue-800 dark:text-blue-200 break-words">{specialist.parkingInfo}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {specialist.accessInstructions && (
+                    <div className="flex items-start space-x-2">
+                      <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-blue-900 dark:text-blue-100">{t('location.accessInstructions') || 'Access instructions'}</span>
+                        <p className="text-blue-800 dark:text-blue-200 break-words">{specialist.accessInstructions}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {specialist.businessPhone && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.phone') || 'Phone'}</span>
-                  <a
-                    href={`tel:${specialist.businessPhone}`}
-                    className="font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {specialist.businessPhone}
-                  </a>
-                </div>
-              )}
-
-              {specialist.preciseAddress && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('booking.location') || 'Location'}</span>
-                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                    {specialist.preciseAddress}
-                  </span>
-                </div>
-              )}
-
-              {specialist.whatsappNumber && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('location.contactDetails') || 'WhatsApp'}</span>
-                  <a
-                    href={`https://wa.me/${specialist.whatsappNumber.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-green-600 dark:text-green-400 hover:underline"
-                  >
-                    {specialist.whatsappNumber}
-                  </a>
-                </div>
-              )}
-
-              {specialist.locationNotes && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('location.locationNotes') || 'Location notes'}</span>
-                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                    {specialist.locationNotes}
-                  </span>
-                </div>
-              )}
-
-              {specialist.parkingInfo && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('location.parkingInfo') || 'Parking information'}</span>
-                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                    {specialist.parkingInfo}
-                  </span>
-                </div>
-              )}
-
-              {specialist.accessInstructions && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('location.accessInstructions') || 'Access instructions'}</span>
-                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                    {specialist.accessInstructions}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex justify-between">
+              <div className="flex justify-between mt-3">
                 <span className="text-gray-600 dark:text-gray-400">{t('booking.servicePrice') || 'Service Price'}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {formatPrice(finalPrice, service.currency as 'USD' | 'EUR' | 'UAH' || 'USD')}
