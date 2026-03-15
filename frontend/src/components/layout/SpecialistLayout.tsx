@@ -205,7 +205,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 window.scrollTo(0, 0);
               }}
             >
-              <Logo size="md" className="group-hover:scale-110 transition-all duration-300" />
+              <Logo size="md" className="group-hover:scale-105 transition-all duration-300" />
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
                 МійЗапис
               </span>
@@ -217,14 +217,14 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
           >
             <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+            className="lg:hidden p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
           >
             <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
@@ -275,10 +275,10 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
+                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
                   ${isActive
                     ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
@@ -319,8 +319,8 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm hover:text-primary-500 dark:hover:text-primary-400 mobile-touch-target
               ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
@@ -357,8 +357,8 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
-              text-red-600 hover:bg-red-50/80 dark:text-red-400 dark:hover:bg-red-900/30 mobile-touch-target
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+              text-red-600 hover:bg-red-50/80 dark:text-red-400 dark:hover:bg-red-900/30 hover:shadow-sm hover:text-red-700 dark:hover:text-red-300 mobile-touch-target
               ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
             `}
           >
@@ -374,7 +374,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
@@ -384,9 +384,9 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             <NotificationBell />
 
             {/* Settings */}
-            <Link 
+            <Link
               to="/specialist/settings"
-              className="p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+              className="p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>
@@ -432,7 +432,7 @@ const SpecialistMobileBottomNav: React.FC = () => {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-500 dark:text-gray-400'

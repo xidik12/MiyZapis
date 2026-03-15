@@ -269,13 +269,13 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-colors font-medium touch-manipulation"
+                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-all duration-200 font-medium touch-manipulation"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:bg-primary-800 transition-colors font-medium touch-manipulation"
+                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:bg-primary-800 transition-all duration-200 font-medium touch-manipulation"
               >
                 {editingBlock ? t('schedule.update') : t('schedule.add')}
               </button>
@@ -903,7 +903,7 @@ const SpecialistSchedule: React.FC = () => {
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={goToPreviousWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
           >
             <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -914,7 +914,7 @@ const SpecialistSchedule: React.FC = () => {
           </div>
           <button
             onClick={goToNextWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
           >
             <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -1057,7 +1057,7 @@ const SpecialistSchedule: React.FC = () => {
                       {/* Hour Card Header */}
                       <button
                         onClick={() => toggleHourExpanded(dayIndex, hour)}
-                        className={`w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors text-left flex items-center justify-between group ${
+                        className={`w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-200 text-left flex items-center justify-between group ${
                           isCurrentHour ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
                         }`}
                       >
@@ -1189,7 +1189,7 @@ const SpecialistSchedule: React.FC = () => {
                                   <div className="flex items-center space-x-2 ml-3">
                                     <button
                                       onClick={() => openEditModal(block)}
-                                      className={`p-2 rounded-xl transition-colors ${
+                                      className={`p-2 rounded-xl transition-all duration-200 ${
                                         block.isAvailable
                                           ? 'hover:bg-green-200 dark:hover:bg-green-800 text-green-700 dark:text-green-300'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
@@ -1201,7 +1201,7 @@ const SpecialistSchedule: React.FC = () => {
                                     <button
                                       onClick={() => handleDeleteTimeSlot(block.id)}
                                       disabled={operationInProgress}
-                                      className={`p-2 rounded-xl transition-colors ${
+                                      className={`p-2 rounded-xl transition-all duration-200 ${
                                         block.isAvailable
                                           ? 'hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'

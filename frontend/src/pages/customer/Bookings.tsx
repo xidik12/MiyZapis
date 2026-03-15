@@ -545,7 +545,7 @@ const CustomerBookings: React.FC = () => {
                   : booking.specialistName || 'Unknown Specialist';
 
                 return (
-                  <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
+                  <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 cursor-pointer hover:shadow-md transition-all duration-200">
                     {/* Header with specialist and status */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
@@ -601,14 +601,14 @@ const CustomerBookings: React.FC = () => {
                           setSelectedBooking(booking);
                           setShowDetailModal(true);
                         }}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition-all duration-200"
                       >
                         {t('actions.viewDetails')}
                       </button>
                       {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                         <button
                           onClick={() => handleLeaveReview(booking.id)}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors flex items-center"
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition-all duration-200 flex items-center"
                         >
                           <StarIcon className="w-4 h-4 mr-1" />
                           {t('customer.bookings.leaveReview')}
@@ -655,7 +655,7 @@ const CustomerBookings: React.FC = () => {
                         : booking.specialistName || 'Unknown Specialist';
 
                       return (
-                        <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
@@ -705,7 +705,7 @@ const CustomerBookings: React.FC = () => {
                                   setSelectedBooking(booking);
                                   setShowDetailModal(true);
                                 }}
-                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200"
                                 title={t('actions.viewDetails')}
                               >
                                 <EyeIcon className="w-4 h-4 mr-1" />
@@ -714,7 +714,7 @@ const CustomerBookings: React.FC = () => {
                               {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                                 <button
                                   onClick={() => handleLeaveReview(booking.id)}
-                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 cursor-pointer transition-all duration-200"
                                   title={t('customer.bookings.leaveReview')}
                                 >
                                   <StarIcon className="w-4 h-4 mr-1" />
@@ -725,7 +725,7 @@ const CustomerBookings: React.FC = () => {
                               {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                                 <button
                                   onClick={() => handleCancelBooking(booking.id)}
-                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer transition-all duration-200"
                                   title={t('bookings.cancelBooking')}
                                 >
                                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

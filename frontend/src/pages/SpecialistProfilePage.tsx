@@ -408,7 +408,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
-                  className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap ${
+                  className={`cursor-pointer flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap ${
                     isFavorite
                       ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -445,7 +445,7 @@ const SpecialistProfilePage: React.FC = () => {
                 ) : services.length === 1 ? (
                   <Link
                     to={`/booking/${services[0]?.id}`}
-                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
+                    className="cursor-pointer bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-all duration-200 flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
                   >
                     <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
                     <span>{t('actions.bookNow')}</span>
@@ -453,7 +453,7 @@ const SpecialistProfilePage: React.FC = () => {
                 ) : (
                   <a
                     href="#services-section"
-                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
+                    className="cursor-pointer bg-primary-600 hover:bg-primary-700 text-white px-4 sm:px-6 py-2 rounded-xl transition-all duration-200 flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial"
                   >
                     <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
                     <span>{t('actions.bookNow')}</span>
@@ -656,7 +656,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {services.map((service: Record<string, unknown>) => (
                     <div
                       key={service.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-colors"
+                      className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 hover:shadow-lg transition-all duration-200"
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="flex-1">
@@ -686,7 +686,7 @@ const SpecialistProfilePage: React.FC = () => {
                           ) : (
                             <Link
                               to={`/booking/${service.id}`}
-                              className="inline-block mt-0 sm:mt-2 px-2 sm:px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-xs sm:text-sm font-medium transition-colors"
+                              className="cursor-pointer inline-block mt-0 sm:mt-2 px-2 sm:px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-xs sm:text-sm font-medium transition-all duration-200"
                             >
                               {t('actions.book')}
                             </Link>
@@ -712,7 +712,7 @@ const SpecialistProfilePage: React.FC = () => {
               {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-4 sm:space-y-6">
                   {reviews.slice(0, 5).map((review: Record<string, unknown>) => (
-                    <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-6 last:border-b-0">
+                    <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-6 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg px-2 -mx-2 transition-all duration-200">
                       <div className="flex items-start space-x-2 sm:space-x-4">
                         <Avatar
                           src={review.customer?.avatar}

@@ -1210,10 +1210,10 @@ const SpecialistProfile: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 cursor-pointer ${
                       activeTab === tab.id
-                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 border border-primary-200 dark:border-primary-800'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
+                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 border border-primary-200 dark:border-primary-800 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 hover:shadow-sm'
                     }`}
                   >
                     <tab.icon className="h-5 w-5" />
@@ -2073,7 +2073,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.bankDetails?.bankName || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2090,7 +2090,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.bankDetails?.accountName || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleBankDetailsChange('accountName', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2107,7 +2107,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.bankDetails?.accountNumber || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2124,7 +2124,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.bankDetails?.iban || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleBankDetailsChange('iban', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2141,7 +2141,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.bankDetails?.swift || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleBankDetailsChange('swift', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2158,7 +2158,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.bankDetails?.notes || ''}
                           disabled={!isEditing}
                           onChange={(e) => handleBankDetailsChange('notes', e.target.value)}
-                          className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                          className={`w-full px-4 py-2 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                             !isEditing
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -2281,7 +2281,7 @@ const SpecialistProfile: React.FC = () => {
                       {profile.portfolio.map((item, index) => (
                         <div
                           key={item.id || index}
-                          className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                          className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-all duration-200"
                         >
                           <div className="aspect-square overflow-hidden">
                             <img
@@ -2344,7 +2344,7 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex gap-4 justify-end">
                     <button
                       onClick={handleCancelEdit}
-                      className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                     </button>

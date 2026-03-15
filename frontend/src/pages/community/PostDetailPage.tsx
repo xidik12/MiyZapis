@@ -170,7 +170,7 @@ const PostDetailPage: React.FC = () => {
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
 
   const renderComment = (comment: Comment, depth: number = 0) => (
-    <div key={comment.id} className={`border-l ${depth > 0 ? 'ml-4 pl-4' : ''} border-gray-200 dark:border-gray-700`}>
+    <div key={comment.id} className={`border-l ${depth > 0 ? 'ml-4 pl-4' : ''} border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-r-lg px-3 py-2 -mx-1 transition-all duration-200`}>
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           {comment.author.avatar ? (
@@ -224,14 +224,14 @@ const PostDetailPage: React.FC = () => {
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
             <button
               onClick={() => handleCommentLike(comment.id)}
-              className={`flex items-center gap-1 ${comment.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+              className={`cursor-pointer flex items-center gap-1 hover:scale-110 active:scale-95 transition-all duration-200 ${comment.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
             >
               {comment.isLiked ? <HeartIconSolid className="w-4 h-4" /> : <HeartIcon className="w-4 h-4" />}
               <span>{comment.likeCount}</span>
             </button>
             <button
               onClick={() => setActiveReply(activeReply === comment.id ? null : comment.id)}
-              className="hover:text-primary-500"
+              className="cursor-pointer hover:text-primary-500 transition-all duration-200"
             >
               {t('community.reply') || 'Reply'}
             </button>
@@ -274,7 +274,7 @@ const PostDetailPage: React.FC = () => {
               <div className="flex items-center gap-2 mt-2">
                 <button
                   onClick={() => handleReply(comment.id)}
-                  className="px-3 py-1.5 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600"
+                  className="cursor-pointer px-3 py-1.5 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600 transition-all duration-200"
                 >
                   {t('community.postReply') || 'Post reply'}
                 </button>
@@ -449,7 +449,7 @@ const PostDetailPage: React.FC = () => {
           <div className="flex items-center gap-6 mt-6 text-gray-500 dark:text-gray-400">
             <button
               onClick={handlePostLike}
-              className={`flex items-center gap-1.5 ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+              className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
             >
               {post.isLiked ? <HeartIconSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
               <span>{post.likeCount}</span>
@@ -465,7 +465,7 @@ const PostDetailPage: React.FC = () => {
             {user && post.authorId !== user.id && (
               <button
                 onClick={() => setShowReportModal(true)}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500"
+                className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-all duration-200"
               >
                 {t('community.report') || 'Report'}
               </button>
@@ -491,7 +491,7 @@ const PostDetailPage: React.FC = () => {
               <div className="flex justify-end mt-2">
                 <button
                   onClick={handleCreateComment}
-                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+                  className="cursor-pointer px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-all duration-200"
                 >
                   {t('community.postComment') || 'Post comment'}
                 </button>

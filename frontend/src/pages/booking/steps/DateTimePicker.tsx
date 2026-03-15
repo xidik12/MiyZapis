@@ -66,10 +66,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
               <button
                 key={date.toISOString()}
                 onClick={() => onDateSelect(date)}
-                className={`p-2 sm:p-3 text-xs sm:text-sm rounded-xl border transition-colors relative mobile-touch-target ${
+                className={`p-2 sm:p-3 text-xs sm:text-sm rounded-xl border transition-all duration-200 relative mobile-touch-target ${
                   selectedDate?.toDateString() === date.toDateString()
                     ? 'bg-primary-600 text-white border-primary-600'
-                    : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
+                    : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 hover:shadow-sm hover:scale-[1.02] active:scale-95'
                 }`}
                 title={`${dateInfo.availableSlots} available slots (${dateInfo.workingHours})`}
               >
@@ -173,10 +173,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                           <button
                             key={time}
                             onClick={() => onTimeSelect(time)}
-                            className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-colors mobile-touch-target ${
+                            className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-all duration-200 mobile-touch-target ${
                               selectedTime === time
                                 ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                                : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
+                                : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 hover:shadow-sm hover:scale-[1.02] active:scale-95'
                             }`}
                           >
                             <div className="text-center">
@@ -204,7 +204,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
               {user && !waitlistJoined && (
                 <button
                   onClick={onShowWaitlist}
-                  className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors shadow-sm"
+                  className="cursor-pointer inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   <ClockIcon className="w-4 h-4 mr-2" />
                   {t('waitlist.joinWaitlist') || 'Join Waitlist'}

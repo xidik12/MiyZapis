@@ -1450,7 +1450,7 @@ const SpecialistBookings: React.FC = () => {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <tr key={booking.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200">
                     <td className="px-3 py-2 sm:px-6 sm:py-4">
                       <input
                         type="checkbox"
@@ -1538,7 +1538,7 @@ const SpecialistBookings: React.FC = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => openBookingDetails(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                           title={t('bookings.view')}
                         >
                           <EyeIcon className="w-4 h-4 mr-1" />
@@ -1549,7 +1549,7 @@ const SpecialistBookings: React.FC = () => {
                           (booking.status === 'PENDING' || booking.status === 'pending') ? (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-green-600 hover:bg-green-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
                               title={t('bookings.confirm')}
                             >
                               <CheckIcon className="w-4 h-4 mr-1" />
@@ -1558,7 +1558,7 @@ const SpecialistBookings: React.FC = () => {
                           ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                               title={t('bookings.complete')}
                             >
                               <CheckCircleIcon className="w-4 h-4 mr-1" />
@@ -1571,7 +1571,7 @@ const SpecialistBookings: React.FC = () => {
                             {(booking.status === 'PENDING' || booking.status === 'pending' || booking.status === 'CONFIRMED' || booking.status === 'confirmed') && (
                               <button
                                 onClick={() => handleCancelBooking(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                                 title={t('bookings.cancel')}
                               >
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1583,7 +1583,7 @@ const SpecialistBookings: React.FC = () => {
                             {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                               <button
                                 onClick={() => handleLeaveReview(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors sm:px-3 sm:py-1.5"
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200 sm:px-3 sm:py-1.5"
                                 title={t('bookings.leaveReview')}
                               >
                                 <StarIcon className="w-4 h-4 mr-1" />

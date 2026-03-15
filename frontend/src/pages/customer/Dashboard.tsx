@@ -368,8 +368,8 @@ const CustomerDashboard: React.FC = () => {
     return t(`dashboard.booking.status.${status}` as any) || status;
   };
 
-  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
-    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description, onClick }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string; onClick?: () => void }) => (
+    <div className={`bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
@@ -571,7 +571,7 @@ const CustomerDashboard: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('wallet.title')}</h3>
                 <Link
                   to="/customer/wallet"
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
@@ -587,14 +587,14 @@ const CustomerDashboard: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
                 <Link
                   to="/customer/bookings"
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
               </div>
               <div className="space-y-3 sm:space-y-4">
                 {recentBookings.slice(0, 4).map((booking) => (
-                  <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-xs sm:text-sm">
@@ -619,7 +619,7 @@ const CustomerDashboard: React.FC = () => {
                       {booking.status === 'completed' && booking.serviceId && (
                         <button
                           onClick={() => navigate(`/booking/${booking.serviceId}`)}
-                          className="mt-1 px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                          className="mt-1 px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 cursor-pointer transition-all duration-200"
                         >
                           {t('dashboard.bookAgain') || 'Book Again'}
                         </button>
@@ -651,7 +651,7 @@ const CustomerDashboard: React.FC = () => {
                 <button
                   onClick={handleLoadMoreFavorites}
                   disabled={favoritesLoading}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium disabled:opacity-50"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline text-sm font-medium disabled:opacity-50"
                 >
                   {t('dashboard.viewAll')}
                 </button>
@@ -670,7 +670,7 @@ const CustomerDashboard: React.FC = () => {
                 </div>
               ) : (
                 favoriteSpecialists.map((specialist) => (
-                  <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
+                  <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-xs sm:text-sm">
@@ -693,13 +693,13 @@ const CustomerDashboard: React.FC = () => {
                     <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
                       <Link
                         to={`/specialist/${specialist.id}`}
-                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-colors"
+                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-all duration-200"
                       >
                         <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Link>
                       <button
                         onClick={() => handleMessageFavorite(specialist)}
-                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
                         title={t('specialistProfile.sendMessage')}
                       >
                         <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />

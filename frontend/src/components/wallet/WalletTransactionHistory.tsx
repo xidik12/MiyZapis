@@ -185,7 +185,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className={`flex items-center justify-between p-4 rounded-xl border ${
+                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer hover:shadow-md transition-all duration-200 ${
                   compact ? 'p-3' : 'p-4'
                 } ${
                   transaction.status === 'PENDING'

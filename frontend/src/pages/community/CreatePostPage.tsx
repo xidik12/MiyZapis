@@ -198,7 +198,7 @@ const CreatePostPage: React.FC = () => {
                     key={type}
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, type }))}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       formData.type === type
                         ? type === 'DISCUSSION'
                           ? 'bg-blue-500 text-white'
@@ -227,7 +227,7 @@ const CreatePostPage: React.FC = () => {
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                 placeholder={t('community.form.titlePlaceholder') || 'Add a descriptive title'}
               />
             </div>
@@ -240,7 +240,7 @@ const CreatePostPage: React.FC = () => {
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                 rows={8}
                 placeholder={t('community.form.contentPlaceholder') || 'Share your thoughts or listing details...'}
               />
@@ -259,7 +259,7 @@ const CreatePostPage: React.FC = () => {
                     step="0.01"
                     value={formData.price ?? ''}
                     onChange={(e) => setFormData((prev) => ({ ...prev, price: Number(e.target.value) }))}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                     placeholder="0.00"
                   />
                 </div>
@@ -270,7 +270,7 @@ const CreatePostPage: React.FC = () => {
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData((prev) => ({ ...prev, currency: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                   >
                     <option value="UAH">UAH</option>
                     <option value="USD">USD</option>
@@ -285,7 +285,7 @@ const CreatePostPage: React.FC = () => {
                     type="text"
                     value={formData.contactPhone}
                     onChange={(e) => setFormData((prev) => ({ ...prev, contactPhone: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                     placeholder="+380..."
                   />
                 </div>
@@ -297,7 +297,7 @@ const CreatePostPage: React.FC = () => {
                     type="email"
                     value={formData.contactEmail}
                     onChange={(e) => setFormData((prev) => ({ ...prev, contactEmail: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-primary-300 focus:border-primary-500 transition-all duration-200"
                     placeholder="email@example.com"
                   />
                 </div>
@@ -393,14 +393,14 @@ const CreatePostPage: React.FC = () => {
             <div className="flex items-center justify-end gap-3">
               <Link
                 to="/community"
-                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
+                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-300 transition-all duration-200"
               >
                 {t('common.cancel') || 'Cancel'}
               </Link>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60"
+                className="cursor-pointer px-5 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60 transition-all duration-200"
               >
                 {loading
                   ? t('common.loading') || 'Loading...'

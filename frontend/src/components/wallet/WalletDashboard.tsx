@@ -136,11 +136,11 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                     {t('wallet.quickActions.subtitle')}
                   </p>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
                       <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.redeemRewards')}</span>
                     </Button>
-                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
                       <Users className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.referFriends')}</span>
                     </Button>
@@ -296,7 +296,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('wallet.earnings.recentEarnings')}</h4>
                 {walletTransactions.slice(0, 5).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-2 rounded border border-gray-200 dark:border-gray-700">
+                  <div key={transaction.id} className="flex items-center justify-between p-2 rounded border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-all duration-200">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
                         transaction.reason === 'REFERRAL_REWARD' ? 'bg-blue-500' :

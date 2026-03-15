@@ -416,7 +416,7 @@ const SearchPage: React.FC = () => {
     return (
     <div
       key={service.id}
-      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-white/20 dark:border-gray-700/20"
+      className="cursor-pointer bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 p-4 sm:p-6 border border-white/20 dark:border-gray-700/20"
     >
       {/* Portfolio thumbnails */}
       {service.portfolioImages && service.portfolioImages.length > 0 && (
@@ -555,7 +555,7 @@ const SearchPage: React.FC = () => {
               {!isOwnService && service.isAvailable && (
                 <Link
                   to={`/booking/${service.id}`}
-                  className="mt-1 px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors inline-block"
+                  className="cursor-pointer mt-1 px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-all duration-200 inline-block"
                 >
                   {t('actions.quickBook') || 'Quick Book'}
                 </Link>
@@ -669,10 +669,10 @@ const SearchPage: React.FC = () => {
             <button
               key={filter.value}
               onClick={() => setAvailableWithin(filter.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all duration-200 ${
                 availableWithin === filter.value
                   ? 'bg-primary-600 text-white shadow-sm'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-primary-300'
               }`}
             >
               {filter.value === 'now' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5" />}
@@ -697,7 +697,7 @@ const SearchPage: React.FC = () => {
                   setSortBy(tag.sortParam);
                 }
               }}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-primary-50 hover:border-primary-300 dark:hover:bg-primary-900/20 dark:hover:border-primary-700 transition-colors"
+              className="cursor-pointer flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-primary-50 hover:border-primary-300 dark:hover:bg-primary-900/20 dark:hover:border-primary-700 transition-all duration-200"
             >
               {tag.label}
             </button>
@@ -720,7 +720,7 @@ const SearchPage: React.FC = () => {
               {/* Advanced Filters Button - Mobile Priority */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
-                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="cursor-pointer inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 hover:border-primary-300 rounded-xl text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200"
               >
                 <AdjustmentsHorizontalIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">{t('search.filters') || 'Filters'}</span>

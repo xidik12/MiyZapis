@@ -195,40 +195,40 @@ const CommunityPage: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={() => handleFilterChange('ALL')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 activeFilter === 'ALL'
                   ? 'bg-primary-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
               }`}
             >
               {t('community.allPosts') || 'All'}
             </button>
             <button
               onClick={() => handleFilterChange('DISCUSSION')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 activeFilter === 'DISCUSSION'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
               }`}
             >
               {t('community.type.discussion') || 'Discussions'}
             </button>
             <button
               onClick={() => handleFilterChange('SALE')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 activeFilter === 'SALE'
                   ? 'bg-green-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600'
               }`}
             >
               {t('community.type.sale') || 'Marketplace'}
             </button>
             <button
               onClick={() => handleFilterChange('RENT')}
-              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+              className={`cursor-pointer px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'RENT'
                   ? 'bg-amber-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:border-primary-300'
               }`}
             >
               {t('community.type.rent') || 'Rent'}
@@ -251,7 +251,7 @@ const CommunityPage: React.FC = () => {
 
           {/* Sort Dropdown */}
           <select
-            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="cursor-pointer px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200 hover:border-primary-300"
             onChange={(e) => {
               const value = e.target.value;
               const filters: Record<string, unknown> = {
@@ -332,7 +332,7 @@ const CommunityPage: React.FC = () => {
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow"
+                className="cursor-pointer bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 p-6 hover:shadow-lg transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
                   {/* Author Avatar */}
@@ -425,7 +425,7 @@ const CommunityPage: React.FC = () => {
                     <div className="flex items-center gap-6 mt-4">
                       <button
                         onClick={() => handleLike(post.id)}
-                        className={`flex items-center gap-1.5 transition-colors ${
+                        className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${
                           post.isLiked
                             ? 'text-red-500'
                             : 'text-gray-500 dark:text-gray-400 hover:text-red-500'

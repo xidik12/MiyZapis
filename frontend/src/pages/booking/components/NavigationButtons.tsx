@@ -61,10 +61,10 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         <button
           onClick={onPrev}
           disabled={currentStep === 0 || paymentLoading}
-          className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-colors flex-shrink-0 mobile-touch-target ${
+          className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-all duration-200 flex-shrink-0 mobile-touch-target ${
             currentStep === 0 || paymentLoading
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-sm active:scale-95'
           }`}
         >
           <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
@@ -74,7 +74,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         <button
           onClick={onNext}
           disabled={isNextDisabled}
-          className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
+          className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 hover:shadow-md transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
         >
           {paymentLoading && (
             <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

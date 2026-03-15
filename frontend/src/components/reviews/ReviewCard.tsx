@@ -274,7 +274,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.3, ease: 'easeOut' }}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 overflow-hidden border border-gray-100 dark:border-gray-700"
     >
       {/* Header Section */}
       <div className="p-4 sm:p-6 pb-3 sm:pb-4">

@@ -513,7 +513,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
-    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] cursor-pointer transition-all duration-200">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
@@ -580,7 +580,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </Link>
           <button
             onClick={handleExportReport}
-            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 font-medium text-sm sm:text-base"
           >
             <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.exportReport')}
@@ -651,7 +651,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
 
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
             <EyeIcon className="w-5 h-5 text-gray-400" />
@@ -672,7 +672,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
@@ -748,7 +748,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-4">
             {dashboardData.recentBookings.slice(0, 4).map((booking) => (
-              <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
@@ -789,7 +789,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-4">
             {dashboardData.upcomingAppointments.map((appointment) => (
-              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
+              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
@@ -814,10 +814,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-colors">
+                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-all duration-200">
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200">
                     <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>

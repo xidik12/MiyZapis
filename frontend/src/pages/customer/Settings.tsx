@@ -438,7 +438,7 @@ const CustomerSettings: React.FC = () => {
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition-colors ${
+                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition-all duration-200 ${
                       activeSection === section.id
                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-r-2 border-primary-700 dark:border-primary-500'
                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -494,7 +494,7 @@ const CustomerSettings: React.FC = () => {
                           />
                           <label
                             htmlFor="customer-settings-avatar-upload"
-                            className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                            className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-all duration-200 ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                           >
                             <CameraIcon className="w-4 h-4 inline mr-2" />
                             {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
@@ -504,7 +504,7 @@ const CustomerSettings: React.FC = () => {
                             <button
                               onClick={handleImageRemove}
                               disabled={isUploadingImage}
-                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
                               {t('actions.remove') || 'Remove'}
@@ -542,7 +542,7 @@ const CustomerSettings: React.FC = () => {
                         type="text"
                         value={user.firstName}
                         onChange={(e) => setUser(prev => ({ ...prev, firstName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -553,7 +553,7 @@ const CustomerSettings: React.FC = () => {
                         type="text"
                         value={user.lastName}
                         onChange={(e) => setUser(prev => ({ ...prev, lastName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -564,7 +564,7 @@ const CustomerSettings: React.FC = () => {
                         type="email"
                         value={user.email}
                         onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -575,7 +575,7 @@ const CustomerSettings: React.FC = () => {
                         type="tel"
                         value={user.phone}
                         onChange={(e) => setUser(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       />
                     </div>
                   </div>
@@ -593,7 +593,7 @@ const CustomerSettings: React.FC = () => {
                         <select
                           value={language}
                           onChange={(e) => setLanguage(e.target.value as any)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                         >
                           <option value="uk">🇺🇦 Українська</option>
                           <option value="en">🇺🇸 English</option>
@@ -607,7 +607,7 @@ const CustomerSettings: React.FC = () => {
                         <select
                           value={currency}
                           onChange={(e) => setCurrency(e.target.value as any)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                         >
                           <option value="UAH">₴ {t('currency.uah')}</option>
                           <option value="USD">$ {t('currency.usd')}</option>
@@ -621,7 +621,7 @@ const CustomerSettings: React.FC = () => {
                     <button
                       onClick={handleSaveAccountSettings}
                       disabled={loading}
-                      className="bg-primary-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-primary-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         language === 'uk' ? 'Збереження...' :
@@ -980,7 +980,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={privacy.profileVisibility}
                         onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       >
                         <option value="public">{t('customer.settings.publicProfile')}</option>
                         <option value="private">{t('customer.settings.privateProfile')}</option>
@@ -1031,7 +1031,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       >
                         <option value="uk">🇺🇦 Українська</option>
                         <option value="en">🇺🇸 English</option>
@@ -1046,7 +1046,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       >
                         <option value="UAH">₴ {t('currency.uah')}</option>
                         <option value="USD">$ {t('currency.usd')}</option>
@@ -1061,7 +1061,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       >
                         <option value="light">{t('customer.settings.lightTheme')}</option>
                         <option value="dark">{t('customer.settings.darkTheme')}</option>

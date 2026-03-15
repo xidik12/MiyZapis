@@ -206,7 +206,7 @@ const StatsBar: React.FC<{
             key={stat.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`${stat.bg} rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50`}
+            className={`${stat.bg} rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 cursor-pointer hover:shadow-md transition-all duration-200`}
           >
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-xl ${stat.bg}`}>
@@ -300,7 +300,7 @@ const ClientCard: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ delay: index * 0.03, duration: 0.25 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-all duration-200"
     >
       {/* Main card content */}
       <div className="p-5">
@@ -396,14 +396,14 @@ const ClientCard: React.FC<{
         <div className="mt-4 flex items-center space-x-2">
           <button
             onClick={onViewBookings}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:shadow-sm dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-all duration-200"
           >
             <EyeIcon className="w-4 h-4" />
             <span>{t('clients.viewBookings') || 'View Bookings'}</span>
           </button>
           <button
             onClick={onSendMessage}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
           >
             <ChatBubbleLeftRightIcon className="w-4 h-4" />
             <span>{t('clients.sendMessage') || 'Message'}</span>

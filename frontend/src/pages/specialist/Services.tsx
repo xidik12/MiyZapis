@@ -681,7 +681,7 @@ const SpecialistServices: React.FC = () => {
   // Removed getDayName function as availability is no longer supported
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
-    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
+    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer transition-all duration-200 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
@@ -745,7 +745,7 @@ const SpecialistServices: React.FC = () => {
       <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={() => openEditModal(service)}
-          className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-xl font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
+          className="flex-1 bg-primary-50 hover:bg-primary-100 hover:shadow-sm text-primary-700 px-4 py-2 rounded-xl font-medium transition-all duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
         >
           {t('services.edit')}
         </button>
@@ -765,7 +765,7 @@ const SpecialistServices: React.FC = () => {
         </button>
         <button 
           onClick={() => handleDeleteService(service.id)}
-          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-xl transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
+          className="p-2 bg-error-50 hover:bg-error-100 hover:shadow-sm text-error-600 rounded-xl transition-all duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

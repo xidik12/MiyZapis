@@ -341,7 +341,7 @@ const CustomerFavorites: React.FC = () => {
                   {filteredSpecialists.map((favorite) => {
                     const specialist = favorite.specialist;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition-shadow">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                         <div className="p-4 sm:p-6">
                           {/* Header with favorite button */}
                           <div className="flex items-start justify-between mb-4">
@@ -430,13 +430,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewSpecialist(specialist.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                             >
                               {t('action.viewProfile')}
                             </button>
                             <button
                               onClick={() => navigate(`/search?specialist=${specialist.id}`)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition-all duration-200"
                             >
                               {t('action.bookNow')}
                             </button>
@@ -500,7 +500,7 @@ const CustomerFavorites: React.FC = () => {
                   {filteredServices.map((favorite) => {
                     const service = favorite.service;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition-shadow overflow-hidden">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
                         {/* Service Image */}
                         <div className="relative">
                           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -562,13 +562,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewService(service.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                             >
                               {t('action.viewDetails')}
                             </button>
                             <button
                               onClick={() => handleBookService(service.id)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition-all duration-200"
                             >
                               {t('action.bookNow')}
                             </button>

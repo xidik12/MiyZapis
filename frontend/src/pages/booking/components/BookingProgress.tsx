@@ -15,7 +15,7 @@ const BookingProgress: React.FC<BookingProgressProps> = ({ steps, currentStep })
           <div key={step.id} className="flex items-center min-w-0">
             <div className="flex flex-col items-center">
               <div
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 transition-colors duration-200 ${
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 transition-all duration-200 ${
                   index < currentStep
                     ? 'bg-green-500 text-white'
                     : index === currentStep
@@ -43,7 +43,7 @@ const BookingProgress: React.FC<BookingProgressProps> = ({ steps, currentStep })
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`w-6 sm:w-10 md:w-16 h-0.5 mx-1 sm:mx-2 md:mx-3 flex-shrink-0 mt-[-12px] sm:mt-[-14px] transition-colors duration-200 ${
+                className={`w-6 sm:w-10 md:w-16 h-0.5 mx-1 sm:mx-2 md:mx-3 flex-shrink-0 mt-[-12px] sm:mt-[-14px] transition-all duration-200 ${
                   index < currentStep
                     ? 'bg-green-500'
                     : 'bg-gray-200 dark:bg-gray-700'
