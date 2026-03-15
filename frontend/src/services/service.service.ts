@@ -84,7 +84,7 @@ export class ServiceService {
 
   // Get featured/popular services
   async getFeaturedServices(limit: number = 10): Promise<Service[]> {
-    const response = await apiClient.get<{ services: Service[] }>(`/services/featured?limit=${limit}`);
+    const response = await apiClient.get<{ services: Service[] }>(`/services/popular?limit=${limit}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get featured services');
     }
