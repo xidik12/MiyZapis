@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { SpecialistController } from '@/controllers/specialists';
 import { AvailabilityController } from '@/controllers/specialists/availability';
-import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
+import { authenticateToken, optionalAuth, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
 import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
@@ -111,8 +111,8 @@ const validateUpdateAvailabilityBlock = [
     .withMessage('Recurring days must contain valid day names'),
 ];
 
-// Public: Get specialist by slug
-router.get('/by-slug/:slug', cacheMiddleware(300, 'specialist-slug'), SpecialistController.getBySlug);
+// Public: Get specialist by slug (optionalAuth lets us skip stripping for the specialist themselves)
+router.get('/by-slug/:slug', optionalAuth, cacheMiddleware(300, 'specialist-slug'), SpecialistController.getBySlug);
 
 // Client notes (specialist only)
 router.get('/clients/:customerId/notes', authenticateToken, requireSpecialist, SpecialistController.getClientNotes);
@@ -163,9 +163,10 @@ router.post('/onboarding/complete', authenticateToken, requireSpecialist, Specia
 router.put('/:specialistId/verification', authenticateToken, requireAdmin, SpecialistController.toggleVerification);
 
 // Public routes (parameterized routes must come last, with caching)
+// optionalAuth on profile routes lets us skip stripping when the specialist views their own profile
 router.get('/', cacheMiddleware(120, 'specialists'), SpecialistController.searchSpecialists);
-router.get('/:specialistId', cacheMiddleware(300, 'specialist'), SpecialistController.getProfile);
-router.get('/:specialistId/public', cacheMiddleware(300, 'specialist-pub'), SpecialistController.getPublicProfile);
+router.get('/:specialistId', optionalAuth, cacheMiddleware(300, 'specialist'), SpecialistController.getProfile);
+router.get('/:specialistId/public', optionalAuth, cacheMiddleware(300, 'specialist-pub'), SpecialistController.getPublicProfile);
 router.get('/:specialistId/services', cacheMiddleware(300, 'specialist-svc'), SpecialistController.getSpecialistServices);
 router.get('/:specialistId/before-after', cacheMiddleware(300, 'specialist-ba'), SpecialistController.getPublicBeforeAfterPhotos);
 

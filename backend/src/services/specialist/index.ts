@@ -92,19 +92,18 @@ interface SpecialistWithUser extends Specialist {
 /**
  * Strip private/sensitive specialist fields from public responses.
  * Only reveal these after a booking is CONFIRMED or COMPLETED.
+ * Handles both plain objects and Prisma model instances (with toJSON).
  */
 export function stripPrivateSpecialistFields(specialist: any) {
   if (!specialist) return specialist;
-  const {
-    preciseAddress,
-    businessPhone,
-    whatsappNumber,
-    locationNotes,
-    parkingInfo,
-    accessInstructions,
-    ...publicData
-  } = specialist;
-  return publicData;
+  const obj = typeof specialist.toJSON === 'function' ? specialist.toJSON() : { ...specialist };
+  delete obj.preciseAddress;
+  delete obj.businessPhone;
+  delete obj.whatsappNumber;
+  delete obj.locationNotes;
+  delete obj.parkingInfo;
+  delete obj.accessInstructions;
+  return obj;
 }
 
 export class SpecialistService {

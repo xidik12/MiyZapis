@@ -1352,23 +1352,34 @@ export class BookingService {
       // Transform bookings to include flattened fields for frontend compatibility
       const transformedBookings = bookings.map(booking => {
         const scheduledDate = new Date(booking.scheduledAt);
+
+        // Strip private specialist fields for non-confirmed/completed bookings
+        let service = booking.service;
+        if (service?.specialist && !['CONFIRMED', 'COMPLETED'].includes(booking.status)) {
+          service = {
+            ...service,
+            specialist: stripPrivateSpecialistFields(service.specialist),
+          };
+        }
+
         return {
           ...booking,
+          service,
           // Flattened customer fields
           customerName: booking.customer ? `${booking.customer.firstName} ${booking.customer.lastName}`.trim() : 'Unknown Customer',
           customerEmail: booking.customer?.email,
           customerPhone: booking.customer?.phoneNumber,
-          
-          // Flattened service fields  
+
+          // Flattened service fields
           serviceName: booking.service?.name || 'Unknown Service',
-          
+
           // Flattened date/time fields
           date: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD format
           time: scheduledDate.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
-          
+
           // Amount field (frontend expects 'amount' not 'totalAmount')
           amount: booking.totalAmount,
-          
+
           // Type field (defaulting to in-person as meetingLink field doesn't exist)
           type: 'in-person',
         };

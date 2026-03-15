@@ -257,9 +257,13 @@ export class SpecialistController {
 
       const specialist = await SpecialistService.getProfile(specialistId);
 
+      // If the authenticated user IS this specialist, return full data (no stripping)
+      const authReq = req as unknown as AuthenticatedRequest;
+      const isOwner = authReq.user?.id && specialist.userId === authReq.user.id;
+
       res.json(
         createSuccessResponse({
-          specialist: stripForPublicResponse(specialist),
+          specialist: isOwner ? specialist : stripForPublicResponse(specialist),
         })
       );
     } catch (error: unknown) {
@@ -305,9 +309,13 @@ export class SpecialistController {
 
       const specialist = await SpecialistService.getProfile(specialistId);
 
+      // If the authenticated user IS this specialist, return full data (no stripping)
+      const authReq = req as unknown as AuthenticatedRequest;
+      const isOwner = authReq.user?.id && specialist.userId === authReq.user.id;
+
       res.json(
         createSuccessResponse({
-          specialist: stripForPublicResponse(specialist),
+          specialist: isOwner ? specialist : stripForPublicResponse(specialist),
         })
       );
     } catch (error: unknown) {
@@ -1566,7 +1574,11 @@ export class SpecialistController {
         return;
       }
 
-      res.json(createSuccessResponse({ specialist: stripForPublicResponse(specialist) }));
+      // If the authenticated user IS this specialist, return full data (no stripping)
+      const authReq = req as unknown as AuthenticatedRequest;
+      const isOwner = authReq.user?.id && specialist.userId === authReq.user.id;
+
+      res.json(createSuccessResponse({ specialist: isOwner ? specialist : stripForPublicResponse(specialist) }));
     } catch (error) {
       logger.error('Get specialist by slug error:', error);
       res.status(500).json(

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
+import { locationService, CityData } from '../services/location.service';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
@@ -76,6 +77,7 @@ const SearchPage: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isFilterTrayOpen, setIsFilterTrayOpen] = useState(false);
+  const [availableCities, setAvailableCities] = useState<CityData[]>([]);
   // Saved filter presets
   const [presets, setPresets] = useState<Array<{ name: string; data: Record<string, unknown> }>>(() => {
     try {
@@ -146,6 +148,11 @@ const SearchPage: React.FC = () => {
 
     fetchCategories();
   }, [t]);
+
+  // Fetch available cities for location filter
+  useEffect(() => {
+    locationService.getCities(undefined, 50).then(setAvailableCities).catch(() => setAvailableCities([]));
+  }, []);
 
   // Debounce search query (memoization optimization)
   useEffect(() => {
@@ -743,6 +750,22 @@ const SearchPage: React.FC = () => {
                 </select>
               </div>
 
+              {/* City Selector */}
+              <div className="flex-1 sm:flex-none">
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
+                >
+                  <option value="">{t('search.allCities') || 'All cities'}</option>
+                  {availableCities.map((city) => (
+                    <option key={`main-${city.city}-${city.state}`} value={city.city}>
+                      {city.city}{city.state ? `, ${city.state}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Sort Selector */}
               <div className="flex-1 sm:flex-none">
                 <select
@@ -1130,16 +1153,21 @@ const SearchPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Location Input */}
+                {/* City / Location Selector */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.location') || 'Location'}</label>
-                  <input
-                    type="text"
+                  <select
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
-                    placeholder={t('search.locationPlaceholder') || 'City or area'}
                     className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
-                  />
+                  >
+                    <option value="">{t('search.allCities') || 'All cities'}</option>
+                    {availableCities.map((city) => (
+                      <option key={`${city.city}-${city.state}`} value={city.city}>
+                        {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Sort By Dropdown */}

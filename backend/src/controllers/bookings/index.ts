@@ -6,6 +6,26 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
+import { stripPrivateSpecialistFields } from '@/services/specialist';
+
+/**
+ * Strip private specialist fields from a booking's nested service.specialist
+ * unless the booking status is CONFIRMED or COMPLETED (when the customer
+ * needs the precise address/contact details to attend the appointment).
+ */
+function stripBookingSpecialistFields(booking: any) {
+  if (!booking) return booking;
+  if (booking.service?.specialist && !['CONFIRMED', 'COMPLETED'].includes(booking.status)) {
+    return {
+      ...booking,
+      service: {
+        ...booking.service,
+        specialist: stripPrivateSpecialistFields(booking.service.specialist),
+      },
+    };
+  }
+  return booking;
+}
 
 export class BookingController {
   // Create a new booking
@@ -54,7 +74,7 @@ export class BookingController {
 
       res.status(201).json(
         createSuccessResponse({
-          booking,
+          booking: stripBookingSpecialistFields(booking),
           autoBooking: booking.service.specialist.autoBooking,
           message: booking.service.specialist.autoBooking
             ? 'Your booking is automatically confirmed!'
@@ -341,9 +361,11 @@ export class BookingController {
         return;
       }
 
+      // Specialists see full data for their own bookings; customers see stripped data for non-confirmed bookings
+      const isSpecialist = booking.specialistId === req.user.id;
       res.json(
         createSuccessResponse({
-          booking,
+          booking: isSpecialist ? booking : stripBookingSpecialistFields(booking),
         })
       );
     } catch (error: unknown) {
@@ -425,9 +447,11 @@ export class BookingController {
 
       const booking = await BookingService.updateBooking(bookingId, updateData);
 
+      // Specialists see full data; customers see stripped data for non-confirmed bookings
+      const isSpecialist = existingBooking.specialistId === req.user.id;
       res.json(
         createSuccessResponse({
-          booking,
+          booking: isSpecialist ? booking : stripBookingSpecialistFields(booking),
         })
       );
     } catch (error: unknown) {
@@ -497,7 +521,7 @@ export class BookingController {
 
       res.json(
         createSuccessResponse({
-          booking,
+          booking: stripBookingSpecialistFields(booking),
           message: 'Booking confirmed successfully',
         })
       );
@@ -577,7 +601,7 @@ export class BookingController {
 
       res.json(
         createSuccessResponse({
-          booking,
+          booking: stripBookingSpecialistFields(booking),
           message: 'Booking rejected successfully',
         })
       );
@@ -670,7 +694,7 @@ export class BookingController {
 
       res.json(
         createSuccessResponse({
-          booking,
+          booking: stripBookingSpecialistFields(booking),
           message: 'Booking cancelled successfully',
         })
       );
@@ -851,7 +875,7 @@ export class BookingController {
 
       res.json(
         createSuccessResponse({
-          booking,
+          booking: stripBookingSpecialistFields(booking),
           message: paymentConfirmed
             ? 'Booking completed and payment recorded successfully'
             : 'Booking completion cancelled - please ensure payment is received first',
@@ -1002,7 +1026,7 @@ export class BookingController {
 
       res.status(201).json(
         createSuccessResponse(
-          { booking },
+          { booking: stripBookingSpecialistFields(booking) },
           { message: 'Booking created successfully' }
         )
       );

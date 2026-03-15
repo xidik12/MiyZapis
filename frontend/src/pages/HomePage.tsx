@@ -7,7 +7,8 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
-import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon } from '@/components/icons';
+import { locationService, CityData } from '@/services/location.service';
+import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   'beauty-wellness': SparklesIcon,
@@ -81,6 +82,8 @@ const HomePage: React.FC = () => {
   const [popularServicesLoading, setPopularServicesLoading] = useState(true);
   const [topSpecialists, setTopSpecialists] = useState<any[]>([]);
   const [specialistsLoading, setSpecialistsLoading] = useState(true);
+  const [cities, setCities] = useState<CityData[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(true);
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -90,6 +93,7 @@ const HomePage: React.FC = () => {
   const catReveal = useScrollReveal();
   const howReveal = useScrollReveal();
   const specReveal = useScrollReveal();
+  const citiesReveal = useScrollReveal();
   const commReveal = useScrollReveal();
   const forSpecReveal = useScrollReveal();
   const ctaReveal = useScrollReveal();
@@ -165,10 +169,23 @@ const HomePage: React.FC = () => {
       }
     };
 
+    const loadCities = async () => {
+      try {
+        setCitiesLoading(true);
+        const data = await locationService.getCities(undefined, 12);
+        if (isMounted) setCities(data);
+      } catch {
+        if (isMounted) setCities([]);
+      } finally {
+        if (isMounted) setCitiesLoading(false);
+      }
+    };
+
     loadCommunityPreview();
     loadCategories();
     loadPopularServices();
     loadTopSpecialists();
+    loadCities();
 
     return () => {
       isMounted = false;
@@ -783,6 +800,117 @@ const HomePage: React.FC = () => {
               {t('featuredSpecialists.viewAll')}
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  BROWSE BY CITY                                               */}
+      {/* ============================================================ */}
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
+        <div>
+          <div
+            ref={citiesReveal.ref}
+            className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
+          >
+            <div className="text-center mb-10 sm:mb-12">
+              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
+                {t('browseByCities.title')}
+              </h2>
+              <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
+                {t('browseByCities.subtitle')}
+              </p>
+            </div>
+
+            {citiesLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border border-gray-100 dark:border-gray-700 animate-pulse">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 mb-3" />
+                    <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : cities.length > 0 ? (
+              <>
+                {/* Mobile: horizontal scroll */}
+                <div className="sm:hidden flex overflow-x-auto gap-3 pb-4 px-1 scrollbar-hide snap-x snap-mandatory -mx-3">
+                  {cities.slice(0, 12).map((city) => (
+                    <Link
+                      key={`${city.city}-${city.state}`}
+                      to={`/search?location=${encodeURIComponent(city.city)}`}
+                      className="group flex-none w-[160px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 p-4 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
+                    >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-sky-100 dark:bg-sky-900/30">
+                        <MapPinIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-sky-600 transition-colors truncate">
+                        {city.city}
+                      </h3>
+                      {city.state && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 truncate">{city.state}{city.country ? `, ${city.country}` : ''}</p>
+                      )}
+                      <span className="text-xs text-sky-600 dark:text-sky-400 font-medium">
+                        {city.specialistsCount} {t('browseByCities.specialists')}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Desktop: grid */}
+                <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {cities.slice(0, 8).map((city, idx) => (
+                    <Link
+                      key={`${city.city}-${city.state}`}
+                      to={`/search?location=${encodeURIComponent(city.city)}`}
+                      className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-1"
+                      style={{ transitionDelay: `${idx * 40}ms` }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900/30">
+                          <MapPinIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                        </div>
+                        <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 transition-all duration-200 group-hover:translate-x-0.5 mt-1" />
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-sky-600 transition-colors">
+                        {city.city}
+                      </h3>
+                      {city.state && (
+                        <p className="text-sm text-gray-400 dark:text-gray-500 mb-2">{city.state}{city.country ? `, ${city.country}` : ''}</p>
+                      )}
+                      <span className="text-sky-600 dark:text-sky-400 font-semibold text-xs px-2.5 py-0.5 bg-sky-50 dark:bg-sky-900/20 rounded-full">
+                        {city.specialistsCount} {t('browseByCities.specialists')}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 sm:p-10 border border-gray-100 dark:border-gray-700 text-center">
+                <div className="w-16 h-16 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center mx-auto mb-4">
+                  <MapPinIcon className="w-8 h-8 text-sky-400 dark:text-sky-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 mz-heading">
+                  {t('browseByCities.noCities')}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                  {t('browseByCities.noCitiesDesc')}
+                </p>
+              </div>
+            )}
+
+            {cities.length > 8 && (
+              <div className="text-center mt-8">
+                <Link
+                  to="/search"
+                  className="inline-flex items-center gap-2 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold transition-colors text-sm"
+                >
+                  {t('browseByCities.viewAll')}
+                  <ArrowRightIcon className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
