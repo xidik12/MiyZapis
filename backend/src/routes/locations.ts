@@ -10,8 +10,6 @@ import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
-// Apply rate limiting to all location routes to prevent abuse
-router.use(searchRateLimit);
 const googleMapsClient = new Client({});
 
 /**
@@ -33,7 +31,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
  * GET /locations/search
  * Search locations using Google Places Autocomplete API
  */
-router.get('/search', cacheMiddleware(120, 'location-search'), async (req: Request, res: Response) => {
+router.get('/search', searchRateLimit, cacheMiddleware(120, 'location-search'), async (req: Request, res: Response) => {
   try {
     const { q, types = 'address' } = req.query;
 
@@ -133,7 +131,7 @@ router.get('/search', cacheMiddleware(120, 'location-search'), async (req: Reque
  * GET /locations/geocode
  * Get detailed location information from place ID or address
  */
-router.get('/geocode', cacheMiddleware(300, 'geocode'), async (req: Request, res: Response) => {
+router.get('/geocode', searchRateLimit, cacheMiddleware(300, 'geocode'), async (req: Request, res: Response) => {
   try {
     const { placeId, address } = req.query;
 
@@ -414,7 +412,7 @@ router.get('/nearby', async (req: Request, res: Response) => {
  * GET /locations/cities
  * Get list of cities with specialists
  */
-router.get('/cities', cacheMiddleware(300, 'cities'), async (req: Request, res: Response) => {
+router.get('/cities', async (req: Request, res: Response) => {
   try {
     const { search, limit = '50' } = req.query;
     const limitNum = parseInt(limit as string, 10) || 50;
