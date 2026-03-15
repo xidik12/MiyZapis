@@ -334,7 +334,7 @@ const SpecialistSettings: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Settings Navigation */}
               <div className="lg:col-span-1">
                 <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4">

@@ -242,7 +242,7 @@ const SpecialistProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {t('errors.specialistNotFound')}
           </h2>
           <Link 
@@ -294,10 +294,10 @@ const SpecialistProfilePage: React.FC = () => {
                 <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 sm:gap-3">
                   <span className="inline-flex items-center gap-0.5 sm:gap-1"><StarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400" active />{(specialist.rating || 0).toFixed(1)}</span>
                   {typeof specialist.completedBookings === 'number' && (
-                    <span className="inline-flex items-center gap-0.5 sm:gap-1 hidden sm:flex"><CalendarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{specialist.completedBookings} {t('specialist.completedJobs') || 'Completed'}</span>
+                    <span className="items-center gap-0.5 sm:gap-1 hidden sm:inline-flex"><CalendarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{specialist.completedBookings} {t('specialist.completedJobs') || 'Completed'}</span>
                   )}
                   {typeof specialist.responseTime === 'number' && specialist.responseTime > 0 && (
-                    <span className="inline-flex items-center gap-0.5 sm:gap-1 hidden md:flex"><ClockIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />~{specialist.responseTime} {t('common.minutes') || 'min'}</span>
+                    <span className="items-center gap-0.5 sm:gap-1 hidden md:inline-flex"><ClockIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />~{specialist.responseTime} {t('common.minutes') || 'min'}</span>
                   )}
                 </div>
               </div>
@@ -697,7 +697,7 @@ const SpecialistProfilePage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4 sm:py-8">
                   {t('specialist.noServices')}
                 </p>
               )}
@@ -754,7 +754,7 @@ const SpecialistProfilePage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4 sm:py-8">
                   {t('reviews.noReviews')}
                 </p>
               )}

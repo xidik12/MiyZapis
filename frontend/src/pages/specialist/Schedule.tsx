@@ -178,7 +178,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.startTime')}
@@ -249,7 +249,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.repeatOnDays')}
                 </label>
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {weekDays.map(day => (
                     <label key={day.key} className="flex items-center cursor-pointer py-1 touch-manipulation">
                       <input

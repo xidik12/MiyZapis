@@ -1037,8 +1037,8 @@ const SpecialistProfile: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Modern Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 md:p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6 md:gap-8">
             {/* Profile Info Section */}
             <div className="flex items-start gap-6">
               {/* Modern Avatar */}
@@ -1192,7 +1192,7 @@ const SpecialistProfile: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
@@ -1230,7 +1230,7 @@ const SpecialistProfile: React.FC = () => {
               
               {/* Personal Information Tab */}
               {activeTab === 'personal' && (
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1597,7 +1597,7 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Professional Tab */}
               {activeTab === 'professional' && (
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1811,7 +1811,7 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Business Tab */}
               {activeTab === 'business' && (
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -2000,7 +2000,7 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Payment Tab */}
               {activeTab === 'payment' && (
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -2231,7 +2231,7 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Portfolio Tab */}
               {activeTab === 'portfolio' && (
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -61,14 +61,14 @@ const Confirmation: React.FC<ConfirmationProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
-        <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 text-center">
+        <CheckCircleIcon className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
 
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
         </h3>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
           {isAutoBooked
             ? t('booking.autoBookingConfirmed')
             : isPendingPayment
@@ -289,7 +289,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
       </div>
 
       {/* Booking Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
         <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
           {t('booking.bookingDetails')}
         </h4>
@@ -416,7 +416,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
 
       {/* You Might Also Like */}
       {similarServices.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
           <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
             {t('booking.youMightAlsoLike') || 'You Might Also Like'}
           </h4>

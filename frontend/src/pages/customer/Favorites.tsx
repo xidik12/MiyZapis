@@ -160,7 +160,7 @@ const CustomerFavorites: React.FC = () => {
     if (pagination.totalPages <= 1) return null;
 
     return (
-      <div className="flex items-center justify-between mt-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 sm:mt-6 md:mt-8 gap-3 sm:gap-0">
         <div className="text-sm text-gray-700 dark:text-gray-300">
           Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
         </div>
@@ -207,10 +207,10 @@ const CustomerFavorites: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {t('customer.favorites.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -266,7 +266,7 @@ const CustomerFavorites: React.FC = () => {
         {/* Tabs */}
         <div className="mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8">
               {[
                 { key: 'specialists', label: t('customer.favorites.specialists') },
                 { key: 'services', label: t('customer.favorites.services') },
@@ -297,11 +297,11 @@ const CustomerFavorites: React.FC = () => {
         {activeTab === 'specialists' && (
           <>
             {filteredSpecialists.length === 0 && !isLoading ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 md:p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  {searchQuery ? 
-                    `No specialists found for "${searchQuery}"` : 
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  {searchQuery ?
+                    `No specialists found for "${searchQuery}"` :
                     (t('customer.favorites.noSpecialists') || 'No favorite specialists')
                   }
                 </h3>
@@ -337,12 +337,12 @@ const CustomerFavorites: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {filteredSpecialists.map((favorite) => {
                     const specialist = favorite.specialist;
                     return (
                       <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition-shadow">
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                           {/* Header with favorite button */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-start space-x-3">
@@ -456,11 +456,11 @@ const CustomerFavorites: React.FC = () => {
         {activeTab === 'services' && (
           <>
             {filteredServices.length === 0 && !isLoading ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 md:p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  {searchQuery ? 
-                    `No services found for "${searchQuery}"` : 
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  {searchQuery ?
+                    `No services found for "${searchQuery}"` :
                     (t('customer.favorites.noServices') || 'No favorite services')
                   }
                 </h3>
@@ -496,7 +496,7 @@ const CustomerFavorites: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {filteredServices.map((favorite) => {
                     const service = favorite.service;
                     return (
@@ -515,7 +515,7 @@ const CustomerFavorites: React.FC = () => {
                           </button>
                         </div>
 
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                           {/* Service Info */}
                           <h3 className="font-semibold text-gray-900 dark:text-white mb-2 truncate">
                             {service.name}

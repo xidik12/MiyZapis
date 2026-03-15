@@ -1094,9 +1094,9 @@ const BookingFlow: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6 md:mb-8">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
@@ -1105,7 +1105,7 @@ const BookingFlow: React.FC = () => {
             {t('navigation.back')}
           </button>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             {t('booking.bookService')}
           </h1>
 
@@ -1118,7 +1118,7 @@ const BookingFlow: React.FC = () => {
         <BookingProgress steps={steps} currentStep={state.currentStep} />
 
         {/* Step Content */}
-        <div className="mb-8 min-h-[300px]">
+        <div className="mb-4 sm:mb-6 md:mb-8 min-h-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={steps[state.currentStep]?.id}

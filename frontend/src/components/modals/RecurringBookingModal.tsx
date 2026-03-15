@@ -75,7 +75,7 @@ export const RecurringBookingModal: React.FC<RecurringBookingModalProps> = ({
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-[calc(100vw-2rem)] sm:max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
                 <ArrowPathIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
@@ -93,7 +93,7 @@ export const RecurringBookingModal: React.FC<RecurringBookingModalProps> = ({
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Frequency */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -122,12 +122,12 @@ export const RecurringBookingModal: React.FC<RecurringBookingModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   {t('recurring.repeatOn') || 'Repeat on'}
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {weekDays.map((day) => (
                     <button
                       key={day.value}
                       onClick={() => toggleDay(day.value)}
-                      className={`flex-1 py-3 rounded-xl border-2 transition-all font-medium text-sm ${
+                      className={`flex-1 min-w-[2.5rem] py-2 sm:py-3 rounded-xl border-2 transition-all font-medium text-xs sm:text-sm ${
                         formData.daysOfWeek?.includes(day.value)
                           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                           : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
@@ -252,7 +252,7 @@ export const RecurringBookingModal: React.FC<RecurringBookingModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={onClose}
               className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"

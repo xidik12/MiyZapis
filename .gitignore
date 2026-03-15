@@ -160,4 +160,5 @@ playwright/.cache/
 
 # Build artifacts
 *.tgz
-*.tar.gz
+*.tar.gz.firecrawl/
+docs/

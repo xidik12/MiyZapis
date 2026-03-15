@@ -112,7 +112,7 @@ export function DataTable<T extends Record<string, any>>({
                 <th
                   key={column.key}
                   className={`
-                    px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
+                    px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
                     ${column.sortable ? 'cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800' : ''}
                     ${column.className || ''}
                   `}
@@ -145,7 +145,7 @@ export function DataTable<T extends Record<string, any>>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+                  className="px-3 py-8 sm:px-6 sm:py-12 text-center text-sm text-gray-500 dark:text-gray-400"
                 >
                   {emptyMessage}
                 </td>
@@ -159,7 +159,7 @@ export function DataTable<T extends Record<string, any>>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 ${column.className || ''}`}
+                      className={`px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 ${column.className || ''}`}
                     >
                       {column.render ? column.render(row) : row[column.key]}
                     </td>

@@ -13,7 +13,7 @@ const ServiceSelect: React.FC<ServiceSelectProps> = ({ service }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
           {t('booking.selectedService')}
         </h3>

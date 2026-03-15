@@ -314,7 +314,7 @@ const HomePage: React.FC = () => {
           background: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 30%, #0284C7 50%, #0ea5e9 75%, #0c4a6e 100%)',
         }}>
           {/* Animated gradient orbs */}
-          <div className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
+          <div className="absolute w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] rounded-full pointer-events-none"
             style={{
               top: '-10%', right: '-5%',
               background: 'radial-gradient(circle, rgba(14,165,233,0.6) 0%, transparent 70%)',
@@ -322,7 +322,7 @@ const HomePage: React.FC = () => {
               filter: 'blur(60px)',
             }}
           />
-          <div className="absolute w-[400px] h-[400px] rounded-full pointer-events-none"
+          <div className="absolute w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full pointer-events-none"
             style={{
               bottom: '-10%', left: '-5%',
               background: 'radial-gradient(circle, rgba(5,150,105,0.4) 0%, transparent 70%)',
@@ -443,7 +443,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
                       >
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#E0F0F8' }}>
                           <CategoryIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
@@ -872,7 +872,7 @@ const HomePage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-100 dark:border-gray-700 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-5 sm:p-6 md:p-8 border border-gray-100 dark:border-gray-700 text-center">
                 <p className="text-gray-500 dark:text-gray-400 mb-4">
                   {t('community.noPostsYet')}
                 </p>
@@ -897,14 +897,14 @@ const HomePage: React.FC = () => {
         <div className="absolute inset-0" style={{
           background: 'linear-gradient(135deg, #0c4a6e 0%, #0284C7 40%, #0369a1 70%, #0c4a6e 100%)',
         }}>
-          <div className="absolute w-[400px] h-[400px] rounded-full pointer-events-none"
+          <div className="absolute w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full pointer-events-none"
             style={{
               top: '-15%', right: '10%',
               background: 'radial-gradient(circle, rgba(14,165,233,0.3) 0%, transparent 70%)',
               filter: 'blur(50px)',
             }}
           />
-          <div className="absolute w-[300px] h-[300px] rounded-full pointer-events-none"
+          <div className="absolute w-[150px] sm:w-[220px] md:w-[300px] h-[150px] sm:h-[220px] md:h-[300px] rounded-full pointer-events-none"
             style={{
               bottom: '-10%', left: '5%',
               background: 'radial-gradient(circle, rgba(5,150,105,0.25) 0%, transparent 70%)',

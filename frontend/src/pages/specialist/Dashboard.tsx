@@ -604,7 +604,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <StatCard
           title={t('dashboard.specialist.totalBookings')}
           value={dashboardData.stats.totalBookings}
@@ -650,10 +650,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
             <EyeIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">
@@ -672,9 +672,9 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">
@@ -702,9 +702,9 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           )}
         </div>
 
-        <div className="bg-primary-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-primary-500 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">{t('dashboard.quickActions')}</h3>
+            <h3 className="text-base sm:text-lg font-semibold">{t('dashboard.quickActions')}</h3>
             <UserGroupIcon className="w-5 h-5 opacity-80" />
           </div>
           <div className="space-y-2">
@@ -734,11 +734,11 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       </div>
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Bookings */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.recentBookings')}</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.recentBookings')}</h3>
             <Link 
               to="/specialist/bookings"
               className="text-primary-600 hover:text-primary-700 text-sm font-medium"
@@ -777,9 +777,9 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.todaysSchedule')}</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.todaysSchedule')}</h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {currentTime.toLocaleDateString(
                 language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',

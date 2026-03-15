@@ -1170,7 +1170,7 @@ const SearchPage: React.FC = () => {
                       onChange={(e) => setSelectedRating(Number(e.target.value))}
                       className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] text-right">{selectedRating > 0 ? `${selectedRating}★` : 'Any'}</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[2rem] sm:min-w-[3rem] text-right">{selectedRating > 0 ? `${selectedRating}★` : 'Any'}</span>
                   </div>
                 </div>
 
@@ -1187,7 +1187,7 @@ const SearchPage: React.FC = () => {
                       onChange={(e) => setSelectedDistance(Number(e.target.value))}
                       className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] sm:min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
                   </div>
                 </div>
 

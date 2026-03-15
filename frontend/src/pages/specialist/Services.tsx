@@ -681,10 +681,10 @@ const SpecialistServices: React.FC = () => {
   // Removed getDayName function as availability is no longer supported
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
-    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
-      <div className="flex justify-between items-start mb-4">
+    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               {getLocalizedText(service, 'name')}
             </h3>
@@ -708,7 +708,7 @@ const SpecialistServices: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed">
             {getLocalizedText(service, 'description')}
           </p>
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -729,8 +729,8 @@ const SpecialistServices: React.FC = () => {
             </span>
           </div>
         </div>
-        <div className="text-right ml-4">
-          <div className="text-2xl font-bold text-primary-600 mb-2">
+        <div className="text-right ml-4 mt-2 sm:mt-0">
+          <div className="text-xl sm:text-2xl font-bold text-primary-600 mb-2">
             {service.basePrice && !isNaN(Number(service.basePrice)) ? formatPrice(Number(service.basePrice), getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -742,7 +742,7 @@ const SpecialistServices: React.FC = () => {
       {/* Removed availability and timeSlots display as they're not part of backend schema */}
 
       {/* Action Buttons */}
-      <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={() => openEditModal(service)}
           className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-xl font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
@@ -802,12 +802,12 @@ const SpecialistServices: React.FC = () => {
         <FloatingElements />
       
       <div className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {t('services.title')}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -831,10 +831,10 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
-                <div className="p-3 bg-primary-100 rounded-xl mr-4">
+                <div className="p-2 sm:p-3 bg-primary-100 rounded-xl mr-3 sm:mr-4">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-4.5a3.375 3.375 0 00-3.375 3.375v2.625m15 0a3 3 0 01-3 3h-9a3 3 0 01-3-3m12-9.75v-2.25a2.25 2.25 0 00-2.25-2.25h-7.5a2.25 2.25 0 00-2.25 2.25v2.25" />
                   </svg>
@@ -843,13 +843,13 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.activeServices')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.filter(s => s.isActive).length}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{services.filter(s => s.isActive).length}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
-                <div className="p-3 bg-secondary-100 rounded-xl mr-4">
+                <div className="p-2 sm:p-3 bg-secondary-100 rounded-xl mr-3 sm:mr-4">
                   <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -858,13 +858,13 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.totalBookings')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.reduce((sum, s) => sum + getBookingCount(s), 0)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{services.reduce((sum, s) => sum + getBookingCount(s), 0)}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
-                <div className="p-3 bg-success-100 rounded-xl mr-4">
+                <div className="p-2 sm:p-3 bg-success-100 rounded-xl mr-3 sm:mr-4">
                   <svg className="w-6 h-6 text-success-600" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                   </svg>
@@ -873,12 +873,12 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.avgRating')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {services.length === 0 
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                    {services.length === 0
                       ? t('services.noDataYet') || 'No data yet'
                       : (() => {
                           const validRatings = services.filter(s => s.rating && !isNaN(s.rating));
-                          return validRatings.length === 0 
+                          return validRatings.length === 0
                             ? t('services.noDataYet') || 'No data yet'
                             : (validRatings.reduce((sum, s) => sum + s.rating, 0) / validRatings.length).toFixed(1);
                         })()
@@ -887,9 +887,9 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
-                <div className="p-3 bg-warning-100 rounded-xl mr-4">
+                <div className="p-2 sm:p-3 bg-warning-100 rounded-xl mr-3 sm:mr-4">
                   <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
@@ -898,8 +898,8 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.avgPrice')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {services.length === 0 
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                    {services.length === 0
                       ? t('services.noDataYet') || 'No data yet'
                       : (() => {
                           const validPrices = services.filter(s => {
@@ -918,7 +918,7 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 mb-8">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20 mb-4 sm:mb-6 md:mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -1009,7 +1009,7 @@ const SpecialistServices: React.FC = () => {
           )}
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {filteredServices.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))}
@@ -1017,7 +1017,7 @@ const SpecialistServices: React.FC = () => {
 
           {filteredServices.length === 0 && (
             <div className="text-center py-12">
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 max-w-md mx-auto">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-white/20 dark:border-gray-700/20 max-w-md mx-auto">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-4.5a3.375 3.375 0 00-3.375 3.375v2.625m15 0a3 3 0 01-3 3h-9a3 3 0 01-3-3m12-9.75v-2.25a2.25 2.25 0 00-2.25-2.25h-7.5a2.25 2.25 0 00-2.25 2.25v2.25" />
                 </svg>
@@ -1042,9 +1042,9 @@ const SpecialistServices: React.FC = () => {
       {/* Add/Edit Service Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {editingService ? t('serviceForm.editService') : t('serviceForm.addService')}
               </h2>
               <button
