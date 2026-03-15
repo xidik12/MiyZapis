@@ -111,7 +111,8 @@ class LocationService {
 
       const response = await api.get('/locations/cities', { params });
 
-      return response.data.data.cities || [];
+      const cities = response.data.data.cities || [];
+      return cities.filter((c: CityData) => c.city && c.city.trim() !== '');
     } catch (error) {
       console.error('Error fetching cities:', error);
       return [];
