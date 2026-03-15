@@ -644,7 +644,7 @@ const CustomerSettings: React.FC = () => {
                   </h2>
 
                   {/* Google OAuth Users - Set Password */}
-                  {(!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google') && (
+                  {(currentUser?.hasPassword === false || (!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google')) && (
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
                       <div className="flex items-start space-x-3">
                         <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
@@ -677,7 +677,7 @@ const CustomerSettings: React.FC = () => {
                           {t('customer.settings.lastChanged')}: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : t('customer.settings.never')}
                         </p>
                       </div>
-                      {(!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google') ? (
+                      {(currentUser?.hasPassword === false || (!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google')) ? (
                         <button
                           onClick={() => setShowSetPasswordModal(true)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"

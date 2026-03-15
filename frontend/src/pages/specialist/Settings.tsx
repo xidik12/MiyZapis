@@ -607,7 +607,7 @@ const SpecialistSettings: React.FC = () => {
                       </h4>
 
                       {/* Google OAuth Users - Set Password */}
-                      {(!user?.passwordLastChanged && user?.authProvider === 'google') && (
+                      {(user?.hasPassword === false || (!user?.passwordLastChanged && user?.authProvider === 'google')) && (
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                           <div className="flex items-start space-x-3">
                             <LockClosedIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
@@ -631,7 +631,7 @@ const SpecialistSettings: React.FC = () => {
                       )}
 
                       {/* Regular Users - Change Password */}
-                      {(user?.passwordLastChanged || user?.authProvider !== 'google') && !(user?.authProvider === 'google' && !user?.passwordLastChanged) && (
+                      {user?.hasPassword !== false && (user?.passwordLastChanged || user?.authProvider !== 'google') && !(user?.authProvider === 'google' && !user?.passwordLastChanged) && (
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div>

@@ -14,9 +14,20 @@ import {
 } from 'date-fns';
 import { Booking } from '../../types';
 
+interface CalendarBlock {
+  id: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  isAvailable: boolean;
+  reason?: string;
+  isRecurring?: boolean;
+  recurringDays?: number[];
+}
+
 interface MonthViewProps {
   currentDate: Date;
   bookings: Booking[];
+  availabilityBlocks?: CalendarBlock[];
   onDateClick?: (date: Date) => void;
   onBookingClick?: (booking: Booking) => void;
 }
@@ -24,6 +35,7 @@ interface MonthViewProps {
 export const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   bookings,
+  availabilityBlocks = [],
   onDateClick,
   onBookingClick
 }) => {
@@ -46,6 +58,22 @@ export const MonthView: React.FC<MonthViewProps> = ({
       const bookingDate = parseISO(booking.scheduledAt);
       return isSameDay(bookingDate, date);
     }).slice(0, 3); // Limit to 3 bookings per day for display
+  };
+
+  const getAvailabilityForDay = (date: Date): { available: number; blocked: number } => {
+    let available = 0;
+    let blocked = 0;
+    availabilityBlocks.forEach(block => {
+      const blockDate = new Date(block.startDateTime);
+      if (isSameDay(blockDate, date)) {
+        if (block.isAvailable) {
+          available++;
+        } else {
+          blocked++;
+        }
+      }
+    });
+    return { available, blocked };
   };
 
   const getBookingColor = (status: string): string => {
@@ -89,6 +117,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
               const totalBookings = bookings.filter(b =>
                 isSameDay(parseISO(b.scheduledAt), day)
               ).length;
+              const { available, blocked } = getAvailabilityForDay(day);
+              const hasAvailability = available > 0 || blocked > 0;
 
               return (
                 <motion.div
@@ -99,11 +129,13 @@ export const MonthView: React.FC<MonthViewProps> = ({
                   onClick={() => onDateClick?.(day)}
                   className={`min-h-[100px] sm:min-h-[120px] p-2 border-r border-b border-gray-200 dark:border-gray-700 last:border-r-0 ${
                     isCurrentMonth
-                      ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      ? hasAvailability && available > 0
+                        ? 'bg-green-50/40 dark:bg-green-900/10 hover:bg-green-50/60 dark:hover:bg-green-900/20'
+                        : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       : 'bg-gray-50/50 dark:bg-gray-900/30'
                   } cursor-pointer transition-colors relative group`}
                 >
-                  {/* Date number */}
+                  {/* Date number + availability indicators */}
                   <div className="flex items-center justify-between mb-1">
                     <span
                       className={`text-sm font-semibold ${
@@ -116,11 +148,25 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     >
                       {format(day, 'd')}
                     </span>
-                    {totalBookings > 3 && (
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        +{totalBookings - 3}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {available > 0 && (
+                        <span className="flex items-center gap-0.5 text-[10px] font-medium text-green-600 dark:text-green-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          {available}
+                        </span>
+                      )}
+                      {blocked > 0 && (
+                        <span className="flex items-center gap-0.5 text-[10px] font-medium text-red-500 dark:text-red-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                          {blocked}
+                        </span>
+                      )}
+                      {totalBookings > 3 && (
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          +{totalBookings - 3}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bookings */}
@@ -163,10 +209,18 @@ export const MonthView: React.FC<MonthViewProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+      <div className="flex flex-wrap items-center gap-4 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
         <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-          Status:
+          Legend:
         </span>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded bg-green-500"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Available</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded bg-red-500"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Blocked</span>
+        </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-yellow-500"></div>
           <span className="text-xs text-gray-600 dark:text-gray-400">Pending</span>
@@ -178,10 +232,6 @@ export const MonthView: React.FC<MonthViewProps> = ({
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-purple-500"></div>
           <span className="text-xs text-gray-600 dark:text-gray-400">In Progress</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-green-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Completed</span>
         </div>
       </div>
     </div>

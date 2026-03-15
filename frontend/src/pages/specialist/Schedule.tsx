@@ -435,9 +435,28 @@ const SpecialistSchedule: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Get all availability blocks for the week
-        const startDate = formatLocalDate(weekDays[0]);
-        const endDate = formatLocalDate(weekDays[6]);
+        // Get availability blocks for the visible range
+        // In month view, fetch the full month; in card view, just the week
+        let startDate: string;
+        let endDate: string;
+        if (viewMode === 'month') {
+          const monthStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), 1);
+          const monthEnd = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth() + 1, 0);
+          // Extend to cover partial weeks at start/end of month
+          const weekStartDay = monthStart.getDay();
+          const adjustedStart = new Date(monthStart);
+          adjustedStart.setDate(adjustedStart.getDate() - (weekStartDay === 0 ? 6 : weekStartDay - 1));
+          const weekEndDay = monthEnd.getDay();
+          const adjustedEnd = new Date(monthEnd);
+          if (weekEndDay !== 0) {
+            adjustedEnd.setDate(adjustedEnd.getDate() + (7 - weekEndDay));
+          }
+          startDate = formatLocalDate(adjustedStart);
+          endDate = formatLocalDate(adjustedEnd);
+        } else {
+          startDate = formatLocalDate(weekDays[0]);
+          endDate = formatLocalDate(weekDays[6]);
+        }
 
         const blocks = await retryRequest(
           () => specialistService.getAvailabilityBlocks(startDate, endDate),
@@ -469,7 +488,7 @@ const SpecialistSchedule: React.FC = () => {
     };
 
     loadAvailabilityBlocks();
-  }, [currentWeekStart]);
+  }, [currentWeekStart, viewMode]);
 
   // Load bookings for the week
   useEffect(() => {
@@ -975,6 +994,7 @@ const SpecialistSchedule: React.FC = () => {
         <MonthView
           currentDate={currentWeekStart}
           bookings={filteredBookings}
+          availabilityBlocks={availabilityBlocks}
           onDateClick={(date) => {
             setPreSelectedDate(date);
             setPreSelectedTime('09:00');

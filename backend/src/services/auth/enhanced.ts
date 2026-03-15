@@ -549,10 +549,11 @@ export class AuthService {
       const { password, ...userWithoutPassword } = user;
       userWithoutPassword.userType = targetUserType;
 
-      // Compute profileComplete for frontend
+      // Compute profileComplete and hasPassword for frontend
       const profileComplete = targetUserType === 'SPECIALIST'
         ? (user.specialist?.onboardingCompleted ?? false)
         : true;
+      const hasPassword = !!password;
 
       // Create tokens
       const tokens = await this.createTokens(userWithoutPassword);
@@ -564,7 +565,7 @@ export class AuthService {
       });
 
       return {
-        user: { ...userWithoutPassword, profileComplete },
+        user: { ...userWithoutPassword, profileComplete, hasPassword },
         tokens,
       };
     } catch (error) {
@@ -656,6 +657,7 @@ export class AuthService {
             userType: validUserType,
             isEmailVerified: googleData.verified_email,
             isActive: true,
+            authProvider: 'google',
             // Free 3-month trial period
             trialStartDate,
             trialEndDate,
@@ -740,6 +742,8 @@ export class AuthService {
               lastLoginAt: new Date(),
               // Update avatar if user doesn't have one
               ...(user.avatar ? {} : { avatar: googleData.picture }),
+              // Set authProvider to google if not already set
+              ...(!user.authProvider ? { authProvider: 'google' } : {}),
               // Don't update userType for admin users
             },
           });
@@ -776,6 +780,8 @@ export class AuthService {
               userType: targetUserType, // Switch active role
               // Update avatar if user doesn't have one
               ...(user.avatar ? {} : { avatar: googleData.picture }),
+              // Set authProvider to google if not already set
+              ...(!user.authProvider ? { authProvider: 'google' } : {}),
             },
           });
 
@@ -793,6 +799,13 @@ export class AuthService {
         ? (user.specialist?.onboardingCompleted ?? false)
         : true;
 
+      // Check if user has a password set (for frontend password management UI)
+      const userWithPassword = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { password: true },
+      });
+      const hasPassword = !!userWithPassword?.password;
+
       // Create tokens
       const tokens = await this.createTokens(user);
 
@@ -804,7 +817,7 @@ export class AuthService {
       });
 
       return {
-        user: { ...user, profileComplete },
+        user: { ...user, profileComplete, hasPassword },
         tokens,
         isNewUser,
       };
