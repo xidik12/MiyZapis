@@ -831,7 +831,7 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-2 sm:p-3 bg-primary-100 rounded-xl mr-3 sm:mr-4">

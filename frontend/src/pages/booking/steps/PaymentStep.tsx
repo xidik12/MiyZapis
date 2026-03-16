@@ -219,7 +219,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                 <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
                   +{pointsToEarn}

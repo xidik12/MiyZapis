@@ -89,7 +89,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {analytics.overview.totalReferrals}

@@ -95,7 +95,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <EyeIcon className="h-4 w-4 text-gray-400 mr-1" />

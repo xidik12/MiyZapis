@@ -583,7 +583,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {beforeAfterPhotos.map((photo: any, index: number) => (
                     <div key={photo.id || `ba-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                      <div className="grid grid-cols-2 gap-0.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
                         <div className="relative aspect-square bg-gray-100 dark:bg-gray-700">
                           <img
                             src={getAbsoluteImageUrl(photo.beforeUrl)}

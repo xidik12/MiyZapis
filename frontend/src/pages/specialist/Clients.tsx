@@ -149,7 +149,7 @@ const SkeletonCard: React.FC = () => (
         <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
       </div>
     </div>
-    <div className="mt-4 grid grid-cols-3 gap-3">
+    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
       <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
       <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
       <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
@@ -198,7 +198,7 @@ const StatsBar: React.FC<{
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
@@ -367,7 +367,7 @@ const ClientCard: React.FC<{
         </div>
 
         {/* Quick stats row */}
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
             <p className="text-lg font-bold text-gray-900 dark:text-white">{client.bookingsCount}</p>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
@@ -795,7 +795,7 @@ const SpecialistClients: React.FC = () => {
           {loading && (
             <>
               {/* Stats skeleton */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}

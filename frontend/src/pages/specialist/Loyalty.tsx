@@ -715,7 +715,7 @@ const SpecialistLoyalty: React.FC = () => {
                           {(() => {
                             const accent = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE').accentText;
                             return (
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}</p>
                                   <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>

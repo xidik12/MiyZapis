@@ -1177,7 +1177,7 @@ const SearchPage: React.FC = () => {
                     <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴100-₴200</button>
                     <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">{t('search.price.over200') || 'Over ₴200'}</button>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">{t('search.minPrice') || 'Min'}</label>
                       <input

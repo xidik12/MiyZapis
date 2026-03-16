@@ -135,7 +135,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     {t('wallet.quickActions.subtitle')}
                   </p>
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
                       <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.redeemRewards')}</span>

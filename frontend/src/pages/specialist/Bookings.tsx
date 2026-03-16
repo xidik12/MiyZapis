@@ -1150,7 +1150,7 @@ const SpecialistBookings: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6 md:mb-8">
           {/* Quick Stats */}
-          <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 lg:mt-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
@@ -1346,7 +1346,7 @@ const SpecialistBookings: React.FC = () => {
               </div>
 
               {/* Service and details */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.service')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">
@@ -1365,7 +1365,7 @@ const SpecialistBookings: React.FC = () => {
               </div>
 
               {/* Date and type */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.dateTime')}</p>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">

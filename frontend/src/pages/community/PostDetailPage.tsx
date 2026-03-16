@@ -357,7 +357,7 @@ const PostDetailPage: React.FC = () => {
               </div>
             </div>
             {isOwner && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Link
                   to={`/community/edit/${post.id}`}
                   className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -649,7 +649,7 @@ const PostDetailPage: React.FC = () => {
           aria-modal="true"
           onClick={() => setLightbox({ ...lightbox, open: false })}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center px-2 sm:px-4" onClick={(e) => e.stopPropagation()}>
             <button
               className="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl font-bold z-10"
               onClick={() => setLightbox({ ...lightbox, open: false })}

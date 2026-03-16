@@ -541,7 +541,7 @@ const CustomerDashboard: React.FC = () => {
                       </span>
                       <span className="flex items-center">
                         <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        <span className="truncate max-w-[120px] sm:max-w-none">
+                        <span className="truncate max-w-[100px] sm:max-w-[120px] md:max-w-none">
                           {nextAppointment.type === 'online' 
                             ? t('dashboard.specialist.online')
                             : nextAppointment.location

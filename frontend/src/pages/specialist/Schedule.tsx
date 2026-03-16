@@ -1247,7 +1247,7 @@ const SpecialistSchedule: React.FC = () => {
       )}
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center p-2 bg-green-100 dark:bg-green-900 rounded-xl w-9 h-9 flex-shrink-0">

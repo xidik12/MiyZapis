@@ -350,7 +350,7 @@ const CommunityPage: React.FC = () => {
 
         {/* Price Range Filter */}
         {(activeFilter === 'SALE' || activeFilter === 'RENT') && (
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
               {t('community.priceRange') || 'Price range'}:
             </span>
@@ -359,7 +359,7 @@ const CommunityPage: React.FC = () => {
               min="0"
               placeholder={t('community.minPrice') || 'Min price'}
               value={minPrice}
-              className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-24 sm:w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               onChange={(e) => setMinPrice(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePriceRangeApply()}
             />
@@ -369,7 +369,7 @@ const CommunityPage: React.FC = () => {
               min="0"
               placeholder={t('community.maxPrice') || 'Max price'}
               value={maxPrice}
-              className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-24 sm:w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               onChange={(e) => setMaxPrice(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePriceRangeApply()}
             />

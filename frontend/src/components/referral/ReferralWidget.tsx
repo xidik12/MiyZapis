@@ -101,7 +101,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
             {analytics.overview.totalReferrals}

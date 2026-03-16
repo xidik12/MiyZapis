@@ -375,7 +375,7 @@ const CustomerBookings: React.FC = () => {
 
         {activeTab === 'bookings' && (<>
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
             <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
@@ -580,7 +580,7 @@ const CustomerBookings: React.FC = () => {
                     </div>
 
                     {/* Service and amount */}
-                    <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{t('bookings.service')}</p>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">

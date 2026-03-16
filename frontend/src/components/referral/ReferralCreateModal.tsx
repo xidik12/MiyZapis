@@ -208,7 +208,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   {t('referral.create.orShare')}
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availableChannels.map((channel) => (
                     <button
                       key={channel}

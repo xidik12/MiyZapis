@@ -535,7 +535,7 @@ const HomePage: React.FC = () => {
               {/* Connecting line */}
               <div className="timeline-line" />
 
-              <div className="grid grid-cols-4 gap-8 relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 relative">
                 {howItWorksSteps.map((step, index) => (
                   <div
                     key={step.step}
@@ -560,7 +560,7 @@ const HomePage: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 mz-heading">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[220px] mx-auto">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs sm:max-w-[220px] mx-auto">
                       {step.description}
                     </p>
                   </div>
@@ -1203,7 +1203,7 @@ const HomePage: React.FC = () => {
               </div>
 
               {/* Floating stats card */}
-              <div className="absolute -bottom-2 -left-2 sm:left-4 lg:-left-4 rounded-xl p-4 sm:p-5 max-w-[220px] z-10"
+              <div className="absolute -bottom-2 -left-2 sm:left-4 lg:-left-4 rounded-xl p-4 sm:p-5 max-w-xs sm:max-w-[220px] z-10"
                 style={{
                   background: 'rgba(255,255,255,0.12)',
                   backdropFilter: 'blur(16px)',
