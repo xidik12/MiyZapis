@@ -9,6 +9,7 @@ import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon, PlusIcon, PencilIcon, TrashIcon, XIcon as XMarkIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -32,6 +33,7 @@ const SpecialistLoyalty: React.FC = () => {
   const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
   const [rewardsLoading, setRewardsLoading] = useState(false);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const [deleteRewardId, setDeleteRewardId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLoyaltyData();
@@ -164,18 +166,22 @@ const SpecialistLoyalty: React.FC = () => {
     }
   };
 
-  const handleDeleteReward = async (rewardId: string) => {
-    if (!window.confirm(t('loyalty.confirmDeleteReward') || 'Are you sure you want to delete this reward?')) {
-      return;
-    }
+  const handleDeleteReward = (rewardId: string) => {
+    setDeleteRewardId(rewardId);
+  };
+
+  const confirmDeleteReward = async () => {
+    if (!deleteRewardId) return;
 
     try {
-      await RewardsService.deleteReward(rewardId);
+      await RewardsService.deleteReward(deleteRewardId);
       toast.success(t('loyalty.success.deleteReward') || 'Reward deleted successfully');
       fetchRewards();
     } catch (error) {
       console.error('Error deleting reward:', error);
       toast.error(t('loyalty.error.deleteReward') || 'Failed to delete reward');
+    } finally {
+      setDeleteRewardId(null);
     }
   };
 
@@ -1475,6 +1481,14 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
           </form>
         </div>
       </div>
+
+      <ConfirmModal
+        open={!!deleteRewardId}
+        title={t('loyalty.confirmDeleteReward') || 'Are you sure you want to delete this reward?'}
+        variant="danger"
+        onConfirm={confirmDeleteReward}
+        onCancel={() => setDeleteRewardId(null)}
+      />
     </div>
   );
 };

@@ -19,6 +19,7 @@ import ProfessionalTab from '../../components/settings/ProfessionalTab';
 import WorkingHoursTab from '../../components/settings/WorkingHoursTab';
 import PaymentDetailsTab from '../../components/settings/PaymentDetailsTab';
 import PortfolioTab from '../../components/settings/PortfolioTab';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -46,6 +47,7 @@ const SpecialistSettings: React.FC = () => {
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isUnlinkingTelegram, setIsUnlinkingTelegram] = useState(false);
+  const [showUnlinkTelegramModal, setShowUnlinkTelegramModal] = useState(false);
 
   // Specialist profile state (for booking link, payment options, etc.)
   const [specialist, setSpecialist] = useState<any>(null);
@@ -237,9 +239,11 @@ const SpecialistSettings: React.FC = () => {
     }
   };
 
-  const handleUnlinkTelegram = async () => {
-    const confirmMsg = t('customer.settings.telegramUnlinkConfirm');
-    if (!window.confirm(confirmMsg)) return;
+  const handleUnlinkTelegram = () => {
+    setShowUnlinkTelegramModal(true);
+  };
+
+  const confirmUnlinkTelegram = async () => {
     try {
       setIsUnlinkingTelegram(true);
       await userService.unlinkTelegram();
@@ -254,6 +258,7 @@ const SpecialistSettings: React.FC = () => {
       toast.error(err.message || 'Failed to unlink Telegram');
     } finally {
       setIsUnlinkingTelegram(false);
+      setShowUnlinkTelegramModal(false);
     }
   };
 
@@ -1127,6 +1132,25 @@ const SpecialistSettings: React.FC = () => {
             window.location.reload();
           }}
         />
+
+      <ConfirmModal
+        open={showUnlinkTelegramModal}
+        title={t('customer.settings.telegramUnlinkConfirm') || 'Unlink Telegram?'}
+        message={
+          language === 'uk' ? 'Ви впевнені, що хочете відключити Telegram?' :
+          language === 'ru' ? 'Вы уверены, что хотите отключить Telegram?' :
+          'Are you sure you want to unlink your Telegram account?'
+        }
+        confirmText={
+          language === 'uk' ? 'Відключити' :
+          language === 'ru' ? 'Отключить' :
+          'Unlink'
+        }
+        loading={isUnlinkingTelegram}
+        variant="danger"
+        onConfirm={confirmUnlinkTelegram}
+        onCancel={() => setShowUnlinkTelegramModal(false)}
+      />
       </div>
 
   );

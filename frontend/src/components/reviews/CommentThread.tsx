@@ -10,6 +10,7 @@ import {
 import { Avatar } from '@/components/ui/Avatar';
 import { ReviewComment } from '@/services/reviews.service';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 interface CommentThreadProps {
   comments: ReviewComment[];
@@ -51,6 +52,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isOwnComment = currentUserId === comment.user.id;
   const userName = `${comment.user.firstName} ${comment.user.lastName}`;
@@ -79,17 +81,19 @@ const CommentItem: React.FC<CommentItemProps> = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm(t('reviews.comments.deleteConfirm') || 'Are you sure you want to delete this comment?')) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDelete = async () => {
     try {
       setIsDeleting(true);
       await onDelete(comment.id);
     } catch (error) {
       console.error('Failed to delete comment:', error);
       setIsDeleting(false);
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -245,6 +249,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
             ))}
           </div>
         )}
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title={t('reviews.comments.deleteConfirm') || 'Are you sure you want to delete this comment?'}
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
       </div>
     </div>
   );

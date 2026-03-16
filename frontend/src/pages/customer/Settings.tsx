@@ -17,6 +17,7 @@ import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 
 interface Address {
@@ -124,6 +125,7 @@ const CustomerSettings: React.FC = () => {
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isUnlinkingTelegram, setIsUnlinkingTelegram] = useState(false);
+  const [showUnlinkTelegramModal, setShowUnlinkTelegramModal] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
@@ -384,9 +386,11 @@ const CustomerSettings: React.FC = () => {
     }
   };
 
-  const handleUnlinkTelegram = async () => {
-    const confirmMsg = t('customer.settings.telegramUnlinkConfirm');
-    if (!window.confirm(confirmMsg)) return;
+  const handleUnlinkTelegram = () => {
+    setShowUnlinkTelegramModal(true);
+  };
+
+  const confirmUnlinkTelegram = async () => {
     try {
       setIsUnlinkingTelegram(true);
       await userService.unlinkTelegram();
@@ -401,6 +405,7 @@ const CustomerSettings: React.FC = () => {
       toast.error(err.message || 'Failed to unlink Telegram');
     } finally {
       setIsUnlinkingTelegram(false);
+      setShowUnlinkTelegramModal(false);
     }
   };
 
@@ -1352,6 +1357,25 @@ const CustomerSettings: React.FC = () => {
             window.location.reload();
           }, 1500);
         }}
+      />
+
+      <ConfirmModal
+        open={showUnlinkTelegramModal}
+        title={t('customer.settings.telegramUnlinkConfirm') || 'Unlink Telegram?'}
+        message={
+          language === 'uk' ? 'Ви впевнені, що хочете відключити Telegram?' :
+          language === 'ru' ? 'Вы уверены, что хотите отключить Telegram?' :
+          'Are you sure you want to unlink your Telegram account?'
+        }
+        confirmText={
+          language === 'uk' ? 'Відключити' :
+          language === 'ru' ? 'Отключить' :
+          'Unlink'
+        }
+        loading={isUnlinkingTelegram}
+        variant="danger"
+        onConfirm={confirmUnlinkTelegram}
+        onCancel={() => setShowUnlinkTelegramModal(false)}
       />
     </div>
   );

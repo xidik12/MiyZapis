@@ -9,6 +9,7 @@ import { formatDate as sharedFormatDate } from '@/utils/dateUtils';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -29,6 +30,7 @@ const CustomerLoyalty: React.FC = () => {
   const [myRedemptions, setMyRedemptions] = useState<RewardRedemption[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const [redeemReward, setRedeemReward] = useState<LoyaltyReward | null>(null);
 
   useEffect(() => {
     fetchLoyaltyData();
@@ -136,15 +138,15 @@ const CustomerLoyalty: React.FC = () => {
       return;
     }
 
-    const prefix = t('loyalty.confirmRedeemPrefix') || 'Redeem';
-    const suffix = t('loyalty.confirmRedeemSuffix') || 'for';
-    if (!window.confirm(`${prefix} "${reward.title}" ${suffix} ${formatPoints(reward.pointsRequired)} ${t('loyalty.points') || 'points'}?`)) {
-      return;
-    }
+    setRedeemReward(reward);
+  };
+
+  const confirmRedeemReward = async () => {
+    if (!redeemReward) return;
 
     try {
-      setRedeemingId(rewardId);
-      await RewardsService.redeemReward(rewardId);
+      setRedeemingId(redeemReward.id);
+      await RewardsService.redeemReward(redeemReward.id);
       toast.success(t('loyalty.success.redeem') || 'Reward redeemed successfully!');
 
       // Refresh both loyalty data and rewards
@@ -158,6 +160,7 @@ const CustomerLoyalty: React.FC = () => {
       toast.error(message);
     } finally {
       setRedeemingId(null);
+      setRedeemReward(null);
     }
   };
 
@@ -958,6 +961,16 @@ const CustomerLoyalty: React.FC = () => {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={!!redeemReward}
+        title={`${t('loyalty.confirmRedeemPrefix') || 'Redeem'} "${redeemReward?.title}"?`}
+        message={`${t('loyalty.confirmRedeemSuffix') || 'for'} ${redeemReward ? formatPoints(redeemReward.pointsRequired) : ''} ${t('loyalty.points') || 'points'}`}
+        confirmText={t('loyalty.redeem') || 'Redeem'}
+        loading={!!redeemingId}
+        variant="primary"
+        onConfirm={confirmRedeemReward}
+        onCancel={() => setRedeemReward(null)}
+      />
     </div>
   );
 };

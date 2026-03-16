@@ -14,6 +14,7 @@ import { StatCard } from '../ui/StatCard';
 import type { UserAnalytics, Period } from '@/types/admin.types';
 import { adminAnalyticsService } from '@/services/adminAnalytics.service';
 import { toast } from 'react-toastify';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 // Sanitize user-provided strings to prevent XSS from stored malicious names
 function sanitizeDisplayName(name: string): string {
@@ -50,6 +51,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ action: 'activate' | 'deactivate' | 'delete'; userIds: string[] } | null>(null);
 
   // User list state
   const [users, setUsers] = useState<User[]>([]);
@@ -129,11 +131,12 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       return;
     }
 
-    const confirmed = window.confirm(
-      `${t('admin.users.confirmAction')} ${action} ${userIds.length} ${t('admin.users.userCount')}`
-    );
+    setPendingAction({ action, userIds });
+  };
 
-    if (!confirmed) return;
+  const confirmUserAction = async () => {
+    if (!pendingAction) return;
+    const { action, userIds } = pendingAction;
 
     try {
       setActionLoading(true);
@@ -147,6 +150,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       toast.error(err.message || `Failed to ${action} users`);
     } finally {
       setActionLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -400,6 +404,16 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
         {t('admin.table.showing')} {users.length} {t('admin.table.of')} {pagination.totalItems} {t('admin.users.totalUsers')}
       </div>
+
+      <ConfirmModal
+        open={!!pendingAction}
+        title={`${t('admin.users.confirmAction')} ${pendingAction?.action} ${pendingAction?.userIds.length} ${t('admin.users.userCount')}`}
+        variant={pendingAction?.action === 'delete' ? 'danger' : 'primary'}
+        confirmText={pendingAction?.action === 'delete' ? (t('common.delete') || 'Delete') : (t('common.confirm') || 'Confirm')}
+        loading={actionLoading}
+        onConfirm={confirmUserAction}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 };

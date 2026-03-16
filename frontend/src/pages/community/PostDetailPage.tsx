@@ -15,6 +15,7 @@ import {
   BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -39,6 +40,7 @@ const PostDetailPage: React.FC = () => {
   const [reportDetails, setReportDetails] = useState('');
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
 
   const isOwner = post && user ? post.authorId === user.id : false;
 
@@ -248,14 +250,7 @@ const PostDetailPage: React.FC = () => {
                   {t('community.editComment') || 'Edit'}
                 </button>
                 <button
-                  onClick={async () => {
-                    if (window.confirm(t('community.deleteCommentConfirm') || 'Delete this comment?')) {
-                      try {
-                        await communityService.deleteComment(comment.id);
-                        loadComments();
-                      } catch {}
-                    }
-                  }}
+                  onClick={() => setDeleteCommentId(comment.id)}
                   className="text-xs text-gray-500 hover:text-red-500"
                 >
                   {t('community.deleteComment') || 'Delete'}
@@ -572,35 +567,31 @@ const PostDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('community.deleteConfirm') || 'Delete this post?'}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              {t('community.deleteWarning') || 'This action cannot be undone.'}
-            </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-              >
-                {t('common.cancel') || 'Cancel'}
-              </button>
-              <button
-                onClick={handleDeletePost}
-                disabled={isDeleting}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isDeleting
-                  ? t('community.deleting') || 'Deleting...'
-                  : t('common.delete') || 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showDeleteModal}
+        title={t('community.deleteConfirm') || 'Delete this post?'}
+        message={t('community.deleteWarning') || 'This action cannot be undone.'}
+        confirmText={t('common.delete') || 'Delete'}
+        loading={isDeleting}
+        variant="danger"
+        onConfirm={handleDeletePost}
+        onCancel={() => setShowDeleteModal(false)}
+      />
+
+      <ConfirmModal
+        open={!!deleteCommentId}
+        title={t('community.deleteCommentConfirm') || 'Delete this comment?'}
+        variant="danger"
+        onConfirm={async () => {
+          if (!deleteCommentId) return;
+          try {
+            await communityService.deleteComment(deleteCommentId);
+            loadComments();
+          } catch {}
+          setDeleteCommentId(null);
+        }}
+        onCancel={() => setDeleteCommentId(null)}
+      />
 
       {/* Report Modal */}
       {showReportModal && (
