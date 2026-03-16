@@ -611,8 +611,8 @@ const SpecialistSettings: React.FC = () => {
                         {t('customer.settings.passwordManagement')}
                       </h4>
 
-                      {/* Google OAuth Users - Set Password */}
-                      {(user?.hasPassword === false || (!user?.passwordLastChanged && user?.authProvider === 'google')) && (
+                      {/* OAuth Users - Set Password */}
+                      {(!user?.hasPassword) && (
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                           <div className="flex items-start space-x-3">
                             <LockClosedIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
@@ -635,8 +635,8 @@ const SpecialistSettings: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Regular Users - Change Password */}
-                      {user?.hasPassword !== false && (user?.passwordLastChanged || user?.authProvider !== 'google') && !(user?.authProvider === 'google' && !user?.passwordLastChanged) && (
+                      {/* Users with password - Change Password */}
+                      {user?.hasPassword && (
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -647,13 +647,29 @@ const SpecialistSettings: React.FC = () => {
                                 {t('customer.settings.lastChanged')}: {user?.passwordLastChanged ? new Date(user.passwordLastChanged).toLocaleDateString() : t('customer.settings.never')}
                               </p>
                             </div>
-                            <button
-                              onClick={() => setShowChangePasswordModal(true)}
-                              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                            >
-                              <KeyIcon className="w-4 h-4 mr-2" />
-                              {t('customer.settings.changePassword')}
-                            </button>
+                            <div className="flex flex-col items-end gap-1">
+                              <button
+                                onClick={() => setShowChangePasswordModal(true)}
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                              >
+                                <KeyIcon className="w-4 h-4 mr-2" />
+                                {t('customer.settings.changePassword')}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const { authService } = await import('@/services/auth.service');
+                                    await authService.forgotPassword(user.email);
+                                    toast.success(t('auth.resetEmailSent') || 'Password reset link sent to your email');
+                                  } catch {
+                                    toast.error(t('auth.resetEmailFailed') || 'Failed to send reset email. Try again.');
+                                  }
+                                }}
+                                className="text-xs text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+                              >
+                                {t('auth.forgotPassword') || 'Forgot password?'}
+                              </button>
+                            </div>
                           </div>
 
                           <div className="text-sm text-gray-500 dark:text-gray-400">

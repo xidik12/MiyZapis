@@ -690,12 +690,28 @@ const CustomerSettings: React.FC = () => {
                           {t('customer.settings.setPassword')}
                         </button>
                       ) : (
-                        <button
-                          onClick={() => setShowChangePasswordModal(true)}
-                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-                        >
-                          {t('customer.settings.changePassword')}
-                        </button>
+                        <div className="flex flex-col items-end gap-1">
+                          <button
+                            onClick={() => setShowChangePasswordModal(true)}
+                            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                          >
+                            {t('customer.settings.changePassword')}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const { authService } = await import('@/services/auth.service');
+                                await authService.forgotPassword(currentUser.email);
+                                toast.success(t('auth.resetEmailSent') || 'Password reset link sent to your email');
+                              } catch {
+                                toast.error(t('auth.resetEmailFailed') || 'Failed to send reset email. Try again.');
+                              }
+                            }}
+                            className="text-xs text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+                          >
+                            {t('auth.forgotPassword') || 'Forgot password?'}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
