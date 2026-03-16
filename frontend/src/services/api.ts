@@ -86,6 +86,19 @@ const clearPendingRequest = (key: string): void => {
 let authToken: string | null = null;
 let refreshToken: string | null = null;
 
+// Token refresh queue — prevents multiple parallel 401s from racing
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach(cb => cb(token));
+  refreshSubscribers = [];
+}
+
 export const setAuthTokens = (tokens: { accessToken: string; refreshToken: string }) => {
   authToken = tokens.accessToken;
   refreshToken = tokens.refreshToken;
@@ -298,33 +311,50 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Check if this is a login request - don't attempt refresh for login failures
       const isLoginRequest = originalRequest.url?.includes('/auth/login');
-      
+
       if (!isLoginRequest) {
         originalRequest._retry = true;
-        
+
         const refreshTokenValue = getRefreshToken();
-        if (refreshTokenValue) {
-          try {
-            const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
-              refreshToken: refreshTokenValue,
-            });
-            
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-            setAuthTokens({ accessToken, refreshToken: newRefreshToken || refreshTokenValue });
-            
-            // Retry original request with new token
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            return api(originalRequest);
-          } catch (refreshError) {
-            // Refresh failed, redirect to login
-            clearAuthTokens();
-            window.location.href = '/auth/login';
-            return Promise.reject(refreshError);
-          }
-        } else {
-          // No refresh token, redirect to login
+        if (!refreshTokenValue) {
           clearAuthTokens();
           window.location.href = '/auth/login';
+          return Promise.reject(error);
+        }
+
+        // If already refreshing, queue this request to retry after refresh completes
+        if (isRefreshing) {
+          return new Promise((resolve) => {
+            subscribeTokenRefresh((newToken: string) => {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              resolve(api(originalRequest));
+            });
+          });
+        }
+
+        isRefreshing = true;
+
+        try {
+          const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
+            refreshToken: refreshTokenValue,
+          });
+
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          setAuthTokens({ accessToken, refreshToken: newRefreshToken || refreshTokenValue });
+
+          isRefreshing = false;
+          onTokenRefreshed(accessToken);
+
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          isRefreshing = false;
+          refreshSubscribers = [];
+          // Refresh failed, redirect to login
+          clearAuthTokens();
+          window.location.href = '/auth/login';
+          return Promise.reject(refreshError);
         }
       }
     }
