@@ -1011,7 +1011,8 @@ const CustomerBookings: React.FC = () => {
         open={!!cancelBookingId}
         title={t('bookings.cancelBooking') || 'Cancel Booking?'}
         message={t('bookings.cancelWarning') || 'Are you sure you want to cancel this booking? This action cannot be undone.'}
-        confirmText={t('actions.cancel') || 'Cancel Booking'}
+        confirmText={t('bookings.confirmCancel') || 'Yes, Cancel Booking'}
+        cancelText={t('bookings.keepBooking') || 'Keep Booking'}
         loading={cancelLoading}
         variant="danger"
         onConfirm={confirmCancelBooking}
