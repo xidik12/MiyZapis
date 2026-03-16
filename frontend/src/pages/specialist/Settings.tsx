@@ -19,7 +19,7 @@ import ProfessionalTab from '../../components/settings/ProfessionalTab';
 import WorkingHoursTab from '../../components/settings/WorkingHoursTab';
 import PaymentDetailsTab from '../../components/settings/PaymentDetailsTab';
 import PortfolioTab from '../../components/settings/PortfolioTab';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();

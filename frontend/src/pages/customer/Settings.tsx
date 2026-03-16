@@ -17,7 +17,7 @@ import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 
 interface Address {

@@ -10,7 +10,7 @@ import {
 import { Avatar } from '@/components/ui/Avatar';
 import { ReviewComment } from '@/services/reviews.service';
 import { useLanguage } from '@/contexts/LanguageContext';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface CommentThreadProps {
   comments: ReviewComment[];

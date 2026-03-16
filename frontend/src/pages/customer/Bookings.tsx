@@ -12,6 +12,7 @@ import { FilterState } from '../../types/booking';
 import { CalendarIcon, EyeIcon, ClockIcon, StarIcon, ListBulletsIcon, CheckCircleIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { getTranslatedServiceName, getTranslatedDuration, statusColors, getBookingCurrency } from '../../utils/bookingUtils';
 import { validateReviewTags } from '../../constants/reviewTags';
@@ -48,6 +49,8 @@ const CustomerBookings: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [bookingToReview, setBookingToReview] = useState<Booking | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -154,15 +157,24 @@ const CustomerBookings: React.FC = () => {
     toast.info(t('booking.rescheduleAlert'));
   };
 
-  const handleCancelBooking = async (bookingId: string) => {
+  const handleCancelBooking = (bookingId: string) => {
+    setCancelBookingId(bookingId);
+  };
+
+  const confirmCancelBooking = async () => {
+    if (!cancelBookingId) return;
     try {
-      const result = await dispatch(cancelBooking({ bookingId, reason: 'Customer requested cancellation' }));
+      setCancelLoading(true);
+      const result = await dispatch(cancelBooking({ bookingId: cancelBookingId, reason: 'Customer requested cancellation' }));
       if (cancelBooking.fulfilled.match(result)) {
-        toast.success(t('bookings.cancelledSuccessfully'));
+        toast.success(t('bookings.cancelledSuccessfully') || 'Booking cancelled successfully');
       }
     } catch (error) {
       logger.error('Failed to cancel booking:', error);
       toast.error(t('bookings.cancelFailed') || 'Failed to cancel booking. Please try again.');
+    } finally {
+      setCancelLoading(false);
+      setCancelBookingId(null);
     }
   };
 
@@ -993,6 +1005,18 @@ const CustomerBookings: React.FC = () => {
           serviceName={getTranslatedServiceName(bookingToReview.service?.name || bookingToReview.serviceName || 'Unknown Service', t)}
         />
       )}
+
+      {/* Cancel Booking Confirmation Modal */}
+      <ConfirmModal
+        open={!!cancelBookingId}
+        title={t('bookings.cancelBooking') || 'Cancel Booking?'}
+        message={t('bookings.cancelWarning') || 'Are you sure you want to cancel this booking? This action cannot be undone.'}
+        confirmText={t('actions.cancel') || 'Cancel Booking'}
+        loading={cancelLoading}
+        variant="danger"
+        onConfirm={confirmCancelBooking}
+        onCancel={() => setCancelBookingId(null)}
+      />
       </div>
     </div>
   );

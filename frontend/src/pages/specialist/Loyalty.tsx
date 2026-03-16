@@ -9,7 +9,7 @@ import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon, PlusIcon, PencilIcon, TrashIcon, XIcon as XMarkIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 

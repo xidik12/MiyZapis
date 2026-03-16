@@ -15,7 +15,7 @@ import {
   BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();

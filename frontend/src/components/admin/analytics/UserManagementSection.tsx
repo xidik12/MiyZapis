@@ -14,7 +14,7 @@ import { StatCard } from '../ui/StatCard';
 import type { UserAnalytics, Period } from '@/types/admin.types';
 import { adminAnalyticsService } from '@/services/adminAnalytics.service';
 import { toast } from 'react-toastify';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 // Sanitize user-provided strings to prevent XSS from stored malicious names
 function sanitizeDisplayName(name: string): string {

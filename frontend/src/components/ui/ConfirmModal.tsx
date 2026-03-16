@@ -7,9 +7,10 @@ interface ConfirmModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  variant?: 'default' | 'danger' | 'warning';
+  variant?: 'default' | 'danger' | 'warning' | 'primary';
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -18,6 +19,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   message,
   confirmText,
   cancelText,
+  loading = false,
   onConfirm,
   onCancel,
   variant = 'default',
@@ -42,8 +44,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   if (!shouldRender) return null;
 
-  const confirmButtonStyles = {
+  const confirmButtonStyles: Record<string, string> = {
     default: 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
+    primary: 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40',
     danger: 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40',
     warning: 'bg-yellow-600 hover:bg-yellow-700 shadow-lg shadow-yellow-500/30 hover:shadow-xl hover:shadow-yellow-500/40',
   };
@@ -69,15 +72,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 active:scale-95"
+            disabled={loading}
+            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 active:scale-95 disabled:opacity-60"
           >
             {resolvedCancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 active:scale-95 ${confirmButtonStyles[variant]}`}
+            disabled={loading}
+            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${confirmButtonStyles[variant]}`}
           >
-            {resolvedConfirmText}
+            {loading ? (t('common.loading') || 'Loading...') : resolvedConfirmText}
           </button>
         </div>
       </div>
