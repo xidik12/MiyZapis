@@ -494,9 +494,14 @@ export class AuthController {
         return;
       }
 
+      // Add hasPassword flag so frontend knows whether to show Set vs Change password
+      const userResponse = { ...user, hasPassword: !!user.password };
+      // Never send the actual password hash to the frontend
+      delete (userResponse as Record<string, unknown>).password;
+
       res.json(
         createSuccessResponse({
-          user,
+          user: userResponse,
         })
       );
     } catch (error: unknown) {

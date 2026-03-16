@@ -682,7 +682,7 @@ const CustomerSettings: React.FC = () => {
                           {t('customer.settings.lastChanged')}: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : t('customer.settings.never')}
                         </p>
                       </div>
-                      {(currentUser?.hasPassword === false || (!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google')) ? (
+                      {(!currentUser?.hasPassword) ? (
                         <button
                           onClick={() => setShowSetPasswordModal(true)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"

@@ -801,7 +801,7 @@ const SearchPage: React.FC = () => {
                   <option value="">{t('search.allCities') || 'All cities'}</option>
                   {availableCities.map((city) => (
                     <option key={`main-${city.city}-${city.state}`} value={city.city}>
-                      {city.city}{city.state ? `, ${city.state}` : ''}
+                      {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
                     </option>
                   ))}
                 </select>
