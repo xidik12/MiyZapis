@@ -7,6 +7,7 @@ import { sanitizeSearchQuery, sanitizeText, sanitizeNumber } from '@/utils/sanit
 import { config } from '@/config';
 import { searchRateLimit } from '@/middleware/security';
 import { cacheMiddleware } from '@/middleware/cache';
+import { ukraineCities } from '@/data/ukraine-cities';
 
 const router = Router();
 
@@ -89,6 +90,23 @@ router.get('/search', searchRateLimit, cacheMiddleware(120, 'location-search'), 
           latitude: s.latitude,
           longitude: s.longitude,
         }));
+
+      // Also include matching static Ukraine cities in search fallback
+      const existingLocationNames = new Set(locations.map(l => l.mainText));
+      const queryLower = sanitizedQuery.toLowerCase();
+      for (const uc of ukraineCities) {
+        if (existingLocationNames.has(uc.city)) continue;
+        if (!uc.city.toLowerCase().includes(queryLower) && !uc.state.toLowerCase().includes(queryLower)) continue;
+        locations.push({
+          placeId: uc.city,
+          description: `${uc.city}, ${uc.state}, ${uc.country}`,
+          mainText: uc.city,
+          secondaryText: `${uc.state}, ${uc.country}`,
+          latitude: null,
+          longitude: null,
+        });
+        if (locations.length >= 10) break;
+      }
 
       return res.json(createSuccessResponse({ predictions: locations }));
     }
@@ -469,9 +487,47 @@ router.get('/cities', async (req: Request, res: Response) => {
         specialistsCount: group._count.id,
       }));
 
+    // Merge static Ukraine cities that are not already in the DB results
+    const existingCities = new Set(cities.map(c => `${c.city}|${c.state}`));
+    const sanitizedSearch = search && typeof search === 'string'
+      ? sanitizeSearchQuery(search).toLowerCase()
+      : null;
+
+    for (const uc of ukraineCities) {
+      const key = `${uc.city}|${uc.state}`;
+      if (existingCities.has(key)) continue;
+
+      // If a search filter is active, only include matching static cities
+      if (sanitizedSearch) {
+        const cityLower = uc.city.toLowerCase();
+        const stateLower = uc.state.toLowerCase();
+        if (!cityLower.includes(sanitizedSearch) && !stateLower.includes(sanitizedSearch)) {
+          continue;
+        }
+      }
+
+      cities.push({
+        city: uc.city,
+        state: uc.state,
+        country: uc.country,
+        specialistsCount: 0,
+      });
+    }
+
+    // Sort: cities with specialists first (desc), then alphabetically by city name
+    cities.sort((a, b) => {
+      if (a.specialistsCount !== b.specialistsCount) {
+        return b.specialistsCount - a.specialistsCount;
+      }
+      return a.city.localeCompare(b.city, 'uk');
+    });
+
+    // Apply limit after merging
+    const limitedCities = cities.slice(0, safeLimitNum);
+
     return res.json(createSuccessResponse({
-      cities,
-      total: cities.length,
+      cities: limitedCities,
+      total: limitedCities.length,
     }));
   } catch (error: unknown) {
     logger.error('Error fetching cities:', error);

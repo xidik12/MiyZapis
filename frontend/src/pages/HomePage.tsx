@@ -172,8 +172,15 @@ const HomePage: React.FC = () => {
     const loadCities = async () => {
       try {
         setCitiesLoading(true);
-        const data = await locationService.getCities(undefined, 12);
-        if (isMounted) setCities(data);
+        const data = await locationService.getCities(undefined, 50);
+        // Sort: cities with specialists first, then alphabetically
+        const sorted = [...data].sort((a, b) => {
+          if (a.specialistsCount !== b.specialistsCount) {
+            return b.specialistsCount - a.specialistsCount;
+          }
+          return a.city.localeCompare(b.city, 'uk');
+        });
+        if (isMounted) setCities(sorted);
       } catch {
         if (isMounted) setCities([]);
       } finally {
@@ -836,54 +843,100 @@ const HomePage: React.FC = () => {
               <>
                 {/* Mobile: horizontal scroll */}
                 <div className="sm:hidden flex overflow-x-auto gap-3 pb-4 px-1 scrollbar-hide snap-x snap-mandatory -mx-3">
-                  {cities.slice(0, 12).map((city) => (
+                  {cities.slice(0, 12).map((city) => {
+                    const hasSpecialists = city.specialistsCount > 0;
+                    return (
                     <Link
                       key={`${city.city}-${city.state}`}
                       to={`/search?location=${encodeURIComponent(city.city)}`}
-                      className="group flex-none w-[160px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 p-4 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
+                      className={`group flex-none w-[160px] snap-start rounded-xl border p-4 transition-all duration-250 hover:shadow-lg hover:-translate-y-0.5 ${
+                        hasSpecialists
+                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/60 hover:shadow-sky-500/8'
+                          : 'bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/40 opacity-75 hover:opacity-100'
+                      }`}
                     >
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-sky-100 dark:bg-sky-900/30">
-                        <MapPinIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${
+                        hasSpecialists
+                          ? 'bg-sky-100 dark:bg-sky-900/30'
+                          : 'bg-gray-100 dark:bg-gray-700/30'
+                      }`}>
+                        <MapPinIcon className={`w-5 h-5 ${
+                          hasSpecialists
+                            ? 'text-sky-600 dark:text-sky-400'
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} />
                       </div>
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-sky-600 transition-colors truncate">
+                      <h3 className={`text-sm font-semibold mb-1 group-hover:text-sky-600 transition-colors truncate ${
+                        hasSpecialists
+                          ? 'text-gray-900 dark:text-gray-100'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}>
                         {city.city}
                       </h3>
                       {city.state && (
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 truncate">{city.state}{city.country ? `, ${city.country}` : ''}</p>
                       )}
-                      <span className="text-xs text-sky-600 dark:text-sky-400 font-medium">
+                      <span className={`text-xs font-medium ${
+                        hasSpecialists
+                          ? 'text-sky-600 dark:text-sky-400'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}>
                         {city.specialistsCount} {t('browseByCities.specialists')}
                       </span>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Desktop: grid */}
                 <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {cities.slice(0, 8).map((city, idx) => (
+                  {cities.slice(0, 8).map((city, idx) => {
+                    const hasSpecialists = city.specialistsCount > 0;
+                    return (
                     <Link
                       key={`${city.city}-${city.state}`}
                       to={`/search?location=${encodeURIComponent(city.city)}`}
-                      className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-1"
+                      className={`group rounded-xl border p-5 transition-all duration-250 hover:shadow-lg hover:-translate-y-1 ${
+                        hasSpecialists
+                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/60 hover:shadow-sky-500/8'
+                          : 'bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/40 opacity-75 hover:opacity-100'
+                      }`}
                       style={{ transitionDelay: `${idx * 40}ms` }}
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900/30">
-                          <MapPinIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center ${
+                          hasSpecialists
+                            ? 'bg-sky-100 dark:bg-sky-900/30'
+                            : 'bg-gray-100 dark:bg-gray-700/30'
+                        }`}>
+                          <MapPinIcon className={`w-5 h-5 ${
+                            hasSpecialists
+                              ? 'text-sky-600 dark:text-sky-400'
+                              : 'text-gray-400 dark:text-gray-500'
+                          }`} />
                         </div>
                         <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 transition-all duration-200 group-hover:translate-x-0.5 mt-1" />
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-sky-600 transition-colors">
+                      <h3 className={`text-base font-semibold mb-1 group-hover:text-sky-600 transition-colors ${
+                        hasSpecialists
+                          ? 'text-gray-900 dark:text-gray-100'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}>
                         {city.city}
                       </h3>
                       {city.state && (
                         <p className="text-sm text-gray-400 dark:text-gray-500 mb-2">{city.state}{city.country ? `, ${city.country}` : ''}</p>
                       )}
-                      <span className="text-sky-600 dark:text-sky-400 font-semibold text-xs px-2.5 py-0.5 bg-sky-50 dark:bg-sky-900/20 rounded-full">
+                      <span className={`font-semibold text-xs px-2.5 py-0.5 rounded-full ${
+                        hasSpecialists
+                          ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20'
+                          : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/20'
+                      }`}>
                         {city.specialistsCount} {t('browseByCities.specialists')}
                       </span>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             ) : (

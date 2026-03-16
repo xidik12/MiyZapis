@@ -153,7 +153,16 @@ const SearchPage: React.FC = () => {
 
   // Fetch available cities for location filter
   useEffect(() => {
-    locationService.getCities(undefined, 50).then(setAvailableCities).catch(() => setAvailableCities([]));
+    locationService.getCities(undefined, 100).then((data) => {
+      // Sort: cities with specialists first, then alphabetically
+      const sorted = [...data].sort((a, b) => {
+        if (a.specialistsCount !== b.specialistsCount) {
+          return b.specialistsCount - a.specialistsCount;
+        }
+        return a.city.localeCompare(b.city, 'uk');
+      });
+      setAvailableCities(sorted);
+    }).catch(() => setAvailableCities([]));
   }, []);
 
   // Debounce search query (memoization optimization)
@@ -799,11 +808,24 @@ const SearchPage: React.FC = () => {
                   className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="">{t('search.allCities') || 'All cities'}</option>
-                  {availableCities.map((city) => (
-                    <option key={`main-${city.city}-${city.state}`} value={city.city}>
-                      {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
-                    </option>
-                  ))}
+                  {availableCities.filter(c => c.specialistsCount > 0).length > 0 && (
+                    <optgroup label="---">
+                      {availableCities.filter(c => c.specialistsCount > 0).map((city) => (
+                        <option key={`main-active-${city.city}-${city.state}`} value={city.city}>
+                          {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {availableCities.filter(c => c.specialistsCount === 0).length > 0 && (
+                    <optgroup label="---">
+                      {availableCities.filter(c => c.specialistsCount === 0).map((city) => (
+                        <option key={`main-empty-${city.city}-${city.state}`} value={city.city}>
+                          {city.city}{city.state ? `, ${city.state}` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
@@ -1203,11 +1225,24 @@ const SearchPage: React.FC = () => {
                     className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     <option value="">{t('search.allCities') || 'All cities'}</option>
-                    {availableCities.map((city) => (
-                      <option key={`${city.city}-${city.state}`} value={city.city}>
-                        {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
-                      </option>
-                    ))}
+                    {availableCities.filter(c => c.specialistsCount > 0).length > 0 && (
+                      <optgroup label="---">
+                        {availableCities.filter(c => c.specialistsCount > 0).map((city) => (
+                          <option key={`tray-active-${city.city}-${city.state}`} value={city.city}>
+                            {city.city}{city.state ? `, ${city.state}` : ''} ({city.specialistsCount})
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {availableCities.filter(c => c.specialistsCount === 0).length > 0 && (
+                      <optgroup label="---">
+                        {availableCities.filter(c => c.specialistsCount === 0).map((city) => (
+                          <option key={`tray-empty-${city.city}-${city.state}`} value={city.city}>
+                            {city.city}{city.state ? `, ${city.state}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
 
