@@ -137,9 +137,12 @@ const SpecialistDashboard: React.FC = () => {
         if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
             const completedBookings = Array.isArray(completedBookingsData.value.bookings) ? completedBookingsData.value.bookings : [];
+            const upcomingBookings = (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value)
+              ? (Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [])
+              : [];
 
-            // Calculate total bookings and monthly revenue from actual completed bookings
-            stats.totalBookings = completedBookings.length;
+            // Total bookings = completed + pending/confirmed/inProgress
+            stats.totalBookings = completedBookings.length + upcomingBookings.length;
             
             // Calculate total revenue from completed bookings (accurate amounts)
             const totalRevenue = Math.round(completedBookings.reduce((sum, booking) => {
@@ -319,6 +322,17 @@ const SpecialistDashboard: React.FC = () => {
         try {
           const profile = profileData.status === 'fulfilled' ? profileData.value : null;
           const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
+
+          // Use profile rating as baseline fallback
+          const profileRating = (profile as any)?.rating || (profile as any)?.specialist?.rating;
+          const profileReviewCount = (profile as any)?.reviewCount || (profile as any)?.specialist?.reviewCount;
+          if (profileRating > 0 && stats.rating === 0) {
+            stats.rating = profileRating;
+          }
+          if (profileReviewCount > 0 && stats.reviewCount === 0) {
+            stats.reviewCount = profileReviewCount;
+          }
+
           if (specialistId) {
             const reviewStats = await reviewsService.getSpecialistReviewStats(specialistId);
             if (reviewStats.totalReviews > 0) {
