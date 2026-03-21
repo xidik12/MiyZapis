@@ -125,7 +125,6 @@ const SpecialistOnboarding: React.FC = () => {
   const [profileSaved, setProfileSaved] = useState(false);
   const [serviceSaved, setServiceSaved] = useState(false);
   const [scheduleSaved, setScheduleSaved] = useState(false);
-  const [onboardingReady, setOnboardingReady] = useState(false);
 
   // Pre-fill from existing profile if available
   useEffect(() => {
@@ -136,46 +135,6 @@ const SpecialistOnboarding: React.FC = () => {
       }));
     }
   }, [user]);
-
-  // Mark onboarding complete when reaching the done screen (step 4)
-  // This ensures all navigation buttons on the done screen work correctly,
-  // since ProtectedRoute checks profileComplete before allowing access.
-  const onboardingMarkedRef = useRef(false);
-  useEffect(() => {
-    if (step === 4 && !onboardingMarkedRef.current) {
-      onboardingMarkedRef.current = true;
-      (async () => {
-        try {
-          await specialistService.completeOnboarding();
-          await dispatch(getCurrentUser()).unwrap();
-          setOnboardingReady(true);
-        } catch (err) {
-          logger.warn('Onboarding: failed to mark onboarding complete', err);
-          // Still allow navigation — the user completed all steps
-          setOnboardingReady(true);
-        }
-      })();
-    }
-  }, [step, dispatch]);
-
-  // Navigate only after onboarding completion has been persisted
-  const navigateAfterOnboarding = (path: string) => {
-    if (onboardingReady) {
-      navigate(path);
-    } else {
-      // Wait briefly for the async call to finish, then navigate
-      const checkAndNavigate = async () => {
-        try {
-          await specialistService.completeOnboarding();
-          await dispatch(getCurrentUser()).unwrap();
-        } catch {
-          // ignore — best effort
-        }
-        navigate(path);
-      };
-      checkAndNavigate();
-    }
-  };
 
   // -----------------------------------------------------------------------
   // Validation helpers
@@ -254,10 +213,9 @@ const SpecialistOnboarding: React.FC = () => {
       dispatch(updateUserProfile({ phoneNumber: basicInfo.phone } as any));
       setProfileSaved(true);
       return true;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to save basic info', error);
-      setError(message || 'Failed to save profile information');
+    } catch (err: any) {
+      logger.error('Onboarding: failed to save basic info', err);
+      setError(err.message || 'Failed to save profile information');
       return false;
     } finally {
       setSaving(false);
@@ -283,10 +241,9 @@ const SpecialistOnboarding: React.FC = () => {
       }
       setServiceSaved(true);
       return true;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to create service', error);
-      setError(message || 'Failed to create service');
+    } catch (err: any) {
+      logger.error('Onboarding: failed to create service', err);
+      setError(err.message || 'Failed to create service');
       return false;
     } finally {
       setSaving(false);
@@ -365,10 +322,9 @@ const SpecialistOnboarding: React.FC = () => {
       }
       setScheduleSaved(true);
       return true;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to save schedule', error);
-      setError(message || 'Failed to save schedule');
+    } catch (err: any) {
+      logger.error('Onboarding: failed to save schedule', err);
+      setError(err.message || 'Failed to save schedule');
       return false;
     } finally {
       setSaving(false);
@@ -387,13 +343,14 @@ const SpecialistOnboarding: React.FC = () => {
           await specialistService.updateProfile({ avatar: result.url } as any);
         }
         dispatch(updateUserProfile({ avatar: result.url } as any));
-        dispatch(getCurrentUser());
+        // NOTE: Do NOT call getCurrentUser() here — if it fails, it clears
+        // isAuthenticated which triggers ProtectedRoute to redirect to login,
+        // wiping out all form progress. updateUserProfile above is sufficient.
       }
       return true;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error('Onboarding: failed to upload avatar', error);
-      setError(message || 'Failed to upload avatar');
+    } catch (err: any) {
+      logger.error('Onboarding: failed to upload avatar', err);
+      setError(err.message || 'Failed to upload avatar');
       return false;
     } finally {
       setSaving(false);
@@ -424,7 +381,7 @@ const SpecialistOnboarding: React.FC = () => {
         success = await saveAvatar();
         break;
       case 4:
-        // Done step -> navigate to dashboard (onboarding already marked complete via useEffect)
+        // Done step -> go to dashboard
         navigate('/specialist/dashboard');
         return;
     }
@@ -1037,19 +994,19 @@ const SpecialistOnboarding: React.FC = () => {
       {/* Quick links */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
         <button
-          onClick={() => navigateAfterOnboarding('/specialist/dashboard')}
+          onClick={() => navigate('/specialist/dashboard')}
           className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {t('onboarding.goToDashboard') || 'Go to Dashboard'}
         </button>
         <button
-          onClick={() => navigateAfterOnboarding('/specialist/services')}
+          onClick={() => navigate('/specialist/services')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.manageServices') || 'Manage Services'}
         </button>
         <button
-          onClick={() => navigateAfterOnboarding('/specialist/schedule')}
+          onClick={() => navigate('/specialist/schedule')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.viewSchedule') || 'View Schedule'}
