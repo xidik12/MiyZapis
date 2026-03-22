@@ -451,15 +451,41 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             <div className="flex-1 p-4 min-h-0">
               <div className="h-64 sm:h-80 md:h-96 w-full rounded-xl overflow-hidden">
                 {mapError ? (
-                  <div className="h-full w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <div className="text-red-600 dark:text-red-400 mb-2">
-                        <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      </div>
-                      <p className="text-red-800 dark:text-red-300 font-medium mb-1">{t('location.error')}</p>
-                      <p className="text-red-600 dark:text-red-400 text-sm mb-3">{t('location.error')}</p>
-                      <p className="text-xs text-red-500 dark:text-red-400">{t('location.address')}</p>
+                  <div className="h-full w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex flex-col justify-center space-y-3">
+                    <div className="text-center mb-2">
+                      <MapPin className="h-8 w-8 mx-auto text-gray-400 dark:text-gray-500 mb-1" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('location.enterManually') || 'Enter your address manually'}</p>
                     </div>
+                    <input
+                      type="text"
+                      placeholder={t('location.addressPlaceholder') || 'Street address'}
+                      value={location.address}
+                      onChange={(e) => onLocationChange({ ...location, address: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder={t('location.cityPlaceholder') || 'City'}
+                        value={location.city}
+                        onChange={(e) => onLocationChange({ ...location, city: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      />
+                      <input
+                        type="text"
+                        placeholder={t('location.regionPlaceholder') || 'Region'}
+                        value={location.region}
+                        onChange={(e) => onLocationChange({ ...location, region: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={t('location.countryPlaceholder') || 'Country'}
+                      value={location.country}
+                      onChange={(e) => onLocationChange({ ...location, country: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    />
                   </div>
                 ) : mapLoaded ? (
                   <div ref={mapRef} className="h-full w-full" />
