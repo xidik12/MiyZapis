@@ -234,9 +234,11 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     }
     
     // Generate file URL
-    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-      : 'https://miyzapis-backend-production.up.railway.app';
+    const baseUrl = process.env.COOLIFY_FQDN
+      ? `https://${process.env.COOLIFY_FQDN.replace(/^https?:\/\//, '')}`
+      : process.env.RAILWAY_PUBLIC_DOMAIN
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+        : (process.env.FRONTEND_URL || 'https://api.miyzapis.com').replace(/\/$/, '');
     const fileUrl = `${baseUrl}/uploads/${filename}`;
     
     // Create database record
@@ -377,7 +379,9 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects - using absolute URL
-    const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
+    const baseUrl = process.env.COOLIFY_FQDN
+      ? `https://${process.env.COOLIFY_FQDN.replace(/^https?:\/\//, '')}`
+      : (process.env.FRONTEND_URL || 'https://api.miyzapis.com').replace(/\/$/, '');
     const fileUrl = `${baseUrl}/uploads/${filename}`;
     const mockResponse = [{
       id: 'simple-' + timestamp,

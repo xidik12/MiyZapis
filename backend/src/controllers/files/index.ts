@@ -149,9 +149,11 @@ export class FileController {
           // Convert relative URL to absolute URL for production
           let absoluteUrl = fileUrl;
           if (fileUrl.startsWith('/uploads/')) {
-            const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-              ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-              : 'https://miyzapis-backend-production.up.railway.app';
+            const baseUrl = process.env.COOLIFY_FQDN
+              ? `https://${process.env.COOLIFY_FQDN.replace(/^https?:\/\//, '')}`
+              : process.env.RAILWAY_PUBLIC_DOMAIN
+                ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+                : (process.env.FRONTEND_URL || 'https://api.miyzapis.com').replace(/\/$/, '');
             absoluteUrl = `${baseUrl}${fileUrl}`;
           }
 
