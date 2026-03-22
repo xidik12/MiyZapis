@@ -17,6 +17,7 @@ import {
 } from '@/store/slices/messagesSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { messagingStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 export const ChatPage: React.FC = () => {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -92,7 +93,7 @@ export const ChatPage: React.FC = () => {
 
         <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-hover flex-shrink-0">
           {otherParticipant?.avatar ? (
-            <img src={otherParticipant.avatar} alt="" className="w-full h-full object-cover" />
+            <img src={getImageUrl(otherParticipant.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <User size={16} className="text-text-secondary" />

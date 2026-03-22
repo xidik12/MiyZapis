@@ -21,6 +21,7 @@ import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { formatDateRelative } from '@/utils/dateUtils';
 import { communityStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface CommunityPost {
   id: string;
@@ -252,7 +253,7 @@ export const CommunityPage: React.FC = () => {
                     <div className="flex items-center gap-2.5 mb-3">
                       <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                         {post.author.avatar ? (
-                          <img src={post.author.avatar} alt="" className="w-full h-full object-cover" />
+                          <img src={getImageUrl(post.author.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <User size={16} className="text-text-secondary" />
@@ -285,7 +286,7 @@ export const CommunityPage: React.FC = () => {
                     {/* Image */}
                     {firstImage && (
                       <div className="rounded-xl overflow-hidden mb-3 max-h-48">
-                        <img src={firstImage} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageUrl(firstImage)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                       </div>
                     )}
 

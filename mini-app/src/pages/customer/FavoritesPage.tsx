@@ -21,6 +21,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { favoritesStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface FavoriteItem {
   id: string;
@@ -212,14 +213,14 @@ export const FavoritesPage: React.FC = () => {
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary flex-shrink-0">
                       {fav.type === 'specialist' && fav.specialist ? (
                         fav.specialist.user.avatar ? (
-                          <img src={fav.specialist.user.avatar} alt="" className="w-full h-full object-cover" />
+                          <img src={getImageUrl(fav.specialist.user.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <User size={24} className="text-text-secondary" />
                           </div>
                         )
                       ) : fav.service?.images?.[0] ? (
-                        <img src={fav.service.images[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageUrl(fav.service.images[0])} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Briefcase size={24} className="text-text-secondary" />

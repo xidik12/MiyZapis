@@ -24,6 +24,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { specialistProfileEditStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface SpecialistProfile {
   businessName: string;
@@ -359,13 +360,10 @@ export const SpecialistProfileEditPage: React.FC = () => {
                   >
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-bg-secondary flex-shrink-0">
                       <img
-                        src={url}
+                        src={getImageUrl(url)}
                         alt=""
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '';
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        onError={handleImageError}
                       />
                     </div>
                     <span className="flex-1 text-xs text-text-secondary truncate">

@@ -79,7 +79,7 @@ export const SpecialistAnalyticsPage: React.FC = () => {
           revenue: Number(data.totalRevenue) || Number(data.revenue) || 0,
           bookings: Number(data.totalBookings) || Number(data.bookings) || 0,
           newClients: Number(data.activeClients) || Number(data.newClients) || 0,
-          retentionRate: Number(data.conversionRate) || Number(data.retentionRate) || 0,
+          retentionRate: Math.round(Number(data.conversionRate) || Number(data.retentionRate) || 0),
         });
         // servicePerformance contains popular services data
         const services = data.servicePerformance || data.revenueByService || data.popularServices || [];

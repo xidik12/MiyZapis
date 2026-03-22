@@ -22,6 +22,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { communityStrings, commonStrings, createPostStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 const POST_TYPES = ['DISCUSSION', 'SALE'] as const;
 
@@ -367,7 +368,7 @@ export const CreatePostPage: React.FC = () => {
               <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                 {images.map((url, index) => (
                   <div key={`${url}-${index}`} className="relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-bg-secondary">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                     <button
                       onClick={() => handleRemoveImage(index)}
                       className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"

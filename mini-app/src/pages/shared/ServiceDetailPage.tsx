@@ -30,6 +30,7 @@ import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { serviceDetailStrings, commonStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
 import { apiService } from '@/services/api.service';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -85,7 +86,7 @@ export const ServiceDetailPage: React.FC = () => {
   }
 
   const specialistName = selectedService.specialist?.name || '';
-  const specialistRating = selectedService.specialist?.rating || 0;
+  const specialistRating = Number(selectedService.specialist?.rating || 0).toFixed(1);
   const specialistReviewCount = selectedService.specialist?.reviewCount || 0;
 
   const handleBookNow = () => {
@@ -198,9 +199,10 @@ export const ServiceDetailPage: React.FC = () => {
           {images.length > 0 ? (
             <>
               <img
-                src={images[currentImageIndex]}
+                src={getImageUrl(images[currentImageIndex])}
                 alt={selectedService.name}
                 className="w-full h-full object-cover"
+                onError={handleImageError}
               />
               {images.length > 1 && (
                 <>
@@ -233,9 +235,10 @@ export const ServiceDetailPage: React.FC = () => {
             </>
           ) : selectedService.specialist?.avatar ? (
             <img
-              src={selectedService.specialist.avatar}
+              src={getImageUrl(selectedService.specialist.avatar)}
               alt={specialistName}
               className="w-full h-full object-cover"
+              onError={handleImageError}
             />
           ) : (
             <div
@@ -327,9 +330,10 @@ export const ServiceDetailPage: React.FC = () => {
               <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover flex items-center justify-center">
                 {selectedService.specialist?.avatar ? (
                   <img
-                    src={selectedService.specialist.avatar}
+                    src={getImageUrl(selectedService.specialist.avatar)}
                     alt={specialistName}
                     className="w-full h-full object-cover"
+                    onError={handleImageError}
                   />
                 ) : (
                   <User size={28} className="text-text-muted" />
@@ -408,7 +412,7 @@ export const ServiceDetailPage: React.FC = () => {
                       <div className="w-8 h-8 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
                         {review.customer.avatar ? (
                           <img
-                            src={review.customer.avatar}
+                            src={getImageUrl(review.customer.avatar)}
                             alt={`${review.customer.firstName} ${review.customer.lastName}`}
                             className="w-full h-full object-cover"
                           />
@@ -469,7 +473,7 @@ export const ServiceDetailPage: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
                   {review.customer.avatar ? (
                     <img
-                      src={review.customer.avatar}
+                      src={getImageUrl(review.customer.avatar)}
                       alt={`${review.customer.firstName} ${review.customer.lastName}`}
                       className="w-full h-full object-cover"
                     />

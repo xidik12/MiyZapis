@@ -33,6 +33,7 @@ import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistProfileStrings, commonStrings } from '@/utils/translations';
 import { apiService } from '@/services/api.service';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 export const SpecialistProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -206,9 +207,10 @@ export const SpecialistProfilePage: React.FC = () => {
             <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
               {selectedSpecialist.avatar ? (
                 <img
-                  src={selectedSpecialist.avatar}
+                  src={getImageUrl(selectedSpecialist.avatar)}
                   alt={selectedSpecialist.name}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
               ) : (
                 <User size={32} className="text-white/60" />
@@ -223,7 +225,7 @@ export const SpecialistProfilePage: React.FC = () => {
               </div>
               <div className="flex items-center gap-1 mb-2">
                 <Star size={16} className="text-yellow-300 fill-current" />
-                <span className="font-semibold">{selectedSpecialist.rating}</span>
+                <span className="font-semibold">{Number(selectedSpecialist.rating || 0).toFixed(1)}</span>
                 <span className="opacity-80">
                   ({selectedSpecialist.reviewCount} {t(commonStrings, 'reviews', locale)})
                 </span>
@@ -442,9 +444,10 @@ export const SpecialistProfilePage: React.FC = () => {
                     >
                       <div className="aspect-square bg-bg-hover">
                         <img
-                          src={item.image}
+                          src={getImageUrl(item.image)}
                           alt={item.title}
                           className="w-full h-full object-cover"
+                          onError={handleImageError}
                         />
                       </div>
                       <div className="p-3">
@@ -484,9 +487,10 @@ export const SpecialistProfilePage: React.FC = () => {
                         <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden flex items-center justify-center">
                           {review.customer.avatar ? (
                             <img
-                              src={review.customer.avatar}
+                              src={getImageUrl(review.customer.avatar)}
                               alt={`${review.customer.firstName} ${review.customer.lastName}`}
                               className="w-full h-full object-cover"
+                              onError={handleImageError}
                             />
                           ) : (
                             <User size={18} className="text-text-muted" />
@@ -547,9 +551,10 @@ export const SpecialistProfilePage: React.FC = () => {
           <div>
             <div className="aspect-video bg-bg-hover rounded-lg overflow-hidden mb-4">
               <img
-                src={showPortfolioItem.image}
+                src={getImageUrl(showPortfolioItem.image)}
                 alt={showPortfolioItem.title}
                 className="w-full h-full object-cover"
+                onError={handleImageError}
               />
             </div>
             {showPortfolioItem.description && (

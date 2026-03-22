@@ -40,6 +40,7 @@ import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { profileStrings, commonStrings, serviceDetailStrings, specialistDashboardStrings, bookingFlowStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -182,9 +183,10 @@ export const ProfilePage: React.FC = () => {
               <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
                 {user.avatar ? (
                   <img
-                    src={user.avatar}
+                    src={getImageUrl(user.avatar)}
                     alt={`${user.firstName} ${user.lastName}`}
                     className="w-full h-full object-cover"
+                    onError={handleImageError}
                   />
                 ) : (
                   <User size={32} className="text-white/60" />
@@ -406,9 +408,10 @@ export const ProfilePage: React.FC = () => {
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover flex items-center justify-center">
                       {booking.specialist?.avatar ? (
                         <img
-                          src={booking.specialist.avatar}
+                          src={getImageUrl(booking.specialist.avatar)}
                           alt={[booking.specialist?.firstName, booking.specialist?.lastName].filter(Boolean).join(' ')}
                           className="w-full h-full object-cover"
+                          onError={handleImageError}
                         />
                       ) : (
                         <User size={20} className="text-text-muted" />

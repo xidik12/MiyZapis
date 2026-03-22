@@ -23,6 +23,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { paymentProcessingStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 type PaymentMethod = 'telegram' | 'card' | 'wallet' | 'cash';
 type PaymentState = 'select' | 'processing' | 'success' | 'failure';
@@ -335,7 +336,7 @@ export const PaymentProcessingPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                     {booking.specialist.avatar ? (
-                      <img src={booking.specialist.avatar} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(booking.specialist.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <User size={16} className="text-text-secondary" />

@@ -17,6 +17,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { specialistReviewsStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface ReviewItem {
   id: string;
@@ -249,9 +250,10 @@ export const SpecialistReviewsPage: React.FC = () => {
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                       {review.customer.avatar ? (
                         <img
-                          src={review.customer.avatar}
+                          src={getImageUrl(review.customer.avatar)}
                           alt=""
                           className="w-full h-full object-cover"
+                          onError={handleImageError}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

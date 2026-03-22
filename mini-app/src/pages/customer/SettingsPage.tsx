@@ -32,6 +32,7 @@ import { addToast, setTheme } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t, useCurrency } from '@/hooks/useLocale';
 import { settingsStrings, commonStrings, bookingFlowStrings, profileStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface NotificationPrefs {
   email: boolean;
@@ -169,7 +170,7 @@ export const SettingsPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary">
                 {user?.avatar ? (
-                  <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                  <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <User size={24} className="text-text-secondary" />

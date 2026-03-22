@@ -37,6 +37,7 @@ import { fetchServicesAsync, fetchCategoriesAsync } from '@/store/slices/service
 import { fetchSpecialistsAsync } from '@/store/slices/specialistsSlice';
 import { processCategories, homeStrings, getCategoryInfo } from '@/utils/categories';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -373,15 +374,17 @@ export const HomePage: React.FC = () => {
                   <div className="aspect-video bg-bg-hover rounded-2xl mb-3 overflow-hidden">
                     {service.images?.[0] ? (
                       <img
-                        src={service.images[0]}
+                        src={getImageUrl(service.images[0])}
                         alt={service.name}
                         className="w-full h-full object-cover"
+                        onError={handleImageError}
                       />
                     ) : service.specialist?.avatar || service.specialist?.user?.avatar ? (
                       <img
-                        src={service.specialist?.avatar || service.specialist?.user?.avatar}
+                        src={getImageUrl(service.specialist?.avatar || service.specialist?.user?.avatar)}
                         alt={service.specialist?.name || ''}
                         className="w-full h-full object-cover"
+                        onError={handleImageError}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${getCategoryInfo(service.category).color}33, ${getCategoryInfo(service.category).color}11)` }}>
@@ -406,7 +409,7 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <Star size={14} className="text-accent-yellow fill-current" />
                         <span className="text-sm font-medium text-text-primary">
-                          {service.specialist?.rating || 0}
+                          {Number(service.specialist?.rating || 0).toFixed(1)}
                         </span>
                         <span className="text-sm text-text-secondary">
                           ({service.specialist?.reviewCount || 0})
@@ -484,9 +487,10 @@ export const HomePage: React.FC = () => {
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
                         {specialist.avatar ? (
                           <img
-                            src={specialist.avatar}
+                            src={getImageUrl(specialist.avatar)}
                             alt={specialist.name}
                             className="w-full h-full object-cover"
+                            onError={handleImageError}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-text-muted text-lg font-semibold">
@@ -508,7 +512,7 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center gap-1">
                           <Star size={12} className="text-accent-yellow fill-current" />
-                          <span className="text-sm font-medium text-text-primary">{specialist.rating || 0}</span>
+                          <span className="text-sm font-medium text-text-primary">{Number(specialist.rating || 0).toFixed(1)}</span>
                         </div>
                         {specialist.city && (
                           <span className="text-sm text-text-secondary">• {specialist.city}</span>

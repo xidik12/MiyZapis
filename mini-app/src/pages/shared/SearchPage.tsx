@@ -33,6 +33,7 @@ import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { searchStrings, commonStrings, serviceDetailStrings, specialistServicesStrings } from '@/utils/translations';
 import { getCategoryInfo } from '@/utils/categories';
 import apiService from '@/services/api.service';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface SavedPreset {
   name: string;
@@ -241,15 +242,17 @@ export const SearchPage: React.FC = () => {
             <div className="w-20 h-20 rounded-lg overflow-hidden bg-bg-hover flex-shrink-0">
               {service.images?.[0] ? (
                 <img
-                  src={service.images[0]}
+                  src={getImageUrl(service.images[0])}
                   alt={service.name}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
               ) : service.specialist?.avatar ? (
                 <img
-                  src={service.specialist.avatar}
+                  src={getImageUrl(service.specialist.avatar)}
                   alt={service.specialist?.name || ''}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
               ) : (
                 <div
@@ -268,7 +271,7 @@ export const SearchPage: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1">
                   <Star size={12} className="text-accent-yellow fill-current" />
-                  <span className="text-sm font-medium">{service.specialist?.rating || 0}</span>
+                  <span className="text-sm font-medium">{Number(service.specialist?.rating || 0).toFixed(1)}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={12} className="text-text-secondary" />
@@ -304,15 +307,17 @@ export const SearchPage: React.FC = () => {
         <div className="aspect-square bg-bg-hover rounded-lg mb-3 overflow-hidden">
           {service.images?.[0] ? (
             <img
-              src={service.images[0]}
+              src={getImageUrl(service.images[0])}
               alt={service.name}
               className="w-full h-full object-cover"
+              onError={handleImageError}
             />
           ) : service.specialist?.avatar ? (
             <img
-              src={service.specialist.avatar}
+              src={getImageUrl(service.specialist.avatar)}
               alt={service.specialist?.name || ''}
               className="w-full h-full object-cover"
+              onError={handleImageError}
             />
           ) : (
             <div
@@ -333,7 +338,7 @@ export const SearchPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <Star size={10} className="text-accent-yellow fill-current" />
-              <span className="text-xs font-medium">{service.specialist?.rating || 0}</span>
+              <span className="text-xs font-medium">{Number(service.specialist?.rating || 0).toFixed(1)}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock size={10} className="text-text-secondary" />

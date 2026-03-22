@@ -9,7 +9,7 @@ export const MainLayout: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col bg-bg-primary min-h-screen text-text-primary"
+      className="flex flex-col bg-bg-primary min-h-screen text-text-primary overflow-x-hidden"
       style={{ minHeight: `${viewportHeight}px` }}
     >
       <main className="flex-1 relative overflow-hidden pb-16">

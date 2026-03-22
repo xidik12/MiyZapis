@@ -3,6 +3,7 @@ import { User } from 'lucide-react';
 import type { Conversation } from '@/store/slices/messagesSlice';
 import { useLocale, t } from '@/hooks/useLocale';
 import { commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -43,7 +44,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           >
             <div className="w-11 h-11 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
               {other?.avatar ? (
-                <img src={other.avatar} alt="" className="w-full h-full object-cover" />
+                <img src={getImageUrl(other.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <User size={18} className="text-text-secondary" />

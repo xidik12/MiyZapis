@@ -26,6 +26,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { specialistServicesStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface SpecialistService {
   id: string;
@@ -255,7 +256,7 @@ export const SpecialistServicesPage: React.FC = () => {
                     service.isActive ? 'bg-accent-primary/10' : 'bg-bg-secondary'
                   }`}>
                     {service.images && service.images.length > 0 ? (
-                      <img src={service.images[0]} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(service.images[0])} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                     ) : (
                       <Briefcase size={22} className={service.isActive ? 'text-accent-primary' : 'text-text-muted'} />
                     )}
@@ -404,7 +405,7 @@ export const SpecialistServicesPage: React.FC = () => {
               <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
                 {formData.images.map((url, index) => (
                   <div key={`${url}-${index}`} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-bg-secondary">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                     <button
                       onClick={() => handleRemoveImage(index)}
                       className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center"

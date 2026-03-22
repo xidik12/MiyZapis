@@ -29,6 +29,7 @@ import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { formatDateRelative } from '@/utils/dateUtils';
 import { postDetailStrings, communityStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface PostAuthor {
   id: string;
@@ -299,7 +300,7 @@ export const PostDetailPage: React.FC = () => {
       <div className="flex gap-2.5 py-3">
         <div className="w-8 h-8 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
           {comment.author.avatar ? (
-            <img src={comment.author.avatar} alt="" className="w-full h-full object-cover" />
+            <img src={getImageUrl(comment.author.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <User size={14} className="text-text-secondary" />
@@ -375,7 +376,7 @@ export const PostDetailPage: React.FC = () => {
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                 {post.author.avatar ? (
-                  <img src={post.author.avatar} alt="" className="w-full h-full object-cover" />
+                  <img src={getImageUrl(post.author.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <User size={18} className="text-text-secondary" />
@@ -438,9 +439,10 @@ export const PostDetailPage: React.FC = () => {
             {allImages.length > 0 && (
               <div className="relative rounded-xl overflow-hidden mb-3">
                 <img
-                  src={allImages[currentImageIndex]}
+                  src={getImageUrl(allImages[currentImageIndex])}
                   alt=""
                   className="w-full object-cover max-h-72"
+                  onError={handleImageError}
                 />
                 {allImages.length > 1 && (
                   <>

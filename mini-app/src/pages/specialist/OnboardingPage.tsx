@@ -22,6 +22,7 @@ import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
 import { useLocale, t } from '@/hooks/useLocale';
 import { onboardingStrings, commonStrings } from '@/utils/translations';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 const STORAGE_KEY = 'miyzapis_onboarding_progress';
 const TOTAL_STEPS = 5;
@@ -377,7 +378,7 @@ export const OnboardingPage: React.FC = () => {
               <div className="flex justify-center">
                 <div className="w-32 h-32 rounded-2xl overflow-hidden bg-bg-secondary border-2 border-accent-primary/20">
                   <img
-                    src={data.photoUrl}
+                    src={getImageUrl(data.photoUrl)}
                     alt="Profile Preview"
                     className="w-full h-full object-cover"
                     onError={e => {
@@ -481,7 +482,7 @@ export const OnboardingPage: React.FC = () => {
                 <div className="flex justify-center">
                   <div className="w-20 h-20 rounded-xl overflow-hidden bg-bg-secondary">
                     <img
-                      src={data.photoUrl}
+                      src={getImageUrl(data.photoUrl)}
                       alt="Profile"
                       className="w-full h-full object-cover"
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}

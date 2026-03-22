@@ -18,6 +18,7 @@ import apiService from '@/services/api.service';
 import { useLocale, t, formatCurrency } from '@/hooks/useLocale';
 import { clientsStrings, commonStrings } from '@/utils/translations';
 import { format, parseISO, differenceInDays } from 'date-fns';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface DerivedClient {
   id: string;
@@ -223,7 +224,7 @@ export const ClientsPage: React.FC = () => {
                     {/* Avatar */}
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                       {client.avatar ? (
-                        <img src={client.avatar} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageUrl(client.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-accent-primary/10">
                           <User size={20} className="text-accent-primary" />
@@ -281,7 +282,7 @@ export const ClientsPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                 {selectedClient.avatar ? (
-                  <img src={selectedClient.avatar} alt="" className="w-full h-full object-cover" />
+                  <img src={getImageUrl(selectedClient.avatar)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-accent-primary/10">
                     <User size={28} className="text-accent-primary" />

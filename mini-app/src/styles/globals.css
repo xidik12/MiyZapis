@@ -36,6 +36,7 @@
   #root {
     height: 100%;
     min-height: var(--tg-viewport-height, 100vh);
+    overflow-x: hidden;
   }
 
   /* Safe area */

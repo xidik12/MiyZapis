@@ -26,6 +26,7 @@ import { createBookingAsync } from '@/store/slices/bookingsSlice';
 import { fetchServiceAsync } from '@/store/slices/servicesSlice';
 import { apiService } from '@/services/api.service';
 import type { Service } from '@/store/slices/servicesSlice';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface BookingStep {
   id: string;
@@ -358,9 +359,10 @@ export const BookingFlow: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-bg-hover flex-shrink-0 overflow-hidden">
             {selectedService.images && selectedService.images[0] ? (
               <img
-                src={selectedService.images[0]}
+                src={getImageUrl(selectedService.images[0])}
                 alt={selectedService.name}
                 className="w-full h-full object-cover"
+                onError={handleImageError}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-text-muted">

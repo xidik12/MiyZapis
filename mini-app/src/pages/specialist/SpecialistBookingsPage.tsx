@@ -218,7 +218,7 @@ export const SpecialistBookingsPage: React.FC = () => {
       <Header title={s('title')} showBackButton />
 
       <div className="flex-1 overflow-y-auto pb-20">
-        <div className="p-4 space-y-4 page-stagger">
+        <div className="p-4 space-y-4 page-stagger overflow-x-hidden">
           {/* Stats Summary */}
           <div className="grid grid-cols-3 gap-3">
             <Card className="bg-bg-card/80 backdrop-blur-xl rounded-2xl border border-white/5 shadow-card p-3 text-center">
