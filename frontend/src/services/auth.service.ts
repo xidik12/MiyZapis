@@ -315,7 +315,8 @@ export class AuthService {
   // Get current user profile
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get<Record<string, unknown>>(API_ENDPOINTS.USERS.PROFILE);
+      // Skip cache to always get fresh profileComplete/onboardingCompleted state
+      const response = await apiClient.get<Record<string, unknown>>(API_ENDPOINTS.USERS.PROFILE, { skipCache: true } as any);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get user profile');
       }
