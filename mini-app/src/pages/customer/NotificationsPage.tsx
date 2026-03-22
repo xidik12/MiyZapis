@@ -130,7 +130,7 @@ export const NotificationsPage: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         title={s('title')}
-        showBack
+        showBackButton
         rightContent={
           unreadCount > 0 ? (
             <button

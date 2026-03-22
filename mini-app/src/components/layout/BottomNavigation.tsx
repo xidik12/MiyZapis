@@ -15,14 +15,14 @@ const customerItems: NavItem[] = [
   { label: 'Home', href: '/', icon: Home },
   { label: 'Search', href: '/search', icon: Search },
   { label: 'Bookings', href: '/bookings', icon: Calendar },
-  { label: 'Messages', href: '/messaging', icon: MessageCircle },
+  { label: 'Messages', href: '/messages', icon: MessageCircle },
   { label: 'Profile', href: '/profile', icon: User },
 ];
 
 const specialistItems: NavItem[] = [
   { label: 'Home', href: '/', icon: Home },
-  { label: 'Bookings', href: '/specialist/bookings', icon: Calendar },
-  { label: 'Messages', href: '/messaging', icon: MessageCircle },
+  { label: 'Bookings', href: '/specialist-bookings', icon: Calendar },
+  { label: 'Messages', href: '/messages', icon: MessageCircle },
   { label: 'Profile', href: '/specialist/settings', icon: User },
 ];
 

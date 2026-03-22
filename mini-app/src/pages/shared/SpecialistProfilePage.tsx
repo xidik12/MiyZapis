@@ -50,6 +50,7 @@ export const SpecialistProfilePage: React.FC = () => {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showPortfolioItem, setShowPortfolioItem] = useState<any>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
   // Prevent specialists from booking their own services
   const userRole = (user?.role || (user as any)?.userType || '').toLowerCase();
@@ -61,18 +62,32 @@ export const SpecialistProfilePage: React.FC = () => {
     ((selectedSpecialist as any)?.userId === user.id || (selectedSpecialist as any)?.user?.id === user.id)
   );
 
-  useEffect(() => {
+  const loadSpecialist = () => {
     if (id) {
-      dispatch(fetchSpecialistAsync(id));
+      setFetchError(false);
+      dispatch(fetchSpecialistAsync(id))
+        .unwrap()
+        .catch(() => setFetchError(true));
       dispatch(fetchSpecialistServicesAsync(id));
       dispatch(fetchReviewsAsync({ specialistId: id, limit: 10 }));
     }
+  };
+
+  useEffect(() => {
+    loadSpecialist();
   }, [id, dispatch]);
 
   if (!selectedSpecialist) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <LoadingSpinner />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-bg-primary gap-4">
+        {fetchError ? (
+          <>
+            <p className="text-accent-red text-sm">{t(commonStrings, 'error', locale)}</p>
+            <Button size="sm" onClick={loadSpecialist}>{t(commonStrings, 'retry', locale)}</Button>
+          </>
+        ) : (
+          <LoadingSpinner />
+        )}
       </div>
     );
   }

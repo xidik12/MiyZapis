@@ -280,7 +280,7 @@ export const HomePage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/categories')}
+              onClick={() => navigate('/search')}
             >
               {s('viewAll')}
             </Button>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -50,6 +50,18 @@ export const SpecialistSettingsPage: React.FC = () => {
 
   const [autoConfirm, setAutoConfirm] = useState(false);
   const [bufferTime, setBufferTime] = useState(15);
+
+  useEffect(() => {
+    apiService.getSpecialistProfile().then((res: any) => {
+      const data = res?.data ?? res;
+      if (data) {
+        if (typeof data.autoConfirm === 'boolean') setAutoConfirm(data.autoConfirm);
+        if (typeof data.bufferTime === 'number') setBufferTime(data.bufferTime);
+      }
+    }).catch(() => {
+      // silently keep defaults on failure
+    });
+  }, []);
 
   const handleNavigate = (route: string) => {
     hapticFeedback.impactLight();

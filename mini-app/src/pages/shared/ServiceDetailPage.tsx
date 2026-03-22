@@ -50,12 +50,20 @@ export const ServiceDetailPage: React.FC = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
-  useEffect(() => {
+  const loadService = () => {
     if (id) {
-      dispatch(fetchServiceAsync(id));
+      setFetchError(false);
+      dispatch(fetchServiceAsync(id))
+        .unwrap()
+        .catch(() => setFetchError(true));
       dispatch(fetchReviewsAsync({ serviceId: id, limit: 5 }));
     }
+  };
+
+  useEffect(() => {
+    loadService();
   }, [id, dispatch]);
 
   const s = (key: string) => t(serviceDetailStrings, key, locale);
@@ -63,8 +71,15 @@ export const ServiceDetailPage: React.FC = () => {
 
   if (!selectedService) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <LoadingSpinner />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-bg-primary gap-4">
+        {fetchError ? (
+          <>
+            <p className="text-accent-red text-sm">{c('error')}</p>
+            <Button size="sm" onClick={loadService}>{c('retry')}</Button>
+          </>
+        ) : (
+          <LoadingSpinner />
+        )}
       </div>
     );
   }
