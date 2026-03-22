@@ -801,10 +801,99 @@ export class AuthController {
     }
   }
 
-  // Change password (for users with existing passwords)
+  // Request OTP for password change — sends 6-digit code via email + Telegram
+  static async requestPasswordChangeOtp(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as AuthenticatedRequest).user?.id;
+      if (!userId) {
+        res.status(401).json(createErrorResponse(ErrorCodes.UNAUTHORIZED, 'Authentication required', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, firstName: true, telegramId: true }
+      });
+
+      if (!user) {
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'User not found', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      // Delete any existing PASSWORD_CHANGE_OTP tokens for this user
+      await prisma.emailVerificationToken.deleteMany({
+        where: { userId, type: 'PASSWORD_CHANGE_OTP' }
+      });
+
+      // Generate 6-digit OTP code
+      const otpCode = crypto.randomInt(100000, 999999).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      await prisma.emailVerificationToken.create({
+        data: {
+          userId,
+          token: otpCode,
+          type: 'PASSWORD_CHANGE_OTP',
+          expiresAt,
+        }
+      });
+
+      // Send OTP via email
+      const channels: string[] = [];
+      try {
+        await templatedEmailService.sendEmail({
+          to: user.email,
+          subject: 'Password Change Verification Code — MiyZapis',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+              <h2 style="color: #1B4F72; margin-bottom: 16px;">Password Change Request</h2>
+              <p>Hi ${user.firstName || 'there'},</p>
+              <p>Your verification code to change your password is:</p>
+              <div style="text-align: center; margin: 24px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #2E86C1; background: #EBF5FB; padding: 12px 24px; border-radius: 8px;">${otpCode}</span>
+              </div>
+              <p style="color: #666; font-size: 14px;">This code expires in <strong>10 minutes</strong>. If you did not request this, please ignore this email.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+              <p style="color: #999; font-size: 12px;">MiyZapis — Appointment Booking Platform</p>
+            </div>
+          `,
+          text: `Your MiyZapis password change verification code is: ${otpCode}. It expires in 10 minutes.`,
+        });
+        channels.push('email');
+      } catch (emailErr) {
+        logger.error('Failed to send OTP email:', emailErr);
+      }
+
+      // Send OTP via Telegram if connected
+      if (user.telegramId) {
+        try {
+          const { default: axios } = await import('axios');
+          await axios.post(`https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`, {
+            chat_id: user.telegramId,
+            text: `🔐 *Password Change Verification*\n\nYour code: \`${otpCode}\`\n\nExpires in 10 minutes. If you didn't request this, ignore this message.`,
+            parse_mode: 'Markdown'
+          });
+          channels.push('telegram');
+        } catch (tgErr) {
+          logger.error('Failed to send OTP via Telegram:', tgErr);
+        }
+      }
+
+      logger.info('Password change OTP sent', { userId, channels });
+
+      res.status(200).json(createSuccessResponse({
+        message: 'Verification code sent',
+        channels,
+      }));
+    } catch (error: unknown) {
+      logger.error('Request password change OTP error:', error);
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to send verification code', req.headers['x-request-id'] as string));
+    }
+  }
+
+  // Change password (requires OTP verification)
   static async changePassword(req: Request, res: Response): Promise<void> {
     try {
-      // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json(
@@ -824,91 +913,63 @@ export class AuthController {
 
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
-        res.status(401).json(
-          createErrorResponse(
-            ErrorCodes.UNAUTHORIZED,
-            'Authentication required',
-            req.headers['x-request-id'] as string
-          )
-        );
+        res.status(401).json(createErrorResponse(ErrorCodes.UNAUTHORIZED, 'Authentication required', req.headers['x-request-id'] as string));
         return;
       }
 
-      const { currentPassword, newPassword } = req.body;
+      const { otpCode, newPassword } = req.body;
 
-      // Get user from database
+      // Verify OTP code
+      const otpRecord = await prisma.emailVerificationToken.findFirst({
+        where: {
+          userId,
+          token: otpCode,
+          type: 'PASSWORD_CHANGE_OTP',
+          isUsed: false,
+          expiresAt: { gt: new Date() }
+        }
+      });
+
+      if (!otpRecord) {
+        res.status(400).json(createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Invalid or expired verification code', req.headers['x-request-id'] as string));
+        return;
+      }
+
+      // Mark OTP as used
+      await prisma.emailVerificationToken.update({
+        where: { id: otpRecord.id },
+        data: { isUsed: true, usedAt: new Date() }
+      });
+
+      // Get user
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, email: true, password: true, authProvider: true }
+        select: { id: true, email: true }
       });
 
       if (!user) {
-        res.status(404).json(
-          createErrorResponse(
-            ErrorCodes.RESOURCE_NOT_FOUND,
-            'User not found',
-            req.headers['x-request-id'] as string
-          )
-        );
+        res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'User not found', req.headers['x-request-id'] as string));
         return;
       }
 
-      // For Google OAuth users who don't have a password set, currentPassword is not required
-      if (user.password && currentPassword) {
-        // Verify current password
-        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
-        if (!isValidPassword) {
-          res.status(400).json(
-            createErrorResponse(
-              ErrorCodes.INVALID_CREDENTIALS,
-              'Current password is incorrect',
-              req.headers['x-request-id'] as string
-            )
-          );
-          return;
-        }
-      } else if (user.password && !currentPassword) {
-        // User has existing password but didn't provide current password
-        res.status(400).json(
-          createErrorResponse(
-            ErrorCodes.VALIDATION_ERROR,
-            'Current password is required',
-            req.headers['x-request-id'] as string
-          )
-        );
-        return;
-      }
-
-      // Hash the new password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-      // Update user password
+      // Hash and update password
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
       await prisma.user.update({
         where: { id: userId },
-        data: {
-          password: hashedPassword,
-          passwordLastChanged: new Date()
-        }
+        data: { password: hashedPassword, passwordLastChanged: new Date() }
       });
 
-      logger.info('Password changed successfully', { userId, email: user.email });
+      // Clean up any remaining OTP tokens for this user
+      await prisma.emailVerificationToken.deleteMany({
+        where: { userId, type: 'PASSWORD_CHANGE_OTP' }
+      });
 
-      res.status(200).json(
-        createSuccessResponse({
-          message: 'Password changed successfully',
-        })
-      );
+      logger.info('Password changed successfully via OTP', { userId, email: user.email });
+
+      res.status(200).json(createSuccessResponse({ message: 'Password changed successfully' }));
     } catch (error: unknown) {
       logger.error('Change password controller error:', error);
-
-      res.status(500).json(
-        createErrorResponse(
-          ErrorCodes.INTERNAL_SERVER_ERROR,
-          'Password change failed',
-          req.headers['x-request-id'] as string
-        )
-      );
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Password change failed', req.headers['x-request-id'] as string));
     }
   }
 

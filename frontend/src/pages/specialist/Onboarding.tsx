@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { selectUser, updateUserProfile, getCurrentUser } from '../../store/slices/authSlice';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 // serviceService imported for potential future category loading
 // import { serviceService } from '../../services/service.service';
@@ -135,6 +135,48 @@ const SpecialistOnboarding: React.FC = () => {
       }));
     }
   }, [user]);
+
+  // Mark onboarding complete when reaching the done screen (step 4)
+  // This ensures all navigation buttons on the done screen work correctly,
+  // since ProtectedRoute checks profileComplete before allowing access.
+  const onboardingMarkedRef = useRef(false);
+  useEffect(() => {
+    if (step === 4 && !onboardingMarkedRef.current) {
+      onboardingMarkedRef.current = true;
+      (async () => {
+        try {
+          await specialistService.completeOnboarding();
+        } catch (err) {
+          logger.warn('Onboarding: failed to mark onboarding complete', err);
+        }
+        // Set profileComplete so ProtectedRoute allows navigation to dashboard.
+        // Do NOT call getCurrentUser() here — the API cache may return stale data
+        // with profileComplete: false, overwriting this update.
+        dispatch(updateUserProfile({ profileComplete: true } as any));
+        setOnboardingReady(true);
+      })();
+    }
+  }, [step, dispatch]);
+
+  // Navigate only after onboarding completion has been persisted
+  const navigateAfterOnboarding = (path: string) => {
+    if (onboardingReady) {
+      navigate(path);
+    } else {
+      // Wait briefly for the async call to finish, then navigate
+      const checkAndNavigate = async () => {
+        try {
+          await specialistService.completeOnboarding();
+          dispatch(updateUserProfile({ profileComplete: true } as any));
+        } catch {
+          // ignore — best effort, optimistically set profileComplete anyway
+          dispatch(updateUserProfile({ profileComplete: true } as any));
+        }
+        navigate(path);
+      };
+      checkAndNavigate();
+    }
+  };
 
   // -----------------------------------------------------------------------
   // Validation helpers
@@ -343,9 +385,6 @@ const SpecialistOnboarding: React.FC = () => {
           await specialistService.updateProfile({ avatar: result.url } as any);
         }
         dispatch(updateUserProfile({ avatar: result.url } as any));
-        // NOTE: Do NOT call getCurrentUser() here — if it fails, it clears
-        // isAuthenticated which triggers ProtectedRoute to redirect to login,
-        // wiping out all form progress. updateUserProfile above is sufficient.
       }
       return true;
     } catch (err: any) {

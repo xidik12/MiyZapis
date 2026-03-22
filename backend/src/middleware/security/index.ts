@@ -266,17 +266,22 @@ export const corsOptions = {
   origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       ...config.security.corsOrigin,
       'https://miyzapis.com',
       'https://www.miyzapis.com',
-      'https://miyzapis-frontend-production.up.railway.app',
+      'https://api.miyzapis.com',
       // Add Google OAuth domain for OAuth flows
       'https://accounts.google.com',
       'https://oauth2.googleapis.com',
     ];
-    
+
+    // Allow all origins if wildcard is configured
+    if (allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {

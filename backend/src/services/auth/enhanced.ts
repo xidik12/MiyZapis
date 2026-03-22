@@ -154,26 +154,31 @@ export class AuthService {
 
       // Create specialist profile if user is a specialist
       if (data.userType === 'SPECIALIST') {
-        await prisma.specialist.create({
-          data: {
-            userId: user.id,
-            businessName: '', // Empty - user must fill this in
-            bio: '', // Empty - user must fill this in  
-            specialties: '[]', // Empty array
-            city: '',
-            state: '',
-            country: '',
-            workingHours: JSON.stringify({
-              monday: { isWorking: false, start: '09:00', end: '17:00' },
-              tuesday: { isWorking: false, start: '09:00', end: '17:00' },
-              wednesday: { isWorking: false, start: '09:00', end: '17:00' },
-              thursday: { isWorking: false, start: '09:00', end: '17:00' },
-              friday: { isWorking: false, start: '09:00', end: '17:00' },
-              saturday: { isWorking: false, start: '09:00', end: '17:00' },
-              sunday: { isWorking: false, start: '09:00', end: '17:00' }
-            }),
-          },
-        });
+        try {
+          await prisma.specialist.create({
+            data: {
+              userId: user.id,
+              businessName: '',
+              bio: '',
+              specialties: '[]',
+              city: '',
+              state: '',
+              country: '',
+              workingHours: JSON.stringify({
+                monday: { isWorking: false, start: '09:00', end: '17:00' },
+                tuesday: { isWorking: false, start: '09:00', end: '17:00' },
+                wednesday: { isWorking: false, start: '09:00', end: '17:00' },
+                thursday: { isWorking: false, start: '09:00', end: '17:00' },
+                friday: { isWorking: false, start: '09:00', end: '17:00' },
+                saturday: { isWorking: false, start: '09:00', end: '17:00' },
+                sunday: { isWorking: false, start: '09:00', end: '17:00' }
+              }),
+            },
+          });
+          logger.info('Created specialist profile for new user', { userId: user.id });
+        } catch (specError) {
+          logger.error('Failed to create specialist profile during registration', { userId: user.id, error: specError });
+        }
       }
 
       // Generate verification token
@@ -702,29 +707,32 @@ export class AuthService {
 
         // Create specialist profile if user is a specialist
         if (validUserType === 'SPECIALIST') {
-          // Create empty specialist profile - no mock data
-          await prisma.specialist.create({
-            data: {
-              userId: user.id,
-              businessName: '', // Empty - user must fill this in
-              bio: '', // Empty - user must fill this in  
-              specialties: '[]', // Empty array
-              city: '',
-              state: '',
-              country: '',
-              workingHours: JSON.stringify({
-                monday: { isWorking: false, start: '09:00', end: '17:00' },
-                tuesday: { isWorking: false, start: '09:00', end: '17:00' },
-                wednesday: { isWorking: false, start: '09:00', end: '17:00' },
-                thursday: { isWorking: false, start: '09:00', end: '17:00' },
-                friday: { isWorking: false, start: '09:00', end: '17:00' },
-                saturday: { isWorking: false, start: '09:00', end: '17:00' },
-                sunday: { isWorking: false, start: '09:00', end: '17:00' }
-              }), // All days disabled by default
-            },
-          });
-          
-          logger.info('Created empty specialist profile for new user', { 
+          try {
+            await prisma.specialist.create({
+              data: {
+                userId: user.id,
+                businessName: '',
+                bio: '',
+                specialties: '[]',
+                city: '',
+                state: '',
+                country: '',
+                workingHours: JSON.stringify({
+                  monday: { isWorking: false, start: '09:00', end: '17:00' },
+                  tuesday: { isWorking: false, start: '09:00', end: '17:00' },
+                  wednesday: { isWorking: false, start: '09:00', end: '17:00' },
+                  thursday: { isWorking: false, start: '09:00', end: '17:00' },
+                  friday: { isWorking: false, start: '09:00', end: '17:00' },
+                  saturday: { isWorking: false, start: '09:00', end: '17:00' },
+                  sunday: { isWorking: false, start: '09:00', end: '17:00' }
+                }),
+              },
+            });
+          } catch (specError) {
+            logger.error('Failed to create specialist profile during Google auth', { userId: user.id, error: specError });
+          }
+
+          logger.info('Created empty specialist profile for new user', {
             userId: user.id,
             businessName: 'Empty - needs setup'
           });

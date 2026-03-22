@@ -152,10 +152,11 @@ export const validatePasswordReset = [
 
 // Change password validation
 export const validateChangePassword = [
-  body('currentPassword')
-    .optional()  // Optional for Google OAuth users who don't have a current password
-    .isLength({ min: 1 })
-    .withMessage('Current password is required if you have one set'),
+  body('otpCode')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Verification code must be 6 digits')
+    .isNumeric()
+    .withMessage('Verification code must be numeric'),
 
   body('newPassword')
     .isLength({ min: 8 })

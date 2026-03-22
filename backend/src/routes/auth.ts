@@ -70,6 +70,7 @@ router.post('/request-password-reset', authRateLimit, validatePasswordResetReque
 router.post('/reset-password', authRateLimit, validatePasswordReset, AuthController.resetPassword);
 
 // Password management (authenticated routes)
+router.post('/request-password-change-otp', authenticateToken, authRateLimit, AuthController.requestPasswordChangeOtp);
 router.post('/change-password', authenticateToken, validateChangePassword, AuthController.changePassword);
 router.post('/set-initial-password', authenticateToken, validateSetInitialPassword, AuthController.setInitialPassword);
 

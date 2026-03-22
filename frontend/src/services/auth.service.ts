@@ -224,9 +224,17 @@ export class AuthService {
   }
 
   // Change password
-  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  async requestPasswordChangeOtp(): Promise<{ message: string; channels: string[] }> {
+    const response = await apiClient.post<{ message: string; channels: string[] }>('/auth/request-password-change-otp', {});
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to send verification code');
+    }
+    return response.data;
+  }
+
+  async changePassword(otpCode: string, newPassword: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/auth/change-password', {
-      currentPassword,
+      otpCode,
       newPassword
     });
     if (!response.success || !response.data) {
@@ -307,21 +315,18 @@ export class AuthService {
   // Get current user profile
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get<{ user: User }>(API_ENDPOINTS.USERS.PROFILE);
+      const response = await apiClient.get<Record<string, unknown>>(API_ENDPOINTS.USERS.PROFILE);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get user profile');
       }
-      console.log('🔍 getCurrentUser raw response:', response.data);
-      const transformedUser = this.transformUserFromBackend(response.data.user);
-      console.log('🔍 getCurrentUser transformed result:', {
-        authProvider: transformedUser.authProvider,
-        hasPassword: transformedUser.hasPassword,
-        passwordLastChanged: transformedUser.passwordLastChanged
-      });
+      // Backend returns user fields flat in data (not wrapped in { user: ... })
+      const userData = response.data.user
+        ? (response.data.user as Record<string, unknown>)
+        : (response.data as Record<string, unknown>);
+      const transformedUser = this.transformUserFromBackend(userData);
       return transformedUser;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
-      // Extract error message from API response
       const errorMessage = err.message || 'Failed to get user profile';
       throw new Error(errorMessage);
     }
