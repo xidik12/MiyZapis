@@ -54,5 +54,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={redirectPath} replace />;
   }
 
+  // Specialist onboarding check: if profileComplete is explicitly false, redirect to onboarding
+  const isOnboardingRoute = location.pathname === '/onboarding' || location.pathname.startsWith('/onboarding');
+  if (
+    isAuthenticated &&
+    userRole === 'specialist' &&
+    (user as any)?.profileComplete === false &&
+    !isOnboardingRoute
+  ) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <>{children}</>;
 };

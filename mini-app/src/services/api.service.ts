@@ -22,6 +22,8 @@ interface PaginatedResponse<T> {
 
 class ApiService {
   private api: AxiosInstance;
+  private isRefreshing = false;
+  private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor() {
     this.api = axios.create({
@@ -44,17 +46,68 @@ class ApiService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor for error handling
+    // Response interceptor for error handling + token refresh
     this.api.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
+        const originalRequest = error.config;
+        const url = originalRequest?.url || '';
+
         if (error.response?.status === 401) {
-          // Only clear auth for auth-critical endpoints (token validation)
-          // Don't clear for other endpoints that may return 401 for other reasons
-          const url = error.config?.url || '';
-          if (url.includes('/auth/me') || url.includes('/auth/refresh')) {
+          // Don't retry auth endpoints — clear tokens and logout
+          if (url.includes('/auth/me') || url.includes('/auth/refresh') || url.includes('/auth-enhanced/refresh') || url.includes('/auth/login')) {
             telegramAuthService.clearTokens();
             window.dispatchEvent(new CustomEvent('auth:logout'));
+            return Promise.reject(error);
+          }
+
+          // Already retried — don't loop
+          if (originalRequest._retry) {
+            return Promise.reject(error);
+          }
+          originalRequest._retry = true;
+
+          // If a refresh is already in progress, queue this request
+          if (this.isRefreshing) {
+            return new Promise<typeof error>((resolve) => {
+              this.refreshSubscribers.push((newToken: string) => {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                resolve(this.api(originalRequest));
+              });
+            });
+          }
+
+          this.isRefreshing = true;
+
+          try {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!refreshToken) throw new Error('No refresh token');
+
+            const res = await axios.post(`${API_BASE_URL}/auth-enhanced/refresh`, { refreshToken });
+            const data = res.data?.data;
+            const newAccessToken = data?.tokens?.accessToken || data?.token || '';
+            const newRefreshToken = data?.tokens?.refreshToken || data?.refreshToken || '';
+
+            if (!newAccessToken) throw new Error('No access token in refresh response');
+
+            // Store new tokens
+            telegramAuthService.setTokens(newAccessToken, newRefreshToken || undefined);
+
+            // Notify queued requests
+            this.refreshSubscribers.forEach((cb) => cb(newAccessToken));
+            this.refreshSubscribers = [];
+
+            // Retry the original request
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return this.api(originalRequest);
+          } catch {
+            // Refresh failed — clear tokens and fire logout event
+            telegramAuthService.clearTokens();
+            this.refreshSubscribers = [];
+            window.dispatchEvent(new CustomEvent('auth:logout'));
+            return Promise.reject(error);
+          } finally {
+            this.isRefreshing = false;
           }
         }
         return Promise.reject(error);
@@ -359,7 +412,7 @@ class ApiService {
     description: string;
     categoryId: string;
     duration: number;
-    price: number;
+    basePrice: number;
     currency?: string;
   }) {
     return this.post('/specialists/services', data);
@@ -598,9 +651,10 @@ class ApiService {
     return this.get('/referral/config');
   }
 
-  async createReferral() {
+  async createReferral(userRole?: string) {
+    const isSpecialist = userRole?.toLowerCase() === 'specialist';
     return this.post('/referral/create', {
-      referralType: 'CUSTOMER_TO_CUSTOMER',
+      referralType: isSpecialist ? 'SPECIALIST_TO_CUSTOMER' : 'CUSTOMER_TO_CUSTOMER',
       targetUserType: 'CUSTOMER',
       inviteChannel: 'LINK',
     });
@@ -628,8 +682,12 @@ class ApiService {
   }
 
   // ==================== Onboarding ====================
-  async completeOnboarding(data: unknown) {
+  async saveOnboardingProfile(data: unknown) {
     return this.post('/specialists/profile', data);
+  }
+
+  async completeOnboarding() {
+    return this.post('/specialists/onboarding/complete', {});
   }
 
   // ==================== File Upload ====================

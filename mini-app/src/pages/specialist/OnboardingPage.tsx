@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  Upload,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -75,6 +76,8 @@ export const OnboardingPage: React.FC = () => {
   const [data, setData] = useState<OnboardingData>(DEFAULT_DATA);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // Load saved progress
   useEffect(() => {
@@ -137,14 +140,15 @@ export const OnboardingPage: React.FC = () => {
   const handleFinish = async () => {
     try {
       setSubmitting(true);
-      await apiService.completeOnboarding({
+      // Step 1: Save profile data
+      await apiService.saveOnboardingProfile({
         businessName: data.businessName,
         specialization: data.specialization,
         experience: parseInt(data.experience) || 0,
         service: data.serviceName
           ? {
               name: data.serviceName,
-              price: parseFloat(data.servicePrice) || 0,
+              basePrice: parseFloat(data.servicePrice) || 0,
               duration: parseInt(data.serviceDuration) || 60,
               categoryId: data.serviceCategory,
             }
@@ -152,6 +156,8 @@ export const OnboardingPage: React.FC = () => {
         schedule: data.schedule,
         photoUrl: data.photoUrl || undefined,
       });
+      // Step 2: Mark onboarding as complete
+      await apiService.completeOnboarding();
 
       localStorage.removeItem(STORAGE_KEY);
       dispatch(addToast({
@@ -365,13 +371,50 @@ export const OnboardingPage: React.FC = () => {
               <p className="text-sm text-text-secondary">{t(onboardingStrings, 'step4Desc', locale)}</p>
             </div>
 
-            <Input
-              label={t(onboardingStrings, 'photoUrl', locale)}
-              value={data.photoUrl}
-              onChange={e => updateData({ photoUrl: e.target.value })}
-              placeholder="https://..."
-              icon={<Camera size={18} />}
+            {/* File upload input (hidden) */}
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  setUploadingPhoto(true);
+                  const result = await apiService.uploadFile(file, 'avatar');
+                  updateData({ photoUrl: result.url });
+                  hapticFeedback.notificationSuccess();
+                } catch {
+                  dispatch(addToast({
+                    type: 'error',
+                    title: t(commonStrings, 'error', locale),
+                    message: t(onboardingStrings, 'setupFailed', locale),
+                  }));
+                  hapticFeedback.notificationError();
+                } finally {
+                  setUploadingPhoto(false);
+                  e.target.value = '';
+                }
+              }}
             />
+
+            {/* Upload button */}
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed transition-colors ${
+                uploadingPhoto
+                  ? 'border-accent-primary/30 bg-accent-primary/5 text-accent-primary'
+                  : 'border-white/10 bg-bg-secondary text-text-secondary hover:border-accent-primary/50'
+              }`}
+            >
+              {uploadingPhoto ? (
+                <><LoadingSpinner size="sm" /><span className="text-sm">{t(commonStrings, 'loading', locale)}</span></>
+              ) : (
+                <><Upload size={18} /><span className="text-sm font-medium">{t(onboardingStrings, 'step4Title', locale)}</span></>
+              )}
+            </button>
 
             {/* Preview */}
             {data.photoUrl && (
@@ -389,7 +432,7 @@ export const OnboardingPage: React.FC = () => {
               </div>
             )}
 
-            {!data.photoUrl && (
+            {!data.photoUrl && !uploadingPhoto && (
               <Card className="text-center py-8">
                 <Camera size={40} className="text-text-secondary mx-auto mb-2" />
                 <p className="text-text-secondary text-sm">

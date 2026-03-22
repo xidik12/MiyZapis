@@ -140,8 +140,11 @@ export const SpecialistServicesPage: React.FC = () => {
 
     try {
       setSaving(true);
+      // Map form's `price` to API's `basePrice`
+      const { price, ...rest } = formData;
       const submitData = {
-        ...formData,
+        ...rest,
+        basePrice: price,
         images: formData.images.length > 0 ? formData.images : undefined,
       };
       if (editingService) {

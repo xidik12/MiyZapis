@@ -45,7 +45,7 @@ interface Referral {
 
 export const ReferralsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { hapticFeedback } = useTelegram();
+  const { hapticFeedback, user: tgUser } = useTelegram();
   const locale = useLocale();
 
   const [config, setConfig] = useState<ReferralConfig | null>(null);
@@ -60,7 +60,7 @@ export const ReferralsPage: React.FC = () => {
 
       // Step 1: Create/ensure referral code exists, then fetch all data
       const [createResult, configData, analyticsData, referralsData] = await Promise.allSettled([
-        apiService.createReferral().catch(() => null),
+        apiService.createReferral(tgUser?.role || (tgUser as any)?.userType).catch(() => null),
         apiService.getReferralConfig(),
         apiService.getReferralAnalytics(),
         apiService.getMyReferrals(),
@@ -133,7 +133,7 @@ export const ReferralsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tgUser]);
 
   useEffect(() => {
     fetchData();
