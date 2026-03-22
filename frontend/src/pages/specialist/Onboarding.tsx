@@ -421,7 +421,7 @@ const SpecialistOnboarding: React.FC = () => {
         break;
       case 4:
         // Done step -> go to dashboard
-        navigate('/specialist/dashboard');
+        navigateAfterOnboarding('/specialist/dashboard');
         return;
     }
 
@@ -1033,19 +1033,19 @@ const SpecialistOnboarding: React.FC = () => {
       {/* Quick links */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
         <button
-          onClick={() => navigate('/specialist/dashboard')}
+          onClick={() => navigateAfterOnboarding('/specialist/dashboard')}
           className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {t('onboarding.goToDashboard') || 'Go to Dashboard'}
         </button>
         <button
-          onClick={() => navigate('/specialist/services')}
+          onClick={() => navigateAfterOnboarding('/specialist/services')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.manageServices') || 'Manage Services'}
         </button>
         <button
-          onClick={() => navigate('/specialist/schedule')}
+          onClick={() => navigateAfterOnboarding('/specialist/schedule')}
           className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           {t('onboarding.viewSchedule') || 'View Schedule'}
