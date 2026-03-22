@@ -54,7 +54,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src, 
     fallbackSrc, 
     alt: alt?.substring(0, 30), 
-    isBackendUpload: src.includes('miyzapis-backend-production.up.railway.app/uploads/'),
+    isBackendUpload: src.includes('api.miyzapis.com/uploads/'),
     className 
   });
 
@@ -76,8 +76,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
     
     // For backend uploads, try a faster pre-check using fetch
-    const isBackendUpload = src.includes('miyzapis-backend-production.up.railway.app/uploads/') || 
-                            src.includes('miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/');
+    const isBackendUpload = src.includes('api.miyzapis.com/uploads/') || 
+                            src.includes('api.miyzapis.com/api/v1/files/s3-proxy/');
     const isS3Proxy = src.includes('/s3-proxy/');
     
     if (isBackendUpload && !src.startsWith('data:') && !isS3Proxy) {
@@ -295,7 +295,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       <div className={`bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center ${className}`} {...props}>
         <div className="text-gray-400 text-sm text-center p-4">
           {(() => {
-            const isBackendUpload = src.includes('miyzapis-backend-production.up.railway.app/uploads/');
+            const isBackendUpload = src.includes('api.miyzapis.com/uploads/');
             const isPortfolioImage = src.includes('portfolio_');
             const isAvatarImage = src.includes('avatar_');
             

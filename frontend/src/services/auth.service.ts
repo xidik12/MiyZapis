@@ -413,22 +413,15 @@ export class AuthService {
     let avatarUrl = backendUser.avatar;
     console.log('🔄 Transforming user avatar from backend:', avatarUrl);
     
-    if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
-      // Convert relative URL to absolute URL for production
+    if (avatarUrl && typeof avatarUrl === 'string') {
       const baseUrl = environment.API_URL.replace(/\/api\/v\d+$/, '');
-      avatarUrl = `${baseUrl}${avatarUrl}`;
-      console.log('✅ Backend avatar URL transformed to absolute:', avatarUrl);
-    } else if (avatarUrl && avatarUrl.startsWith('http')) {
-      // Check if this is still a direct Google URL (should be rare after our changes)
-      if (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com')) {
-        console.warn('⚠️ Google avatar URL detected - this should be saved to backend storage!');
-      } else {
-        console.log('✅ Avatar URL already absolute:', avatarUrl);
+      if (avatarUrl.startsWith('/uploads/')) {
+        // Convert relative URL to absolute URL
+        avatarUrl = `${baseUrl}${avatarUrl}`;
+      } else if (avatarUrl.includes('miyzapis-backend-production.up.railway.app')) {
+        // Rewrite old Railway URLs to current backend
+        avatarUrl = avatarUrl.replace('https://miyzapis-backend-production.up.railway.app', baseUrl);
       }
-    } else if (!avatarUrl) {
-      console.log('⚠️ No avatar URL provided for user');
-    } else {
-      console.log('🤔 Unexpected avatar URL format:', avatarUrl);
     }
 
     return {
