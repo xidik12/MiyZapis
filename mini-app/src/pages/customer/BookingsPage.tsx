@@ -124,6 +124,7 @@ export const BookingsPage: React.FC = () => {
               onClick={() => {
                 setActiveTab('upcoming');
                 hapticFeedback.selectionChanged();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                 activeTab === 'upcoming'
@@ -137,6 +138,7 @@ export const BookingsPage: React.FC = () => {
               onClick={() => {
                 setActiveTab('past');
                 hapticFeedback.selectionChanged();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                 activeTab === 'past'

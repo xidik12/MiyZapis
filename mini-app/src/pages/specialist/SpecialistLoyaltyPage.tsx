@@ -237,7 +237,7 @@ export const SpecialistLoyaltyPage: React.FC = () => {
             {(['overview', 'history', 'tiers'] as Tab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => { setTab(t); hapticFeedback.selectionChanged(); }}
+                onClick={() => { setTab(t); hapticFeedback.selectionChanged(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   tab === t
                     ? 'bg-accent-primary/15 text-accent-primary'

@@ -442,7 +442,7 @@ const CustomerSettings: React.FC = () => {
                 return (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => { setActiveSection(section.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition-all duration-200 ${
                       activeSection === section.id
                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-r-2 border-primary-700 dark:border-primary-500'

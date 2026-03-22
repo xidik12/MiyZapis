@@ -161,7 +161,7 @@ export const SpecialistProfilePage: React.FC = () => {
     icon: React.ReactNode;
   }> = ({ tab, label, icon }) => (
     <button
-      onClick={() => setActiveTab(tab)}
+      onClick={() => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
       className={`flex-1 flex items-center justify-center gap-1 py-3 px-2 border-b-2 transition-colors ${
         activeTab === tab
           ? 'border-accent-primary text-accent-primary'

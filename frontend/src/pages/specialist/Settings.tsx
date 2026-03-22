@@ -357,7 +357,7 @@ const SpecialistSettings: React.FC = () => {
                   ]).map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                       className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
                         activeTab === item.id
                           ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
@@ -384,7 +384,7 @@ const SpecialistSettings: React.FC = () => {
                   ]).map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                       className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
                         activeTab === item.id
                           ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'

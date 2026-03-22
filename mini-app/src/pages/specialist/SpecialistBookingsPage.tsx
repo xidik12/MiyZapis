@@ -243,6 +243,7 @@ export const SpecialistBookingsPage: React.FC = () => {
                 onClick={() => {
                   setActiveFilter(tab.key);
                   hapticFeedback.selectionChanged();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 className={`flex-shrink-0 py-2.5 px-4 rounded-xl font-medium text-sm transition-all ${
                   activeFilter === tab.key

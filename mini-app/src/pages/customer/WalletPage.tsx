@@ -195,7 +195,7 @@ export const WalletPage: React.FC = () => {
             {(['overview', 'transactions'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); }}
+                onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab
                     ? 'bg-tg-button text-tg-button-text shadow-card'

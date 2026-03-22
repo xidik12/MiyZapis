@@ -208,7 +208,7 @@ export const LoyaltyPage: React.FC = () => {
             {(['overview', 'history', 'tiers', 'rewards'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); }}
+                onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className={`flex-1 px-4 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab
                     ? 'bg-tg-button text-tg-button-text shadow-card'
