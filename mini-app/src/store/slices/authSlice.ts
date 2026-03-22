@@ -8,11 +8,21 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  phoneNumber?: string;
   avatar?: string;
   role: 'customer' | 'specialist' | 'admin';
+  userType?: string;
   isEmailVerified: boolean;
+  isVerified?: boolean;
+  profileComplete?: boolean;
+  loyaltyPoints?: number;
+  totalBookings?: number;
+  memberSince?: string;
   preferences?: Record<string, unknown>;
-  telegramId?: string;
+  telegramId?: string | number;
+  authProvider?: string;
+  language?: string;
+  currency?: string;
 }
 
 interface AuthState {
@@ -88,6 +98,22 @@ export const updateProfileAsync = createAsyncThunk(
   }
 );
 
+// Normalize backend user to mini-app User shape
+function normalizeUser(raw: any): User | null {
+  if (!raw) return null;
+  return {
+    ...raw,
+    role: raw.role || (raw.userType ? raw.userType.toLowerCase() : 'customer'),
+    userType: raw.userType || raw.role?.toUpperCase(),
+    profileComplete: raw.profileComplete ?? (raw.specialist?.onboardingCompleted ?? undefined),
+    phone: raw.phone || raw.phoneNumber,
+    isEmailVerified: raw.isEmailVerified ?? raw.isVerified ?? false,
+    loyaltyPoints: raw.loyaltyPoints ?? 0,
+    totalBookings: raw.totalBookings ?? 0,
+    memberSince: raw.memberSince || raw.createdAt,
+  };
+}
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -102,7 +128,7 @@ const authSlice = createSlice({
       state.error = null;
     },
     setCredentials: (state, action) => {
-      state.user = action.payload.user;
+      state.user = normalizeUser(action.payload.user);
       state.token = action.payload.token;
       state.isAuthenticated = true;
     },
@@ -115,7 +141,7 @@ const authSlice = createSlice({
     });
     builder.addCase(loginAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = normalizeUser(action.payload.user);
       state.token = action.payload.token;
       state.isAuthenticated = true;
     });
@@ -131,7 +157,7 @@ const authSlice = createSlice({
     });
     builder.addCase(registerAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = normalizeUser(action.payload.user);
       state.token = action.payload.token;
       state.isAuthenticated = true;
     });
@@ -147,7 +173,7 @@ const authSlice = createSlice({
     });
     builder.addCase(telegramAuthAsync.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = normalizeUser(action.payload.user);
       state.token = action.payload.token;
       state.isAuthenticated = true;
     });
@@ -158,12 +184,12 @@ const authSlice = createSlice({
 
     // Get Me
     builder.addCase(getMeAsync.fulfilled, (state, action) => {
-      state.user = action.payload;
+      state.user = normalizeUser(action.payload);
     });
 
     // Update Profile
     builder.addCase(updateProfileAsync.fulfilled, (state, action) => {
-      state.user = { ...state.user, ...action.payload };
+      state.user = normalizeUser({ ...state.user, ...action.payload });
     });
 
     // Refresh Token
