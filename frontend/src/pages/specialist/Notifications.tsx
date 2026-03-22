@@ -225,7 +225,7 @@ const SpecialistNotifications: React.FC = () => {
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8 animate-slide-in-down">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
             {t('dashboard.nav.notifications')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">

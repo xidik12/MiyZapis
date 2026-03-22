@@ -889,11 +889,11 @@ const SpecialistEarnings: React.FC = () => {
             ) : payoutHistory && payoutHistory.length > 0 ? (
               payoutHistory.map((payout) => (
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="min-w-0 mr-3">
+                    <div className="font-medium text-gray-900 dark:text-white truncate">
                       {formatPrice(payout.amount || 0, (payout.currency || 'USD') as 'USD' | 'EUR' | 'UAH')}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
                     </div>
                   </div>

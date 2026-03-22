@@ -1083,7 +1083,7 @@ const SpecialistProfile: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                       {profile.firstName} {profile.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">

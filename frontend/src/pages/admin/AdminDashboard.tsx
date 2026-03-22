@@ -130,7 +130,7 @@ const AdminDashboard: React.FC = () => {
         {/* Tabs */}
         <div className="mb-6">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto" aria-label="Tabs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;

@@ -55,7 +55,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             >
               <ChevronLeftIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <div className="min-w-[200px] text-center">
+            <div className="min-w-0 sm:min-w-[200px] text-center">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 {getDateRange()}
               </h2>

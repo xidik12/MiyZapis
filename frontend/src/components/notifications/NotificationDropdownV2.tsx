@@ -162,7 +162,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute right-0 mt-2 w-[420px] max-w-[92vw] max-h-[600px] rounded-2xl shadow-2xl backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 z-50 overflow-hidden"
+          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[420px] max-h-[600px] rounded-2xl shadow-2xl backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 z-50 overflow-hidden"
           style={{ transformOrigin: 'top right' }}
         >
           {/* Header */}

@@ -128,7 +128,7 @@ const CustomerHelpSupport: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">
             {t('customer.help.title')}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400 max-w-2xl mx-auto">
@@ -149,7 +149,7 @@ const CustomerHelpSupport: React.FC = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* FAQ Section */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow">

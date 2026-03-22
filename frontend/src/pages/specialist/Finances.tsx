@@ -472,12 +472,12 @@ const SpecialistFinances: React.FC = () => {
                     className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-lg ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'}`}>
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className={`p-2 rounded-lg flex-shrink-0 ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'}`}>
                           <Icon className={`h-5 w-5 ${config?.color || 'text-gray-600'}`} />
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">
                             {expense.description}
                           </p>
                           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">

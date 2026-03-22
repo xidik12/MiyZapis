@@ -11,7 +11,7 @@ const NotFoundPage: React.FC = () => {
         <div className="mx-auto max-w-md">
           {/* 404 Illustration */}
           <div className="mb-8">
-            <div className="text-9xl font-bold text-primary-600 dark:text-primary-400">404</div>
+            <div className="text-6xl sm:text-8xl lg:text-9xl font-bold text-primary-600 dark:text-primary-400">404</div>
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">

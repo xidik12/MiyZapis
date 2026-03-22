@@ -287,7 +287,7 @@ const SpecialistReviews: React.FC = () => {
       <div className="py-6">
         {/* Header */}
         <div className="max-w-5xl mx-auto px-4 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {t('dashboard.nav.reviews')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">

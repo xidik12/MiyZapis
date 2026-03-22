@@ -231,8 +231,8 @@ const CustomerProfile: React.FC = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Modern Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6 lg:gap-8">
             {/* Profile Info Section */}
             <div className="flex items-start gap-6">
               {/* Modern Avatar */}
@@ -259,7 +259,7 @@ const CustomerProfile: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                       {currentUser?.firstName} {currentUser?.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
