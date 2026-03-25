@@ -6,6 +6,7 @@ import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
+import { invalidateUserCache } from '@/middleware/auth/jwt';
 
 /**
  * Strip private fields from a specialist AND from any nested service objects.
@@ -1531,6 +1532,9 @@ export class SpecialistController {
         where: { id: specialist.id },
         data: { onboardingCompleted: true },
       });
+
+      // Invalidate JWT user cache so subsequent /auth/me calls return profileComplete: true
+      invalidateUserCache(userId);
 
       logger.info('Specialist onboarding completed', { userId, specialistId: specialist.id });
 
