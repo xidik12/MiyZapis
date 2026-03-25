@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { messagesService } from '@/services/messages.service';
 import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -31,6 +32,28 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
   const location = useLocation();
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const { count } = await messagesService.getUnreadCount();
+      setUnreadMessages(count);
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+    }
+  }, [user, fetchUnreadCount]);
+
+  useEffect(() => {
+    const handleNewMessage = () => fetchUnreadCount();
+    window.addEventListener('messages:update', handleNewMessage);
+    return () => window.removeEventListener('messages:update', handleNewMessage);
+  }, [fetchUnreadCount]);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -100,7 +123,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
-      badge: 0, // Dynamic count from API
+      badge: unreadMessages,
     },
     {
       name: 'Profile',

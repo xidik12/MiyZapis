@@ -1905,6 +1905,7 @@ const uk: Record<string, string> = {
   'customer.nav.dashboard': 'Головна',
   'customer.nav.searchServices': 'Пошук послуг',
   'customer.favorites.searchPlaceholder': 'Пошук у вибраному...',
+  'customer.nav.notifications': 'Сповіщення',
   'customer.nav.bookings': 'Бронювання',
   'customer.nav.history': 'Історія',
   'customer.nav.favorites': 'Улюблені',

@@ -1044,10 +1044,9 @@ const SpecialistProfile: React.FC = () => {
               {/* Modern Avatar */}
               <div className="relative group">
                 {user?.avatar ? (
-                  <Avatar
-                    src={user.avatar}
+                  <img
+                    src={getAbsoluteImageUrl(user.avatar!)}
                     alt={profile.firstName || 'Profile'}
-                    size="custom"
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (

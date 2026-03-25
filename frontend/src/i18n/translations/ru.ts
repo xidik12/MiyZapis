@@ -1905,6 +1905,7 @@ const ru: Record<string, string> = {
   'customer.nav.dashboard': 'Главная',
   'customer.nav.searchServices': 'Поиск услуг',
   'customer.favorites.searchPlaceholder': 'Поиск в избранном...',
+  'customer.nav.notifications': 'Уведомления',
   'customer.nav.bookings': 'Бронирования',
   'customer.nav.history': 'История',
   'customer.nav.favorites': 'Избранные',

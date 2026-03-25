@@ -1905,6 +1905,7 @@ const en: Record<string, string> = {
   'customer.nav.dashboard': 'Dashboard',
   'customer.nav.searchServices': 'Search Services',
   'customer.favorites.searchPlaceholder': 'Search your favorites...',
+  'customer.nav.notifications': 'Notifications',
   'customer.nav.bookings': 'Bookings',
   'customer.nav.history': 'History',
   'customer.nav.favorites': 'Favorites',

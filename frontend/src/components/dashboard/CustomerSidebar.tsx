@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { selectFavoritesCount, fetchFavoritesCount } from '@/store/slices/favoritesSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { messagesService } from '@/services/messages.service';
 import { HouseIcon as HomeIcon, CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, MagnifyingGlassIcon, LifebuoyIcon, GiftIcon, ChatBubbleLeftRightIcon, UserGroupIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -34,13 +35,31 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   const user = useAppSelector(selectUser);
   const favoritesCount = useAppSelector(selectFavoritesCount);
   const dispatch = useAppDispatch();
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  // Fetch favorites count on component mount
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const { count } = await messagesService.getUnreadCount();
+      setUnreadMessages(count);
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  // Fetch favorites count and unread messages on component mount
   useEffect(() => {
     if (user) {
       dispatch(fetchFavoritesCount());
+      fetchUnreadCount();
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, fetchUnreadCount]);
+
+  // Listen for new message events to update badge
+  useEffect(() => {
+    const handleNewMessage = () => fetchUnreadCount();
+    window.addEventListener('messages:update', handleNewMessage);
+    return () => window.removeEventListener('messages:update', handleNewMessage);
+  }, [fetchUnreadCount]);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -54,6 +73,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/customer/messages',
       icon: ChatBubbleLeftRightIcon,
+      badge: unreadMessages,
     },
     {
       name: 'Community',

@@ -8,6 +8,7 @@ interface MessageInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onFileSelect?: (file: File) => void;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -16,6 +17,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   value,
   onChange,
   onSubmit,
+  onFileSelect,
   disabled = false,
   placeholder
 }) => {
@@ -23,6 +25,18 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const resolvedPlaceholder = placeholder || t('messages.typeMessage');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onFileSelect) {
+      onFileSelect(file);
+    }
+    // Reset so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     onChange(value + emojiData.emoji);
@@ -78,10 +92,20 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
       {/* Input Area */}
       <div className="flex items-end gap-2 p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          onChange={handleFileChange}
+        />
         {/* Attachment Button */}
         <button
           type="button"
-          className="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled}
+          className="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
           title={t('messages.attachFile')}
         >
           <PaperClipIcon className="w-5 h-5" />

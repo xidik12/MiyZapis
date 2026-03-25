@@ -8,6 +8,7 @@ import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalt
 import { calculateTier, formatPoints } from '../../utils/formatPoints';
 import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, CameraIcon, EyeIcon, BuildingOfficeIcon, ShieldCheckIcon, DocumentCheckIcon } from '@/components/icons';
 import { ContentLoader } from '@/components/ui';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 
 interface Address {
   id: string;
@@ -239,7 +240,7 @@ const CustomerProfile: React.FC = () => {
               <div className="relative group">
                 {currentUser?.avatar ? (
                   <img
-                    src={currentUser.avatar}
+                    src={getAbsoluteImageUrl(currentUser.avatar)}
                     alt="Profile"
                     className="w-28 h-28 rounded-2xl object-cover border-4 border-white dark:border-gray-800 shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />

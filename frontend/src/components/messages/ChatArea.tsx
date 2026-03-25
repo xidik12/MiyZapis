@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
-import { ArrowLeftIcon, PhoneIcon, VideoCameraIcon, EllipsisVerticalIcon } from '@/components/icons';
+import { ArrowLeftIcon, EllipsisVerticalIcon } from '@/components/icons';
 import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { MessageInput } from './MessageInput';
@@ -39,6 +39,7 @@ interface ChatAreaProps {
   newMessage: string;
   onNewMessageChange: (value: string) => void;
   onSendMessage: () => void;
+  onFileSelect?: (file: File) => void;
   onBack?: () => void;
   isTyping?: boolean;
   userRole?: 'customer' | 'specialist';
@@ -51,6 +52,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   newMessage,
   onNewMessageChange,
   onSendMessage,
+  onFileSelect,
   onBack,
   isTyping = false,
   userRole = 'customer'
@@ -177,12 +179,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         {/* Action buttons */}
         <div className="flex items-center gap-2">
           <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95">
-            <PhoneIcon className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95">
-            <VideoCameraIcon className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95">
             <EllipsisVerticalIcon className="w-5 h-5" />
           </button>
         </div>
@@ -236,6 +232,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         value={newMessage}
         onChange={onNewMessageChange}
         onSubmit={onSendMessage}
+        onFileSelect={onFileSelect}
         placeholder={t('messages.typeMessage')}
       />
     </div>

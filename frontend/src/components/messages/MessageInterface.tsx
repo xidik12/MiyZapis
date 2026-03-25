@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ConversationList } from './ConversationList';
 import { ChatArea } from './ChatArea';
 import { MessagesService } from '@/services/messages.service';
+import { fileUploadService } from '@/services/fileUpload.service';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -242,6 +243,38 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
     }
   };
 
+  const handleFileSelect = async (file: File) => {
+    if (!selectedConversation) return;
+
+    try {
+      const isImage = file.type.startsWith('image/');
+      const uploadResult = await fileUploadService.uploadFile(file, {
+        type: 'document',
+      });
+
+      const sentMessage = await messagesService.sendMessage(
+        selectedConversation.id,
+        {
+          content: isImage ? '' : file.name,
+          messageType: isImage ? 'IMAGE' : 'FILE',
+          attachments: [uploadResult.url],
+        }
+      );
+
+      if (isMountedRef.current) {
+        setMessages(prev => [...prev, sentMessage]);
+        setConversations(prev => prev.map(conv =>
+          conv.id === selectedConversation.id
+            ? { ...conv, lastMessage: sentMessage, lastMessageAt: sentMessage.createdAt }
+            : conv
+        ));
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error(t('messages.sendFailed') || 'Failed to send file');
+    }
+  };
+
   const filterConversations = () => {
     if (!searchQuery) {
       setFilteredConversations(conversations);
@@ -308,6 +341,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
           newMessage={newMessage}
           onNewMessageChange={setNewMessage}
           onSendMessage={handleSendMessage}
+          onFileSelect={handleFileSelect}
           onBack={() => setSelectedConversation(null)}
           isTyping={isTyping}
           userRole={userRole}
