@@ -1,1181 +1,631 @@
-// Email templates in multiple languages
-export const emailTemplates = {
-  // Welcome email for new users
+// Branded MiyZapis transactional email templates (en / uk / ru).
+//
+// Each template stores per-language content blocks only. Full HTML is built
+// at lookup time via renderBrandedHtml() so brand styling lives in one place
+// (email-layout.ts). Public API unchanged: getEmailTemplate(key, lang) still
+// returns { subject, html, text }.
+
+import { renderBrandedHtml, normalizeLang, STYLES, BRAND, EmailLanguage } from './email-layout';
+
+interface TemplateContent {
+  subject: string;
+  preheader: string;
+  bodyHtml: string; // inner content of the card (no outer wrapper)
+  text: string;
+}
+
+type TemplateBundle = Record<EmailLanguage, TemplateContent>;
+
+// Small helpers for repeated patterns.
+const cta = (href: string, label: string) =>
+  `<div style="${STYLES.buttonRow}"><a href="${href}" style="${STYLES.primaryButton}">${label}</a></div>`;
+const ctaPair = (href1: string, label1: string, href2: string, label2: string) =>
+  `<div style="${STYLES.buttonRow}">
+    <a href="${href1}" style="${STYLES.primaryButton};margin-right:10px;">${label1}</a>
+    <a href="${href2}" style="${STYLES.secondaryButton}">${label2}</a>
+  </div>`;
+const fallbackLink = (href: string, lead: string) =>
+  `<p style="${STYLES.faint}">${lead}<br><a href="${href}" style="${STYLES.link};word-break:break-all;">${href}</a></p>`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Template definitions
+// ─────────────────────────────────────────────────────────────────────────────
+
+const emailTemplatesRaw: Record<string, TemplateBundle> = {
+
+  // ── Welcome ────────────────────────────────────────────────────────────────
   welcome: {
     en: {
-      subject: 'Welcome to MiyZapis - Your Booking Platform',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to MiyZapis!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Your journey to seamless bookings starts here</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
-            
-            <p style="color: #6b7280; line-height: 1.6;">
-              Thank you for joining MiyZapis, the modern booking platform that connects customers with talented specialists across Ukraine.
-            </p>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #374151; margin-top: 0;">What's Next?</h3>
-              <ul style="color: #6b7280; line-height: 1.6;">
-                <li>Complete your profile to get personalized recommendations</li>
-                <li>Browse our wide selection of specialists</li>
-                <li>Book your first service and enjoy the experience</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Go to Dashboard
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              Need help? Visit our <a href="{{helpUrl}}" style="color: #667eea;">Help Center</a> or reply to this email.
-            </p>
-          </div>
+      subject: 'Welcome to MiyZapis',
+      preheader: 'Your booking platform is ready — let’s get you started.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Welcome aboard, {{firstName}} 👋</h1>
+        <p style="${STYLES.p}">Thanks for joining MiyZapis — the modern booking platform that connects you with talented specialists.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">A few things to try first</h3>
+          <p style="${STYLES.detailRow}">• Complete your profile to get tailored recommendations</p>
+          <p style="${STYLES.detailRow}">• Browse our directory of specialists</p>
+          <p style="${STYLES.detailRow}">• Book your first appointment</p>
         </div>
+        ${cta('{{dashboardUrl}}', 'Open dashboard')}
+        <p style="${STYLES.faint}">Need a hand? Visit our <a href="{{helpUrl}}" style="${STYLES.link}">Help Center</a> — or just reply to this email.</p>
       `,
-      text: `
-        Welcome to MiyZapis!
-        
-        Hello {{firstName}},
-        
-        Thank you for joining MiyZapis, the modern booking platform that connects customers with talented specialists across Ukraine.
-        
-        What's Next?
-        - Complete your profile to get personalized recommendations
-        - Browse our wide selection of specialists
-        - Book your first service and enjoy the experience
-        
-        Visit your dashboard: {{dashboardUrl}}
-        
-        Need help? Visit our Help Center: {{helpUrl}}
-      `
+      text: `Welcome aboard, {{firstName}}!\n\nThanks for joining MiyZapis. A few things to try first:\n  - Complete your profile for tailored recommendations\n  - Browse our directory of specialists\n  - Book your first appointment\n\nOpen your dashboard: {{dashboardUrl}}\nHelp center: {{helpUrl}}`,
     },
     uk: {
-      subject: 'Ласкаво просимо до МійЗапис - Вашої платформи для бронювання',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Ласкаво просимо до МійЗапис!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваша подорож до зручних бронювань починається тут</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привіт {{firstName}}!</h2>
-            
-            <p style="color: #6b7280; line-height: 1.6;">
-              Дякуємо за приєднання до МійЗапис - сучасної платформи для бронювання, яка з'єднує клієнтів з талановитими спеціалістами по всій Україні.
-            </p>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #374151; margin-top: 0;">Що далі?</h3>
-              <ul style="color: #6b7280; line-height: 1.6;">
-                <li>Заповніть свій профіль для отримання персональних рекомендацій</li>
-                <li>Переглядайте наш широкий вибір спеціалістів</li>
-                <li>Забронюйте свою першу послугу та насолоджуйтесь досвідом</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Перейти до кабінету
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              Потрібна допомога? Відвідайте наш <a href="{{helpUrl}}" style="color: #667eea;">Центр допомоги</a> або відповідайте на цей лист.
-            </p>
-          </div>
+      subject: 'Ласкаво просимо до МійЗапис',
+      preheader: 'Ваша платформа для бронювання готова — почнімо.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Вітаємо у МійЗапис, {{firstName}} 👋</h1>
+        <p style="${STYLES.p}">Дякуємо, що приєдналися — це сучасна платформа, що з’єднує вас із талановитими спеціалістами.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Що варто зробити першим</h3>
+          <p style="${STYLES.detailRow}">• Заповніть профіль для персональних рекомендацій</p>
+          <p style="${STYLES.detailRow}">• Перегляньте каталог спеціалістів</p>
+          <p style="${STYLES.detailRow}">• Заброньте свій перший запис</p>
         </div>
+        ${cta('{{dashboardUrl}}', 'Перейти до кабінету')}
+        <p style="${STYLES.faint}">Потрібна допомога? Завітайте у <a href="{{helpUrl}}" style="${STYLES.link}">Центр допомоги</a> або просто дайте відповідь на цей лист.</p>
       `,
-      text: `
-        Ласкаво просимо до МійЗапис!
-        
-        Привіт {{firstName}},
-        
-        Дякуємо за приєднання до МійЗапис - сучасної платформи для бронювання.
-        
-        Що далі?
-        - Заповніть свій профіль для отримання персональних рекомендацій
-        - Переглядайте наш широкий вибір спеціалістів
-        - Забронюйте свою першу послугу та насолоджуйтесь досвідом
-        
-        Відвідайте свій кабінет: {{dashboardUrl}}
-        
-        Потрібна допомога? Відвідайте наш Центр допомоги: {{helpUrl}}
-      `
+      text: `Вітаємо у МійЗапис, {{firstName}}!\n\nДякуємо, що приєдналися. Що варто зробити першим:\n  - Заповніть профіль\n  - Перегляньте каталог спеціалістів\n  - Заброньте свій перший запис\n\nКабінет: {{dashboardUrl}}\nЦентр допомоги: {{helpUrl}}`,
     },
     ru: {
-      subject: 'Добро пожаловать в МойЗапись - Вашу платформу для бронирования',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Добро пожаловать в МойЗапись!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваше путешествие к удобным бронированиям начинается здесь</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привет {{firstName}}!</h2>
-            
-            <p style="color: #6b7280; line-height: 1.6;">
-              Спасибо за присоединение к МойЗапись - современной платформе для бронирования, которая соединяет клиентов с талантливыми специалистами по всей Украине.
-            </p>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #374151; margin-top: 0;">Что дальше?</h3>
-              <ul style="color: #6b7280; line-height: 1.6;">
-                <li>Заполните свой профиль для получения персональных рекомендаций</li>
-                <li>Просматривайте наш широкий выбор специалистов</li>
-                <li>Забронируйте свою первую услугу и наслаждайтесь опытом</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Перейти в кабинет
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              Нужна помощь? Посетите наш <a href="{{helpUrl}}" style="color: #667eea;">Центр помощи</a> или ответьте на это письмо.
-            </p>
-          </div>
+      subject: 'Добро пожаловать в МойЗапись',
+      preheader: 'Ваша платформа для бронирования готова — начнём.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Добро пожаловать, {{firstName}} 👋</h1>
+        <p style="${STYLES.p}">Спасибо, что присоединились — это современная платформа, которая соединяет вас с талантливыми специалистами.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Что попробовать первым</h3>
+          <p style="${STYLES.detailRow}">• Заполните профиль для персональных рекомендаций</p>
+          <p style="${STYLES.detailRow}">• Просмотрите каталог специалистов</p>
+          <p style="${STYLES.detailRow}">• Забронируйте свою первую запись</p>
         </div>
+        ${cta('{{dashboardUrl}}', 'Перейти в кабинет')}
+        <p style="${STYLES.faint}">Нужна помощь? Загляните в <a href="{{helpUrl}}" style="${STYLES.link}">Центр помощи</a> или просто ответьте на это письмо.</p>
       `,
-      text: `
-        Добро пожаловать в МойЗапись!
-        
-        Привет {{firstName}},
-        
-        Спасибо за присоединение к МойЗапись - современной платформе для бронирования.
-        
-        Что дальше?
-        - Заполните свой профиль для получения персональных рекомендаций
-        - Просматривайте наш широкий выбор специалистов
-        - Забронируйте свою первую услугу и наслаждайтесь опытом
-        
-        Посетите свой кабинет: {{dashboardUrl}}
-        
-        Нужна помощь? Посетите наш Центр помощи: {{helpUrl}}
-      `
-    }
+      text: `Добро пожаловать, {{firstName}}!\n\nСпасибо, что присоединились. Что попробовать первым:\n  - Заполните профиль\n  - Просмотрите каталог специалистов\n  - Забронируйте свою первую запись\n\nКабинет: {{dashboardUrl}}\nЦентр помощи: {{helpUrl}}`,
+    },
   },
 
-  // Booking cancelled
+  // ── Email verification ────────────────────────────────────────────────────
+  emailVerification: {
+    en: {
+      subject: 'Verify your email address',
+      preheader: 'Confirm your email to finish signing up for MiyZapis.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Verify your email</h1>
+        <p style="${STYLES.p}">Hi {{firstName}}, please confirm your email address to complete your MiyZapis registration.</p>
+        ${cta('{{verificationUrl}}', 'Verify email')}
+        <p style="${STYLES.small}">This link expires in 24 hours. If you didn’t create a MiyZapis account, you can safely ignore this email.</p>
+        ${fallbackLink('{{verificationUrl}}', 'Trouble with the button? Paste this link into your browser:')}
+      `,
+      text: `Verify your email\n\nHi {{firstName}},\n\nPlease confirm your email to complete your MiyZapis registration:\n{{verificationUrl}}\n\nThis link expires in 24 hours. If you didn’t create an account, you can ignore this email.`,
+    },
+    uk: {
+      subject: 'Підтвердьте свою електронну адресу',
+      preheader: 'Підтвердіть пошту, щоб завершити реєстрацію у МійЗапис.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Підтвердьте свою пошту</h1>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Підтвердіть свою електронну адресу, щоб завершити реєстрацію у МійЗапис.</p>
+        ${cta('{{verificationUrl}}', 'Підтвердити пошту')}
+        <p style="${STYLES.small}">Посилання діє 24 години. Якщо ви не реєструвалися у МійЗапис, просто проігноруйте цей лист.</p>
+        ${fallbackLink('{{verificationUrl}}', 'Не працює кнопка? Скопіюйте це посилання у браузер:')}
+      `,
+      text: `Підтвердьте свою пошту\n\nПривіт, {{firstName}},\n\nПідтвердіть свою електронну адресу, щоб завершити реєстрацію у МійЗапис:\n{{verificationUrl}}\n\nПосилання діє 24 години. Якщо ви не реєструвалися, проігноруйте цей лист.`,
+    },
+    ru: {
+      subject: 'Подтвердите свой email',
+      preheader: 'Подтвердите почту, чтобы завершить регистрацию в МойЗапись.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Подтвердите свой email</h1>
+        <p style="${STYLES.p}">Привет, {{firstName}}. Подтвердите свой email, чтобы завершить регистрацию в МойЗапись.</p>
+        ${cta('{{verificationUrl}}', 'Подтвердить email')}
+        <p style="${STYLES.small}">Ссылка действует 24 часа. Если вы не создавали аккаунт в МойЗапись, можете просто проигнорировать письмо.</p>
+        ${fallbackLink('{{verificationUrl}}', 'Не работает кнопка? Скопируйте ссылку в браузер:')}
+      `,
+      text: `Подтвердите свой email\n\nПривет, {{firstName}},\n\nПодтвердите свой email, чтобы завершить регистрацию в МойЗапись:\n{{verificationUrl}}\n\nСсылка действует 24 часа. Если вы не создавали аккаунт, проигнорируйте письмо.`,
+    },
+  },
+
+  // ── Password reset ────────────────────────────────────────────────────────
+  passwordReset: {
+    en: {
+      subject: 'Reset your MiyZapis password',
+      preheader: 'A password reset was requested for your account.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Reset your password</h1>
+        <p style="${STYLES.p}">Hi {{firstName}}, we received a request to reset the password on your MiyZapis account.</p>
+        ${cta('{{resetUrl}}', 'Reset password')}
+        <p style="${STYLES.small}">This link expires in 1 hour. If you didn’t request a reset, you can ignore this email — your password stays the same.</p>
+        ${fallbackLink('{{resetUrl}}', 'Trouble with the button? Paste this link into your browser:')}
+      `,
+      text: `Reset your password\n\nHi {{firstName}},\n\nWe received a request to reset your MiyZapis password:\n{{resetUrl}}\n\nThis link expires in 1 hour. If you didn’t request this, ignore this email — your password stays the same.`,
+    },
+    uk: {
+      subject: 'Скидання пароля МійЗапис',
+      preheader: 'Надійшов запит на скидання пароля.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Скидання пароля</h1>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Ми отримали запит на скидання пароля до вашого акаунту МійЗапис.</p>
+        ${cta('{{resetUrl}}', 'Скинути пароль')}
+        <p style="${STYLES.small}">Посилання діє 1 годину. Якщо ви не запитували скидання — просто проігноруйте цей лист, пароль не зміниться.</p>
+        ${fallbackLink('{{resetUrl}}', 'Не працює кнопка? Скопіюйте посилання у браузер:')}
+      `,
+      text: `Скидання пароля\n\nПривіт, {{firstName}},\n\nМи отримали запит на скидання пароля МійЗапис:\n{{resetUrl}}\n\nПосилання діє 1 годину. Якщо ви не запитували — проігноруйте лист.`,
+    },
+    ru: {
+      subject: 'Сброс пароля МойЗапись',
+      preheader: 'Получен запрос на сброс пароля.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Сброс пароля</h1>
+        <p style="${STYLES.p}">Привет, {{firstName}}. Мы получили запрос на сброс пароля вашего аккаунта МойЗапись.</p>
+        ${cta('{{resetUrl}}', 'Сбросить пароль')}
+        <p style="${STYLES.small}">Ссылка действует 1 час. Если вы не запрашивали сброс — просто проигнорируйте письмо, пароль останется прежним.</p>
+        ${fallbackLink('{{resetUrl}}', 'Не работает кнопка? Скопируйте ссылку в браузер:')}
+      `,
+      text: `Сброс пароля\n\nПривет, {{firstName}},\n\nМы получили запрос на сброс пароля МойЗапись:\n{{resetUrl}}\n\nСсылка действует 1 час. Если вы не запрашивали — проигнорируйте письмо.`,
+    },
+  },
+
+  // ── Booking confirmation ──────────────────────────────────────────────────
+  bookingConfirmation: {
+    en: {
+      subject: 'Booking confirmed — {{serviceName}} with {{specialistName}}',
+      preheader: 'Your appointment is scheduled.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Booking confirmed 🎉</h1>
+        <p style="${STYLES.p}">Hi {{customerName}}, your appointment is on the calendar. Here are the details:</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Booking details</h3>
+          <p style="${STYLES.detailRow}"><strong>Service:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Specialist:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>When:</strong> {{bookingDateTime}}</p>
+          <p style="${STYLES.detailRow}"><strong>Duration:</strong> {{duration}} min</p>
+          <p style="${STYLES.detailRow}"><strong>Total:</strong> {{totalAmount}} {{currency}}</p>
+          {{#if customerNotes}}<p style="${STYLES.detailRow}"><strong>Your notes:</strong> {{customerNotes}}</p>{{/if}}
+        </div>
+        {{#if serviceLocation}}
+        <div style="${STYLES.successBox}">
+          <h3 style="${STYLES.h3}">📍 Location</h3>
+          <p style="${STYLES.detailRow}"><strong>{{serviceLocation}}</strong></p>
+          {{#if locationNotes}}<p style="${STYLES.detailRow};color:${BRAND.muted};font-style:italic;">{{locationNotes}}</p>{{/if}}
+          {{#if latitude}}<p style="${STYLES.detailRow}"><a href="https://www.google.com/maps?q={{latitude}},{{longitude}}" style="${STYLES.link};font-weight:600;">Open in Google Maps →</a></p>{{/if}}
+        </div>
+        {{/if}}
+        ${ctaPair('{{bookingUrl}}', 'View booking', '{{chatUrl}}', 'Chat with specialist')}
+        <p style="${STYLES.faint}">Please arrive 10 minutes early. To reschedule or cancel, please do so at least 24 hours in advance.</p>
+      `,
+      text: `Booking confirmed!\n\nHi {{customerName}},\n\nYour appointment is on the calendar:\n  Service: {{serviceName}}\n  Specialist: {{specialistName}}\n  When: {{bookingDateTime}}\n  Duration: {{duration}} min\n  Total: {{totalAmount}} {{currency}}\n  {{#if customerNotes}}Your notes: {{customerNotes}}{{/if}}\n  {{#if serviceLocation}}Location: {{serviceLocation}}{{/if}}\n  {{#if latitude}}Map: https://www.google.com/maps?q={{latitude}},{{longitude}}{{/if}}\n\nView booking: {{bookingUrl}}\nChat with specialist: {{chatUrl}}\n\nPlease arrive 10 minutes early. To reschedule or cancel, do so at least 24 hours in advance.`,
+    },
+    uk: {
+      subject: 'Бронювання підтверджено — {{serviceName}} зі {{specialistName}}',
+      preheader: 'Ваш запис у календарі.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронювання підтверджено 🎉</h1>
+        <p style="${STYLES.p}">Привіт, {{customerName}}. Ваш запис у календарі. Деталі:</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Деталі бронювання</h3>
+          <p style="${STYLES.detailRow}"><strong>Послуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Спеціаліст:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Коли:</strong> {{bookingDateTime}}</p>
+          <p style="${STYLES.detailRow}"><strong>Тривалість:</strong> {{duration}} хв</p>
+          <p style="${STYLES.detailRow}"><strong>Сума:</strong> {{totalAmount}} {{currency}}</p>
+          {{#if customerNotes}}<p style="${STYLES.detailRow}"><strong>Ваші нотатки:</strong> {{customerNotes}}</p>{{/if}}
+        </div>
+        {{#if serviceLocation}}
+        <div style="${STYLES.successBox}">
+          <h3 style="${STYLES.h3}">📍 Місце надання</h3>
+          <p style="${STYLES.detailRow}"><strong>{{serviceLocation}}</strong></p>
+          {{#if locationNotes}}<p style="${STYLES.detailRow};color:${BRAND.muted};font-style:italic;">{{locationNotes}}</p>{{/if}}
+          {{#if latitude}}<p style="${STYLES.detailRow}"><a href="https://www.google.com/maps?q={{latitude}},{{longitude}}" style="${STYLES.link};font-weight:600;">Відкрити в Google Maps →</a></p>{{/if}}
+        </div>
+        {{/if}}
+        ${ctaPair('{{bookingUrl}}', 'Переглянути запис', '{{chatUrl}}', 'Чат зі спеціалістом')}
+        <p style="${STYLES.faint}">Будь ласка, приходьте за 10 хвилин до часу. Перенесення або скасування — щонайменше за 24 години.</p>
+      `,
+      text: `Бронювання підтверджено!\n\nПривіт, {{customerName}},\n\nВаш запис у календарі:\n  Послуга: {{serviceName}}\n  Спеціаліст: {{specialistName}}\n  Коли: {{bookingDateTime}}\n  Тривалість: {{duration}} хв\n  Сума: {{totalAmount}} {{currency}}\n  {{#if customerNotes}}Нотатки: {{customerNotes}}{{/if}}\n  {{#if serviceLocation}}Місце: {{serviceLocation}}{{/if}}\n  {{#if latitude}}Карта: https://www.google.com/maps?q={{latitude}},{{longitude}}{{/if}}\n\nПереглянути запис: {{bookingUrl}}\nЧат зі спеціалістом: {{chatUrl}}\n\nБудь ласка, приходьте за 10 хв до часу. Перенесення/скасування — щонайменше за 24 години.`,
+    },
+    ru: {
+      subject: 'Бронирование подтверждено — {{serviceName}} с {{specialistName}}',
+      preheader: 'Ваша запись в календаре.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронирование подтверждено 🎉</h1>
+        <p style="${STYLES.p}">Привет, {{customerName}}. Ваша запись в календаре. Детали:</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Детали бронирования</h3>
+          <p style="${STYLES.detailRow}"><strong>Услуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Специалист:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Когда:</strong> {{bookingDateTime}}</p>
+          <p style="${STYLES.detailRow}"><strong>Длительность:</strong> {{duration}} мин</p>
+          <p style="${STYLES.detailRow}"><strong>Сумма:</strong> {{totalAmount}} {{currency}}</p>
+          {{#if customerNotes}}<p style="${STYLES.detailRow}"><strong>Ваши заметки:</strong> {{customerNotes}}</p>{{/if}}
+        </div>
+        {{#if serviceLocation}}
+        <div style="${STYLES.successBox}">
+          <h3 style="${STYLES.h3}">📍 Место</h3>
+          <p style="${STYLES.detailRow}"><strong>{{serviceLocation}}</strong></p>
+          {{#if locationNotes}}<p style="${STYLES.detailRow};color:${BRAND.muted};font-style:italic;">{{locationNotes}}</p>{{/if}}
+          {{#if latitude}}<p style="${STYLES.detailRow}"><a href="https://www.google.com/maps?q={{latitude}},{{longitude}}" style="${STYLES.link};font-weight:600;">Открыть в Google Maps →</a></p>{{/if}}
+        </div>
+        {{/if}}
+        ${ctaPair('{{bookingUrl}}', 'Посмотреть запись', '{{chatUrl}}', 'Чат со специалистом')}
+        <p style="${STYLES.faint}">Пожалуйста, приходите за 10 минут. Перенос или отмена — минимум за 24 часа.</p>
+      `,
+      text: `Бронирование подтверждено!\n\nПривет, {{customerName}},\n\nВаша запись в календаре:\n  Услуга: {{serviceName}}\n  Специалист: {{specialistName}}\n  Когда: {{bookingDateTime}}\n  Длительность: {{duration}} мин\n  Сумма: {{totalAmount}} {{currency}}\n  {{#if customerNotes}}Заметки: {{customerNotes}}{{/if}}\n  {{#if serviceLocation}}Место: {{serviceLocation}}{{/if}}\n  {{#if latitude}}Карта: https://www.google.com/maps?q={{latitude}},{{longitude}}{{/if}}\n\nПосмотреть запись: {{bookingUrl}}\nЧат со специалистом: {{chatUrl}}\n\nПожалуйста, приходите за 10 минут. Перенос/отмена — минимум за 24 часа.`,
+    },
+  },
+
+  // ── Booking cancelled ─────────────────────────────────────────────────────
   bookingCancelled: {
     en: {
-      subject: 'Booking Cancelled - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Booking Cancelled</h2>
-          <p>Hello {{name}},</p>
-          <p>Your booking for <strong>{{serviceName}}</strong> on <strong>{{bookingDateTime}}</strong> has been cancelled.</p>
-          {{#if reason}}<p><strong>Reason:</strong> {{reason}}</p>{{/if}}
-        </div>
+      subject: 'Booking cancelled — {{serviceName}}',
+      preheader: 'Your appointment was cancelled.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Booking cancelled</h1>
+        <p style="${STYLES.p}">Hi {{name}}, your booking for <strong>{{serviceName}}</strong> on <strong>{{bookingDateTime}}</strong> has been cancelled.</p>
+        {{#if reason}}<div style="${STYLES.warnBox}"><h3 style="${STYLES.h3}">Reason</h3><p style="${STYLES.detailRow}">{{reason}}</p></div>{{/if}}
       `,
-      text: `
-        Booking Cancelled
-        Hello {{name}},
-        Your booking for {{serviceName}} on {{bookingDateTime}} has been cancelled.
-        {{#if reason}}Reason: {{reason}}{{/if}}
-      `
+      text: `Booking cancelled\n\nHi {{name}},\n\nYour booking for {{serviceName}} on {{bookingDateTime}} has been cancelled.\n{{#if reason}}Reason: {{reason}}{{/if}}`,
     },
     uk: {
-      subject: 'Бронювання скасовано - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Бронювання скасовано</h2>
-          <p>Привіт {{name}},</p>
-          <p>Ваше бронювання <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> було скасовано.</p>
-          {{#if reason}}<p><strong>Причина:</strong> {{reason}}</p>{{/if}}
-        </div>
+      subject: 'Бронювання скасовано — {{serviceName}}',
+      preheader: 'Ваш запис скасовано.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронювання скасовано</h1>
+        <p style="${STYLES.p}">Привіт, {{name}}. Ваше бронювання <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> скасовано.</p>
+        {{#if reason}}<div style="${STYLES.warnBox}"><h3 style="${STYLES.h3}">Причина</h3><p style="${STYLES.detailRow}">{{reason}}</p></div>{{/if}}
       `,
-      text: `
-        Бронювання скасовано
-        Привіт {{name}},
-        Ваше бронювання {{serviceName}} на {{bookingDateTime}} було скасовано.
-        {{#if reason}}Причина: {{reason}}{{/if}}
-      `
+      text: `Бронювання скасовано\n\nПривіт, {{name}},\n\nВаше бронювання {{serviceName}} на {{bookingDateTime}} скасовано.\n{{#if reason}}Причина: {{reason}}{{/if}}`,
     },
     ru: {
-      subject: 'Бронирование отменено - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Бронирование отменено</h2>
-          <p>Привет {{name}},</p>
-          <p>Ваше бронирование <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> было отменено.</p>
-          {{#if reason}}<p><strong>Причина:</strong> {{reason}}</p>{{/if}}
-        </div>
+      subject: 'Бронирование отменено — {{serviceName}}',
+      preheader: 'Ваша запись отменена.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронирование отменено</h1>
+        <p style="${STYLES.p}">Привет, {{name}}. Ваше бронирование <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> отменено.</p>
+        {{#if reason}}<div style="${STYLES.warnBox}"><h3 style="${STYLES.h3}">Причина</h3><p style="${STYLES.detailRow}">{{reason}}</p></div>{{/if}}
       `,
-      text: `
-        Бронирование отменено
-        Привет {{name}},
-        Ваше бронирование {{serviceName}} на {{bookingDateTime}} было отменено.
-        {{#if reason}}Причина: {{reason}}{{/if}}
-      `
-    }
+      text: `Бронирование отменено\n\nПривет, {{name}},\n\nВаше бронирование {{serviceName}} на {{bookingDateTime}} отменено.\n{{#if reason}}Причина: {{reason}}{{/if}}`,
+    },
   },
 
-  // Booking updated
+  // ── Booking updated ───────────────────────────────────────────────────────
   bookingUpdated: {
     en: {
-      subject: 'Booking Updated - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Booking Updated</h2>
-          <p>Hello {{name}},</p>
-          <p>Your booking has been updated. Here are the latest details:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Service:</strong> {{serviceName}}</p>
-            <p><strong>Specialist:</strong> {{specialistName}}</p>
-            <p><strong>Date & Time:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View Booking</a>
-          </div>
+      subject: 'Booking updated — {{serviceName}}',
+      preheader: 'Your booking details have changed.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Booking updated</h1>
+        <p style="${STYLES.p}">Hi {{name}}, your booking has been updated. Here are the latest details:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Service:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Specialist:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>When:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'View booking')}
       `,
-      text: `
-        Booking Updated
-        Hello {{name}},
-        Your booking has been updated.
-        - Service: {{serviceName}}
-        - Specialist: {{specialistName}}
-        - Date & Time: {{bookingDateTime}}
-        View your booking: {{bookingUrl}}
-      `
+      text: `Booking updated\n\nHi {{name}},\n\nYour booking has been updated:\n  Service: {{serviceName}}\n  Specialist: {{specialistName}}\n  When: {{bookingDateTime}}\n\nView booking: {{bookingUrl}}`,
     },
     uk: {
-      subject: 'Бронювання оновлено - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Бронювання оновлено</h2>
-          <p>Привіт {{name}},</p>
-          <p>Ваше бронювання було оновлено. Останні деталі:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Послуга:</strong> {{serviceName}}</p>
-            <p><strong>Спеціаліст:</strong> {{specialistName}}</p>
-            <p><strong>Дата і час:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Переглянути запис</a>
-          </div>
+      subject: 'Бронювання оновлено — {{serviceName}}',
+      preheader: 'Деталі вашого запису змінилися.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронювання оновлено</h1>
+        <p style="${STYLES.p}">Привіт, {{name}}. Ваше бронювання було оновлено. Останні деталі:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Послуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Спеціаліст:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Коли:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'Переглянути запис')}
       `,
-      text: `
-        Бронювання оновлено
-        Привіт {{name}},
-        Ваше бронювання було оновлено.
-        - Послуга: {{serviceName}}
-        - Спеціаліст: {{specialistName}}
-        - Дата і час: {{bookingDateTime}}
-        Переглянути запис: {{bookingUrl}}
-      `
+      text: `Бронювання оновлено\n\nПривіт, {{name}},\n\nВаше бронювання було оновлено:\n  Послуга: {{serviceName}}\n  Спеціаліст: {{specialistName}}\n  Коли: {{bookingDateTime}}\n\nПереглянути запис: {{bookingUrl}}`,
     },
     ru: {
-      subject: 'Бронирование обновлено - {{serviceName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Бронирование обновлено</h2>
-          <p>Привет {{name}},</p>
-          <p>Ваше бронирование было обновлено. Последние детали:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Услуга:</strong> {{serviceName}}</p>
-            <p><strong>Специалист:</strong> {{specialistName}}</p>
-            <p><strong>Дата и время:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Посмотреть запись</a>
-          </div>
+      subject: 'Бронирование обновлено — {{serviceName}}',
+      preheader: 'Детали записи изменились.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Бронирование обновлено</h1>
+        <p style="${STYLES.p}">Привет, {{name}}. Ваше бронирование обновлено. Последние детали:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Услуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Специалист:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Когда:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'Посмотреть запись')}
       `,
-      text: `
-        Бронирование обновлено
-        Привет {{name}},
-        Ваше бронирование было обновлено.
-        - Услуга: {{serviceName}}
-        - Специалист: {{specialistName}}
-        - Дата и время: {{bookingDateTime}}
-        Посмотреть запись: {{bookingUrl}}
-      `
-    }
+      text: `Бронирование обновлено\n\nПривет, {{name}},\n\nВаше бронирование обновлено:\n  Услуга: {{serviceName}}\n  Специалист: {{specialistName}}\n  Когда: {{bookingDateTime}}\n\nПосмотреть запись: {{bookingUrl}}`,
+    },
   },
 
-  // Booking reminder (24h)
+  // ── Booking reminder (24h) ────────────────────────────────────────────────
   bookingReminder: {
     en: {
-      subject: 'Booking Reminder - {{serviceName}} on {{bookingDateTime}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Booking Reminder</h2>
-          <p>Hello {{customerName}},</p>
-          <p>This is a reminder that you have a booking tomorrow:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Service:</strong> {{serviceName}}</p>
-            <p><strong>Specialist:</strong> {{specialistName}}</p>
-            <p><strong>Date & Time:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View Booking</a>
-          </div>
+      subject: 'Reminder — {{serviceName}} on {{bookingDateTime}}',
+      preheader: 'Your appointment is tomorrow.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Booking reminder</h1>
+        <p style="${STYLES.p}">Hi {{customerName}}, this is a friendly reminder of your booking tomorrow:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Service:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Specialist:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>When:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'View booking')}
       `,
-      text: `
-        Booking Reminder
-
-        Hello {{customerName}},
-
-        This is a reminder that you have a booking tomorrow:
-        - Service: {{serviceName}}
-        - Specialist: {{specialistName}}
-        - Date & Time: {{bookingDateTime}}
-
-        View your booking: {{bookingUrl}}
-      `
+      text: `Booking reminder\n\nHi {{customerName}},\n\nFriendly reminder of your booking tomorrow:\n  Service: {{serviceName}}\n  Specialist: {{specialistName}}\n  When: {{bookingDateTime}}\n\nView booking: {{bookingUrl}}`,
     },
     uk: {
-      subject: 'Нагадування про запис - {{serviceName}} {{bookingDateTime}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Нагадування про ваш запис</h2>
-          <p>Привіт {{customerName}},</p>
-          <p>Нагадуємо, що у вас є запис завтра:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Послуга:</strong> {{serviceName}}</p>
-            <p><strong>Спеціаліст:</strong> {{specialistName}}</p>
-            <p><strong>Дата і час:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Переглянути запис</a>
-          </div>
+      subject: 'Нагадування — {{serviceName}} {{bookingDateTime}}',
+      preheader: 'Ваш запис завтра.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Нагадування про запис</h1>
+        <p style="${STYLES.p}">Привіт, {{customerName}}. Нагадуємо, що у вас запис завтра:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Послуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Спеціаліст:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Коли:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'Переглянути запис')}
       `,
-      text: `
-        Нагадування про запис
-
-        Привіт {{customerName}},
-
-        Нагадуємо, що у вас є запис завтра:
-        - Послуга: {{serviceName}}
-        - Спеціаліст: {{specialistName}}
-        - Дата і час: {{bookingDateTime}}
-
-        Переглянути запис: {{bookingUrl}}
-      `
+      text: `Нагадування про запис\n\nПривіт, {{customerName}},\n\nНагадуємо, що у вас запис завтра:\n  Послуга: {{serviceName}}\n  Спеціаліст: {{specialistName}}\n  Коли: {{bookingDateTime}}\n\nПереглянути запис: {{bookingUrl}}`,
     },
     ru: {
-      subject: 'Напоминание о записи - {{serviceName}} {{bookingDateTime}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Напоминание о вашей записи</h2>
-          <p>Привет {{customerName}},</p>
-          <p>Напоминаем, что у вас есть запись завтра:</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Услуга:</strong> {{serviceName}}</p>
-            <p><strong>Специалист:</strong> {{specialistName}}</p>
-            <p><strong>Дата и время:</strong> {{bookingDateTime}}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Посмотреть запись</a>
-          </div>
+      subject: 'Напоминание — {{serviceName}} {{bookingDateTime}}',
+      preheader: 'Ваша запись завтра.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Напоминание о записи</h1>
+        <p style="${STYLES.p}">Привет, {{customerName}}. Напоминаем, что у вас запись завтра:</p>
+        <div style="${STYLES.infoBox}">
+          <p style="${STYLES.detailRow}"><strong>Услуга:</strong> {{serviceName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Специалист:</strong> {{specialistName}}</p>
+          <p style="${STYLES.detailRow}"><strong>Когда:</strong> {{bookingDateTime}}</p>
         </div>
+        ${cta('{{bookingUrl}}', 'Посмотреть запись')}
       `,
-      text: `
-        Напоминание о записи
-
-        Привет {{customerName}},
-
-        Напоминаем, что у вас есть запись завтра:
-        - Услуга: {{serviceName}}
-        - Специалист: {{specialistName}}
-        - Дата и время: {{bookingDateTime}}
-
-        Посмотреть запись: {{bookingUrl}}
-      `
-    }
+      text: `Напоминание о записи\n\nПривет, {{customerName}},\n\nНапоминаем, что у вас запись завтра:\n  Услуга: {{serviceName}}\n  Специалист: {{specialistName}}\n  Когда: {{bookingDateTime}}\n\nПосмотреть запись: {{bookingUrl}}`,
+    },
   },
 
-  // Generic notification
+  // ── Generic notification ──────────────────────────────────────────────────
   notificationGeneric: {
     en: {
       subject: '{{title}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
-          <p>Hello {{firstName}}!</p>
-          <p>{{message}}</p>
-          {{detailsHtml}}
-        </div>
+      preheader: '{{message}}',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">{{title}}</h1>
+        <p style="${STYLES.p}">Hi {{firstName}},</p>
+        <p style="${STYLES.p}">{{message}}</p>
+        {{detailsHtml}}
       `,
-      text: `
-        {{title}}
-        
-        Hello {{firstName}}!
-        
-        {{message}}
-      `
+      text: `{{title}}\n\nHi {{firstName}},\n\n{{message}}`,
     },
     uk: {
       subject: '{{title}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
-          <p>Привіт {{firstName}}!</p>
-          <p>{{message}}</p>
-          {{detailsHtml}}
-        </div>
+      preheader: '{{message}}',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">{{title}}</h1>
+        <p style="${STYLES.p}">Привіт, {{firstName}},</p>
+        <p style="${STYLES.p}">{{message}}</p>
+        {{detailsHtml}}
       `,
-      text: `
-        {{title}}
-        
-        Привіт {{firstName}}!
-        
-        {{message}}
-      `
+      text: `{{title}}\n\nПривіт, {{firstName}},\n\n{{message}}`,
     },
     ru: {
       subject: '{{title}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
-          <p>Привет {{firstName}}!</p>
-          <p>{{message}}</p>
-          {{detailsHtml}}
-        </div>
+      preheader: '{{message}}',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">{{title}}</h1>
+        <p style="${STYLES.p}">Привет, {{firstName}},</p>
+        <p style="${STYLES.p}">{{message}}</p>
+        {{detailsHtml}}
       `,
-      text: `
-        {{title}}
-        
-        Привет {{firstName}}!
-        
-        {{message}}
-      `
-    }
+      text: `{{title}}\n\nПривет, {{firstName}},\n\n{{message}}`,
+    },
   },
 
-  // Email verification
-  emailVerification: {
-    en: {
-      subject: 'Verify Your Email Address - MiyZapis',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #374151; margin-bottom: 10px;">Verify Your Email Address</h1>
-            <p style="color: #6b7280;">Please confirm your email to complete registration</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 10px;">
-            <p style="color: #6b7280; margin-bottom: 20px;">Hello {{firstName}},</p>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-              To complete your registration, please verify your email address by clicking the button below:
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{verificationUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Verify Email Address
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px;">
-              This link will expire in 24 hours. If you didn't request this verification, please ignore this email.
-            </p>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              If you're having trouble with the button, copy and paste this URL into your browser:
-              <br><a href="{{verificationUrl}}" style="color: #667eea; word-break: break-all;">{{verificationUrl}}</a>
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-        Verify Your Email Address
-        
-        Hello {{firstName}},
-        
-        To complete your registration, please verify your email address by visiting:
-        {{verificationUrl}}
-        
-        This link will expire in 24 hours. If you didn't request this verification, please ignore this email.
-      `
-    },
-    uk: {
-      subject: 'Підтвердьте свою електронну адресу - МійЗапис',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #374151; margin-bottom: 10px;">Підтвердьте свою електронну адресу</h1>
-            <p style="color: #6b7280;">Будь ласка, підтвердьте свою електронну пошту для завершення реєстрації</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 10px;">
-            <p style="color: #6b7280; margin-bottom: 20px;">Привіт {{firstName}},</p>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-              Для завершення реєстрації, будь ласка, підтвердьте свою електронну адресу, натиснувши кнопку нижче:
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{verificationUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Підтвердити електронну адресу
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px;">
-              Це посилання діє 24 години. Якщо ви не запитували підтвердження, проігноруйте цей лист.
-            </p>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              Якщо у вас проблеми з кнопкою, скопіюйте це посилання у ваш браузер:
-              <br><a href="{{verificationUrl}}" style="color: #667eea; word-break: break-all;">{{verificationUrl}}</a>
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-        Підтвердьте свою електронну адресу
-        
-        Привіт {{firstName}},
-        
-        Для завершення реєстрації, підтвердьте свою електронну адресу за посиланням:
-        {{verificationUrl}}
-        
-        Це посилання діє 24 години. Якщо ви не запитували підтвердження, проігноруйте цей лист.
-      `
-    },
-    ru: {
-      subject: 'Подтвердите свой электронный адрес - МойЗапись',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #374151; margin-bottom: 10px;">Подтвердите свой электронный адрес</h1>
-            <p style="color: #6b7280;">Пожалуйста, подтвердите свою электронную почту для завершения регистрации</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 10px;">
-            <p style="color: #6b7280; margin-bottom: 20px;">Привет {{firstName}},</p>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-              Для завершения регистрации, пожалуйста, подтвердите свой электронный адрес, нажав кнопку ниже:
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{verificationUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Подтвердить электронный адрес
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px;">
-              Эта ссылка действует 24 часа. Если вы не запрашивали подтверждение, проигнорируйте это письмо.
-            </p>
-            
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              Если у вас проблемы с кнопкой, скопируйте эту ссылку в ваш браузер:
-              <br><a href="{{verificationUrl}}" style="color: #667eea; word-break: break-all;">{{verificationUrl}}</a>
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-        Подтвердите свой электронный адрес
-        
-        Привет {{firstName}},
-        
-        Для завершения регистрации, подтвердите свой электронный адрес по ссылке:
-        {{verificationUrl}}
-        
-        Эта ссылка действует 24 часа. Если вы не запрашивали подтверждение, проигнорируйте это письмо.
-      `
-    }
-  },
-
-  // Booking confirmation
-  bookingConfirmation: {
-    en: {
-      subject: 'Booking Confirmed - {{serviceName}} with {{specialistName}}',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: #10b981; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Booking Confirmed!</h1>
-            <p style="color: #dcfce7; margin: 10px 0 0 0;">Your appointment is scheduled</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{customerName}}!</h2>
-            
-            <p style="color: #6b7280; line-height: 1.6;">
-              Great news! Your booking has been confirmed. Here are the details:
-            </p>
-            
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
-              <h3 style="color: #374151; margin-top: 0;">Booking Details</h3>
-              <p style="margin: 5px 0;"><strong>Service:</strong> {{serviceName}}</p>
-              <p style="margin: 5px 0;"><strong>Specialist:</strong> {{specialistName}}</p>
-              <p style="margin: 5px 0;"><strong>Date & Time:</strong> {{bookingDateTime}}</p>
-              <p style="margin: 5px 0;"><strong>Duration:</strong> {{duration}} minutes</p>
-              <p style="margin: 5px 0;"><strong>Total Amount:</strong> {{totalAmount}} {{currency}}</p>
-              {{#if customerNotes}}<p style="margin: 5px 0;"><strong>Your Notes:</strong> {{customerNotes}}</p>{{/if}}
-            </div>
-
-            {{#if serviceLocation}}
-            <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-              <h3 style="color: #374151; margin-top: 0;">📍 Service Location</h3>
-              <p style="margin: 5px 0; color: #374151; font-size: 16px;"><strong>{{serviceLocation}}</strong></p>
-              {{#if locationNotes}}
-              <p style="margin: 10px 0 5px 0; color: #6b7280; font-style: italic;">{{locationNotes}}</p>
-              {{/if}}
-              {{#if latitude}}
-              <div style="margin-top: 15px;">
-                <a href="https://www.google.com/maps?q={{latitude}},{{longitude}}"
-                   style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
-                  Open in Google Maps
-                </a>
-              </div>
-              {{/if}}
-            </div>
-            {{/if}}
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
-                View Booking
-              </a>
-              <a href="{{chatUrl}}" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Chat with Specialist
-              </a>
-            </div>
-            
-            <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-              <p style="margin: 0; color: #92400e; font-size: 14px;">
-                <strong>Important:</strong> Please arrive 10 minutes before your scheduled time. If you need to reschedule or cancel, please do so at least 24 hours in advance.
-              </p>
-            </div>
-          </div>
-        </div>
-      `,
-      text: `
-        Booking Confirmed!
-
-        Hello {{customerName}},
-
-        Great news! Your booking has been confirmed.
-
-        Booking Details:
-        - Service: {{serviceName}}
-        - Specialist: {{specialistName}}
-        - Date & Time: {{bookingDateTime}}
-        - Duration: {{duration}} minutes
-        - Total Amount: {{totalAmount}} {{currency}}
-        {{#if customerNotes}}- Your Notes: {{customerNotes}}{{/if}}
-
-        {{#if serviceLocation}}
-        📍 Service Location:
-        {{serviceLocation}}
-        {{#if locationNotes}}
-        Additional Instructions: {{locationNotes}}
-        {{/if}}
-        {{#if latitude}}
-        View on Google Maps: https://www.google.com/maps?q={{latitude}},{{longitude}}
-        {{/if}}
-
-        {{/if}}
-        View your booking: {{bookingUrl}}
-        Chat with specialist: {{chatUrl}}
-
-        Important: Please arrive 10 minutes before your scheduled time. If you need to reschedule or cancel, please do so at least 24 hours in advance.
-      `
-    },
-    // Add Ukrainian and Russian versions...
-  },
-
-  // Password reset
-  passwordReset: {
-    en: {
-      subject: 'Reset Your Password - MiyZapis',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #374151; margin-bottom: 10px;">Reset Your Password</h1>
-            <p style="color: #6b7280;">You requested a password reset</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 10px;">
-            <p style="color: #6b7280; margin-bottom: 20px;">Hello {{firstName}},</p>
-
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-              We received a request to reset your password. Click the button below to create a new password:
-            </p>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{resetUrl}}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Reset Password
-              </a>
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px;">
-              This link will expire in 1 hour. If you didn't request this reset, please ignore this email and your password will remain unchanged.
-            </p>
-
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              If you're having trouble with the button, copy and paste this URL into your browser:
-              <br><a href="{{resetUrl}}" style="color: #667eea; word-break: break-all;">{{resetUrl}}</a>
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-        Reset Your Password
-
-        Hello {{firstName}},
-
-        We received a request to reset your password. Visit this link to create a new password:
-        {{resetUrl}}
-
-        This link will expire in 1 hour. If you didn't request this reset, please ignore this email.
-      `
-    },
-    // Add Ukrainian and Russian versions...
-  },
-
-  // Trial expiration warning (7 days before)
+  // ── Trial expiring warning (7 days before) ────────────────────────────────
   trialExpiringWarning: {
     en: {
-      subject: 'Your Free Trial is Ending Soon - {{daysRemaining}} Days Left',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Trial Ending Soon</h1>
-            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} days left in your free trial</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              We hope you've been enjoying your 3-month free trial! We wanted to remind you that your trial period will end in <strong>{{daysRemaining}} days</strong> on <strong>{{trialEndDate}}</strong>.
-            </p>
-
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-              <h3 style="color: #92400e; margin-top: 0;">What happens after the trial?</h3>
-              {{#if isCustomer}}
-              <p style="color: #92400e; margin: 5px 0;">• Small deposits will be required when booking services (typically 10-20%)</p>
-              <p style="color: #92400e; margin: 5px 0;">• You'll continue to have full access to all features</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #92400e; margin: 5px 0;">• Choose a pricing plan: Pay-per-use (20₴/booking) or Monthly subscription ($10/month)</p>
-              <p style="color: #92400e; margin: 5px 0;">• Keep growing your business with all platform features</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Learn More About Pricing
-              </a>
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center;">
-              Have questions? <a href="{{helpUrl}}" style="color: #667eea;">Contact our support team</a>
-            </p>
-          </div>
+      subject: 'Your free trial ends in {{daysRemaining}} days',
+      preheader: 'Trial ends {{trialEndDate}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Your free trial ends in {{daysRemaining}} days</h1>
+        <p style="${STYLES.p}">Hi {{firstName}}, we hope you’ve been enjoying MiyZapis. Your 3-month free trial ends on <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.warnBox}">
+          <h3 style="${STYLES.h3}">What happens next</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">• A small deposit (typically 10–20%) will be required at booking</p>
+            <p style="${STYLES.detailRow}">• All other features stay fully available</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">• Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)</p>
+            <p style="${STYLES.detailRow}">• Keep every platform feature you have today</p>
+          {{/if}}
         </div>
+        ${cta('{{trialInfoUrl}}', 'See pricing')}
+        <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `
-        Your Free Trial is Ending Soon
-
-        Hello {{firstName}},
-
-        We hope you've been enjoying your 3-month free trial! Your trial period will end in {{daysRemaining}} days on {{trialEndDate}}.
-
-        What happens after the trial?
-        {{#if isCustomer}}
-        • Small deposits will be required when booking services (typically 10-20%)
-        • You'll continue to have full access to all features
-        {{/if}}
-        {{#if isSpecialist}}
-        • Choose a pricing plan: Pay-per-use (20₴/booking) or Monthly subscription ($10/month)
-        • Keep growing your business with all platform features
-        {{/if}}
-
-        Learn more: {{trialInfoUrl}}
-
-        Have questions? Contact our support: {{helpUrl}}
-      `
+      text: `Your free trial ends in {{daysRemaining}} days\n\nHi {{firstName}},\n\nYour 3-month trial ends on {{trialEndDate}}.\n\nWhat happens next:\n{{#if isCustomer}}  - A small deposit (10–20%) will be required at booking\n  - All other features stay fully available\n{{/if}}{{#if isSpecialist}}  - Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)\n  - Keep every platform feature\n{{/if}}\nPricing: {{trialInfoUrl}}\nSupport: {{helpUrl}}`,
     },
     uk: {
-      subject: 'Ваш безкоштовний пробний період закінчується - {{daysRemaining}} днів залишилось',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Пробний період скоро закінчиться</h1>
-            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} днів залишилось у вашому пробному періоді</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привіт {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              Сподіваємося, вам сподобався ваш 3-місячний безкоштовний пробний період! Нагадуємо, що ваш пробний період закінчиться через <strong>{{daysRemaining}} днів</strong> - <strong>{{trialEndDate}}</strong>.
-            </p>
-
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-              <h3 style="color: #92400e; margin-top: 0;">Що відбудеться після пробного періоду?</h3>
-              {{#if isCustomer}}
-              <p style="color: #92400e; margin: 5px 0;">• Потрібні будуть невеликі депозити при бронюванні (зазвичай 10-20%)</p>
-              <p style="color: #92400e; margin: 5px 0;">• Ви продовжите мати повний доступ до всіх функцій</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #92400e; margin: 5px 0;">• Оберіть тарифний план: Оплата за використання (20₴/бронювання) або Місячна підписка ($10/місяць)</p>
-              <p style="color: #92400e; margin: 5px 0;">• Продовжуйте розвивати свій бізнес з усіма функціями платформи</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Дізнатися більше про ціни
-              </a>
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center;">
-              Є питання? <a href="{{helpUrl}}" style="color: #667eea;">Зверніться до нашої служби підтримки</a>
-            </p>
-          </div>
+      subject: 'Пробний період закінчується через {{daysRemaining}} днів',
+      preheader: 'Пробний завершується {{trialEndDate}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Пробний період закінчується через {{daysRemaining}} днів</h1>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Сподіваємося, вам подобається МійЗапис. Ваш 3-місячний пробний завершується <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.warnBox}">
+          <h3 style="${STYLES.h3}">Що буде далі</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">• Невеликий депозит (зазвичай 10–20%) при бронюванні</p>
+            <p style="${STYLES.detailRow}">• Усі інші функції залишаються доступними</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">• Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)</p>
+            <p style="${STYLES.detailRow}">• Усі функції платформи зберігаються</p>
+          {{/if}}
         </div>
+        ${cta('{{trialInfoUrl}}', 'Переглянути тарифи')}
+        <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `
-        Ваш безкоштовний пробний період закінчується
-
-        Привіт {{firstName}},
-
-        Сподіваємося, вам сподобався ваш 3-місячний безкоштовний пробний період! Ваш пробний період закінчиться через {{daysRemaining}} днів - {{trialEndDate}}.
-
-        Що відбудеться після пробного періоду?
-        {{#if isCustomer}}
-        • Потрібні будуть невеликі депозити при бронюванні (зазвичай 10-20%)
-        • Ви продовжите мати повний доступ до всіх функцій
-        {{/if}}
-        {{#if isSpecialist}}
-        • Оберіть тарифний план: Оплата за використання (20₴/бронювання) або Місячна підписка ($10/місяць)
-        • Продовжуйте розвивати свій бізнес з усіма функціями платформи
-        {{/if}}
-
-        Дізнатися більше: {{trialInfoUrl}}
-
-        Є питання? Зверніться до служби підтримки: {{helpUrl}}
-      `
+      text: `Пробний період закінчується через {{daysRemaining}} днів\n\nПривіт, {{firstName}},\n\nВаш 3-місячний пробний завершується {{trialEndDate}}.\n\nЩо буде далі:\n{{#if isCustomer}}  - Невеликий депозит (10–20%) при бронюванні\n  - Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  - Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)\n  - Усі функції платформи зберігаються\n{{/if}}\nТарифи: {{trialInfoUrl}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
-      subject: 'Ваш бесплатный пробный период заканчивается - {{daysRemaining}} дней осталось',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Пробный период скоро закончится</h1>
-            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} дней осталось в вашем пробном периоде</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привет {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              Надеемся, вам понравился ваш 3-месячный бесплатный пробный период! Напоминаем, что ваш пробный период закончится через <strong>{{daysRemaining}} дней</strong> - <strong>{{trialEndDate}}</strong>.
-            </p>
-
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-              <h3 style="color: #92400e; margin-top: 0;">Что произойдет после пробного периода?</h3>
-              {{#if isCustomer}}
-              <p style="color: #92400e; margin: 5px 0;">• Потребуются небольшие депозиты при бронировании (обычно 10-20%)</p>
-              <p style="color: #92400e; margin: 5px 0;">• Вы продолжите иметь полный доступ ко всем функциям</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #92400e; margin: 5px 0;">• Выберите тарифный план: Оплата за использование (20₴/бронирование) или Ежемесячная подписка ($10/месяц)</p>
-              <p style="color: #92400e; margin: 5px 0;">• Продолжайте развивать свой бизнес со всеми функциями платформы</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Узнать больше о ценах
-              </a>
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center;">
-              Есть вопросы? <a href="{{helpUrl}}" style="color: #667eea;">Обратитесь в нашу службу поддержки</a>
-            </p>
-          </div>
+      subject: 'Пробный период заканчивается через {{daysRemaining}} дней',
+      preheader: 'Пробный завершается {{trialEndDate}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Пробный период заканчивается через {{daysRemaining}} дней</h1>
+        <p style="${STYLES.p}">Привет, {{firstName}}. Надеемся, вам нравится МойЗапись. Ваш 3-месячный пробный завершается <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.warnBox}">
+          <h3 style="${STYLES.h3}">Что будет дальше</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">• Небольшой депозит (обычно 10–20%) при бронировании</p>
+            <p style="${STYLES.detailRow}">• Все остальные функции остаются доступными</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">• Выберите план: за бронирование (20₴) или месячный ($10/мес)</p>
+            <p style="${STYLES.detailRow}">• Все функции платформы сохраняются</p>
+          {{/if}}
         </div>
+        ${cta('{{trialInfoUrl}}', 'Посмотреть тарифы')}
+        <p style="${STYLES.faint}">Есть вопросы? <a href="{{helpUrl}}" style="${STYLES.link}">Обратитесь в поддержку</a>.</p>
       `,
-      text: `
-        Ваш бесплатный пробный период заканчивается
-
-        Привет {{firstName}},
-
-        Надеемся, вам понравился ваш 3-месячный бесплатный пробный период! Ваш пробный период закончится через {{daysRemaining}} дней - {{trialEndDate}}.
-
-        Что произойдет после пробного периода?
-        {{#if isCustomer}}
-        • Потребуются небольшие депозиты при бронировании (обычно 10-20%)
-        • Вы продолжите иметь полный доступ ко всем функциям
-        {{/if}}
-        {{#if isSpecialist}}
-        • Выберите тарифный план: Оплата за использование (20₴/бронирование) или Ежемесячная подписка ($10/месяц)
-        • Продолжайте развивать свой бизнес со всеми функциями платформы
-        {{/if}}
-
-        Узнать больше: {{trialInfoUrl}}
-
-        Есть вопросы? Обратитесь в службу поддержки: {{helpUrl}}
-      `
-    }
+      text: `Пробный период заканчивается через {{daysRemaining}} дней\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершается {{trialEndDate}}.\n\nЧто будет дальше:\n{{#if isCustomer}}  - Небольшой депозит (10–20%) при бронировании\n  - Все остальные функции остаются доступными\n{{/if}}{{#if isSpecialist}}  - Выберите план: за бронирование (20₴) или месячный ($10/мес)\n  - Все функции платформы сохраняются\n{{/if}}\nТарифы: {{trialInfoUrl}}\nПоддержка: {{helpUrl}}`,
+    },
   },
 
-  // Trial expired
+  // ── Trial expired ─────────────────────────────────────────────────────────
   trialExpired: {
     en: {
-      subject: 'Your Free Trial Has Ended - Thank You for Trying MiyZapis',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Thank You for Trying MiyZapis!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Your 3-month free trial has ended</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              Your 3-month free trial ended on <strong>{{trialEndDate}}</strong>. We hope you enjoyed exploring all the features of MiyZapis!
-            </p>
-
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
-              <h3 style="color: #374151; margin-top: 0;">What's Next?</h3>
-              {{#if isCustomer}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Continue browsing and booking services</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ A small deposit (10-20%) will now be required for bookings</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ All other features remain fully accessible</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Continue providing services and growing your business</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Choose your preferred pricing plan</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ All platform features remain available</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
-                Go to Dashboard
-              </a>
-              {{#if isSpecialist}}
-              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                View Pricing Plans
-              </a>
-              {{/if}}
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
-              Questions? <a href="{{helpUrl}}" style="color: #667eea;">Contact our support team</a>
-            </p>
-          </div>
+      subject: 'Your free trial has ended — thanks for trying MiyZapis',
+      preheader: 'Your 3-month trial has ended.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Thanks for trying MiyZapis 🙌</h1>
+        <p style="${STYLES.p}">Hi {{firstName}}, your 3-month free trial ended on <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">What’s next</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">✓ Keep browsing and booking services</p>
+            <p style="${STYLES.detailRow}">✓ Small deposits (10–20%) now apply at booking</p>
+            <p style="${STYLES.detailRow}">✓ Every other feature stays fully accessible</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">✓ Keep serving customers and growing your business</p>
+            <p style="${STYLES.detailRow}">✓ Pick the pricing plan that fits</p>
+            <p style="${STYLES.detailRow}">✓ Every platform feature remains available</p>
+          {{/if}}
         </div>
+        ${cta('{{dashboardUrl}}', 'Open dashboard')}
+        {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">See pricing plans</a></div>{{/if}}
+        <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `
-        Thank You for Trying MiyZapis!
-
-        Hello {{firstName}},
-
-        Your 3-month free trial ended on {{trialEndDate}}. We hope you enjoyed exploring all the features!
-
-        What's Next?
-        {{#if isCustomer}}
-        ✓ Continue browsing and booking services
-        ✓ A small deposit (10-20%) will now be required for bookings
-        ✓ All other features remain fully accessible
-        {{/if}}
-        {{#if isSpecialist}}
-        ✓ Continue providing services and growing your business
-        ✓ Choose your preferred pricing plan
-        ✓ All platform features remain available
-        {{/if}}
-
-        Dashboard: {{dashboardUrl}}
-        {{#if isSpecialist}}Pricing Plans: {{pricingUrl}}{{/if}}
-
-        Questions? Contact support: {{helpUrl}}
-      `
+      text: `Thanks for trying MiyZapis!\n\nHi {{firstName}},\n\nYour 3-month free trial ended on {{trialEndDate}}.\n\nWhat’s next:\n{{#if isCustomer}}  ✓ Keep browsing and booking services\n  ✓ Small deposits (10–20%) now apply at booking\n  ✓ Every other feature stays fully accessible\n{{/if}}{{#if isSpecialist}}  ✓ Keep serving customers and growing your business\n  ✓ Pick the pricing plan that fits\n  ✓ Every platform feature remains available\n{{/if}}\nDashboard: {{dashboardUrl}}\n{{#if isSpecialist}}Pricing: {{pricingUrl}}{{/if}}\nSupport: {{helpUrl}}`,
     },
     uk: {
-      subject: 'Ваш безкоштовний пробний період завершився - Дякуємо за користування МійЗапис',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Дякуємо за користування МійЗапис!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваш 3-місячний безкоштовний пробний період завершився</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привіт {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              Ваш 3-місячний безкоштовний пробний період завершився <strong>{{trialEndDate}}</strong>. Сподіваємося, вам сподобалося знайомство з усіма функціями МійЗапис!
-            </p>
-
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
-              <h3 style="color: #374151; margin-top: 0;">Що далі?</h3>
-              {{#if isCustomer}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Продовжуйте переглядати та бронювати послуги</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Тепер потрібен невеликий депозит (10-20%) для бронювань</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Всі інші функції залишаються повністю доступними</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Продовжуйте надавати послуги та розвивати свій бізнес</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Оберіть зручний тарифний план</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Всі функції платформи залишаються доступними</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
-                Перейти до кабінету
-              </a>
-              {{#if isSpecialist}}
-              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Переглянути тарифні плани
-              </a>
-              {{/if}}
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
-              Є питання? <a href="{{helpUrl}}" style="color: #667eea;">Зверніться до служби підтримки</a>
-            </p>
-          </div>
+      subject: 'Ваш пробний завершився — дякуємо за використання МійЗапис',
+      preheader: 'Ваш 3-місячний пробний завершився.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Дякуємо, що випробували МійЗапис 🙌</h1>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Ваш 3-місячний пробний завершився <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Що далі</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">✓ Продовжуйте переглядати та бронювати послуги</p>
+            <p style="${STYLES.detailRow}">✓ Тепер потрібен невеликий депозит (10–20%) при бронюванні</p>
+            <p style="${STYLES.detailRow}">✓ Усі інші функції залишаються доступними</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">✓ Продовжуйте обслуговувати клієнтів та розвиватись</p>
+            <p style="${STYLES.detailRow}">✓ Оберіть зручний тарифний план</p>
+            <p style="${STYLES.detailRow}">✓ Усі функції платформи зберігаються</p>
+          {{/if}}
         </div>
+        ${cta('{{dashboardUrl}}', 'Перейти до кабінету')}
+        {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">Тарифні плани</a></div>{{/if}}
+        <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `
-        Дякуємо за користування МійЗапис!
-
-        Привіт {{firstName}},
-
-        Ваш 3-місячний безкоштовний пробний період завершився {{trialEndDate}}. Сподіваємося, вам сподобалося!
-
-        Що далі?
-        {{#if isCustomer}}
-        ✓ Продовжуйте переглядати та бронювати послуги
-        ✓ Тепер потрібен невеликий депозит (10-20%) для бронювань
-        ✓ Всі інші функції залишаються повністю доступними
-        {{/if}}
-        {{#if isSpecialist}}
-        ✓ Продовжуйте надавати послуги та розвивати свій бізнес
-        ✓ Оберіть зручний тарифний план
-        ✓ Всі функції платформи залишаються доступними
-        {{/if}}
-
-        Кабінет: {{dashboardUrl}}
-        {{#if isSpecialist}}Тарифні плани: {{pricingUrl}}{{/if}}
-
-        Є питання? Підтримка: {{helpUrl}}
-      `
+      text: `Дякуємо, що випробували МійЗапис!\n\nПривіт, {{firstName}},\n\nВаш 3-місячний пробний завершився {{trialEndDate}}.\n\nЩо далі:\n{{#if isCustomer}}  ✓ Продовжуйте переглядати та бронювати\n  ✓ Невеликий депозит (10–20%) при бронюванні\n  ✓ Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  ✓ Продовжуйте обслуговувати клієнтів\n  ✓ Оберіть зручний тарифний план\n  ✓ Усі функції платформи зберігаються\n{{/if}}\nКабінет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифи: {{pricingUrl}}{{/if}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
-      subject: 'Ваш бесплатный пробный период завершился - Спасибо за использование МойЗапись',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Спасибо за использование МойЗапись!</h1>
-            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваш 3-месячный бесплатный пробный период завершился</p>
-          </div>
-
-          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-bottom: 20px;">Привет {{firstName}}!</h2>
-
-            <p style="color: #6b7280; line-height: 1.6;">
-              Ваш 3-месячный бесплатный пробный период завершился <strong>{{trialEndDate}}</strong>. Надеемся, вам понравилось знакомство со всеми функциями МойЗапись!
-            </p>
-
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
-              <h3 style="color: #374151; margin-top: 0;">Что дальше?</h3>
-              {{#if isCustomer}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Продолжайте просматривать и бронировать услуги</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Теперь требуется небольшой депозит (10-20%) для бронирований</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Все остальные функции остаются полностью доступными</p>
-              {{/if}}
-              {{#if isSpecialist}}
-              <p style="color: #6b7280; margin: 5px 0;">✓ Продолжайте предоставлять услуги и развивать свой бизнес</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Выберите удобный тарифный план</p>
-              <p style="color: #6b7280; margin: 5px 0;">✓ Все функции платформы остаются доступными</p>
-              {{/if}}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
-                Перейти в кабинет
-              </a>
-              {{#if isSpecialist}}
-              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Посмотреть тарифные планы
-              </a>
-              {{/if}}
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
-              Есть вопросы? <a href="{{helpUrl}}" style="color: #667eea;">Обратитесь в службу поддержки</a>
-            </p>
-          </div>
+      subject: 'Ваш пробный завершился — спасибо за МойЗапись',
+      preheader: 'Ваш 3-месячный пробный завершился.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Спасибо, что попробовали МойЗапись 🙌</h1>
+        <p style="${STYLES.p}">Привет, {{firstName}}. Ваш 3-месячный пробный завершился <strong>{{trialEndDate}}</strong>.</p>
+        <div style="${STYLES.infoBox}">
+          <h3 style="${STYLES.h3}">Что дальше</h3>
+          {{#if isCustomer}}
+            <p style="${STYLES.detailRow}">✓ Продолжайте просматривать и бронировать услуги</p>
+            <p style="${STYLES.detailRow}">✓ Теперь требуется небольшой депозит (10–20%) при бронировании</p>
+            <p style="${STYLES.detailRow}">✓ Все остальные функции остаются доступными</p>
+          {{/if}}
+          {{#if isSpecialist}}
+            <p style="${STYLES.detailRow}">✓ Продолжайте обслуживать клиентов и развиваться</p>
+            <p style="${STYLES.detailRow}">✓ Выберите удобный тарифный план</p>
+            <p style="${STYLES.detailRow}">✓ Все функции платформы сохраняются</p>
+          {{/if}}
         </div>
+        ${cta('{{dashboardUrl}}', 'Перейти в кабинет')}
+        {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">Тарифные планы</a></div>{{/if}}
+        <p style="${STYLES.faint}">Есть вопросы? <a href="{{helpUrl}}" style="${STYLES.link}">Обратитесь в поддержку</a>.</p>
       `,
-      text: `
-        Спасибо за использование МойЗапись!
-
-        Привет {{firstName}},
-
-        Ваш 3-месячный бесплатный пробный период завершился {{trialEndDate}}. Надеемся, вам понравилось!
-
-        Что дальше?
-        {{#if isCustomer}}
-        ✓ Продолжайте просматривать и бронировать услуги
-        ✓ Теперь требуется небольшой депозит (10-20%) для бронирований
-        ✓ Все остальные функции остаются полностью доступными
-        {{/if}}
-        {{#if isSpecialist}}
-        ✓ Продолжайте предоставлять услуги и развивать свой бизнес
-        ✓ Выберите удобный тарифный план
-        ✓ Все функции платформы остаются доступными
-        {{/if}}
-
-        Кабинет: {{dashboardUrl}}
-        {{#if isSpecialist}}Тарифные планы: {{pricingUrl}}{{/if}}
-
-        Есть вопросы? Поддержка: {{helpUrl}}
-      `
-    }
-  }
+      text: `Спасибо, что попробовали МойЗапись!\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершился {{trialEndDate}}.\n\nЧто дальше:\n{{#if isCustomer}}  ✓ Продолжайте просматривать и бронировать\n  ✓ Небольшой депозит (10–20%) при бронировании\n  ✓ Все остальные функции остаются доступными\n{{/if}}{{#if isSpecialist}}  ✓ Продолжайте обслуживать клиентов\n  ✓ Выберите удобный тарифный план\n  ✓ Все функции платформы сохраняются\n{{/if}}\nКабинет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифы: {{pricingUrl}}{{/if}}\nПоддержка: {{helpUrl}}`,
+    },
+  },
 };
 
-// Helper function to get template by key and language
+// Keep the existing public name (other modules import this).
+export const emailTemplates = emailTemplatesRaw;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public API (callers depend on this shape — do not change it)
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function getEmailTemplate(templateKey: string, language: string = 'en') {
-  const template = emailTemplates[templateKey as keyof typeof emailTemplates];
+  const template = emailTemplatesRaw[templateKey];
   if (!template) {
     throw new Error(`Email template '${templateKey}' not found`);
   }
-
-  const languageTemplate = template[language as keyof typeof template] || template.en;
-  return languageTemplate;
+  const lang = normalizeLang(language);
+  const content = template[lang] || template.en;
+  return {
+    subject: content.subject,
+    html: renderBrandedHtml({
+      lang,
+      subject: content.subject,
+      preheader: content.preheader,
+      bodyHtml: content.bodyHtml,
+    }),
+    text: content.text.trim(),
+  };
 }
 
-// Helper function to replace placeholders in template
+// Placeholder substitution. Supports {{key}} and {{#if cond}}…{{/if}}.
+// Nested conditionals are handled by iterating the regex pass until stable —
+// each pass only matches conditionals that contain no inner conditionals.
 export function replacePlaceholders(template: string, data: Record<string, any>): string {
   let result = template;
-  
-  // Replace simple placeholders
-  Object.keys(data).forEach(key => {
-    const placeholder = new RegExp(`{{${key}}}`, 'g');
-    result = result.replace(placeholder, data[key] || '');
-  });
 
-  // Handle conditional blocks (simplified Handlebars-like syntax)
-  result = result.replace(/\{\{#if\s+(\w+)\}\}(.*?)\{\{\/if\}\}/gs, (match, condition, content) => {
-    return data[condition] ? content : '';
+  // Resolve conditionals from the inside out.
+  // The inner negative lookahead ensures we only match conditionals that don't
+  // contain another {{#if}} inside, so nested blocks resolve correctly.
+  const condRegex = /\{\{#if\s+(\w+)\}\}((?:(?!\{\{#if\b)[\s\S])*?)\{\{\/if\}\}/g;
+  let prev: string;
+  let safety = 16;
+  do {
+    prev = result;
+    result = result.replace(condRegex, (_match, condition, content) => {
+      return data[condition] ? content : '';
+    });
+    safety -= 1;
+  } while (result !== prev && safety > 0);
+
+  // Simple {{key}} substitutions last so values can’t inject conditional syntax.
+  Object.keys(data).forEach((key) => {
+    const value = data[key];
+    const placeholder = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+    result = result.replace(placeholder, value === undefined || value === null ? '' : String(value));
   });
 
   return result;
