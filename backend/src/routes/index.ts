@@ -37,6 +37,8 @@ import expenseRoutes from './expenses';
 import communityRoutes from './community';
 import pushRoutes from './push';
 import waitlistRoutes from './waitlist';
+import webhookRoutes from './webhooks';
+import docsRoutes from './docs';
 
 const router = Router();
 
@@ -78,6 +80,8 @@ router.use('/expenses', expenseRoutes);
 router.use('/community', communityRoutes);
 router.use('/push', pushRoutes);
 router.use('/waitlist', waitlistRoutes);
+router.use('/webhooks', webhookRoutes);
+router.use('/docs', docsRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);

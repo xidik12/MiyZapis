@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref — no point waiting on stale builds.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-typecheck:
+    name: Backend · TypeScript
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Type-check (advisory)
+        # 100+ pre-existing TS errors across the codebase — surface the count
+        # without blocking merges until the legacy debt is paid down.
+        run: |
+          npx tsc --noEmit -p tsconfig.json 2>&1 | tee tsc.log
+          ERRS=$(grep -c "error TS" tsc.log || true)
+          echo "::notice::backend TypeScript errors: $ERRS"
+        continue-on-error: true
+
+  backend-lint:
+    name: Backend · ESLint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx eslint . --ext .ts || true
+
+  frontend-build:
+    name: Frontend · Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Bundle size summary
+        run: |
+          echo "::notice::Frontend bundle size:"
+          du -sh dist || true
+          ls -lah dist/assets | head -20 || true
+
+  frontend-lint:
+    name: Frontend · ESLint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint || true

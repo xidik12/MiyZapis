@@ -91,6 +91,13 @@ const envSchema = z.object({
 
   // External APIs
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+
+  // Sentry sample rates — DSN itself is declared further below under Monitoring.
+  SENTRY_TRACES_SAMPLE_RATE: z.string().optional(),
+  SENTRY_PROFILES_SAMPLE_RATE: z.string().optional(),
+
+  // Resend webhook signing (optional — leave empty to accept unsigned events)
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
   
   // Frontend URL
   FRONTEND_URL: z.string().default('http://localhost:3000'),

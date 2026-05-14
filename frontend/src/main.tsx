@@ -1,3 +1,7 @@
+import { initSentry } from './utils/sentry';
+// Initialise error monitoring as early as possible. No-op when DSN unset.
+initSentry();
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';

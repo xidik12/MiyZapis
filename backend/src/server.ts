@@ -1,3 +1,8 @@
+// Initialise Sentry FIRST — must run before any other module loads so it can
+// instrument them. No-op when SENTRY_DSN is not set.
+import { initSentry } from '@/utils/sentry';
+initSentry();
+
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';

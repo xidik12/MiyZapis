@@ -30,13 +30,19 @@ router.post('/register', async (req, res) => {
       return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Missing required fields', req.id));
     }
 
-    // Sanitize names - strip HTML tags and validate
-    const nameRegex = /^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/;
+    // Sanitize names: strip HTML tags, collapse whitespace, then accept any
+    // Unicode letter, hyphen, apostrophe, or space. The previous regex was
+    // Cyrillic + Latin Extended-A only, which rejected Vietnamese, Khmer,
+    // Chinese, Arabic, and a long tail of other scripts our users actually use.
     req.body.firstName = req.body.firstName.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
     req.body.lastName = req.body.lastName.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-
-    if (!nameRegex.test(req.body.firstName) || !nameRegex.test(req.body.lastName)) {
-      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Names can only contain letters, spaces, hyphens, and apostrophes', req.id));
+    const nameRegex = /^[\p{L}\p{M}\s\-'\u2019.]+$/u;
+    if (
+      req.body.firstName.length < 1 || req.body.firstName.length > 80 ||
+      req.body.lastName.length < 1 || req.body.lastName.length > 80 ||
+      !nameRegex.test(req.body.firstName) || !nameRegex.test(req.body.lastName)
+    ) {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Names must be 1-80 characters of letters, spaces, hyphens, or apostrophes', req.id));
     }
 
     const result = await AuthService.register(req.body);
