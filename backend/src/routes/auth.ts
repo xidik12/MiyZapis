@@ -65,6 +65,25 @@ router.post('/logout', AuthController.logout);
 // Email verification
 router.post('/verify-email', validateEmailVerification, AuthController.verifyEmail);
 
+// Resend verification email (rate-limited to prevent abuse)
+router.post('/resend-verification', authRateLimit, async (req, res) => {
+  try {
+    const { email } = req.body ?? {};
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Email is required', req.id));
+    }
+    const { AuthService } = await import('@/services/auth');
+    const result = await AuthService.resendVerificationEmail(email);
+    if (!result.success) {
+      return res.status(400).json(createErrorResponse('RESEND_FAILED', result.message, req.id));
+    }
+    return res.json(createSuccessResponse({ message: result.message }));
+  } catch (error: unknown) {
+    logger.error('Resend verification error:', error);
+    return res.status(500).json(createErrorResponse('RESEND_FAILED', 'Failed to resend verification email', req.id));
+  }
+});
+
 // Password reset (rate limited)
 router.post('/request-password-reset', authRateLimit, validatePasswordResetRequest, AuthController.requestPasswordReset);
 router.post('/reset-password', authRateLimit, validatePasswordReset, AuthController.resetPassword);

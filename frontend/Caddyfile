@@ -1,0 +1,43 @@
+# Static serve config for the MiyZapis frontend (Nixpacks + Caddy).
+# Replaces the default-generated Caddyfile.
+
+:{$PORT:80} {
+	root * /app/dist
+	encode gzip zstd
+
+	# Security headers applied to every response.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(self)"
+		Cross-Origin-Opener-Policy "same-origin-allow-popups"
+		Cross-Origin-Embedder-Policy "credentialless"
+		Cross-Origin-Resource-Policy "cross-origin"
+		# Hide Caddy fingerprint
+		-Server
+	}
+
+	# Vite emits hashed asset filenames — safe to cache forever.
+	@hashedAssets path /assets/*
+	header @hashedAssets Cache-Control "public, max-age=31536000, immutable"
+
+	# Service worker and manifest must always be fresh.
+	@noCache path /sw.js /registerSW.js /manifest.json /manifest.webmanifest *.html
+	header @noCache Cache-Control "no-cache, must-revalidate"
+
+	# Static file requests: serve them if they exist, real 404 if they don't.
+	# Without this, missing /favicon.svg etc. would silently fall back to index.html
+	# and clients would try to parse HTML as the wrong content type.
+	@staticFile path_regexp \.(js|mjs|css|map|png|jpg|jpeg|gif|svg|webp|avif|ico|woff|woff2|ttf|eot|json|xml|txt|wasm)$
+	handle @staticFile {
+		file_server
+	}
+
+	# SPA fallback for everything else (React Router routes).
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
