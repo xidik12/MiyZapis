@@ -216,7 +216,7 @@ export class AuthService {
       emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,
         verificationLink: verificationLink
-      }).then((emailSent) => {
+      }, user.language || 'en').then((emailSent) => {
         if (!emailSent) {
           logger.error('💥 Verification email failed to send', {
             userId: user.id,
@@ -1076,7 +1076,7 @@ export class AuthService {
       const emailSent = await emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,
         verificationLink,
-      });
+      }, user.language || 'en');
 
       if (!emailSent) {
         return {

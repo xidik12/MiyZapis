@@ -833,100 +833,44 @@ export class EmailService {
     }
   }
   /**
-   * Send verification email (compatibility method for base email API)
-   * Used by auth service which passes email + { firstName, verificationLink } directly
+   * Send verification email (compatibility method for base email API).
+   * Delegates to the branded, localised templates in templates.ts instead of
+   * the previous inline HTML so all transactional email shares one design.
    */
-  async sendVerificationEmail(email: string, data: { firstName: string; verificationLink: string }): Promise<boolean> {
-    try {
-      return await this.sendEmail({
-        to: email,
-        subject: 'Verify Your Email - MiyZapis',
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Verify Your Email - MiyZapis</title>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: #007bff; color: white; padding: 20px; text-align: center; }
-              .content { padding: 30px 20px; }
-              .button { display: inline-block; background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header"><h1>Welcome to MiyZapis!</h1></div>
-              <div class="content">
-                <h2>Hi ${data.firstName}!</h2>
-                <p>Thank you for registering with MiyZapis, your trusted booking platform.</p>
-                <p>To complete your registration, please click the button below:</p>
-                <p style="text-align: center;"><a href="${data.verificationLink}" class="button">Verify Email Address</a></p>
-                <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #007bff;">${data.verificationLink}</p>
-                <p><strong>This link will expire in 24 hours.</strong></p>
-                <p>If you didn't create an account with MiyZapis, you can safely ignore this email.</p>
-              </div>
-              <div class="footer"><p>&copy; 2024 MiyZapis. All rights reserved.</p></div>
-            </div>
-          </body>
-          </html>`,
-        text: `Welcome to MiyZapis!\n\nHi ${data.firstName}!\n\nTo verify your email, visit: ${data.verificationLink}\n\nThis link will expire in 24 hours.`,
-      });
-    } catch (error) {
-      logger.error('Failed to send verification email:', error);
-      return false;
-    }
+  async sendVerificationEmail(
+    email: string,
+    data: { firstName: string; verificationLink: string },
+    language: string = 'en',
+  ): Promise<boolean> {
+    return this.sendTemplateEmail({
+      to: email,
+      templateKey: 'emailVerification',
+      language,
+      data: {
+        firstName: data.firstName,
+        verificationUrl: data.verificationLink,
+      },
+    });
   }
 
   /**
-   * Send password reset email (compatibility method for base email API)
+   * Send password reset email (compatibility method for base email API).
+   * Delegates to the branded, localised templates in templates.ts.
    */
-  async sendPasswordResetEmail(email: string, data: { firstName: string; resetLink: string }): Promise<boolean> {
-    try {
-      return await this.sendEmail({
-        to: email,
-        subject: 'Reset Your Password - MiyZapis',
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Reset Your Password - MiyZapis</title>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: #dc3545; color: white; padding: 20px; text-align: center; }
-              .content { padding: 30px 20px; }
-              .button { display: inline-block; background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header"><h1>Password Reset Request</h1></div>
-              <div class="content">
-                <h2>Hi ${data.firstName}!</h2>
-                <p>We received a request to reset your password for your MiyZapis account.</p>
-                <p>Click the button below to reset your password:</p>
-                <p style="text-align: center;"><a href="${data.resetLink}" class="button">Reset Password</a></p>
-                <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #dc3545;">${data.resetLink}</p>
-                <p><strong>This link will expire in 1 hour.</strong></p>
-                <p>If you didn't request a password reset, you can safely ignore this email.</p>
-              </div>
-              <div class="footer"><p>&copy; 2024 MiyZapis. All rights reserved.</p></div>
-            </div>
-          </body>
-          </html>`,
-        text: `Password Reset - MiyZapis\n\nHi ${data.firstName}!\n\nTo reset your password, visit: ${data.resetLink}\n\nThis link will expire in 1 hour.`,
-      });
-    } catch (error) {
-      logger.error('Failed to send password reset email:', error);
-      return false;
-    }
+  async sendPasswordResetEmail(
+    email: string,
+    data: { firstName: string; resetLink: string },
+    language: string = 'en',
+  ): Promise<boolean> {
+    return this.sendTemplateEmail({
+      to: email,
+      templateKey: 'passwordReset',
+      language,
+      data: {
+        firstName: data.firstName,
+        resetUrl: data.resetLink,
+      },
+    });
   }
 }
 
