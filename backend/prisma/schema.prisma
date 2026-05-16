@@ -105,6 +105,8 @@ model User {
   expenses             Expense[]              @relation("SpecialistExpenses")
   invoices             Invoice[]              @relation("SpecialistInvoices")
   calendarConnections  CalendarConnection[]   @relation("UserCalendarConnections")
+  ownedBusinesses      Business[]             @relation("OwnedBusinesses")
+  businessMemberships  BusinessMember[]       @relation("BusinessMemberships")
   // Tax regime preference used by the bookkeeping calculator endpoints.
   taxRegime            String?                // UA_FOP_GROUP_3, UA_FOP_GROUP_2, KH_FLAT_10, NONE
   taxId                String?                // EDRPOU / individual TIN / similar
@@ -142,7 +144,10 @@ model User {
 model Specialist {
   id           String  @id @default(cuid())
   userId       String  @unique
-  
+
+  // Optional: link to a multi-specialist Business this person works under.
+  businessId   String?
+
   // Business profile
   businessName String?
   slug          String?  @unique
@@ -232,6 +237,7 @@ model Specialist {
 model Service {
   id          String  @id @default(cuid())
   specialistId String
+  businessId  String?    // optional: service offered under a multi-specialist business
   categoryId  String?
   name        String
   description String
@@ -315,6 +321,7 @@ model Booking {
   id          String        @id @default(cuid())
   customerId  String
   specialistId String
+  businessId   String?     // denormalised: speeds up business-scoped queries
   serviceId   String
   promoCodeId String?
   
@@ -1869,6 +1876,54 @@ model Invoice {
   @@index([specialistId, status])
   @@index([bookingId])
   @@map("invoices")
+}
+
+// Multi-specialist organisation. A Business has one OWNER + 0..N MANAGERs and
+// SPECIALISTs. Individual specialists who aren't part of a business simply have
+// no BusinessMember row — the whole feature is opt-in.
+model Business {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  name          String
+  description   String?
+  ownerId       String
+  email         String?
+  phone         String?
+  address       String?
+  websiteUrl    String?
+  logoUrl       String?
+  currency      String    @default("UAH")
+  timezone      String    @default("UTC")
+  taxId         String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  owner         User              @relation("OwnedBusinesses", fields: [ownerId], references: [id], onDelete: Cascade)
+  members       BusinessMember[]
+
+  @@index([ownerId])
+  @@map("businesses")
+}
+
+model BusinessMember {
+  id            String    @id @default(cuid())
+  businessId    String
+  userId        String
+  role          String    // OWNER, MANAGER, SPECIALIST
+  invitedBy     String?
+  invitedAt     DateTime  @default(now())
+  joinedAt      DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user          User      @relation("BusinessMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([userId])
+  @@map("business_members")
 }
 
 // External calendar sync (Google Calendar today, room for Apple/Microsoft later).
