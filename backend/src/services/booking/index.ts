@@ -1017,7 +1017,10 @@ export class BookingService {
       // Determine who is cancelling before applying time restrictions
       const isSpecialistCancellation = cancelledBy === booking.specialistId;
 
-      // Only apply the cancellation window restriction for customers — specialists can cancel anytime
+      // Only apply the cancellation window restriction for customers — specialists can cancel anytime.
+      // The window only applies to FUTURE bookings; once the booking time has passed,
+      // "cancel" effectively means "this appointment didn't happen" and should always be allowed
+      // (otherwise stale bookings remain stuck indefinitely with no way to clean them up).
       if (!isSpecialistCancellation) {
         const specialist = await prisma.specialist.findUnique({
           where: { userId: booking.specialistId },
@@ -1029,7 +1032,10 @@ export class BookingService {
         const scheduledTime = new Date(booking.scheduledAt);
         const hoursUntilBooking = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-        if (hoursUntilBooking < cancellationWindowHours) {
+        // Past bookings: skip the window check entirely. They're either no-shows or
+        // forgotten by both parties — the customer should still be able to clear them.
+        const isInPast = hoursUntilBooking <= 0;
+        if (!isInPast && hoursUntilBooking < cancellationWindowHours) {
           throw new Error('CANCELLATION_TOO_LATE');
         }
       }

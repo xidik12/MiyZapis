@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { logger } from '@/utils/logger';
 import { trialExpirationService } from '@/services/trial-expiration.service';
+import { BookingLifecycleService } from '@/services/booking/lifecycle.service';
 
 const router = express.Router();
 
@@ -130,6 +131,36 @@ router.post('/expire-trials', async (req, res) => {
     });
   } catch (error) {
     logger.error('Trial expiration cron job failed:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * @route   POST /api/v1/cron/stale-bookings-check
+ * @desc    Find bookings whose scheduled time has passed without a status change,
+ *          notify both parties to mark them Completed/No-show, and auto-finalise
+ *          any that have been stuck for more than the grace period.
+ * @access  Internal (cron secret)
+ */
+router.post('/stale-bookings-check', async (req, res) => {
+  try {
+    const cronSecret = req.headers['x-cron-secret'];
+    if (!verifyCronSecret(cronSecret)) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const results = await BookingLifecycleService.runCron();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Stale bookings check completed',
+      results,
+    });
+  } catch (error) {
+    logger.error('Stale bookings cron failed:', error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
