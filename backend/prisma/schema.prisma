@@ -103,6 +103,10 @@ model User {
   subscriptions        SpecialistSubscription[]
   onrampSessions       OnrampSession[]
   expenses             Expense[]              @relation("SpecialistExpenses")
+  invoices             Invoice[]              @relation("SpecialistInvoices")
+  // Tax regime preference used by the bookkeeping calculator endpoints.
+  taxRegime            String?                // UA_FOP_GROUP_3, UA_FOP_GROUP_2, KH_FLAT_10, NONE
+  taxId                String?                // EDRPOU / individual TIN / similar
   pushSubscriptions    PushSubscription[]
   waitlists            Waitlist[]
   clientNotes          ClientNote[] @relation("ClientNotes")
@@ -1789,6 +1793,12 @@ model Expense {
   isRecurring         Boolean   @default(false)
   recurringFrequency  String?   // WEEKLY, MONTHLY, QUARTERLY, YEARLY
 
+  // Tax / accounting
+  isTaxDeductible     Boolean   @default(true)
+  vatAmount           Decimal?  // optional VAT/input tax component
+  vendorName          String?
+  vendorTaxId         String?
+
   // Optional details
   notes               String?
   receiptUrl          String?
@@ -1804,6 +1814,56 @@ model Expense {
   @@index([category])
   @@index([specialistId, category])
   @@map("expenses")
+}
+
+// Invoices issued by a specialist/business to a customer for completed work.
+// Independent of the booking-payment flow — used for B2B invoicing and as the
+// source-of-truth document for accountants and tax filings.
+model Invoice {
+  id              String    @id @default(cuid())
+  specialistId    String
+  bookingId       String?
+  customerId      String?
+
+  // Document identity
+  invoiceNumber   String    @unique
+  issueDate       DateTime  @default(now())
+  dueDate         DateTime?
+
+  // Counterparty (free-text for non-platform clients)
+  clientName      String
+  clientEmail     String?
+  clientAddress   String?
+  clientTaxId     String?
+
+  // Money
+  currency        String    @default("UAH")
+  subtotal        Decimal
+  taxRate         Decimal   @default(0)
+  taxAmount       Decimal   @default(0)
+  total           Decimal
+  amountPaid      Decimal   @default(0)
+
+  // Line items stored as JSON for flexibility (description, qty, unitPrice, total).
+  lineItems       String    // JSON array
+
+  // Lifecycle
+  status          String    @default("DRAFT") // DRAFT, SENT, PARTIAL, PAID, OVERDUE, CANCELLED, VOID
+  sentAt          DateTime?
+  paidAt          DateTime?
+  cancelledAt     DateTime?
+
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  specialist      User      @relation("SpecialistInvoices", fields: [specialistId], references: [id], onDelete: Cascade)
+
+  @@index([specialistId, issueDate])
+  @@index([specialistId, status])
+  @@index([bookingId])
+  @@map("invoices")
 }
 
 // Community Feature Models

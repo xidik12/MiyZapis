@@ -39,6 +39,7 @@ import pushRoutes from './push';
 import waitlistRoutes from './waitlist';
 import webhookRoutes from './webhooks';
 import docsRoutes from './docs';
+import accountingRoutes from './accounting';
 
 const router = Router();
 
@@ -82,6 +83,7 @@ router.use('/push', pushRoutes);
 router.use('/waitlist', waitlistRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/docs', docsRoutes);
+router.use('/accounting', accountingRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);
