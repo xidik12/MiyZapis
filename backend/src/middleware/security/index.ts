@@ -176,10 +176,18 @@ const createRateLimiter = (options: {
       return req.ip || 'anonymous';
     }),
     skipSuccessfulRequests: options.skipSuccessfulRequests ?? false,
+    // express-rate-limit v7 expects `increment` (not `incr` as in v6) and a
+    // `resetTime: Date` field (not `timeToExpire: number`). The previous
+    // adapter spoke the v6 dialect, which left every rate-limited request
+    // hanging forever because store.increment was undefined.
     store: {
-      incr: async (key: string) => {
+      init: () => undefined,
+      increment: async (key: string) => {
         const result = await store.increment(key);
-        return result;
+        return {
+          totalHits: result.totalHits,
+          resetTime: result.timeToExpire ? new Date(Date.now() + result.timeToExpire) : undefined,
+        };
       },
       decrement: async (key: string) => {
         await store.decrement(key);
@@ -187,7 +195,7 @@ const createRateLimiter = (options: {
       resetKey: async (key: string) => {
         await store.resetKey(key);
       },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- custom store adapter doesn't match express-rate-limit's Store interface exactly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal Store implementation; library accepts loose shape via duck typing
     } as any,
     handler: (req: Request, res: Response) => {
       logger.warn('Rate limit exceeded', {
