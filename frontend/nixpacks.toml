@@ -1,0 +1,6 @@
+# Override Nixpacks' default static-serve setup so it uses our hardened
+# Caddyfile (security headers, real 404 for missing assets, branded
+# cache-control rules) instead of the auto-generated one.
+
+[start]
+cmd = "caddy run --config /app/Caddyfile --adapter caddyfile"

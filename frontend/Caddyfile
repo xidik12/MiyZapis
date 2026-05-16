@@ -1,8 +1,24 @@
 # Static serve config for the MiyZapis frontend (Nixpacks + Caddy).
-# Replaces the default-generated Caddyfile.
+# Replaces the default-generated Caddyfile via nixpacks.toml start cmd.
 
-:{$PORT:80} {
+{
+	admin off
+	persist_config off
+	auto_https off
+	log {
+		format json
+	}
+	servers {
+		# Coolify Traefik sits in front; trust private ranges so client IPs are correct.
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT:3000} {
 	root * /app/dist
+	log {
+		format json
+	}
 	encode gzip zstd
 
 	# Security headers applied to every response.
