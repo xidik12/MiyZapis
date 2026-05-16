@@ -22,6 +22,9 @@ const SPEC = {
     { name: 'bookings', description: 'Appointment booking' },
     { name: 'health', description: 'Service health checks' },
     { name: 'webhooks', description: 'Inbound webhook receivers' },
+    { name: 'accounting', description: 'P&L, tax estimation, CSV export, invoices' },
+    { name: 'calendar', description: 'Google Calendar sync (push booking → calendar event)' },
+    { name: 'businesses', description: 'Multi-specialist organisations' },
   ],
   paths: {
     '/health': {
@@ -190,6 +193,99 @@ const SPEC = {
         description: 'Verifies Svix signature if RESEND_WEBHOOK_SECRET is configured.',
         responses: { '200': { description: 'Event accepted' }, '401': { description: 'Invalid signature' } },
       },
+    },
+
+    // ─── Accounting ──────────────────────────────────────────────────────
+    '/accounting/profit-loss': {
+      get: {
+        tags: ['accounting'], summary: 'Profit & Loss for a period', security: [{ bearer: [] }],
+        parameters: [
+          { name: 'from', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'to', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'currency', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: { '200': { description: 'Income, expenses by category, totals' } },
+      },
+    },
+    '/accounting/tax-estimate': {
+      get: {
+        tags: ['accounting'], summary: 'Estimate tax owed for a period', security: [{ bearer: [] }],
+        parameters: [
+          { name: 'from', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'to', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'regime', in: 'query', schema: { type: 'string', enum: ['UA_FOP_GROUP_3', 'UA_FOP_GROUP_2', 'KH_FLAT_10', 'FLAT_5', 'FLAT_15', 'FLAT_20', 'NONE'] } },
+          { name: 'currency', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: { '200': { description: 'Itemised tax computation' } },
+      },
+    },
+    '/accounting/tax-regimes': {
+      get: { tags: ['accounting'], summary: 'List available tax regime IDs', security: [{ bearer: [] }], responses: { '200': { description: 'Regimes' } } },
+    },
+    '/accounting/export.csv': {
+      get: {
+        tags: ['accounting'], summary: 'Accountant-friendly CSV export', security: [{ bearer: [] }],
+        parameters: [
+          { name: 'from', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'to', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'include', in: 'query', schema: { type: 'string', default: 'income,expenses' } },
+        ],
+        responses: { '200': { description: 'CSV stream' } },
+      },
+    },
+    '/accounting/invoices': {
+      get: { tags: ['accounting'], summary: 'List invoices', security: [{ bearer: [] }], responses: { '200': { description: 'Invoices' } } },
+      post: { tags: ['accounting'], summary: 'Create invoice', security: [{ bearer: [] }], responses: { '201': { description: 'Invoice created' } } },
+    },
+    '/accounting/invoices/{id}': {
+      get: { tags: ['accounting'], summary: 'Get invoice', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Invoice' } } },
+      delete: { tags: ['accounting'], summary: 'Delete invoice (drafts only)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Deleted' } } },
+    },
+    '/accounting/invoices/{id}/status': {
+      patch: { tags: ['accounting'], summary: 'Change invoice status', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Updated' } } },
+    },
+
+    // ─── Calendar ────────────────────────────────────────────────────────
+    '/calendar/google/status': {
+      get: { tags: ['calendar'], summary: 'Calendar connection status', security: [{ bearer: [] }], responses: { '200': { description: 'Connected or not' } } },
+    },
+    '/calendar/google/connect': {
+      get: { tags: ['calendar'], summary: 'Get Google OAuth consent URL', security: [{ bearer: [] }], responses: { '200': { description: 'Redirect URL' } } },
+    },
+    '/calendar/google/callback': {
+      get: { tags: ['calendar'], summary: 'Google OAuth callback', responses: { '302': { description: 'Redirects to frontend' } } },
+    },
+    '/calendar/google': {
+      delete: { tags: ['calendar'], summary: 'Disconnect calendar', security: [{ bearer: [] }], responses: { '200': { description: 'Disconnected' } } },
+    },
+    '/calendar/google/resync': {
+      post: { tags: ['calendar'], summary: 'Re-push upcoming bookings to calendar', security: [{ bearer: [] }], responses: { '200': { description: 'Queued' } } },
+    },
+
+    // ─── Businesses ──────────────────────────────────────────────────────
+    '/businesses': {
+      post: { tags: ['businesses'], summary: 'Create business (caller becomes OWNER)', security: [{ bearer: [] }], responses: { '201': { description: 'Created' } } },
+    },
+    '/businesses/mine': {
+      get: { tags: ['businesses'], summary: 'Businesses I belong to', security: [{ bearer: [] }], responses: { '200': { description: 'Memberships' } } },
+    },
+    '/businesses/by-slug/{slug}': {
+      get: { tags: ['businesses'], summary: 'Public business page', parameters: [{ name: 'slug', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Business + public members' } } },
+    },
+    '/businesses/{id}': {
+      get: { tags: ['businesses'], summary: 'Business detail (member-only)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Business' } } },
+      patch: { tags: ['businesses'], summary: 'Update business (OWNER/MANAGER)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Updated' } } },
+      delete: { tags: ['businesses'], summary: 'Deactivate (OWNER)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Deactivated' } } },
+    },
+    '/businesses/{id}/members': {
+      post: { tags: ['businesses'], summary: 'Invite a member by email', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '201': { description: 'Member added' } } },
+    },
+    '/businesses/{id}/members/{userId}': {
+      patch: { tags: ['businesses'], summary: 'Change role (OWNER only)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }, { name: 'userId', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Updated' } } },
+      delete: { tags: ['businesses'], summary: 'Remove member (OWNER/MANAGER, or self)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }, { name: 'userId', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': { description: 'Removed' } } },
+    },
+    '/businesses/{id}/dashboard': {
+      get: { tags: ['businesses'], summary: 'Business dashboard (OWNER/MANAGER)', security: [{ bearer: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }, { name: 'from', in: 'query', schema: { type: 'string', format: 'date-time' } }, { name: 'to', in: 'query', schema: { type: 'string', format: 'date-time' } }], responses: { '200': { description: 'Aggregated stats' } } },
     },
   },
   components: {
