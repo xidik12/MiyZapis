@@ -122,7 +122,6 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'redux-vendor': ['react-redux', '@reduxjs/toolkit', 'redux-persist'],
           'stripe': ['@stripe/react-stripe-js', '@stripe/stripe-js'],
-          'i18n': ['react-i18next', 'i18next'],
         },
         assetFileNames: (assetInfo) => {
           const name = assetInfo.names?.[0] || '';
