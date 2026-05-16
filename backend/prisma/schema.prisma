@@ -104,6 +104,7 @@ model User {
   onrampSessions       OnrampSession[]
   expenses             Expense[]              @relation("SpecialistExpenses")
   invoices             Invoice[]              @relation("SpecialistInvoices")
+  calendarConnections  CalendarConnection[]   @relation("UserCalendarConnections")
   // Tax regime preference used by the bookkeeping calculator endpoints.
   taxRegime            String?                // UA_FOP_GROUP_3, UA_FOP_GROUP_2, KH_FLAT_10, NONE
   taxId                String?                // EDRPOU / individual TIN / similar
@@ -364,6 +365,10 @@ model Booking {
   parentBookingId   String?
   parentBooking     Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id])
   childBookings     Booking[] @relation("RecurringBookings")
+
+  // External calendar sync — event IDs in each party's connected calendar
+  calendarEventIdCustomer   String?
+  calendarEventIdSpecialist String?
 
   // Metadata
   createdAt DateTime @default(now())
@@ -1864,6 +1869,32 @@ model Invoice {
   @@index([specialistId, status])
   @@index([bookingId])
   @@map("invoices")
+}
+
+// External calendar sync (Google Calendar today, room for Apple/Microsoft later).
+// One row per user × provider. Refresh token is the source of truth — access
+// tokens get rotated on each use and the row updated.
+model CalendarConnection {
+  id                String    @id @default(cuid())
+  userId            String
+  provider          String    // GOOGLE (future: APPLE, MICROSOFT)
+  providerAccountId String?
+  accessToken       String
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  scope             String?
+  calendarId        String    @default("primary")
+  calendarName      String?
+  syncEnabled       Boolean   @default(true)
+  lastSyncAt        DateTime?
+  lastSyncError     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation("UserCalendarConnections", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("calendar_connections")
 }
 
 // Community Feature Models

@@ -11,6 +11,7 @@ import { Booking, User, Service, Specialist } from '@prisma/client';
 import { generateGroupSessionId, canAccommodateParticipants, logGroupSessionInfo } from '@/utils/groupSessions';
 import { WaitlistService } from '@/services/waitlist';
 import { stripPrivateSpecialistFields } from '@/services/specialist';
+import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 
 interface CreateBookingData {
   customerId: string;
@@ -670,6 +671,9 @@ export class BookingService {
         autoBooking: service.specialist.autoBooking,
       });
 
+      // Push to both parties' connected Google Calendars (fire-and-forget).
+      BookingCalendarSync.syncBooking(booking.id);
+
       return booking as BookingWithDetails;
     } catch (error) {
       logger.error('Error creating booking:', error);
@@ -983,10 +987,13 @@ export class BookingService {
         });
       }
 
-      logger.info('Booking updated successfully', { 
+      logger.info('Booking updated successfully', {
         bookingId,
         status: data.status,
       });
+
+      // Fire-and-forget calendar sync — pushes to/removes from connected calendars.
+      BookingCalendarSync.syncBooking(bookingId);
 
       return updatedBooking as BookingWithDetails;
     } catch (error) {
@@ -1257,6 +1264,9 @@ export class BookingService {
         logger.error('Failed to notify waitlist after cancellation', { bookingId, error: waitlistError });
       }
 
+      // Fire-and-forget — remove calendar events from both parties' connected calendars.
+      BookingCalendarSync.removeBookingEvents(bookingId);
+
       return updatedBooking as BookingWithDetails;
     } catch (error) {
       logger.error('Error cancelling booking:', error);
@@ -1392,7 +1402,7 @@ export class BookingService {
       });
 
       return {
-        bookings: transformedBookings as TransformedBooking[],
+        bookings: transformedBookings as unknown as TransformedBooking[],
         total,
         page,
         totalPages,

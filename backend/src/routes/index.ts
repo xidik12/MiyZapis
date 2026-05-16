@@ -40,6 +40,7 @@ import waitlistRoutes from './waitlist';
 import webhookRoutes from './webhooks';
 import docsRoutes from './docs';
 import accountingRoutes from './accounting';
+import calendarRoutes from './calendar';
 
 const router = Router();
 
@@ -84,6 +85,7 @@ router.use('/waitlist', waitlistRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/docs', docsRoutes);
 router.use('/accounting', accountingRoutes);
+router.use('/calendar', calendarRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);

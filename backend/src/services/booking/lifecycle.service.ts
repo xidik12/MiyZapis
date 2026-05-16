@@ -16,6 +16,7 @@ import { prisma } from '@/config/database';
 import { redis } from '@/config/redis';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
+import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 
 const notifier = new NotificationService(prisma);
 
@@ -70,7 +71,7 @@ export class BookingLifecycleService {
       throw new Error('NOT_AUTHORIZED');
     }
 
-    return prisma.booking.update({
+    const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: 'COMPLETED',
@@ -78,6 +79,9 @@ export class BookingLifecycleService {
         completionNotes: this.combineNotes(booking.completionNotes, notes, `completed by ${party.toLowerCase()}`),
       },
     });
+    // Remove from connected calendars (event is in the past anyway, but cleaning up is courteous).
+    BookingCalendarSync.removeBookingEvents(bookingId);
+    return updated;
   }
 
   /** Report that one party didn't show up (other party still gets to mark the booking closed). */
@@ -100,7 +104,7 @@ export class BookingLifecycleService {
     if (party === 'CUSTOMER' && noShowParty === 'CUSTOMER') throw new Error('INVALID_NO_SHOW_REPORT');
     if (party === 'SPECIALIST' && noShowParty === 'SPECIALIST') throw new Error('INVALID_NO_SHOW_REPORT');
 
-    return prisma.booking.update({
+    const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: 'NO_SHOW',
@@ -113,6 +117,8 @@ export class BookingLifecycleService {
         ),
       },
     });
+    BookingCalendarSync.removeBookingEvents(bookingId);
+    return updated;
   }
 
   /**
