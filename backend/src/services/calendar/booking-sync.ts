@@ -5,6 +5,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { GoogleCalendarService } from './google-calendar.service';
+import { AppleCalendarService } from './apple-calendar.service';
 
 interface BookingForSync {
   id: string;
@@ -48,26 +49,26 @@ export class BookingCalendarSync {
     const specialistName = `${booking.specialist?.firstName ?? ''} ${booking.specialist?.lastName ?? ''}`.trim();
     const customerName = `${booking.customer?.firstName ?? ''} ${booking.customer?.lastName ?? ''}`.trim();
 
-    // Customer-side event
-    const customerEventId = await GoogleCalendarService.pushBookingForUser(booking.customerId, {
-      bookingId,
-      summary: `${serviceName} with ${specialistName || 'specialist'}`,
-      description: `MiyZapis booking #${booking.id}`,
-      startISO,
-      endISO,
-      timezone: booking.customer?.timezone ?? 'UTC',
-      existingEventId: booking.calendarEventIdCustomer,
-    });
-    // Specialist-side event
-    const specialistEventId = await GoogleCalendarService.pushBookingForUser(booking.specialistId, {
-      bookingId,
-      summary: `${serviceName} — ${customerName || 'customer'}`,
-      description: `MiyZapis booking #${booking.id}`,
-      startISO,
-      endISO,
-      timezone: booking.specialist?.timezone ?? 'UTC',
-      existingEventId: booking.calendarEventIdSpecialist,
-    });
+    // Push to whichever provider each user has connected. A user can have
+    // both Google and Apple connected; we push to both. The returned ID
+    // is the same field — we prefer Google's ID when both exist, since it
+    // changes less often.
+    const customerSummary = `${serviceName} with ${specialistName || 'specialist'}`;
+    const specialistSummary = `${serviceName} — ${customerName || 'customer'}`;
+    const description = `MiyZapis booking #${booking.id}`;
+
+    const customerEventId = await this.pushAcrossProviders(
+      booking.customerId,
+      { bookingId, summary: customerSummary, description, startISO, endISO,
+        timezone: booking.customer?.timezone ?? 'UTC',
+        existingEventId: booking.calendarEventIdCustomer },
+    );
+    const specialistEventId = await this.pushAcrossProviders(
+      booking.specialistId,
+      { bookingId, summary: specialistSummary, description, startISO, endISO,
+        timezone: booking.specialist?.timezone ?? 'UTC',
+        existingEventId: booking.calendarEventIdSpecialist },
+    );
 
     if (customerEventId !== booking.calendarEventIdCustomer || specialistEventId !== booking.calendarEventIdSpecialist) {
       await prisma.booking.update({
@@ -84,16 +85,39 @@ export class BookingCalendarSync {
     const booking = await this.fetchBooking(bookingId);
     if (!booking) return;
     if (booking.calendarEventIdCustomer) {
-      await GoogleCalendarService.deleteEventForUser(booking.customerId, booking.calendarEventIdCustomer);
+      await this.deleteAcrossProviders(booking.customerId, booking.calendarEventIdCustomer);
     }
     if (booking.calendarEventIdSpecialist) {
-      await GoogleCalendarService.deleteEventForUser(booking.specialistId, booking.calendarEventIdSpecialist);
+      await this.deleteAcrossProviders(booking.specialistId, booking.calendarEventIdSpecialist);
     }
     if (booking.calendarEventIdCustomer || booking.calendarEventIdSpecialist) {
       await prisma.booking.update({
         where: { id: bookingId },
         data: { calendarEventIdCustomer: null, calendarEventIdSpecialist: null },
       }).catch(() => undefined);
+    }
+  }
+
+  /** Try Google first, then Apple — whichever is connected. Either may be no-op. */
+  private static async pushAcrossProviders(
+    userId: string,
+    opts: { bookingId: string; summary: string; description: string; startISO: string; endISO: string; timezone: string; existingEventId: string | null },
+  ): Promise<string | null> {
+    const googleId = await GoogleCalendarService.pushBookingForUser(userId, opts);
+    // For Apple, we treat existingEventId as the iCloud event URL if it starts with https.
+    const appleExisting = opts.existingEventId && opts.existingEventId.startsWith('http') ? opts.existingEventId : null;
+    const appleId = await AppleCalendarService.pushBookingForUser(userId, { ...opts, existingEventUrl: appleExisting });
+    // Prefer Google's ID for storage; fall back to Apple's URL if Google not connected.
+    return googleId ?? appleId ?? opts.existingEventId;
+  }
+
+  /** Delete from whichever providers might have it. URL-shaped IDs go to Apple; others to Google. */
+  private static async deleteAcrossProviders(userId: string, externalId: string): Promise<void> {
+    if (!externalId) return;
+    if (externalId.startsWith('http')) {
+      await AppleCalendarService.deleteEventForUser(userId, externalId);
+    } else {
+      await GoogleCalendarService.deleteEventForUser(userId, externalId);
     }
   }
 
