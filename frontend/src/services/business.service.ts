@@ -1,0 +1,133 @@
+// API client for /api/v1/businesses/* — multi-specialist organisations.
+import { apiClient } from './api';
+
+export type BusinessRole = 'OWNER' | 'MANAGER' | 'SPECIALIST';
+
+export interface BusinessMember {
+  id: string;
+  businessId: string;
+  userId: string;
+  role: BusinessRole;
+  invitedBy?: string | null;
+  invitedAt: string;
+  joinedAt?: string | null;
+  isActive: boolean;
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+    avatar?: string | null;
+  };
+}
+
+export interface Business {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  ownerId: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  websiteUrl?: string | null;
+  logoUrl?: string | null;
+  currency: string;
+  timezone: string;
+  taxId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  members?: BusinessMember[];
+}
+
+export interface CreateBusinessInput {
+  name: string;
+  slug?: string;
+  description?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  websiteUrl?: string;
+  logoUrl?: string;
+  currency?: string;
+  timezone?: string;
+  taxId?: string;
+}
+
+export interface BusinessDashboard {
+  business: Business;
+  members: number;
+  services: number;
+  range: { from: string; to: string };
+  bookings: {
+    total: number;
+    totalRevenue: number;
+    completed: number;
+    completedRevenue: number;
+  };
+  recentBookings: Array<{
+    id: string;
+    status: string;
+    scheduledAt: string;
+    totalAmount: number;
+    customer?: { firstName: string; lastName: string };
+    specialist?: { firstName: string; lastName: string };
+    service?: { name: string };
+  }>;
+}
+
+class BusinessService {
+  async listMine(): Promise<BusinessMember[]> {
+    const res = await apiClient.get<{ memberships: BusinessMember[] }>('/businesses/mine');
+    return res.data!.memberships;
+  }
+
+  async getById(id: string): Promise<Business> {
+    const res = await apiClient.get<{ business: Business }>(`/businesses/${id}`);
+    return res.data!.business;
+  }
+
+  async getBySlug(slug: string): Promise<Business> {
+    const res = await apiClient.get<{ business: Business }>(`/businesses/by-slug/${slug}`);
+    return res.data!.business;
+  }
+
+  async create(input: CreateBusinessInput): Promise<Business> {
+    const res = await apiClient.post<{ business: Business }>('/businesses', input);
+    return res.data!.business;
+  }
+
+  async update(id: string, patch: Partial<CreateBusinessInput>): Promise<Business> {
+    const res = await apiClient.patch<{ business: Business }>(`/businesses/${id}`, patch);
+    return res.data!.business;
+  }
+
+  async deactivate(id: string): Promise<void> {
+    await apiClient.delete(`/businesses/${id}`);
+  }
+
+  async invite(businessId: string, email: string, role: BusinessRole): Promise<BusinessMember> {
+    const res = await apiClient.post<{ member: BusinessMember }>(`/businesses/${businessId}/members`, { email, role });
+    return res.data!.member;
+  }
+
+  async setRole(businessId: string, userId: string, role: BusinessRole): Promise<BusinessMember> {
+    const res = await apiClient.patch<{ member: BusinessMember }>(`/businesses/${businessId}/members/${userId}`, { role });
+    return res.data!.member;
+  }
+
+  async removeMember(businessId: string, userId: string): Promise<void> {
+    await apiClient.delete(`/businesses/${businessId}/members/${userId}`);
+  }
+
+  async dashboard(businessId: string, from?: Date, to?: Date): Promise<BusinessDashboard> {
+    const params: Record<string, string> = {};
+    if (from) params.from = from.toISOString();
+    if (to) params.to = to.toISOString();
+    const res = await apiClient.get<BusinessDashboard>(`/businesses/${businessId}/dashboard`, { params });
+    return res.data!;
+  }
+}
+
+export const businessService = new BusinessService();

@@ -384,8 +384,10 @@ export class BookingService {
         }
 
         const totalAmount = subtotalAfterPoints;
-        const depositAmount = totalAmount * 0.2; // 20% deposit
-        const remainingAmount = totalAmount - depositAmount;
+        // Platform is fully free for now — no deposit required at booking time.
+        // Re-enable by changing depositAmount back to a non-zero fraction of totalAmount.
+        const depositAmount = 0;
+        const remainingAmount = totalAmount;
 
         // Check if customer has enough loyalty points
         if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {

@@ -8,8 +8,6 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
@@ -18,8 +16,8 @@ import { environment } from './config/environment';
 import './styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Initialize Stripe (only if publishable key is provided)
-const stripePromise = environment.STRIPE_PUBLISHABLE_KEY ? loadStripe(environment.STRIPE_PUBLISHABLE_KEY) : null;
+// Platform is currently free — no payments, no Stripe Elements bootstrap.
+// Re-add @stripe/react-stripe-js + Elements wrapper if/when paid features ship.
 
 // Loading component for PersistGate
 const LoadingComponent = () => (
@@ -148,13 +146,7 @@ const initializeApp = () => {
                 v7_relativeSplatPath: true
               }}
             >
-              {stripePromise ? (
-                <Elements stripe={stripePromise}>
-                  <App />
-                </Elements>
-              ) : (
-                <App />
-              )}
+              <App />
               <ToastContainer
                   position="top-right"
                   autoClose={5000}

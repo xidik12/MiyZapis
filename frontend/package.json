@@ -19,8 +19,6 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@heroicons/react": "^2.2.0",
     "@reduxjs/toolkit": "^2.0.1",
-    "@stripe/react-stripe-js": "^2.4.0",
-    "@stripe/stripe-js": "^2.4.0",
     "@types/dompurify": "^3.2.0",
     "@types/google.maps": "^3.55.2",
     "axios": "^1.6.2",

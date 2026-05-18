@@ -121,7 +121,6 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'redux-vendor': ['react-redux', '@reduxjs/toolkit', 'redux-persist'],
-          'stripe': ['@stripe/react-stripe-js', '@stripe/stripe-js'],
         },
         assetFileNames: (assetInfo) => {
           const name = assetInfo.names?.[0] || '';
