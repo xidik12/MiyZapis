@@ -7,7 +7,7 @@ const USER_TYPES = ['CUSTOMER', 'SPECIALIST', 'ADMIN'] as const;
 export const validateRegister = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    // No .normalizeEmail() — see comment below in validateLogin.
     .withMessage('Valid email is required'),
   
   body('password')
@@ -52,7 +52,11 @@ export const validateRegister = [
 export const validateLogin = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    // Intentionally NOT calling .normalizeEmail() — Gmail's normalization
+    // strips +aliases and dots ("xidik12+foo@gmail.com" → "xidik12@gmail.com",
+    // "j.smith@gmail.com" → "jsmith@gmail.com"). The /auth/register handler
+    // stores the email verbatim, so normalizing here makes login lookups miss
+    // their target. Major auth providers (Auth0, Supabase) don't do this.
     .withMessage('Valid email is required'),
   
   body('password')
@@ -122,7 +126,7 @@ export const validateEmailVerification = [
 export const validatePasswordResetRequest = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    // No .normalizeEmail() — see validateLogin.
     .withMessage('Valid email is required'),
 ];
 
