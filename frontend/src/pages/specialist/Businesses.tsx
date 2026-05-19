@@ -1,0 +1,445 @@
+// Businesses index + detail + create. One page that swaps between
+// list / create / detail+manage views to keep routing minimal.
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import {
+  businessService,
+  type Business,
+  type BusinessMember,
+  type BusinessRole,
+  type BusinessDashboard,
+} from '../../services/business.service';
+import { PageLoader } from '@/components/ui';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const Businesses: React.FC = () => {
+  const { businessId } = useParams<{ businessId?: string }>();
+  const navigate = useNavigate();
+  if (businessId === 'new') return <CreateBusiness onCreated={(b) => navigate(`/specialist/businesses/${b.id}`)} />;
+  if (businessId) return <BusinessDetail id={businessId} onBack={() => navigate('/specialist/businesses')} />;
+  return <BusinessList />;
+};
+
+// ────────────────────────────────────────────────────────────────────────
+const BusinessList: React.FC = () => {
+  const { t } = useLanguage();
+  const [memberships, setMemberships] = useState<BusinessMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    businessService.listMine()
+      .then(setMemberships)
+      .catch((err) => toast.error(err?.message || 'Failed to load businesses'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <PageLoader />;
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('businesses.title')}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('businesses.subtitle')}</p>
+          </div>
+          <button onClick={() => navigate('/specialist/businesses/new')} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">{t('businesses.new')}</button>
+        </div>
+
+        {memberships.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('businesses.empty.title')}</h2>
+            <p className="text-sm text-gray-500 mb-4">{t('businesses.empty.body')}</p>
+            <button onClick={() => navigate('/specialist/businesses/new')} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">{t('businesses.empty.cta')}</button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {memberships.map((m: any) => (
+              <button
+                key={m.id}
+                onClick={() => navigate(`/specialist/businesses/${m.business.id}`)}
+                className="text-left bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-500 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{m.business.name}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{m.business.slug}</p>
+                  </div>
+                  <RoleBadge role={m.role} />
+                </div>
+                {m.business.description && <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">{m.business.description}</p>}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────
+const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCreated }) => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    name: '', slug: '', description: '', email: '', phone: '', address: '', websiteUrl: '', currency: 'UAH', timezone: 'UTC',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    setSaving(true);
+    try {
+      const b = await businessService.create({
+        name: form.name,
+        slug: form.slug || undefined,
+        description: form.description || undefined,
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+        address: form.address || undefined,
+        websiteUrl: form.websiteUrl || undefined,
+        currency: form.currency,
+        timezone: form.timezone,
+      });
+      toast.success('Business created');
+      onCreated(b);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to create business');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+      <div className="max-w-2xl mx-auto px-4">
+        <button onClick={() => navigate('/specialist/businesses')} className="text-sm text-gray-500 hover:text-gray-700 mb-3">← Back</button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">New business</h1>
+
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+          <FormField label="Name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+          <FormField label="URL slug (optional, auto-generated)" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} placeholder="my-salon" />
+          <FormField label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
+            <FormField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
+          </div>
+          <FormField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+          <FormField label="Website" value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" placeholder="https://" />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Currency" value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
+            <FormField label="Timezone" value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={() => navigate('/specialist/businesses')} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">Cancel</button>
+            <button type="submit" disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">
+              {saving ? 'Creating…' : 'Create business'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────
+const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBack }) => {
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [dashboard, setDashboard] = useState<BusinessDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'overview' | 'members' | 'settings'>('overview');
+
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const [b, d] = await Promise.all([
+        businessService.getById(id),
+        businessService.dashboard(id).catch(() => null), // dashboard requires OWNER/MANAGER; OK to fail
+      ]);
+      setBusiness(b);
+      setDashboard(d);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to load business');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { reload(); }, [id]);
+
+  if (loading) return <PageLoader />;
+  if (!business) return <p className="p-8 text-gray-500">Business not found.</p>;
+
+  const myMember = (business.members ?? []).find((m: any) => m.user?.id === undefined);
+  const canManage = !!dashboard; // proxy: dashboard requires OWNER/MANAGER
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+      <div className="max-w-5xl mx-auto px-4">
+        <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-700 mb-3">← Back to businesses</button>
+
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{business.name}</h1>
+            <p className="text-sm text-gray-500">/biz/{business.slug}</p>
+          </div>
+        </div>
+
+        <div className="flex gap-1 mb-4 border-b border-gray-200 dark:border-gray-700">
+          {(['overview', 'members', 'settings'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
+                tab === t ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          {tab === 'overview' && <OverviewTab dashboard={dashboard} business={business} />}
+          {tab === 'members' && <MembersTab business={business} canManage={canManage} onReload={reload} />}
+          {tab === 'settings' && <SettingsTab business={business} canManage={canManage} onReload={reload} />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Business }> = ({ dashboard, business }) => {
+  if (!dashboard) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500 text-sm">Only OWNER and MANAGER can see the dashboard.</p>
+      </div>
+    );
+  }
+  const c = business.currency;
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat label="Members" value={String(dashboard.members)} />
+        <Stat label="Active services" value={String(dashboard.services)} />
+        <Stat label="Bookings (30d)" value={String(dashboard.bookings.total)} hint={`${dashboard.bookings.completed} completed`} />
+        <Stat label="Revenue (30d)" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: c }).format(dashboard.bookings.completedRevenue)} />
+      </div>
+
+      <div>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">Recent bookings</h3>
+        {dashboard.recentBookings.length === 0 ? <p className="text-sm text-gray-500">None in this period.</p> : (
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
+              <tr><th className="py-2">When</th><th>Service</th><th>Customer</th><th>Specialist</th><th className="text-right">Amount</th><th>Status</th></tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {dashboard.recentBookings.map((b) => (
+                <tr key={b.id}>
+                  <td className="py-2 text-gray-500">{new Date(b.scheduledAt).toLocaleString()}</td>
+                  <td>{b.service?.name ?? '—'}</td>
+                  <td>{b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : '—'}</td>
+                  <td>{b.specialist ? `${b.specialist.firstName} ${b.specialist.lastName}` : '—'}</td>
+                  <td className="text-right font-mono">{new Intl.NumberFormat(undefined, { style: 'currency', currency: c }).format(b.totalAmount)}</td>
+                  <td className="text-xs">{b.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const members = business.members ?? [];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{members.length} member{members.length === 1 ? '' : 's'}</h2>
+        {canManage && <button onClick={() => setInviteOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">+ Invite member</button>}
+      </div>
+
+      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+        {members.map((m: any) => (
+          <li key={m.id} className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium">
+                {(m.user?.firstName?.[0] ?? '?') + (m.user?.lastName?.[0] ?? '')}
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">{m.user?.firstName} {m.user?.lastName}</div>
+                <div className="text-xs text-gray-500">{m.user?.email}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <RoleBadge role={m.role} />
+              {canManage && (
+                <MemberActions businessId={business.id} member={m} onReload={onReload} />
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {inviteOpen && <InviteModal businessId={business.id} onClose={() => setInviteOpen(false)} onInvited={() => { setInviteOpen(false); onReload(); }} />}
+    </div>
+  );
+};
+
+const MemberActions: React.FC<{ businessId: string; member: any; onReload: () => void }> = ({ businessId, member, onReload }) => {
+  const [open, setOpen] = useState(false);
+  const change = async (role: BusinessRole) => {
+    try { await businessService.setRole(businessId, member.user.id, role); toast.success('Role updated'); onReload(); }
+    catch (err: any) { toast.error(err?.message || 'Failed'); }
+    setOpen(false);
+  };
+  const remove = async () => {
+    if (!confirm(`Remove ${member.user.firstName} from this business?`)) return;
+    try { await businessService.removeMember(businessId, member.user.id); toast.success('Removed'); onReload(); }
+    catch (err: any) { toast.error(err?.message || 'Failed'); }
+    setOpen(false);
+  };
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)} className="text-gray-400 hover:text-gray-700 px-2">⋯</button>
+      {open && (
+        <div className="absolute right-0 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 min-w-[160px]">
+          {(['OWNER', 'MANAGER', 'SPECIALIST'] as BusinessRole[]).map((r) => (
+            <button key={r} onClick={() => change(r)} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+              Make {r.toLowerCase()}
+            </button>
+          ))}
+          <button onClick={remove} className="block w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Remove</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited: () => void }> = ({ businessId, onClose, onInvited }) => {
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<BusinessRole>('SPECIALIST');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!email) return;
+    setSaving(true);
+    try {
+      await businessService.invite(businessId, email, role);
+      toast.success('Member invited');
+      onInvited();
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('USER_NOT_FOUND')) toast.error('No user with that email — they need an account first');
+      else if (msg.includes('ALREADY_MEMBER')) toast.error('Already a member');
+      else toast.error(msg || 'Failed to invite');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Invite member</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">User must already have a MiyZapis account.</p>
+        <FormField label="Email *" value={email} onChange={setEmail} type="email" />
+        <label className="block mt-3">
+          <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Role</span>
+          <select value={role} onChange={(e) => setRole(e.target.value as BusinessRole)} className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm">
+            <option value="SPECIALIST">Specialist</option>
+            <option value="MANAGER">Manager</option>
+          </select>
+        </label>
+        <div className="flex justify-end gap-2 mt-4">
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">Cancel</button>
+          <button onClick={submit} disabled={saving || !email} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? 'Inviting…' : 'Invite'}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
+  const [form, setForm] = useState({
+    name: business.name,
+    description: business.description ?? '',
+    email: business.email ?? '',
+    phone: business.phone ?? '',
+    address: business.address ?? '',
+    websiteUrl: business.websiteUrl ?? '',
+    currency: business.currency,
+    timezone: business.timezone,
+  });
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    setSaving(true);
+    try { await businessService.update(business.id, form); toast.success('Saved'); onReload(); }
+    catch (err: any) { toast.error(err?.message || 'Save failed'); }
+    finally { setSaving(false); }
+  };
+  const deactivate = async () => {
+    if (!confirm(`Deactivate "${business.name}"? This hides it from the directory; data is preserved.`)) return;
+    try { await businessService.deactivate(business.id); toast.success('Deactivated'); onReload(); }
+    catch (err: any) { toast.error(err?.message || 'Failed'); }
+  };
+
+  if (!canManage) return <p className="text-sm text-gray-500">Only OWNER or MANAGER can edit settings.</p>;
+  return (
+    <div className="space-y-4">
+      <FormField label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+      <FormField label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
+        <FormField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
+      </div>
+      <FormField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+      <FormField label="Website" value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" />
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Currency" value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
+        <FormField label="Timezone" value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
+      </div>
+
+      <div className="flex justify-between pt-3">
+        <button onClick={deactivate} className="text-sm text-red-600 hover:text-red-800">Deactivate business</button>
+        <button onClick={save} disabled={saving} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
+      </div>
+    </div>
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────
+const Stat: React.FC<{ label: string; value: string; hint?: string }> = ({ label, value, hint }) => (
+  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+    <div className="text-xs uppercase text-gray-500 tracking-wider">{label}</div>
+    <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
+    {hint && <div className="text-xs text-gray-500">{hint}</div>}
+  </div>
+);
+
+const RoleBadge: React.FC<{ role: BusinessRole }> = ({ role }) => {
+  const color = role === 'OWNER' ? 'bg-purple-100 text-purple-700' : role === 'MANAGER' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700';
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>{role}</span>;
+};
+
+const FormField: React.FC<{ label: string; value: string; onChange: (v: string) => void; type?: string; multiline?: boolean; placeholder?: string }> = ({ label, value, onChange, type = 'text', multiline, placeholder }) => (
+  <label className="block">
+    <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{label}</span>
+    {multiline
+      ? <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={3} className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm" />
+      : <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm" />
+    }
+  </label>
+);
+
+export default Businesses;

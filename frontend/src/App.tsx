@@ -55,6 +55,10 @@ const SpecialistAnalytics = React.lazy(() => import('./pages/specialist/Analytic
 const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'));
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
 const SpecialistFinances = React.lazy(() => import('./pages/specialist/Finances'));
+const SpecialistAccounting = React.lazy(() => import('./pages/specialist/Accounting'));
+const SpecialistCalendarSettings = React.lazy(() => import('./pages/specialist/CalendarSettings'));
+const SpecialistBusinesses = React.lazy(() => import('./pages/specialist/Businesses'));
+const BusinessPublicPage = React.lazy(() => import('./pages/BusinessPublicPage'));
 const SpecialistReviews = React.lazy(() => import('./pages/specialist/Reviews'));
 const SpecialistLoyalty = React.lazy(() => import('./pages/specialist/Loyalty'));
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
@@ -296,6 +300,50 @@ function App() {
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/accounting"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistAccounting />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/calendar-settings"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistCalendarSettings />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/businesses/:businessId?"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistBusinesses />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/biz/:slug"
+            element={
+              <Suspense fallback={<SuspenseLoader />}>
+                <BusinessPublicPage />
+              </Suspense>
             }
           />
           <Route

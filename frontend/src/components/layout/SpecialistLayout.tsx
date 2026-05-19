@@ -10,7 +10,7 @@ import { Logo } from '@/components/ui/Logo';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -408,43 +408,105 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 };
 
 // Specialist-specific mobile bottom navigation
+// Bottom nav has 5 slots: 4 primary destinations + a "More" button that
+// opens a sheet listing every secondary destination (including the new
+// Accounting / Calendar sync / Businesses pages).
 const specialistBottomNavItems = [
   { nameKey: 'dashboard.nav.dashboard', fallback: 'Dashboard', href: '/specialist/dashboard', icon: HomeIcon },
   { nameKey: 'dashboard.nav.bookings', fallback: 'Bookings', href: '/specialist/bookings', icon: CalendarIcon },
-  { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
+  { nameKey: 'dashboard.nav.accounting', fallback: 'Accounting', href: '/specialist/accounting', icon: ClipboardDocumentListIcon },
   { nameKey: 'dashboard.nav.messages', fallback: 'Messages', href: '/specialist/messages', icon: ChatBubbleLeftRightIcon },
+];
+
+// Items revealed by tapping "More".
+const specialistMoreNavItems = [
+  { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
+  { nameKey: 'dashboard.nav.clients', fallback: 'Clients', href: '/specialist/clients', icon: UsersIcon },
+  { nameKey: 'dashboard.nav.schedule', fallback: 'Schedule', href: '/specialist/schedule', icon: CalendarIcon },
+  { nameKey: 'dashboard.nav.analytics', fallback: 'Analytics', href: '/specialist/analytics', icon: PresentationChartLineIcon },
+  { nameKey: 'dashboard.nav.earnings', fallback: 'Earnings', href: '/specialist/earnings', icon: CurrencyDollarIcon },
+  { nameKey: 'dashboard.nav.finances', fallback: 'Finances', href: '/specialist/finances', icon: ChartBarIcon },
+  { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: CalendarIcon },
+  { nameKey: 'dashboard.nav.businesses', fallback: 'Businesses', href: '/specialist/businesses', icon: BuildingOfficeIcon },
+  { nameKey: 'dashboard.nav.reviews', fallback: 'Reviews', href: '/specialist/reviews', icon: StarIcon },
+  { nameKey: 'dashboard.nav.notifications', fallback: 'Notifications', href: '/specialist/notifications', icon: BellIcon },
+  { nameKey: 'dashboard.nav.profile', fallback: 'Profile', href: '/specialist/profile', icon: UserIcon },
   { nameKey: 'dashboard.nav.settings', fallback: 'Settings', href: '/specialist/settings', icon: Cog6ToothIcon },
 ];
 
 const SpecialistMobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { t } = useLanguage();
+  const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 lg:hidden safe-area-bottom">
-      <div className="flex items-center justify-around h-14">
-        {specialistBottomNavItems.map((item) => {
-          const isActive = location.pathname === item.href;
-          const Icon = item.icon;
-          const label = t(item.nameKey) || item.fallback;
+    <>
+      <nav className="fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 lg:hidden safe-area-bottom">
+        <div className="flex items-center justify-around h-14">
+          {specialistBottomNavItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            const Icon = item.icon;
+            const label = t(item.nameKey) || item.fallback;
 
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] mt-0.5 font-medium leading-tight">{label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] mt-0.5 font-medium leading-tight">{label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className="flex flex-col items-center justify-center flex-1 h-full text-gray-500 dark:text-gray-400 transition-colors"
+          >
+            <Bars3Icon className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium leading-tight">More</span>
+          </button>
+        </div>
+      </nav>
+
+      {moreOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setMoreOpen(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-0 inset-x-0 bg-white dark:bg-gray-800 rounded-t-2xl pt-3 pb-6 max-h-[80vh] overflow-y-auto"
+          >
+            <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-2" />
+            <div className="grid grid-cols-3 gap-2 px-4">
+              {specialistMoreNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
+                const label = t(item.nameKey) || item.fallback;
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => setMoreOpen(false)}
+                    className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="text-xs font-medium text-center leading-tight">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

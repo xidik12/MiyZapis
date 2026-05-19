@@ -14,6 +14,9 @@ export interface UpdateProfileRequest {
     region: string;
     country: string;
   };
+  // Accounting / bookkeeping preferences
+  taxRegime?: string | null;
+  taxId?: string | null;
 }
 
 export interface UserPreferences {

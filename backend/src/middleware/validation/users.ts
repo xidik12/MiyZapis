@@ -2,6 +2,18 @@ import { body, param, query } from 'express-validator';
 
 // Update user profile validation
 export const validateUpdateProfile = [
+  body('taxRegime')
+    .optional({ nullable: true })
+    .isString()
+    .isLength({ max: 40 })
+    .withMessage('Invalid tax regime'),
+
+  body('taxId')
+    .optional({ nullable: true })
+    .isString()
+    .isLength({ max: 40 })
+    .withMessage('Tax ID must be 40 characters or fewer'),
+
   body('firstName')
     .optional()
     .trim()

@@ -76,6 +76,8 @@ export class UserService {
           emailNotifications: true,
           pushNotifications: true,
           telegramNotifications: true,
+          taxRegime: true,
+          taxId: true,
           createdAt: true,
           updatedAt: true,
         },

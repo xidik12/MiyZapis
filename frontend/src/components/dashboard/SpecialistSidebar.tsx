@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { messagesService } from '@/services/messages.service';
-import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon, ClipboardDocumentListIcon, BuildingOfficeIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -110,6 +110,24 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.finances',
       href: '/specialist/finances',
       icon: ChartBarIcon,
+    },
+    {
+      name: 'Accounting',
+      translationKey: 'dashboard.nav.accounting',
+      href: '/specialist/accounting',
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: 'Calendar sync',
+      translationKey: 'dashboard.nav.calendarSync',
+      href: '/specialist/calendar-settings',
+      icon: CalendarIcon,
+    },
+    {
+      name: 'Businesses',
+      translationKey: 'dashboard.nav.businesses',
+      href: '/specialist/businesses',
+      icon: BuildingOfficeIcon,
     },
     {
       name: 'Reviews',
