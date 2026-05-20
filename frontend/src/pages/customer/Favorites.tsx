@@ -280,9 +280,9 @@ const CustomerFavorites: React.FC = () => {
                 >
                   {tab.label}
                   <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2.5 rounded-full text-xs">
-                    {tab.key === 'specialists' ? 
-                      (favoritesState.specialistsPagination?.total || 0) : 
-                      (favoritesState.servicesPagination?.total || 0)
+                    {tab.key === 'specialists' ?
+                      (favoritesState.specialistsPagination?.totalItems || 0) :
+                      (favoritesState.servicesPagination?.totalItems || 0)
                     }
                   </span>
                 </button>
@@ -405,7 +405,7 @@ const CustomerFavorites: React.FC = () => {
                           {specialist.location && (
                             <div className="flex items-center text-sm text-gray-600 mb-2">
                               <MapPinIcon className="h-4 w-4 mr-1" />
-                              <span>{typeof specialist.location === 'string' ? specialist.location : specialist.location.city}</span>
+                              <span>{typeof specialist.location === 'string' ? specialist.location : (specialist.location as any).city}</span>
                             </div>
                           )}
 
@@ -552,7 +552,7 @@ const CustomerFavorites: React.FC = () => {
                               <span>{service.duration} min</span>
                             </div>
                             <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                              {formatPrice(service.price, ((service as any).currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
                             </div>
                           </div>
 

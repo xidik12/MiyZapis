@@ -5,8 +5,8 @@ import { format, parseISO } from 'date-fns';
  * Generate iCal format (.ics file) for a booking
  */
 export const generateICalEvent = (booking: Booking): string => {
-  const start = parseISO(booking.scheduledAt);
-  const end = new Date(start.getTime() + booking.duration * 60000);
+  const start = parseISO(booking.scheduledAt || '');
+  const end = new Date(start.getTime() + (booking.duration ?? 0) * 60000);
 
   // Format dates for iCal (YYYYMMDDTHHmmssZ)
   const formatICalDate = (date: Date): string => {
@@ -63,8 +63,8 @@ export const downloadICalFile = (booking: Booking): void => {
  * Generate Google Calendar URL
  */
 export const generateGoogleCalendarUrl = (booking: Booking): string => {
-  const start = parseISO(booking.scheduledAt);
-  const end = new Date(start.getTime() + booking.duration * 60000);
+  const start = parseISO(booking.scheduledAt || '');
+  const end = new Date(start.getTime() + (booking.duration ?? 0) * 60000);
 
   // Format dates for Google Calendar (YYYYMMDDTHHmmssZ)
   const formatGoogleDate = (date: Date): string => {
@@ -100,8 +100,8 @@ export const openInGoogleCalendar = (booking: Booking): void => {
  * Generate Outlook Calendar URL
  */
 export const generateOutlookCalendarUrl = (booking: Booking): string => {
-  const start = parseISO(booking.scheduledAt);
-  const end = new Date(start.getTime() + booking.duration * 60000);
+  const start = parseISO(booking.scheduledAt || '');
+  const end = new Date(start.getTime() + (booking.duration ?? 0) * 60000);
 
   const params = new URLSearchParams({
     path: '/calendar/action/compose',
@@ -126,8 +126,8 @@ export const generateOutlookCalendarUrl = (booking: Booking): string => {
  */
 export const exportMultipleBookings = (bookings: Booking[]): void => {
   const icalEvents = bookings.map(booking => {
-    const start = parseISO(booking.scheduledAt);
-    const end = new Date(start.getTime() + booking.duration * 60000);
+    const start = parseISO(booking.scheduledAt || '');
+    const end = new Date(start.getTime() + (booking.duration ?? 0) * 60000);
 
     const formatICalDate = (date: Date): string => {
       return format(date, "yyyyMMdd'T'HHmmss'Z'");

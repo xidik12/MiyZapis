@@ -20,7 +20,7 @@ class SocketService {
   private eventHandlers = new Map<string, Set<SocketEventHandler>>();
 
   // Initialize socket connection
-  connect(user?: User): void {
+  connect(_user?: User): void {
     if (this.socket?.connected) {
       return;
     }
@@ -105,11 +105,13 @@ class SocketService {
       this.reconnectAttempts++;
 
       logger.error('[Socket] Connection error:', error);
+      // socket.io errors carry extra fields not on the base Error type
+      const sockErr = error as Error & { description?: unknown; context?: unknown; type?: unknown };
       logger.error('[Socket] Error details:', {
-        message: error.message,
-        description: error.description,
-        context: error.context,
-        type: error.type
+        message: sockErr.message,
+        description: sockErr.description,
+        context: sockErr.context,
+        type: sockErr.type
       });
       logger.error('[Socket] WS_URL:', environment.WS_URL);
       logger.error('[Socket] Attempt #:', this.reconnectAttempts);
@@ -171,13 +173,14 @@ class SocketService {
 
     // Notification events
     // Backend may emit a generic 'notification' event
-    this.socket.on('notification', (data: unknown) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.socket.on('notification', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         logger.debug('[Socket] Notification:', data);
       }
 
       // Check if this is a payment completion notification
-      if (data.type === 'PAYMENT_COMPLETED') {
+      if (data?.type === 'PAYMENT_COMPLETED') {
         if (import.meta.env.VITE_DEBUG === 'true') {
           logger.debug('[Socket] Payment completion notification:', data);
         }
@@ -293,8 +296,9 @@ class SocketService {
 
     // Subscribe to both specific and general payment events
     this.on('payment:completed', handler);
-    this.on('notification', (data: unknown) => {
-      if (data.type === 'PAYMENT_COMPLETED' && data.data?.paymentId === paymentId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.on('notification', (data: any) => {
+      if (data?.type === 'PAYMENT_COMPLETED' && data.data?.paymentId === paymentId) {
         handler(data.data);
       }
     });

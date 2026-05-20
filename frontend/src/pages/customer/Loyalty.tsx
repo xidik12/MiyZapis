@@ -14,9 +14,9 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 ;
 
 const CustomerLoyalty: React.FC = () => {
-  const { theme } = useTheme();
+  useTheme();
   const { t, language } = useLanguage();
-  const { currency } = useCurrency();
+  useCurrency();
 
   const [loading, setLoading] = useState(true);
   const [loyaltyProfile, setLoyaltyProfile] = useState<UserLoyalty | null>(null);
@@ -542,7 +542,7 @@ const CustomerLoyalty: React.FC = () => {
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
                           <p className={`font-semibold text-sm sm:text-base ${
-                            transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || transaction.type === 'SERVICE' || transaction.type === 'BOOKING_COMPLETION' || transaction.type === 'PROFILE_VIEW'
+                            (['EARNED','BONUS','REFERRAL','CAMPAIGN','SERVICE','BOOKING_COMPLETION','PROFILE_VIEW'] as string[]).includes(transaction.type as string)
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
                           }`}>
@@ -574,9 +574,9 @@ const CustomerLoyalty: React.FC = () => {
                               transaction.type === 'REDEEMED' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
                               transaction.type === 'BONUS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' :
                               transaction.type === 'REFERRAL' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
-                              transaction.type === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
-                              transaction.type === 'BOOKING_COMPLETION' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                              transaction.type === 'PROFILE_VIEW' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400' :
+                              (transaction.type as string) === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
+                              (transaction.type as string) === 'BOOKING_COMPLETION' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                              (transaction.type as string) === 'PROFILE_VIEW' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                             }`}>
                               {getTransactionTypeLabel(transaction.type)}
@@ -586,7 +586,7 @@ const CustomerLoyalty: React.FC = () => {
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
                         <p className={`font-bold text-base sm:text-lg ${
-                          transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || transaction.type === 'SERVICE' || transaction.type === 'BOOKING_COMPLETION' || transaction.type === 'PROFILE_VIEW'
+                          transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                             ? 'text-green-600 dark:text-green-400'
                             : 'text-red-600 dark:text-red-400'
                         }`}>
@@ -682,9 +682,8 @@ const CustomerLoyalty: React.FC = () => {
                     <div className="relative overflow-hidden">
                       <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full" />
                       <div className="absolute inset-0 flex justify-between">
-                        {tiers.map((tier, idx) => {
+                        {tiers.map((tier) => {
                           const min = tier.minPoints;
-                          const max = tier.maxPoints ?? Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
                           const totalSpan = Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
                           const leftPct = Math.min(100, Math.max(0, (min / totalSpan) * 100));
                           const isCurrent = loyaltyStats?.currentTier?.id === tier.id;
