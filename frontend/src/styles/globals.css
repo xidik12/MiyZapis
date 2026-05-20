@@ -9,6 +9,9 @@
  * pop/shake/heartbeat utility classes, [data-tilt] cursor parallax.
  * Layered on top of 3d.css. Opt out with .no-cute. */
 @import './3d-cute.css';
+/* Mobile fixes — must load AFTER 3d-cute.css so it can override touch
+ * behaviour. Force 16px inputs, 44px tap targets, disable hover-stickiness. */
+@import './mobile-fixes.css';
 
 @tailwind base;
 @tailwind components;

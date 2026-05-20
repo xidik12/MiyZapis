@@ -73,6 +73,9 @@ function onMouseLeave() {
 export function initCuteTilt(): void {
   if (initialised || typeof window === 'undefined' || typeof document === 'undefined') return;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  // Touch devices: mousemove never fires meaningfully and the MutationObserver
+  // would just burn cycles tracking phantom elements. Bail out.
+  if (window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return;
 
   refreshActiveElements();
   document.addEventListener('mousemove', onMouseMove, { passive: true });

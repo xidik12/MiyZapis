@@ -1,0 +1,95 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * Mobile fixes
+ * ──────────────────────────────────────────────────────────────────────
+ * Cross-cutting fixes for small-screen usability. Loaded after 3d.css
+ * and 3d-cute.css so it can override their behaviour where needed.
+ *
+ *   • Inputs ≥ 16px font-size on small screens (prevents iOS focus zoom)
+ *   • Tap targets ≥ 44×44 for buttons + nav items on touch devices
+ *   • Disable hover-lift transforms on touch
+ *   • Smoother overscroll
+ *   • Tap highlight tint matches the brand
+ *   • Hide cute-tilt entirely on coarse pointer devices (belt + braces)
+ * ──────────────────────────────────────────────────────────────────────*/
+
+/* iOS auto-zooms when focusing an <input> whose font-size is < 16px.
+   Force the minimum at mobile breakpoints; desktop is unaffected. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Apple HIG: minimum 44×44 touch target. Material: 48×48.
+   We target buttons and links-as-buttons that currently have small padding.
+   Excludes inline-text utility buttons (text-only icons) so we don't bloat
+   chat bubble emoji etc. */
+@media (hover: none), (pointer: coarse) {
+  button:not(.no-mobile):not([class*="text-xs"]),
+  [role="button"]:not(.no-mobile),
+  a[class*="bg-primary-"]:not(.no-mobile),
+  a[class*="rounded-"][class*="px-"]:not(.no-mobile) {
+    min-height: 44px;
+  }
+
+  /* Tabs: bump small text-sm tab buttons to 44px so they're tappable. */
+  button[class*="border-b-2"][class*="text-sm"] {
+    min-height: 44px;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  /* Pills / chips in action rows */
+  button[class*="px-2"][class*="py-0.5"],
+  button[class*="px-2"][class*="py-1"] {
+    min-height: 32px;
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  /* Mobile bottom nav already sized at 56px combined — leave it alone */
+  nav[class*="bottom-0"][class*="lg:hidden"] button,
+  nav[class*="bottom-0"][class*="lg:hidden"] a {
+    min-height: 0;
+  }
+
+  /* Belt + braces: explicitly disable 3D hover transforms on touch */
+  button:not(.no-3d):not(:disabled):hover,
+  [role="button"]:not(.no-3d):not(:disabled):hover,
+  a[class*="bg-primary-6"]:not(.no-3d):hover,
+  [class*="hover:shadow-"][class*="rounded-"]:hover {
+    transform: none !important;
+  }
+
+  /* Tilt off on coarse pointers */
+  [data-tilt] {
+    transform: none !important;
+  }
+}
+
+/* Smooth iOS-style overscroll on the main scrollable surfaces.
+   Apply to body and any top-level <main> with overflow-y. */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Branded tap-highlight on touch — default grey rectangle is ugly */
+* {
+  -webkit-tap-highlight-color: rgba(59, 151, 242, 0.18);
+}
+
+/* Modals: full-width on small screens minus a comfortable margin */
+@media (max-width: 480px) {
+  [class*="fixed inset-0"] > [class*="rounded-xl"][class*="max-w-"] {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+  }
+}
+
+/* Long unbreakable strings (URLs, emails) shouldn't blow out card width */
+[class*="rounded-"][class*="border"] {
+  overflow-wrap: anywhere;
+}

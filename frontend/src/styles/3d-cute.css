@@ -99,17 +99,18 @@ a[class*="bg-primary-6"]:not(.no-cute):not(.no-3d):active {
   transition-duration: 0.06s, 0.06s, 0.06s;
 }
 
-/* Icons inside buttons wobble on hover. Targets SVGs and span-wrapped icons. */
-button:not(.no-cute):not(:disabled):hover > svg,
-button:not(.no-cute):not(:disabled):hover > span > svg,
-[role="button"]:not(.no-cute):not(:disabled):hover > svg {
-  animation: cute-wobble 0.45s ease-in-out;
-  transform-origin: center;
-}
-
-/* Anchor-as-button icons too */
-a[class*="bg-primary-"]:not(.no-cute):hover > svg {
-  animation: cute-wobble 0.45s ease-in-out;
+/* Icons inside buttons wobble on hover. Targets SVGs and span-wrapped icons.
+   Hover-only — on touch devices :hover sticks after tap and would loop. */
+@media (hover: hover) {
+  button:not(.no-cute):not(:disabled):hover > svg,
+  button:not(.no-cute):not(:disabled):hover > span > svg,
+  [role="button"]:not(.no-cute):not(:disabled):hover > svg {
+    animation: cute-wobble 0.45s ease-in-out;
+    transform-origin: center;
+  }
+  a[class*="bg-primary-"]:not(.no-cute):hover > svg {
+    animation: cute-wobble 0.45s ease-in-out;
+  }
 }
 
 /* ── Card entrance animation for items added to the DOM ─────────────── */
@@ -147,21 +148,22 @@ a[class*="bg-primary-"]:not(.no-cute):hover > svg {
 }
 
 /* ── Cursor-tracking 3D tilt — driven by utils/cuteTilt.ts ──────────── */
-/* Marks an element as a candidate for parallax tilt. The JS runtime
-   updates --tilt-x / --tilt-y CSS variables on mousemove; we apply the
-   transform here so timing + perspective stay in one place. */
-[data-tilt] {
-  transform: perspective(900px)
-             rotateX(var(--tilt-x, 0deg))
-             rotateY(var(--tilt-y, 0deg))
-             scale(var(--tilt-scale, 1));
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-[data-tilt]:hover {
-  transition-duration: 0.12s;
+/* Only enabled on hover-capable devices. Touch devices skip the JS
+   listener entirely (see utils/cuteTilt.ts) and the transform is held
+   at identity so the card sits flat. */
+@media (hover: hover) {
+  [data-tilt] {
+    transform: perspective(900px)
+               rotateX(var(--tilt-x, 0deg))
+               rotateY(var(--tilt-y, 0deg))
+               scale(var(--tilt-scale, 1));
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  [data-tilt]:hover {
+    transition-duration: 0.12s;
+  }
 }
 
 /* When the tilt JS hasn't loaded yet, [data-tilt] still gets a nice
