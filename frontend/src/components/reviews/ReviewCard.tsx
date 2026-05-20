@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import {
   StarIcon,
-  HeartIcon,
   ChatCircleIcon as ChatBubbleLeftIcon,
   ShareIcon,
   CheckCircleIcon as CheckBadgeIcon,

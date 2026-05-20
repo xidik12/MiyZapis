@@ -7,7 +7,7 @@ import { RewardsService, LoyaltyReward, RewardRedemption } from '@/services/rewa
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { formatDate as sharedFormatDate } from '@/utils/dateUtils';
 import { toast } from 'react-toastify';
-import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
+import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />

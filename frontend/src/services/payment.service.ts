@@ -5,9 +5,7 @@ import {
   ProcessPaymentRequest,
   PaymentType,
   PaymentStatus,
-  Pagination,
-  ApiResponse
-} from '@/types';
+  Pagination} from '@/types';
 
 export class PaymentService {
   // Create booking deposit using Coinbase Commerce

@@ -5,7 +5,6 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { Logo } from '@/components/ui/Logo';

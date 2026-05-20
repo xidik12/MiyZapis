@@ -3,7 +3,6 @@ import {
   checkPasswordRequirements,
   getPasswordStrengthColor,
   getPasswordStrengthProgress,
-  type PasswordRequirements,
   type PasswordValidationResult
 } from '@/utils/passwordValidation';
 import { CheckIcon, XIcon as XMarkIcon } from '@/components/icons';

@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
 import { MagnifyingGlassIcon, InboxIcon } from '@/components/icons';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { useLanguage } from '@/contexts/LanguageContext';

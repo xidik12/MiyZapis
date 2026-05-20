@@ -1,6 +1,6 @@
 import { apiClient } from './api';
 import { API_ENDPOINTS } from '../config/environment';
-import { User, ApiResponse } from '../types';
+import { User} from '../types';
 
 export interface UpdateProfileRequest {
   firstName?: string;

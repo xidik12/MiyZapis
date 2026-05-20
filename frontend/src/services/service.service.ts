@@ -4,10 +4,7 @@ import {
   ServiceCategory,
   SearchFilters,
   SearchResult,
-  Specialist,
-  Pagination,
-  ApiResponse
-} from '@/types';
+  Pagination} from '@/types';
 
 export class ServiceService {
   // Search for services and specialists

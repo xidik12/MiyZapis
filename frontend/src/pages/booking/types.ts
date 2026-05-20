@@ -23,8 +23,8 @@ export interface ConflictHint {
 
 export interface BookingState {
   // Core
-  specialist: Record<string, unknown>;
-  service: Record<string, unknown>;
+  specialist: any;
+  service: any;
   loading: boolean;
   currentStep: number;
 
@@ -40,7 +40,7 @@ export interface BookingState {
   // Details
   bookingNotes: string;
   participantCount: number;
-  bookingResult: Record<string, unknown>;
+  bookingResult: any;
 
   // Recurring
   isRecurring: boolean;
@@ -51,9 +51,9 @@ export interface BookingState {
   useWalletFirst: boolean;
   paymentMethod: 'crypto' | 'paypal' | 'pay_at_venue';
   paymentLoading: boolean;
-  paymentResult: Record<string, unknown>;
+  paymentResult: any;
   showQRCode: boolean;
-  paymentOptions: Record<string, unknown>;
+  paymentOptions: any;
   paymentTimeoutId: NodeJS.Timeout | null;
   paymentTimeRemaining: number;
   pollingIntervalId: NodeJS.Timeout | null;

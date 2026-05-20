@@ -5,7 +5,6 @@ import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import { bookingService } from '@/services/booking.service';
 import { favoritesService } from '@/services/favorites.service';
 import { reviewsService } from '@/services/reviews.service';
@@ -24,7 +23,7 @@ const statusColors = {
   inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
-import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, ChartBarIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
+import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -90,9 +89,8 @@ interface SpecialOffer {
 
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice, normalizeMixedCurrencyAmount, currency, getCurrencySymbol } = useCurrency();
+  const { formatPrice, getCurrencySymbol } = useCurrency();
   const { t, language } = useLanguage();
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   
@@ -146,8 +144,8 @@ const CustomerDashboard: React.FC = () => {
         // Wait for essential data with timeout
         const essentialResults = await Promise.race([
           essentialPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Essential data timeout')), 10000))
-        ]);
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Essential data timeout')), 10000))
+        ]) as PromiseSettledResult<any>[];
 
         const [upcomingResult, completedResult, allResult] = essentialResults;
         const upcomingRes = upcomingResult.status === 'fulfilled' ? upcomingResult.value : { bookings: [] };
@@ -195,8 +193,9 @@ const CustomerDashboard: React.FC = () => {
         } : null);
 
         // Recent completed bookings
-        const completedBookings = Array.isArray(completedRes.bookings) ? completedRes.bookings : [];
-        const recent = completedBookings.map((b) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const completedBookings: any[] = Array.isArray(completedRes.bookings) ? completedRes.bookings : [];
+        const recent = completedBookings.map((b: any) => ({
           id: b.id,
           specialistName: b.specialist ? `${b.specialist.firstName || ''} ${b.specialist.lastName || ''}`.trim() : b.specialistName || 'Specialist',
           serviceName: b.service?.name || b.serviceName || 'Service',
@@ -213,7 +212,7 @@ const CustomerDashboard: React.FC = () => {
         // Stats (basic derived). totalAmount is a Prisma Decimal which JSON-
         // serialises as a string — coerce with Number() before summing, otherwise
         // the reduce concatenates strings ("0" + "100" + "200" → "0100200").
-        const totalSpent = completedBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+        const totalSpent = completedBookings.reduce((sum: number, b: any) => sum + Number(b.totalAmount || 0), 0);
 
         // Real month-over-month spend growth (replaces the hard-coded "+15%"
         // that used to ship next to Total Spent).
@@ -222,11 +221,11 @@ const CustomerDashboard: React.FC = () => {
         const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const sumInRange = (from: Date, to: Date) =>
           completedBookings
-            .filter((b) => {
+            .filter((b: any) => {
               const d = new Date(b.scheduledAt || b.createdAt || 0);
               return d >= from && d < to;
             })
-            .reduce((s, b) => s + Number(b.totalAmount || 0), 0);
+            .reduce((s: number, b: any) => s + Number(b.totalAmount || 0), 0);
         const thisMonthSpent = sumInRange(monthStart, new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1));
         const lastMonthSpent = sumInRange(prevMonthStart, monthStart);
         const monthlySpendGrowth =
@@ -236,11 +235,11 @@ const CustomerDashboard: React.FC = () => {
             ? 100
             : 0;
 
-        const servicesUsed = new Set(completedBookings.map((b) => b.service?.id || b.serviceId)).size;
+        const servicesUsed = new Set(completedBookings.map((b: any) => b.service?.id || b.serviceId)).size;
         // Reviews written and average rating from my reviews endpoint
         const myReviewsList = (myReviews as any)?.reviews || [];
         const reviewsWritten = myReviewsList.length;
-        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: Record<string, unknown>) => s + (Number(r.rating) || 0), 0) / reviewsWritten) : 0;
+        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: any) => s + (Number(r.rating) || 0), 0) / reviewsWritten) : 0;
         setStats({
           totalSpent,
           monthlySpendGrowth,
@@ -260,7 +259,8 @@ const CustomerDashboard: React.FC = () => {
 
         // Map first page of favorite specialists
         const favPage = favSpecs as any;
-        const favSimple = (favPage.specialists || []).map((fs: Record<string, unknown>) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const favSimple = (favPage.specialists || []).map((fs: any) => {
           const s = fs.specialist;
           const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
           return {
@@ -293,7 +293,8 @@ const CustomerDashboard: React.FC = () => {
     try {
       setFavoritesLoading(true);
       const res = await favoritesService.getFavoriteSpecialists(page, 6);
-      const favSimple = res.specialists.map((fs: Record<string, unknown>) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const favSimple = res.specialists.map((fs: any) => {
         const s = fs.specialist;
         const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
         return {
@@ -839,7 +840,7 @@ const CustomerDashboard: React.FC = () => {
                         -{offer.discount}%
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {language === 'uk' ? 'до' : language === 'ru' ? 'до' : 'until'} {offer.validUntil}
+                        {language === 'uk' ? 'до' : language === 'ru' ? 'до' : 'until'} {offer.expiryDate}
                       </span>
                     </div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{offer.title}</h4>

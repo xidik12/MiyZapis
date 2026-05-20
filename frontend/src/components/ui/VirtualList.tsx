@@ -1,4 +1,4 @@
-import React, { forwardRef, CSSProperties } from 'react';
+import React, { CSSProperties } from 'react';
 import { FixedSizeList, VariableSizeList, ListChildComponentProps } from 'react-window';
 
 /**

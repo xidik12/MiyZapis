@@ -7,7 +7,6 @@ import {
   CalendarIcon,
   CreditCardIcon,
   StarIcon,
-  UserIcon,
   WarningIcon as ExclamationTriangleIcon,
   TrashIcon,
   EyeIcon

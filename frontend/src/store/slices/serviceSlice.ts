@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { serviceService } from '@/services/service.service';
-import { Service, ServiceCategory, SearchFilters, SearchResult, Pagination } from '@/types';
+import { Service, ServiceCategory, SearchFilters, SearchResult} from '@/types';
 
 interface ServiceState {
   services: Service[];

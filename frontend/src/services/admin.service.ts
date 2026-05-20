@@ -1,5 +1,4 @@
 import { apiClient } from './api';
-import { API_ENDPOINTS } from '../config/environment';
 
 export interface AdminStats {
   totalUsers: number;

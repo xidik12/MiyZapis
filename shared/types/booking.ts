@@ -88,6 +88,7 @@ export interface Booking extends BaseEntity {
   customerEmail?: string;
   customerPhone?: string;
   serviceName?: string;
+  specialistName?: string;
   date?: string;
   time?: string;
   amount?: number;

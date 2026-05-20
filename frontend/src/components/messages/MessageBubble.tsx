@@ -1,8 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
-import { CheckIcon } from '@/components/icons';
-import { Check, CheckCheck } from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 
 interface MessageBubbleProps {
   message: {

@@ -4,9 +4,7 @@ import {
   Notification,
   NotificationType,
   NotificationPreferences,
-  Pagination,
-  ApiResponse
-} from '@/types';
+  Pagination} from '@/types';
 
 export class NotificationService {
   private useLocalFallback = false;

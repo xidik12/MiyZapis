@@ -16,7 +16,7 @@ import {
   optimisticRemoveSpecialist
 } from '../store/slices/favoritesSlice';
 import { selectUser } from '../store/slices/authSlice';
-import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon, InformationCircleIcon } from '@/components/icons';
+import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, HeartIcon, InformationCircleIcon } from '@/components/icons';
 ;
 import { Avatar, PageLoader } from '../components/ui';
 import { ShareButton } from '../components/common/ShareButton';

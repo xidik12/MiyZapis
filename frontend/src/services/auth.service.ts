@@ -5,9 +5,7 @@ import {
   AuthTokens,
   LoginRequest,
   RegisterRequest,
-  TelegramAuthRequest,
-  ApiResponse
-} from '../types';
+  TelegramAuthRequest} from '../types';
 
 // Helper functions for backend integration
 

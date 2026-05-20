@@ -1,6 +1,5 @@
 import { apiClient } from './api';
 import { API_ENDPOINTS } from '../config/environment';
-import { ApiResponse } from '../types';
 
 export interface AnalyticsOverview {
   totalBookings: number;

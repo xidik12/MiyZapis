@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -52,7 +52,7 @@ interface ServiceWithSpecialist {
 
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -75,7 +75,7 @@ const SearchPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [, setCategoriesLoading] = useState(true);
   const [isFilterTrayOpen, setIsFilterTrayOpen] = useState(false);
   const [availableCities, setAvailableCities] = useState<CityData[]>([]);
   // Saved filter presets
@@ -185,7 +185,7 @@ const SearchPage: React.FC = () => {
   // Fetch favorites when component mounts (only for authenticated users)
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchFavoriteSpecialists());
+      dispatch(fetchFavoriteSpecialists({}));
     }
   }, [dispatch, isAuthenticated]);
 
@@ -208,7 +208,10 @@ const SearchPage: React.FC = () => {
           // Marketplace v2 — quick-filter chips
           verifiedOnly: activeQuickFilters.has('verifiedOnly') || undefined,
         };
-        let data: unknown;
+        // Search API responses come from multiple backend endpoints with subtly
+        // different shapes; treat as opaque here and access dynamically.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any;
         if (sortBy === 'distance' && typeof navigator !== 'undefined' && navigator.geolocation) {
           try {
             const coords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
@@ -218,12 +221,12 @@ const SearchPage: React.FC = () => {
             data = { services: byLoc.services, pagination: byLoc.pagination };
           } catch (e) {
             logger.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
-            data = await serviceService.searchServices(filters);
+            data = await serviceService.searchServices(filters as Parameters<typeof serviceService.searchServices>[0]);
           }
         } else {
-          data = await serviceService.searchServices(filters);
+          data = await serviceService.searchServices(filters as Parameters<typeof serviceService.searchServices>[0]);
         }
-        
+
         // Transform the data to match our interface based on actual backend response
         const toMinutes = (v: unknown) => {
           const n = Number(v);
@@ -231,7 +234,8 @@ const SearchPage: React.FC = () => {
           return n > 300 ? Math.round(n / 60000) : n;
         };
 
-        let servicesWithSpecialists = (data.services || []).map((service: Record<string, unknown>) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let servicesWithSpecialists = (data.services || []).map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
@@ -298,7 +302,7 @@ const SearchPage: React.FC = () => {
         setServices(servicesWithSpecialists);
       } catch (error: unknown) {
         logger.error('Error fetching services:', error);
-        const errorMessage = error?.message || error?.toString() || 'Failed to load services';
+        const errorMessage = (error instanceof Error ? error.message : null) || String(error) || 'Failed to load services';
         setError(errorMessage);
         setServices([]);
       } finally {
@@ -352,7 +356,8 @@ const SearchPage: React.FC = () => {
   };
 
   const applyPreset = (p: { name: string; data: Record<string, unknown> }) => {
-    const d = p.data || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const d = (p.data || {}) as any;
     setSearchQuery(d.searchQuery ?? '');
     setSelectedCategory(d.selectedCategory ?? '');
     setSelectedLocation(d.selectedLocation ?? '');
@@ -392,7 +397,7 @@ const SearchPage: React.FC = () => {
         const name = (service.name || '').toLowerCase();
         const description = (service.description || '').toLowerCase();
         const category = (service.category || '').toLowerCase();
-        const specialistName = `${service.specialist?.firstName || ''} ${service.specialist?.lastName || ''}`.toLowerCase();
+        const specialistName = `${service.specialist?.user?.firstName || ''} ${service.specialist?.user?.lastName || ''}`.toLowerCase();
         const businessName = ((service.specialist as any)?.businessName || '').toLowerCase();
         return (
           name.includes(q) ||

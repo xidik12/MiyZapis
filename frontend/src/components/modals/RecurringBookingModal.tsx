@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XIcon as XMarkIcon, CalendarIcon, ClockIcon, ArrowPathIcon } from '@/components/icons';
+import { XIcon as XMarkIcon, ArrowPathIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface RecurringBookingModalProps {

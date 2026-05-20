@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect} from 'react';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
@@ -12,10 +11,8 @@ import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { logger } from '@/utils/logger';
-import OptimizedImage from '../../components/ui/OptimizedImage';
-import { Avatar } from '../../components/ui/Avatar';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
-import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, TrashIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon, ShieldCheckIcon } from '@/components/icons';
+import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, PlusIcon, ShieldCheckIcon } from '@/components/icons';
 
 interface SpecialistProfile {
   id: string;
@@ -33,11 +30,19 @@ interface SpecialistProfile {
   educationRu: string;
   certifications: Certification[];
   portfolio: PortfolioItem[];
+  preciseAddress?: string;
+  businessPhone?: string;
+  whatsappNumber?: string;
+  locationNotes?: string;
+  parkingInfo?: string;
+  accessInstructions?: string;
   location: {
     address: string;
     city: string;
     region: string;
     country: string;
+    latitude?: number;
+    longitude?: number;
   };
   serviceArea: {
     radius: number;
@@ -209,7 +214,7 @@ const mergeProfileData = (apiData: Record<string, unknown>): SpecialistProfile =
   logger.debug('🔄 defaultProfile:', defaultProfile);
   
   // Extract specialist data from nested structure
-  const specialist = apiData?.specialist || apiData;
+  const specialist: any = (apiData as any)?.specialist || apiData;
   
   // Parse JSON strings if they exist (backend stores some fields as JSON strings)
   const parseJsonField = (field: unknown, fallback: unknown) => {
@@ -401,7 +406,7 @@ const SpecialistProfile: React.FC = () => {
             logger.debug('📡 Raw data from backend getProfile:', specialistData);
             
             // Extract specialist data from nested response
-            const specialist = specialistData.specialist || specialistData;
+            const specialist = (specialistData as any).specialist || specialistData;
             logger.debug('📦 Extracted specialist data:', specialist);
             
             const profileInput = {
@@ -635,12 +640,12 @@ const SpecialistProfile: React.FC = () => {
 
           // Call the API to update the specialist profile
           try {
-            const updateResult = await specialistService.updateProfile(specialistData);
+            const updateResult = await specialistService.updateProfile(specialistData as any);
             logger.debug('✅ Backend response for specialist update:', updateResult);
           } catch (updateError: unknown) {
             logger.error('❌ Update failed, error:', updateError);
             // If specialist profile doesn't exist, try to create it first
-            if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
+            if ((updateError as any).message?.includes('SPECIALIST_NOT_FOUND') || (updateError as any).message?.includes('not found')) {
               logger.debug('Specialist profile not found, attempting to create...');
               try {
                 await specialistService.createProfile(specialistData);
@@ -672,21 +677,21 @@ const SpecialistProfile: React.FC = () => {
             try {
               // Import userService dynamically to avoid circular dependencies
               const { userService } = await import('../../services/user.service');
-              await userService.updateProfile(userUpdateData);
+              await userService.updateProfile(userUpdateData as any);
               logger.debug('User profile updated successfully');
-              
+
               // Update Redux store so changes persist
-              dispatch(updateUserProfile(userUpdateData));
+              dispatch(updateUserProfile(userUpdateData as any));
             } catch (userError: unknown) {
               logger.error('Failed to update user info:', userError);
-              logger.error('Error details:', userError.message);
+              logger.error('Error details:', (userError as any).message);
               // Don't throw error here - let specialist profile save continue
             }
           }
           
         } catch (apiError: unknown) {
           logger.error('API call failed:', apiError);
-          throw new Error(apiError.message || 'Failed to save profile');
+          throw new Error((apiError as any).message || 'Failed to save profile');
         }
       }
       
@@ -698,7 +703,7 @@ const SpecialistProfile: React.FC = () => {
           logger.debug('Profile data after save reload:', apiData);
           
           // Extract specialist data from nested response
-          const specialist = apiData.specialist || apiData;
+          const specialist = (apiData as any).specialist || apiData;
           logger.debug('📦 Extracted specialist after save:', specialist);
           
           const updatedProfile = mergeProfileData({
@@ -2292,7 +2297,7 @@ const SpecialistProfile: React.FC = () => {
                                 // Hide broken images
                                 e.currentTarget.style.display = 'none';
                               }}
-                              onLoad={(e) => {
+                              onLoad={() => {
                                 logger.debug('✅ Portfolio image loaded successfully:', item.imageUrl);
                               }}
                             />

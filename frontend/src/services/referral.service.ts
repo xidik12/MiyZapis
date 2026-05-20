@@ -8,7 +8,6 @@ import {
   ReferralAnalytics,
   ReferralFilters
 } from '../types/referral';
-import { ApiResponse } from '../types';
 
 class ReferralService {
   private baseUrl = '/referral';

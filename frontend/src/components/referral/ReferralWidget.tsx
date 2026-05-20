@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { UserPlusIcon, GiftIcon, ArrowTopRightOnSquareIcon, ClipboardDocumentIcon } from '@/components/icons';
+import { UserPlusIcon, GiftIcon, ArrowTopRightOnSquareIcon} from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Card } from '../ui/Card';

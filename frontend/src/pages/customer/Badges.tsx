@@ -3,7 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loyaltyService, UserBadge, LoyaltyBadge } from '@/services/loyalty.service';
 import { toast } from 'react-toastify';
-import { TrophyIcon, SparklesIcon, CheckCircleIcon, LockClosedIcon, ClockIcon, InformationCircleIcon, AcademicCapIcon, StarIcon, HeartIcon, CrownIcon, GiftIcon, FireIcon } from '@/components/icons';
+import { TrophyIcon, SparklesIcon, CheckCircleIcon, LockClosedIcon, ClockIcon, InformationCircleIcon, StarIcon, HeartIcon, CrownIcon, GiftIcon, FireIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
 // Note: Use active prop for filled icons: <Icon active />
 ;

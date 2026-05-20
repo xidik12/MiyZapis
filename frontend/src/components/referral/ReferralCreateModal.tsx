@@ -4,14 +4,11 @@ import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBub
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
 import {
   ReferralModalProps,
-  CreateReferralRequest,
   ReferralFormData,
   ReferralType,
-  InviteChannel,
-} from '../../types/referral';
+  InviteChannel } from '../../types/referral';
 import { referralService } from '../../services/referral.service';
 
 const ReferralCreateModal: React.FC<ReferralModalProps> = ({

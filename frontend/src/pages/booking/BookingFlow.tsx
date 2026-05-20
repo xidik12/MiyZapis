@@ -139,8 +139,8 @@ const BookingFlow: React.FC = () => {
       if (state.pollingIntervalId) {
         clearInterval(state.pollingIntervalId);
       }
-      socketService.off('payment:completed');
-      socketService.off('notification:new');
+      (socketService as any).off('payment:completed');
+      (socketService as any).off('notification:new');
     };
   }, [state.paymentTimeoutId, state.pollingIntervalId]);
 
@@ -293,7 +293,7 @@ const BookingFlow: React.FC = () => {
       }
     }
     const onAvail = (data: unknown) => {
-      const sidData = data?.specialistId || data?.id;
+      const sidData = (data as any)?.specialistId || (data as any)?.id;
       if (!sid || sidData !== sid) return;
       try {
         if (state.selectedDate) {
@@ -432,7 +432,7 @@ const BookingFlow: React.FC = () => {
         if (state.isRecurring && state.recurrenceData) {
           logger.debug('BookingFlow: Creating recurring booking series', state.recurrenceData);
           const recurringResult = await bookingService.createRecurringBooking({
-            ...bookingData,
+            ...(bookingData as any),
             recurrence: {
               frequency: state.recurrenceData.frequency,
               daysOfWeek: state.recurrenceData.daysOfWeek,
@@ -447,7 +447,7 @@ const BookingFlow: React.FC = () => {
             message: recurringResult.message,
           };
         } else {
-          result = await bookingService.createBooking(bookingData);
+          result = await bookingService.createBooking(bookingData as any);
         }
         logger.debug('BookingFlow: Booking created successfully:', result);
 
@@ -462,8 +462,9 @@ const BookingFlow: React.FC = () => {
         dispatch({ type: 'SET_CURRENT_STEP', payload: state.currentStep + 1 });
       } catch (error: unknown) {
         logger.error('BookingFlow: Error creating booking:', error);
+        const _err1 = error as any;
 
-        if (error?.response?.status === 409 && state.bookingResult) {
+        if (_err1?.response?.status === 409 && state.bookingResult) {
           logger.debug('BookingFlow: Ignoring 409 error - booking already succeeded');
           bookingInProgressRef.current = false;
           dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
@@ -471,7 +472,7 @@ const BookingFlow: React.FC = () => {
           return;
         }
 
-        toast.error(error.message || t('booking.createFailed') || 'Failed to create booking');
+        toast.error(_err1?.message || t('booking.createFailed') || 'Failed to create booking');
         bookingInProgressRef.current = false;
         dispatch({ type: 'SET_PAYMENT_LOADING', payload: false });
         return;
@@ -517,7 +518,7 @@ const BookingFlow: React.FC = () => {
       dispatch({ type: 'SET_PAYMENT_LOADING', payload: true });
 
       logger.debug('BookingFlow: Checking slot availability...');
-      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, state.selectedDate);
+      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, state.selectedDate as any);
       const serviceDuration = state.service.duration || 60;
       const filteredAvailableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
 
@@ -534,8 +535,8 @@ const BookingFlow: React.FC = () => {
 
       logger.debug('BookingFlow: Creating payment intent...');
       logger.debug('BookingFlow: Wallet-first enabled:', state.useWalletFirst);
-      if (user?.walletBalance > 0) {
-        logger.debug('BookingFlow: User wallet balance: $', user.walletBalance);
+      if ((user as any)?.walletBalance > 0) {
+        logger.debug('BookingFlow: User wallet balance: $', (user as any).walletBalance);
       }
 
       // Pay at venue — create booking directly without payment
@@ -560,7 +561,7 @@ const BookingFlow: React.FC = () => {
         let result: Record<string, unknown>;
         if (state.isRecurring && state.recurrenceData) {
           const recurringResult = await bookingService.createRecurringBooking({
-            ...bookingData,
+            ...(bookingData as any),
             recurrence: {
               frequency: state.recurrenceData.frequency,
               daysOfWeek: state.recurrenceData.daysOfWeek,
@@ -575,7 +576,7 @@ const BookingFlow: React.FC = () => {
             message: recurringResult.message,
           };
         } else {
-          result = await bookingService.createBooking(bookingData);
+          result = await bookingService.createBooking(bookingData as any);
         }
 
         dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
@@ -604,7 +605,7 @@ const BookingFlow: React.FC = () => {
         specialistName: state.specialist.user?.firstName && state.specialist.user?.lastName
           ? `${state.specialist.user.firstName} ${state.specialist.user.lastName}`
           : state.specialist.businessName || 'Specialist',
-        ...(state.service.isGroupSession && { participantCount: state.participantCount })
+        ...(state.service.isGroupSession ? { participantCount: state.participantCount } : {})
       };
 
       let depositResult;
@@ -631,7 +632,7 @@ const BookingFlow: React.FC = () => {
           }
         };
 
-        const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
+        const paypalResult = await paymentService.createPayPalOrder(paypalOrderData as any);
         logger.debug('BookingFlow: PayPal order created:', paypalResult);
 
         if (paypalResult.approvalUrl) {
@@ -669,13 +670,13 @@ const BookingFlow: React.FC = () => {
         }
       } else {
         logger.debug('BookingFlow: Creating Coinbase Commerce charge...');
-        depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
+        depositResult = await paymentService.createCryptoPaymentIntent(paymentData as any);
         logger.debug('BookingFlow: Coinbase charge created:', depositResult);
       }
 
       dispatch({ type: 'SET_PAYMENT_RESULT', payload: depositResult });
 
-      if (depositResult.requiresPayment) {
+      if ((depositResult as any).requiresPayment) {
         const timeoutDuration = 15 * 60 * 1000;
         dispatch({ type: 'SET_PAYMENT_TIME_REMAINING', payload: timeoutDuration });
 
@@ -716,7 +717,7 @@ const BookingFlow: React.FC = () => {
             });
 
             if (paymentEventData.bookingId) {
-              bookingService.getBooking(paymentEventData.bookingId)
+              bookingService.getBooking(paymentEventData.bookingId as string)
                 .then(booking => {
                   logger.debug('BookingFlow: Booking created via webhook:', booking);
                   dispatch({ type: 'SET_BOOKING_RESULT', payload: booking });
@@ -745,12 +746,12 @@ const BookingFlow: React.FC = () => {
         const handleNotificationReceived = (notificationData: Record<string, unknown>) => {
           logger.debug('BookingFlow: Notification received via socket:', notificationData);
           if (notificationData.type === 'PAYMENT_COMPLETED' && notificationData.data) {
-            handlePaymentCompleted(notificationData.data);
+            handlePaymentCompleted(notificationData.data as Record<string, unknown>);
           }
         };
 
         logger.debug('BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
-        const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId, handlePaymentCompleted);
+        const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId!, handlePaymentCompleted);
         socketService.on('notification:new', handleNotificationReceived);
 
         const cleanupSocketListeners = () => {
@@ -761,7 +762,7 @@ const BookingFlow: React.FC = () => {
         const pollPaymentStatus = async () => {
           try {
             logger.debug('BookingFlow: Polling payment status for:', depositResult.paymentId);
-            const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId);
+            const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId!);
 
             if (paymentStatus.status === 'PAID' || paymentStatus.status === 'COMPLETED') {
               logger.debug('BookingFlow: Payment confirmed via polling:', paymentStatus);
@@ -805,8 +806,8 @@ const BookingFlow: React.FC = () => {
         };
 
         const bookingResult = await bookingService.createBookingWithPayment({
-          ...bookingPaymentData,
-          paymentId: depositResult.paymentId
+          ...(bookingPaymentData as any),
+          paymentId: depositResult.paymentId!
         });
         logger.debug('BookingFlow: Booking created after wallet payment:', bookingResult);
         dispatch({ type: 'SET_BOOKING_RESULT', payload: bookingResult });
@@ -821,17 +822,18 @@ const BookingFlow: React.FC = () => {
       return depositResult;
     } catch (error: unknown) {
       logger.error('BookingFlow: Error in booking/payment flow:', error);
-      const code = error?.apiError?.code;
-      const status = error?.response?.status || error?.apiError?.status;
+      const _err = error as any;
+      const code = _err?.apiError?.code;
+      const status = _err?.response?.status || _err?.apiError?.status;
 
       logger.debug('BookingFlow: Refreshing slots after error');
       await refreshSlots();
 
-      if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
+      if (_err?.message === 'SLOT_NO_LONGER_AVAILABLE') {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
         dispatch({ type: 'SET_CURRENT_STEP', payload: 1 });
         dispatch({ type: 'SET_CONFLICT_HINT', payload: { active: true, lastTried: state.selectedTime } });
-      } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
+      } else if (code === 'BOOKING_CONFLICT' || status === 409 || _err?.message?.includes('time slot')) {
         if (!state.bookingResult) {
           toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
           dispatch({ type: 'SET_CURRENT_STEP', payload: 1 });
@@ -840,7 +842,7 @@ const BookingFlow: React.FC = () => {
           logger.debug('BookingFlow: Ignoring 409 error - booking already succeeded');
         }
       } else {
-        toast.error(error?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
+        toast.error(_err?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
       }
     } finally {
       bookingInProgressRef.current = false;
@@ -869,7 +871,7 @@ const BookingFlow: React.FC = () => {
       dispatch({ type: 'SET_WAITLIST_PREFERRED_TIME', payload: '' });
       toast.success(t('waitlist.joinedSuccess') || 'You have been added to the waitlist! We will notify you when a slot becomes available.');
     } catch (error: unknown) {
-      const code = error?.apiError?.code || error?.response?.data?.error?.code;
+      const code = (error as any)?.apiError?.code || (error as any)?.response?.data?.error?.code;
       if (code === 'ALREADY_ON_WAITLIST') {
         dispatch({ type: 'SET_WAITLIST_JOINED', payload: true });
         dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: false });

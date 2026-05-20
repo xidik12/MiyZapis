@@ -3,7 +3,6 @@
  * Handles migration of external avatars (especially Google avatars) to backend storage
  */
 
-import { authService } from '../services/auth.service';
 import { userService } from '../services/user.service';
 
 export class AvatarMigrationUtil {

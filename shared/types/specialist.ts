@@ -3,11 +3,14 @@
 // Merged from frontend/src/types/index.ts and mini-app/src/types/index.ts
 // ============================================================
 
-import { BaseEntity, User, Address } from './user';
+import { BaseEntity, User} from './user';
 
 export interface Specialist extends BaseEntity {
   userId?: string;
   user?: User;
+  // Flattened fields sent by backend transform
+  firstName?: string;
+  lastName?: string;
   businessName: string;
   description: string;
   specialties: string[];

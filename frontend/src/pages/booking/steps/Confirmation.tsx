@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon, ClockIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, InformationCircleIcon } from '@/components/icons';
+import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, CalendarIcon, ClockIcon, MapPinIcon, PhoneIcon, InformationCircleIcon } from '@/components/icons';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
@@ -10,12 +10,12 @@ import { serviceService } from '@/services';
 import type { UserLoyalty } from '@/services/loyalty.service';
 
 interface ConfirmationProps {
-  service: Record<string, unknown>;
-  specialist: Record<string, unknown>;
+  service: any;
+  specialist: any;
   selectedDate: Date | null;
   selectedTime: string;
-  bookingResult: Record<string, unknown>;
-  paymentResult: Record<string, unknown>;
+  bookingResult: any;
+  paymentResult: any;
   showQRCode: boolean;
   onToggleQRCode: () => void;
   isRecurring: boolean;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
-import { PaymentMethod } from '../../types';
+import { PaymentMethodRecord } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { toast } from 'react-toastify';
 import { CreditCardIcon, PlusIcon, PencilIcon, TrashIcon } from '@/components/icons';
@@ -10,10 +10,10 @@ import { CreditCardIcon, PlusIcon, PencilIcon, TrashIcon } from '@/components/ic
 const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();
   const currentUser = useAppSelector(selectUser);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodRecord[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethodRecord | null>(null);
+  const [_loading, setLoading] = useState(false);
 
   // Load payment methods from backend when component mounts
   useEffect(() => {
@@ -40,7 +40,7 @@ const PaymentMethods: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleEditPaymentMethod = (method: PaymentMethod) => {
+  const handleEditPaymentMethod = (method: PaymentMethodRecord) => {
     setEditingMethod(method);
     setShowModal(true);
   };
@@ -52,9 +52,9 @@ const PaymentMethods: React.FC = () => {
       if (editingMethod) {
         // Update existing method
         const updated = await PaymentMethodsService.updatePaymentMethod(editingMethod.id, {
-          nickname: paymentData.name,
-          cardExpMonth: paymentData.expiryMonth,
-          cardExpYear: paymentData.expiryYear,
+          nickname: paymentData.name as string | undefined,
+          cardExpMonth: paymentData.expiryMonth as number | undefined,
+          cardExpYear: paymentData.expiryYear as number | undefined,
         });
         setPaymentMethods(prev =>
           prev.map(pm => pm.id === editingMethod.id ? { ...pm, ...updated } : pm)
@@ -64,11 +64,11 @@ const PaymentMethods: React.FC = () => {
         // Add new method
         const newMethod = await PaymentMethodsService.addPaymentMethod({
           type: 'CARD',
-          cardLast4: paymentData.last4 || '',
-          cardBrand: paymentData.name?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
-          cardExpMonth: paymentData.expiryMonth,
-          cardExpYear: paymentData.expiryYear,
-          nickname: paymentData.name,
+          cardLast4: (paymentData.last4 as string) || '',
+          cardBrand: (paymentData.name as string | undefined)?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
+          cardExpMonth: paymentData.expiryMonth as number | undefined,
+          cardExpYear: paymentData.expiryYear as number | undefined,
+          nickname: paymentData.name as string | undefined,
         });
         setPaymentMethods(prev => [...prev, newMethod]);
         toast.success(t('payments.addSuccess') || 'Payment method added successfully');

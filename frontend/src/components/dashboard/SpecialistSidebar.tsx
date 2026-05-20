@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { messagesService } from '@/services/messages.service';
-import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon, ClipboardDocumentListIcon, BuildingOfficeIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon, ClipboardDocumentListIcon, BuildingOfficeIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 

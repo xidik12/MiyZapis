@@ -86,7 +86,8 @@ export const exportToCSV = ({ filename, data, fields }: CSVExportOptions): void 
 /**
  * Export dashboard stats to CSV
  */
-export const exportDashboardStatsToCSV = (stats: Record<string, unknown>, period: string): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportDashboardStatsToCSV = (stats: any, period: string): void => {
   const data = [
     {
       metric: 'Total Users',
@@ -140,7 +141,8 @@ export const exportDashboardStatsToCSV = (stats: Record<string, unknown>, period
 /**
  * Export user analytics to CSV
  */
-export const exportUserAnalyticsToCSV = (userAnalytics: Record<string, unknown>, period: string): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportUserAnalyticsToCSV = (userAnalytics: any, period: string): void => {
   const data = userAnalytics.userTrends.map((trend: Record<string, unknown>) => ({
     date: trend.date,
     userType: trend.user_type,
@@ -158,7 +160,8 @@ export const exportUserAnalyticsToCSV = (userAnalytics: Record<string, unknown>,
 /**
  * Export booking analytics to CSV
  */
-export const exportBookingAnalyticsToCSV = (bookingAnalytics: Record<string, unknown>, period: string): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportBookingAnalyticsToCSV = (bookingAnalytics: any, period: string): void => {
   const data = bookingAnalytics.bookingTrends.map((trend: Record<string, unknown>) => ({
     date: trend.date,
     count: trend.count,
@@ -176,8 +179,10 @@ export const exportBookingAnalyticsToCSV = (bookingAnalytics: Record<string, unk
 /**
  * Export financial analytics to CSV
  */
-export const exportFinancialAnalyticsToCSV = (financialAnalytics: Record<string, unknown>, period: string): void => {
-  const data = financialAnalytics.revenueTrends.map((trend: Record<string, unknown>) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportFinancialAnalyticsToCSV = (financialAnalytics: any, period: string): void => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = financialAnalytics.revenueTrends.map((trend: any) => ({
     date: trend.date,
     totalRevenue: trend.totalRevenue,
     platformFees: trend.platformFees,
@@ -196,7 +201,8 @@ export const exportFinancialAnalyticsToCSV = (financialAnalytics: Record<string,
 /**
  * Export top specialists to CSV
  */
-export const exportTopSpecialistsToCSV = (specialists: Record<string, unknown>[]): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportTopSpecialistsToCSV = (specialists: any[]): void => {
   const data = specialists.map((specialist, index) => ({
     rank: index + 1,
     name: specialist.name,
@@ -217,7 +223,8 @@ export const exportTopSpecialistsToCSV = (specialists: Record<string, unknown>[]
 /**
  * Export system health to CSV
  */
-export const exportSystemHealthToCSV = (health: Record<string, unknown>): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const exportSystemHealthToCSV = (health: any): void => {
   const data = [
     {
       component: 'Overall Status',

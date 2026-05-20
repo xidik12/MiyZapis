@@ -2,13 +2,11 @@ import { apiClient } from './api';
 import {
   Specialist,
   Service,
-  SpecialistAvailability,
   AvailabilityRequest,
   DayAvailability,
   BlockedSlot,
   SpecialistAnalytics,
   Pagination,
-  ApiResponse
 } from '@/types';
 import { logger } from '@/utils/logger';
 
@@ -23,9 +21,9 @@ export class SpecialistService {
   }
 
   // Get specialist by slug (for /s/:slug routing)
-  async getBySlug(slug: string): Promise<Specialist | null> {
+  async getBySlugNullable(slug: string): Promise<Specialist | null> {
     try {
-      const response = await apiClient.get<{ specialist: Record<string, unknown> }>(`/specialists/by-slug/${slug}`);
+      const response = await apiClient.get<{ specialist: any }>(`/specialists/by-slug/${slug}`);
       if (!response.success || !response.data) {
         return null;
       }
@@ -37,7 +35,7 @@ export class SpecialistService {
 
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
-    const response = await apiClient.get<{ specialist: Record<string, unknown> }>(`/specialists/${specialistId}/public`);
+    const response = await apiClient.get<{ specialist: any }>(`/specialists/${specialistId}/public`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
@@ -117,7 +115,7 @@ export class SpecialistService {
                : []);
           
           // Filter out overly large base64 images that could cause performance issues
-          const filteredPortfolio = portfolioData.filter((item: unknown) => {
+          const filteredPortfolio = portfolioData.filter((item: any) => {
             if (typeof item === 'string' && item.startsWith('data:image/')) {
               const sizeKB = Math.round(item.length / 1024);
               if (item.length >= 500000) {
@@ -125,7 +123,7 @@ export class SpecialistService {
                 return false;
               }
               return true;
-            } else if (typeof item === 'object' && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
+            } else if (typeof item === 'object' && item && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
               const sizeKB = Math.round(item.imageUrl.length / 1024);
               if (item.imageUrl.length >= 500000) {
                 logger.warn(`Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB). Suggestion: Convert large images to files and upload via backend`);
@@ -162,7 +160,7 @@ export class SpecialistService {
     };
 
     logger.debug('Transformed specialist data:', transformedSpecialist);
-    return transformedSpecialist;
+    return transformedSpecialist as unknown as Specialist;
   }
 
   // Create specialist profile
@@ -180,8 +178,8 @@ export class SpecialistService {
     logger.debug('API: Profile data size:', JSON.stringify(data).length, 'chars');
 
     // Check for large portfolio data
-    if (data.portfolio) {
-      const portfolioSize = JSON.stringify(data.portfolio).length;
+    if ((data as any).portfolio) {
+      const portfolioSize = JSON.stringify((data as any).portfolio).length;
       logger.debug('API: Portfolio data size:', portfolioSize, 'chars');
       if (portfolioSize > 1000000) { // 1MB
         logger.warn('API: Portfolio data is very large, this might cause issues');
@@ -350,7 +348,7 @@ export class SpecialistService {
   }
 
   // Update working hours
-  async updateWorkingHours(workingHours: Specialist['availability']['workingHours']): Promise<{ message: string }> {
+  async updateWorkingHours(workingHours: NonNullable<Specialist['availability']>['workingHours']): Promise<{ message: string }> {
     const response = await apiClient.put<{ message: string }>('/specialists/availability/working-hours', {
       workingHours
     });
@@ -543,7 +541,7 @@ export class SpecialistService {
       bookings: number;
     }>;
   }> {
-    const response = await apiClient.get(`/specialists/revenue?period=${period}`);
+    const response = await apiClient.get<any>(`/specialists/revenue?period=${period}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get revenue breakdown');
     }
@@ -558,7 +556,7 @@ export class SpecialistService {
     rating: number;
     growth: number;
   }>> {
-    const response = await apiClient.get(`/specialists/top-services?limit=${limit}`);
+    const response = await apiClient.get<any>(`/specialists/top-services?limit=${limit}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get top services');
     }
@@ -579,7 +577,7 @@ export class SpecialistService {
       lastBooking: string;
     }>;
   }> {
-    const response = await apiClient.get('/specialists/customer-insights');
+    const response = await apiClient.get<any>('/specialists/customer-insights');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get customer insights');
     }
@@ -622,8 +620,8 @@ export class SpecialistService {
       formData.append('additionalInfo', documents.additionalInfo);
     }
 
-    const response = await apiClient.post('/specialists/verification/request', formData);
-    
+    const response = await apiClient.post<any>('/specialists/verification/request', formData);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to request verification');
     }
@@ -638,7 +636,7 @@ export class SpecialistService {
     feedback?: string;
     requiredDocuments?: string[];
   }> {
-    const response = await apiClient.get('/specialists/verification/status');
+    const response = await apiClient.get<any>('/specialists/verification/status');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get verification status');
     }
@@ -674,7 +672,7 @@ export class SpecialistService {
     minimumPayout: number;
     currency: string;
   }> {
-    const response = await apiClient.get('/specialists/payment-settings');
+    const response = await apiClient.get<any>('/specialists/payment-settings');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment settings');
     }
@@ -715,10 +713,6 @@ export class SpecialistService {
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
       logger.debug('API: Getting available slots for specialist:', specialistId, 'date:', date);
-
-      // Calculate start and end of the day for the availability query
-      const startDate = `${date}T00:00:00.000Z`;
-      const endDate = `${date}T23:59:59.999Z`;
 
       // Add cache-busting timestamp to ensure fresh data
       const cacheBuster = Date.now();
@@ -825,22 +819,6 @@ export class SpecialistService {
     } catch {
       return [];
     }
-  }
-
-  // Client notes CRUD
-  async getClientNotes(customerId: string): Promise<any> {
-    const response = await apiClient.get(`/specialists/clients/${customerId}/notes`);
-    return response.data;
-  }
-
-  async createClientNote(customerId: string, content: string, category: string = 'general'): Promise<any> {
-    const response = await apiClient.post(`/specialists/clients/${customerId}/notes`, { content, category });
-    return response.data;
-  }
-
-  async deleteClientNote(noteId: string): Promise<any> {
-    const response = await apiClient.delete(`/specialists/clients/notes/${noteId}`);
-    return response.data;
   }
 
   // Before/after photos management

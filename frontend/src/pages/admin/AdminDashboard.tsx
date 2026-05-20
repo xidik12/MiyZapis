@@ -3,9 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import {
   ChartBarIcon,
   UsersIcon,
-  CogIcon,
-  ShieldCheckIcon
-} from '@/components/icons';
+  CogIcon} from '@/components/icons';
 import { PageLoader } from '@/components/ui';
 import { PeriodSelector } from '@/components/admin/ui';
 import {
@@ -15,7 +13,6 @@ import {
   DetailedAnalyticsSection
 } from '@/components/admin/analytics';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
-import type { Period } from '@/types/admin.types';
 
 const AdminDashboard: React.FC = () => {
   const { t } = useLanguage();

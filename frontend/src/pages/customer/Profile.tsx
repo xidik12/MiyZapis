@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
-import { calculateTier, formatPoints } from '../../utils/formatPoints';
-import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, CameraIcon, EyeIcon, BuildingOfficeIcon, ShieldCheckIcon, DocumentCheckIcon } from '@/components/icons';
+import { calculateTier} from '../../utils/formatPoints';
+import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as CameraIcon, EyeIcon, BuildingOfficeIcon, DocumentCheckIcon } from '@/components/icons';
 import { ContentLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 

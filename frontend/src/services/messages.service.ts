@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { Pagination, ApiResponse } from '@/types';
+import { Pagination} from '@/types';
 
 export interface Message {
   id: string;

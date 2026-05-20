@@ -9,7 +9,6 @@ import { EyeIcon, EyeSlashIcon } from '@/components/icons';
 import { LoginRequest } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { environment } from '@/config/environment';
 import { apiClient } from '@/services/api';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';

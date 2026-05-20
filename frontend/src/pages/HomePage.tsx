@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { SearchBar } from '@/components/common/SearchBar';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';

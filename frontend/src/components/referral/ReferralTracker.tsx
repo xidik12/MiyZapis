@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
-import { ClockIcon, CheckCircleIcon, XCircleIcon, EyeIcon, CursorArrowRaysIcon, CalendarDaysIcon, ChartBarIcon } from '@/components/icons';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, ChartBarIcon } from '@/components/icons';
 
 import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import {
   ReferralTrackerProps,
-  Referral,
-  ReferralAnalytics,
-} from '../../types/referral';
+  Referral } from '../../types/referral';
 import { referralService } from '../../services/referral.service';
 import { useLanguage } from '../../contexts/LanguageContext';
 import ReferralCard from './ReferralCard';

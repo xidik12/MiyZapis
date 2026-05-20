@@ -1,5 +1,4 @@
 import { apiClient } from './api';
-import { ApiResponse } from '@/types';
 
 // Loyalty Types
 export interface LoyaltyTransaction {

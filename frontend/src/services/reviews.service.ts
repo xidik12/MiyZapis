@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { Pagination, ApiResponse } from '@/types';
+import { Pagination} from '@/types';
 
 export interface Review {
   id: string;
@@ -114,8 +114,8 @@ export class ReviewsService {
     }
 
     const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
-    const meta = response.meta || {};
-    const p = meta.pagination || {};
+    const meta: any = response.meta || {};
+    const p: any = meta.pagination || {};
 
     const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
       currentPage: p.currentPage ?? p.page ?? page,
@@ -173,8 +173,8 @@ export class ReviewsService {
     }
 
     const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
-    const meta = response.meta || {};
-    const p = meta.pagination || {};
+    const meta: any = response.meta || {};
+    const p: any = meta.pagination || {};
 
     const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
       currentPage: p.currentPage ?? p.page ?? page,
@@ -246,7 +246,7 @@ export class ReviewsService {
   ): Promise<{
     reviews: Review[];
     pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
-    stats: ReviewStats;
+    stats: ReviewStats | null;
   }> {
     try {
       // Get current specialist profile first
@@ -391,7 +391,7 @@ export class ReviewsService {
 
     // Backend returns { review: { ... , response: { ... } } }
     const reviewObj = res.data?.review || {};
-    return { message: res.meta?.message, response: reviewObj.response };
+    return { message: (res.meta as any)?.message, response: reviewObj.response };
   }
 
   // Get review statistics for a specialist

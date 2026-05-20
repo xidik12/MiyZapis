@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon, ArrowPathIcon, WarningIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, CalendarDaysIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, ListBulletsIcon, FunnelIcon, WarningIcon, ArrowDownTrayIcon, CalendarDaysIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';

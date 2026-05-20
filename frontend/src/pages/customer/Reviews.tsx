@@ -52,17 +52,17 @@ const CustomerReviews: React.FC = () => {
           const totalReviews = response.pagination.totalItems;
           const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-          response.reviews.forEach((r: Record<string, unknown>) => {
+          response.reviews.forEach((r: any) => {
             if (distribution[r.rating] !== undefined) {
               distribution[r.rating] += 1;
             }
           });
 
-          const totalForAverage = response.reviews.reduce((sum: number, r: Record<string, unknown>) => sum + r.rating, 0);
+          const totalForAverage = response.reviews.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0);
           const avgRating = totalReviews > 0 ? totalForAverage / totalReviews : 0;
-          const verifiedReviewsCount = response.reviews.filter((r: Record<string, unknown>) => r.isVerified).length;
+          const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
           const recommendationRate = totalReviews > 0
-            ? response.reviews.filter((r: Record<string, unknown>) => (r.rating || 0) >= 4).length / totalReviews
+            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / totalReviews
             : 0;
 
           setReviewStats({
@@ -173,7 +173,8 @@ const CustomerReviews: React.FC = () => {
   };
 
   // Transform reviews to ReviewCardData format
-  const transformedReviews: ReviewCardData[] = reviews.map((review: Record<string, unknown>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const transformedReviews: ReviewCardData[] = reviews.map((review: any) => {
     const customer = review.customer || {
       id: currentUser?.id || 'me',
       firstName: currentUser?.firstName || 'You',

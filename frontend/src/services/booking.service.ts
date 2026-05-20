@@ -3,11 +3,8 @@ import {
   Booking,
   CreateBookingRequest,
   BookingStatus,
-  RescheduleRecord,
   PaymentIntent,
-  Pagination,
-  ApiResponse
-} from '@/types';
+  Pagination} from '@/types';
 
 export interface BookingFilters {
   status?: BookingStatus;

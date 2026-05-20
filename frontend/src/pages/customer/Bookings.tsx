@@ -87,7 +87,7 @@ const CustomerBookings: React.FC = () => {
       toast.success(t('waitlist.cancelledSuccess') || 'Removed from waitlist');
     } catch (error: unknown) {
       logger.error('Failed to cancel waitlist entry:', error);
-      toast.error(error?.message || t('waitlist.cancelFailed') || 'Failed to cancel waitlist entry');
+      toast.error((error as any)?.message || t('waitlist.cancelFailed') || 'Failed to cancel waitlist entry');
     }
   };
 
@@ -114,7 +114,7 @@ const CustomerBookings: React.FC = () => {
 
     // Sort bookings
     filtered.sort((a, b) => {
-      let aVal: unknown, bVal: unknown;
+      let aVal: number | string, bVal: number | string;
 
       switch (sortBy) {
         case 'date':
@@ -247,12 +247,13 @@ const CustomerBookings: React.FC = () => {
     } catch (error: unknown) {
       logger.error('Failed to submit review:', error);
 
-      if (error?.response?.status === 409 || error?.status === 409) {
+      const err = error as any;
+      if (err?.response?.status === 409 || err?.status === 409) {
         toast.error(t('reviews.alreadyExists') || 'You have already reviewed this booking');
         setShowReviewModal(false);
         setBookingToReview(null);
       } else {
-        const errorMessage = error?.response?.data?.message || error?.message || t('reviews.submitError');
+        const errorMessage = err?.response?.data?.message || err?.message || t('reviews.submitError');
         toast.error(errorMessage);
       }
     } finally {
@@ -261,7 +262,7 @@ const CustomerBookings: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const colorClass = statusColors[status] || statusColors.PENDING;
+    const colorClass = statusColors[status as keyof typeof statusColors] || statusColors.PENDING;
     return (
       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${colorClass}`}>
         {t(`dashboard.booking.status.${status}`) || status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
@@ -564,7 +565,7 @@ const CustomerBookings: React.FC = () => {
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                           {booking.specialist
                             ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
-                            : (booking.specialistName?.split(' ').map(n => n[0]).join('') || 'S')
+                            : (booking.specialistName?.split(' ').map((n: string) => n[0]).join('') || 'S')
                           }
                         </div>
                         <div className="min-w-0">
@@ -675,7 +676,7 @@ const CustomerBookings: React.FC = () => {
                                   <span className="text-white font-medium text-sm">
                                     {booking.specialist
                                       ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
-                                      : (booking.specialistName ? booking.specialistName.split(' ').map(n => n[0]).join('') : 'S')
+                                      : (booking.specialistName ? booking.specialistName.split(' ').map((n: string) => n[0]).join('') : 'S')
                                     }
                                   </span>
                                 </div>

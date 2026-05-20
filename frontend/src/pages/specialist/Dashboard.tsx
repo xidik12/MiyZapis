@@ -5,7 +5,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { analyticsService, bookingService, paymentService, specialistService } from '../../services';
+import { analyticsService, bookingService, specialistService } from '../../services';
 import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
 import TrialStatusBanner from '../../components/trial/TrialStatusBanner';
@@ -20,7 +20,7 @@ const statusColors = {
   inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
-import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, EyeIcon, HeartIcon, ChatBubbleLeftRightIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon } from '@/components/icons';
+import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, EyeIcon, ChatBubbleLeftRightIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 

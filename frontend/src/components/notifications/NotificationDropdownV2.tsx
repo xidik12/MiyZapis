@@ -7,10 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import {
   isToday,
   isYesterday,
-  isThisWeek,
-  startOfDay,
-  differenceInDays
-} from 'date-fns';
+  isThisWeek} from 'date-fns';
 import { BellIcon, XIcon } from '@/components/icons';
 import { NotificationGroup } from './NotificationGroup';
 

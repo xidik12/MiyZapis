@@ -6,7 +6,6 @@ import {
   BookingSocketEvent,
   NotificationSocketEvent,
   PaymentSocketEvent,
-  SocketEvent,
   User
 } from '@/types';
 

@@ -10,7 +10,7 @@ const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | '
   return currency;
 };
 import { RootState, AppDispatch } from '../../store';
-import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
+import { AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';

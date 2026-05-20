@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -15,7 +15,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
-import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
+import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
