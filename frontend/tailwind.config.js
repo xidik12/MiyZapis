@@ -126,6 +126,24 @@ module.exports = {
         'glow-secondary': '0 0 20px rgb(255 196 31 / 0.3)',
         'neumorphism': '20px 20px 60px #d1d1e0, -20px -20px 60px #ffffff',
         'neumorphism-inset': 'inset 20px 20px 60px #d1d1e0, inset -20px -20px 60px #ffffff',
+
+        // ── 3D depth system — layered to suggest physicality ─────────────
+        // Buttons: inset top highlight + inset bottom edge + outer drop shadow
+        '3d-btn':         '0 1px 0 0 rgba(255,255,255,0.4) inset, 0 -2px 0 0 rgba(0,0,0,0.15) inset, 0 2px 4px -1px rgba(0,0,0,0.18), 0 4px 12px -2px rgba(0,0,0,0.10)',
+        '3d-btn-hover':   '0 1px 0 0 rgba(255,255,255,0.5) inset, 0 -2px 0 0 rgba(0,0,0,0.15) inset, 0 6px 14px -2px rgba(0,0,0,0.22), 0 10px 24px -4px rgba(0,0,0,0.14)',
+        '3d-btn-active':  '0 1px 0 0 rgba(255,255,255,0.25) inset, 0 1px 0 0 rgba(0,0,0,0.10) inset, 0 1px 2px rgba(0,0,0,0.18)',
+        // Cards: float above bg + subtle edge highlight
+        '3d-card':        '0 1px 0 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06), 0 12px 24px rgba(0,0,0,0.04)',
+        '3d-card-hover':  '0 1px 0 0 rgba(255,255,255,0.8) inset, 0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.10), 0 20px 40px rgba(0,0,0,0.08)',
+        // Inputs: sunken into the page (inset on top + sides, light bottom edge)
+        '3d-input':       '0 1px 2px rgba(0,0,0,0.08) inset, 0 -1px 0 0 rgba(255,255,255,0.8) inset',
+        '3d-input-focus': '0 0 0 3px rgba(59,151,242,0.18), 0 1px 2px rgba(0,0,0,0.08) inset',
+        // Banners & hero: more dramatic lift
+        '3d-banner':      '0 1px 0 0 rgba(255,255,255,0.4) inset, 0 4px 8px rgba(0,0,0,0.08), 0 16px 32px rgba(0,0,0,0.10), 0 32px 64px rgba(0,0,0,0.06)',
+        // Tabs: active tab pops, inactive sinks
+        '3d-tab-active':  '0 1px 0 0 rgba(255,255,255,0.5) inset, 0 -1px 0 0 rgba(0,0,0,0.05) inset, 0 4px 8px rgba(0,0,0,0.08)',
+        // Pressed / pressed-in cards (toggles, chips)
+        '3d-pressed':     '0 1px 3px rgba(0,0,0,0.12) inset, 0 -1px 0 rgba(255,255,255,0.4)',
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',

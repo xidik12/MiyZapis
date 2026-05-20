@@ -2,6 +2,9 @@
 @import './navigation.css';
 /* Import mobile enhancements */
 @import './mobile.css';
+/* Global 3D depth system — buttons, inputs, cards, tabs, banners.
+ * Targets standard elements + common Tailwind patterns. Opt out with .no-3d. */
+@import './3d.css';
 
 @tailwind base;
 @tailwind components;
