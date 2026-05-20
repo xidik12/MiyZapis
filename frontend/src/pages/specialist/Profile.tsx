@@ -207,7 +207,7 @@ const getEmptyProfile = (): SpecialistProfile => ({
 });
 
 // Safe merge function that ensures all required fields exist
-const mergeProfileData = (apiData: Record<string, unknown>): SpecialistProfile => {
+const mergeProfileData = (apiData: any): SpecialistProfile => {
   const defaultProfile = getEmptyProfile();
   
   logger.debug('🔄 mergeProfileData input:', apiData);

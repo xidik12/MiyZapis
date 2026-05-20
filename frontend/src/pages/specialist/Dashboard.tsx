@@ -25,9 +25,10 @@ import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon
 ;
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
+  const currency = (booking?.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   return currency;
 };
 
@@ -96,7 +97,7 @@ const SpecialistDashboard: React.FC = () => {
         // Load data from multiple sources with retry logic - prioritize bookings API for accuracy
         const [analyticsData, upcomingBookingsData, completedBookingsData, profileData, noShowBookingsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
-          retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'specialist'), 2, 1000),
+          retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'specialist'), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
           retryRequest(() => specialistService.getProfile(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'NO_SHOW' }, 'specialist'), 2, 1000),
@@ -287,7 +288,7 @@ const SpecialistDashboard: React.FC = () => {
             const startOfLastWeek = new Date(startOfThisWeek);
             startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
 
-            completedBookings.forEach(booking => {
+            completedBookings.forEach((booking: any) => {
               const completedDate = new Date(booking.completedAt || booking.updatedAt || booking.scheduledAt);
               const amount = booking.totalAmount || 0;
               if (completedDate >= startOfThisWeek) {
@@ -351,8 +352,10 @@ const SpecialistDashboard: React.FC = () => {
         }
 
         // Process bookings data correctly: completed for recent, upcoming for appointments
-        let recentBookings = [];
-        let upcomingAppointments = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let recentBookings: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let upcomingAppointments: any[] = [];
 
         // Recent Bookings should show recently completed bookings (Sep 2, Sep 4, etc.)
         if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
@@ -360,10 +363,10 @@ const SpecialistDashboard: React.FC = () => {
             const completedBookings = Array.isArray(completedBookingsData.value.bookings) ? completedBookingsData.value.bookings : [];
 
             recentBookings = completedBookings
-              .filter(booking => booking && booking.id)
-              .sort((a, b) => new Date(b.completedAt || b.updatedAt).getTime() - new Date(a.completedAt || a.updatedAt).getTime()) // Most recent first
+              .filter((booking: any) => booking && booking.id)
+              .sort((a: any, b: any) => new Date(b.completedAt || b.updatedAt).getTime() - new Date(a.completedAt || a.updatedAt).getTime()) // Most recent first
               .slice(0, 5)
-              .map(booking => {
+              .map((booking: any) => {
                 // Format date nicely instead of raw ISO format
                 const rawDate = booking.completedAt || booking.scheduledAt || booking.createdAt;
                 let formattedDate = t('common.notAvailable') || 'N/A';
@@ -407,7 +410,7 @@ const SpecialistDashboard: React.FC = () => {
             const upcomingBookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
 
             upcomingAppointments = upcomingBookings
-              .filter(booking => {
+              .filter((booking: any) => {
                 if (!booking || !booking.scheduledAt) return false;
                 const bookingDate = new Date(booking.scheduledAt);
                 const today = new Date();
@@ -416,7 +419,7 @@ const SpecialistDashboard: React.FC = () => {
                 endOfToday.setHours(23, 59, 59, 999); // End of today
                 return bookingDate >= today && bookingDate <= endOfToday;
               })
-              .map(booking => ({
+              .map((booking: any) => ({
                 id: booking.id,
                 customerName: booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Customer' : 'Customer',
                 serviceName: booking.service?.name || 'Service',
@@ -470,13 +473,6 @@ const SpecialistDashboard: React.FC = () => {
   const handleExportReport = async () => {
     try {
       // Create a comprehensive dashboard report
-      const reportData = {
-        specialist: user?.firstName + ' ' + user?.lastName,
-        currency: currency,
-        stats: dashboardData.stats,
-        generatedAt: new Date().toISOString(),
-      };
-
       const content = `
 Dashboard Report - Generated ${new Date().toLocaleDateString()}
 
@@ -499,13 +495,13 @@ Repeat Clients: ${dashboardData.stats.repeatClients || 0}
 
 RECENT BOOKINGS
 ===============
-${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: Record<string, unknown>) => 
+${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: any) =>
   `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
 ).join('\n') : 'No recent bookings'}
 
 UPCOMING APPOINTMENTS
 ====================
-${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: Record<string, unknown>) => 
+${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: any) =>
   `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
 ).join('\n') : 'No upcoming appointments'}
       `;
@@ -761,12 +757,12 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             </Link>
           </div>
           <div className="space-y-4">
-            {dashboardData.recentBookings.slice(0, 4).map((booking) => (
+            {dashboardData.recentBookings.slice(0, 4).map((booking: any) => (
               <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {(booking.customerName || 'U').split(' ').map(n => n[0]).join('')}
+                      {(booking.customerName || 'U').split(' ').map((n: string) => n[0]).join('')}
                     </span>
                   </div>
                   <div>
@@ -802,12 +798,12 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             </span>
           </div>
           <div className="space-y-4">
-            {dashboardData.upcomingAppointments.map((appointment) => (
+            {dashboardData.upcomingAppointments.map((appointment: any) => (
               <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {(appointment.customerName || 'U').split(' ').map(n => n[0]).join('')}
+                      {(appointment.customerName || 'U').split(' ').map((n: string) => n[0]).join('')}
                     </span>
                   </div>
                   <div>

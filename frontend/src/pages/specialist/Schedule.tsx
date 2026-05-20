@@ -19,17 +19,6 @@ import { Booking } from '../../types';
 import { findBookingConflicts } from '../../utils/bookingConflicts';
 import { downloadICalFile, openInGoogleCalendar, exportMultipleBookings } from '../../utils/calendarExport';
 
-interface TimeSlot {
-  id: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  reason?: string;
-  isRecurring: boolean;
-  recurringDays?: string[];
-}
-
 interface CalendarBlock {
   id: string;
   startDateTime: Date;
@@ -43,7 +32,7 @@ interface CalendarBlock {
 interface AddTimeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: unknown) => void;
+  onSave: (data: any) => void;
   editingBlock?: CalendarBlock | null;
   preSelectedDate?: Date;
   preSelectedTime?: string;
@@ -404,7 +393,7 @@ const SpecialistSchedule: React.FC = () => {
   };
 
   // Handle booking reschedule via drag and drop
-  const handleBookingReschedule = async (bookingId: string, newDate: Date, newTime: string) => {
+  const _handleBookingReschedule = async (_bookingId: string, newDate: Date, newTime: string) => {
     try {
       const [hours, minutes] = newTime.split(':').map(Number);
       const newDateTime = new Date(newDate);
@@ -560,7 +549,7 @@ const SpecialistSchedule: React.FC = () => {
     }
   };
 
-  const handleAddTimeSlot = async (formData: Record<string, unknown>) => {
+  const handleAddTimeSlot = async (formData: any) => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
       return;
     }
@@ -608,7 +597,7 @@ const SpecialistSchedule: React.FC = () => {
     }
   };
 
-  const handleEditTimeSlot = async (formData: Record<string, unknown>) => {
+  const handleEditTimeSlot = async (formData: any) => {
     if (!editingBlock) return;
 
     setOperationInProgress(true);
@@ -682,7 +671,7 @@ const SpecialistSchedule: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleCellClick = (date: Date, hour: number) => {
+  const _handleCellClick = (date: Date, hour: number) => {
     setPreSelectedDate(date);
     setPreSelectedTime(`${hour.toString().padStart(2, '0')}:00`);
     setEditingBlock(null);

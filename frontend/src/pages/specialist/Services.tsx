@@ -54,9 +54,7 @@ interface Service {
   rebookCycleDays?: number;
 }
 
-const sampleServices: Service[] = [
-  // No mock services - will load from backend API
-];
+// No mock services - will load from backend API
 
 // Helper function to get the service currency
 const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
@@ -102,7 +100,7 @@ const SpecialistServices: React.FC = () => {
           updatedAt: s.updatedAt
         })));
         logger.debug('Total services loaded:', servicesData?.length || 0);
-        setServices(Array.isArray(servicesData) ? servicesData : []);
+        setServices(Array.isArray(servicesData) ? (servicesData as any as Service[]) : []);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         setError(message || 'Failed to load services');
@@ -152,7 +150,7 @@ const SpecialistServices: React.FC = () => {
         if (!reviews || reviews.length === 0) return;
 
         const perService: Record<string, { sum: number; count: number }> = {};
-        reviews.forEach(r => {
+        reviews.forEach((r: any) => {
           const sid = r.booking?.service?.id || r.service?.id || r.service?.name || r.booking?.service?.name;
           if (!sid || typeof r.rating !== 'number') return;
           if (!perService[sid]) perService[sid] = { sum: 0, count: 0 };
@@ -269,7 +267,7 @@ const SpecialistServices: React.FC = () => {
       timeSlots: [''],
       // Loyalty Points pricing
       loyaltyPointsEnabled: false,
-      loyaltyPointsPrice: '',
+      loyaltyPointsPrice: undefined as number | undefined,
       loyaltyPointsOnly: false,
       // Service Discounts
       discountEnabled: false,
@@ -359,7 +357,7 @@ const SpecialistServices: React.FC = () => {
     logger.debug('Form data being set:', formDataToSet);
     logger.debug('Duration in form data:', formDataToSet.duration);
 
-    setFormData(formDataToSet);
+    setFormData(formDataToSet as any);
 
     // Set location data from service
     setLocationData({
@@ -536,7 +534,7 @@ const SpecialistServices: React.FC = () => {
       minAdvanceBooking: 1,
       // Loyalty Points pricing
       loyaltyPointsEnabled: formData.loyaltyPointsEnabled,
-      loyaltyPointsPrice: formData.loyaltyPointsEnabled ? parseInt(formData.loyaltyPointsPrice || '0') : undefined,
+      loyaltyPointsPrice: formData.loyaltyPointsEnabled ? Number(formData.loyaltyPointsPrice || 0) : undefined,
       loyaltyPointsOnly: formData.loyaltyPointsOnly,
       // Service Discounts
       discountEnabled: formData.discountEnabled,
@@ -562,10 +560,10 @@ const SpecialistServices: React.FC = () => {
     setError(null); // Clear any previous errors
 
     try {
-      let updatedService;
+      let updatedService: Service;
       if (editingService) {
         logger.debug('Updating existing service:', editingService.id);
-        updatedService = await specialistService.updateService(editingService.id, serviceData);
+        updatedService = await specialistService.updateService(editingService.id, serviceData) as any as Service;
         logger.debug('Service updated, response from backend:', updatedService);
         logger.debug('Duration in updated service:', updatedService.duration);
         setServices(prev => prev.map(service =>
@@ -573,7 +571,7 @@ const SpecialistServices: React.FC = () => {
         ));
       } else {
         logger.debug('Creating new service');
-        updatedService = await specialistService.createService(serviceData);
+        updatedService = await specialistService.createService(serviceData) as any as Service;
         logger.debug('Service created, response from backend:', updatedService);
         logger.debug('Duration in created service:', updatedService.duration);
         setServices(prev => [updatedService, ...prev]);
