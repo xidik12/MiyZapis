@@ -510,7 +510,7 @@ const CustomerDashboard: React.FC = () => {
             changeType="positive"
             icon={HeartIcon}
             iconBg="bg-gradient-to-br from-info-500 to-info-600"
-            description={`${t('dashboard.customer.memberSince')} 2024`}
+            description={`${t('dashboard.customer.memberSince')} ${user?.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()}`}
           />
             <StatCard
               title={t('dashboard.customer.unreadMessages')}

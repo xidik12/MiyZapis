@@ -764,7 +764,7 @@ Performance:
           daily: { revenue: [0], bookings: [0], labels: ['Today'] },
           weekly: { revenue: [0], bookings: [0], labels: ['This Week'] },
           monthly: { revenue: [0], bookings: [0], labels: ['This Month'] },
-          yearly: { revenue: [0], bookings: [0], labels: ['2024'] }
+          yearly: { revenue: [0], bookings: [0], labels: [new Date().getFullYear().toString()] }
         });
 
         // Set fallback profile view stats

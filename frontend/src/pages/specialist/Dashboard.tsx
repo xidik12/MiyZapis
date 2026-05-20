@@ -644,7 +644,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <StatCard
           title={t('dashboard.specialist.averageRating')}
           value={`${dashboardData.stats.rating}/5.0`}
-          change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
+          change={undefined}
           changeType="positive"
           icon={StarIcon}
           iconBg="bg-warning-500"
@@ -655,7 +655,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           value={dashboardData.stats.responseTime >= 60
             ? `${Math.round(dashboardData.stats.responseTime / 60)} ${t('time.hours') || 'h'}`
             : `${dashboardData.stats.responseTime} ${t('time.minutes')}`}
-          change={dashboardData.stats.responseTime > 0 ? `${t('dashboard.specialist.improvement') || 'avg response'}` : ''}
+          change={undefined}
           changeType="positive"
           icon={ClockIcon}
           iconBg="bg-info-500"
