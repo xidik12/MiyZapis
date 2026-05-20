@@ -5,6 +5,10 @@
 /* Global 3D depth system — buttons, inputs, cards, tabs, banners.
  * Targets standard elements + common Tailwind patterns. Opt out with .no-3d. */
 @import './3d.css';
+/* Cute gimmick animations — button squish, icon wobble, card bounce-in,
+ * pop/shake/heartbeat utility classes, [data-tilt] cursor parallax.
+ * Layered on top of 3d.css. Opt out with .no-cute. */
+@import './3d-cute.css';
 
 @tailwind base;
 @tailwind components;

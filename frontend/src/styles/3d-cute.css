@@ -1,0 +1,187 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * 3D cute gimmicks
+ * ──────────────────────────────────────────────────────────────────────
+ * Playful micro-animations on top of the depth system in 3d.css.
+ *   • buttons squish on press with a tiny spring
+ *   • icons inside buttons wobble on hover
+ *   • cards "breathe" subtly when .cute-breathe is applied
+ *   • bounce-in for entrance (cards in result lists)
+ *   • cute-pop for success states (toast confirmations)
+ *   • cute-shake for errors
+ *   • cute-heartbeat for favourite/like buttons
+ *   • [data-tilt] elements track the cursor for a 3D parallax tilt
+ *     (driven by utils/cuteTilt.ts; pure CSS holds the perspective + transition)
+ *
+ * Opt out with .no-cute. Respects prefers-reduced-motion.
+ * ──────────────────────────────────────────────────────────────────────*/
+
+/* ── Keyframes ──────────────────────────────────────────────────────── */
+@keyframes cute-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  20%      { transform: rotate(-8deg); }
+  40%      { transform: rotate(6deg); }
+  60%      { transform: rotate(-4deg); }
+  80%      { transform: rotate(2deg); }
+}
+
+@keyframes cute-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-2px) scale(1.006); }
+}
+
+@keyframes cute-bounce-in {
+  0%   { transform: translateY(20px) scale(0.92); opacity: 0; }
+  60%  { transform: translateY(-5px) scale(1.02); opacity: 1; }
+  80%  { transform: translateY(2px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes cute-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  50%  { transform: scale(1.18); opacity: 1; }
+  75%  { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes cute-shake {
+  0%, 100%                     { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90%      { transform: translateX(-4px); }
+  20%, 40%, 60%, 80%           { transform: translateX(4px); }
+}
+
+@keyframes cute-heartbeat {
+  0%, 100% { transform: scale(1); }
+  25%      { transform: scale(1.35); }
+  50%      { transform: scale(0.95); }
+  75%      { transform: scale(1.15); }
+}
+
+@keyframes cute-jiggle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25%      { transform: translateX(-2px) rotate(-1.5deg); }
+  75%      { transform: translateX(2px) rotate(1.5deg); }
+}
+
+@keyframes cute-float-y {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes cute-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50%      { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+@keyframes cute-spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Auto-applied behaviour for standard elements ───────────────────── */
+
+/* Buttons spring-squish on press. The 3d.css translateY(1px) stays;
+   we add a sub-100% scale and a spring transition for the bounce-back. */
+button:not(.no-cute):not(.no-3d):not(:disabled),
+[role="button"]:not(.no-cute):not(.no-3d):not(:disabled),
+a[class*="bg-primary-6"]:not(.no-cute):not(.no-3d),
+a[class*="bg-primary-7"]:not(.no-cute):not(.no-3d) {
+  /* Spring-y release after press — overshoot then settle. */
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background-color 0.15s ease;
+}
+
+button:not(.no-cute):not(.no-3d):not(:disabled):active,
+[role="button"]:not(.no-cute):not(.no-3d):not(:disabled):active,
+a[class*="bg-primary-6"]:not(.no-cute):not(.no-3d):active {
+  transform: translateY(1px) scale(0.96);
+  transition-duration: 0.06s, 0.06s, 0.06s;
+}
+
+/* Icons inside buttons wobble on hover. Targets SVGs and span-wrapped icons. */
+button:not(.no-cute):not(:disabled):hover > svg,
+button:not(.no-cute):not(:disabled):hover > span > svg,
+[role="button"]:not(.no-cute):not(:disabled):hover > svg {
+  animation: cute-wobble 0.45s ease-in-out;
+  transform-origin: center;
+}
+
+/* Anchor-as-button icons too */
+a[class*="bg-primary-"]:not(.no-cute):hover > svg {
+  animation: cute-wobble 0.45s ease-in-out;
+}
+
+/* ── Card entrance animation for items added to the DOM ─────────────── */
+/* Auto-apply to listing-card-shaped elements (group className + rounded). */
+[class*="group"][class*="rounded-xl"]:not(.no-cute) {
+  animation: cute-bounce-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-fill-mode: backwards;
+}
+
+/* ── Opt-in utility classes ─────────────────────────────────────────── */
+.cute-breathe       { animation: cute-breathe 4s ease-in-out infinite; }
+.cute-bounce-in     { animation: cute-bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.cute-pop           { animation: cute-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cute-shake         { animation: cute-shake 0.5s ease-in-out; }
+.cute-jiggle        { animation: cute-jiggle 0.4s ease-in-out; }
+.cute-jiggle-hover:hover { animation: cute-jiggle 0.4s ease-in-out; }
+.cute-float         { animation: cute-float-y 3.5s ease-in-out infinite; }
+.cute-spin-once     { animation: cute-spin-once 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Heartbeat is special — runs on click, not hover */
+.cute-heartbeat:active,
+[aria-pressed="true"].cute-heart {
+  animation: cute-heartbeat 0.55s ease-out;
+}
+
+/* Sparkle decoration — applies a ✨ that floats above the element. */
+.cute-sparkle { position: relative; }
+.cute-sparkle::after {
+  content: '✨';
+  position: absolute;
+  top: -6px; right: -6px;
+  font-size: 0.85em;
+  pointer-events: none;
+  animation: cute-sparkle 1.8s ease-in-out infinite;
+}
+
+/* ── Cursor-tracking 3D tilt — driven by utils/cuteTilt.ts ──────────── */
+/* Marks an element as a candidate for parallax tilt. The JS runtime
+   updates --tilt-x / --tilt-y CSS variables on mousemove; we apply the
+   transform here so timing + perspective stay in one place. */
+[data-tilt] {
+  transform: perspective(900px)
+             rotateX(var(--tilt-x, 0deg))
+             rotateY(var(--tilt-y, 0deg))
+             scale(var(--tilt-scale, 1));
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+[data-tilt]:hover {
+  transition-duration: 0.12s;
+}
+
+/* When the tilt JS hasn't loaded yet, [data-tilt] still gets a nice
+   default hover-lift via 3d.css — no broken state. */
+
+/* ── Reduced motion: kill all cute animation, keep depth ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  button:hover > svg,
+  [role="button"]:hover > svg,
+  a[class*="bg-primary-"]:hover > svg {
+    animation: none !important;
+  }
+  [data-tilt] {
+    transform: none !important;
+  }
+  .cute-breathe, .cute-float { animation: none !important; }
+}

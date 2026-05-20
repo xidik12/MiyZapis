@@ -2,6 +2,17 @@ import { initSentry } from './utils/sentry';
 // Initialise error monitoring as early as possible. No-op when DSN unset.
 initSentry();
 
+import { initCuteTilt } from './utils/cuteTilt';
+// Cursor-tracking 3D parallax for [data-tilt] elements.
+// Single delegated listener; skips itself if prefers-reduced-motion.
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCuteTilt, { once: true });
+  } else {
+    initCuteTilt();
+  }
+}
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
