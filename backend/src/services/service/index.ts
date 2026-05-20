@@ -599,11 +599,14 @@ export class ServiceService {
     category?: string,
     minPrice?: number,
     maxPrice?: number,
-    sortBy: 'price' | 'rating' | 'newest' = 'newest',
+    sortBy: 'price' | 'priceDesc' | 'rating' | 'newest' | 'popular' = 'newest',
     page: number = 1,
     limit: number = 20,
     city?: string,
-    availableWithin?: string
+    availableWithin?: string,
+    // ── Marketplace v2 filters ───────────────────────────────────────
+    verifiedOnly?: boolean,
+    language?: string,
   ): Promise<{
     services: ServiceWithDetails[];
     total: number;
@@ -643,9 +646,21 @@ export class ServiceService {
       }
 
       if (minPrice !== undefined || maxPrice !== undefined) {
-        where.basePrice = {};
-        if (minPrice !== undefined) where.basePrice.gte = minPrice;
-        if (maxPrice !== undefined) where.basePrice.lte = maxPrice;
+        const priceFilter: Record<string, number> = {};
+        if (minPrice !== undefined) priceFilter.gte = minPrice;
+        if (maxPrice !== undefined) priceFilter.lte = maxPrice;
+        where.basePrice = priceFilter;
+      }
+
+      // verifiedOnly → only services whose specialist has isVerified=true.
+      // language → only services whose specialist supports that language (JSON array contains).
+      if (verifiedOnly || language) {
+        const specFilter = (where.specialist as Record<string, unknown>) || {};
+        where.specialist = {
+          ...specFilter,
+          ...(verifiedOnly ? { isVerified: true } : {}),
+          ...(language ? { languages: { contains: language } } : {}),
+        };
       }
 
       // Filter by availability window
@@ -685,13 +700,20 @@ export class ServiceService {
         };
       }
 
-      let orderBy: Record<string, string> = {};
+      let orderBy: Record<string, string> | Record<string, Record<string, string>> = {};
       switch (sortBy) {
         case 'price':
           orderBy = { basePrice: 'asc' };
           break;
+        case 'priceDesc':
+          orderBy = { basePrice: 'desc' };
+          break;
         case 'rating':
           orderBy = { specialist: { rating: 'desc' } };
+          break;
+        case 'popular':
+          // Popular = highest review count from the specialist (proxy for traction).
+          orderBy = { specialist: { reviewCount: 'desc' } };
           break;
         case 'newest':
           orderBy = { createdAt: 'desc' };

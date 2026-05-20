@@ -201,10 +201,12 @@ const SearchPage: React.FC = () => {
           minPrice: priceRange.min > 0 ? priceRange.min : undefined,
           maxPrice: priceRange.max < 1000 ? priceRange.max : undefined,
           rating: selectedRating > 0 ? selectedRating : undefined,
-          sortBy: sortBy as 'rating' | 'price' | 'reviews' | 'distance',
+          sortBy: sortBy as 'rating' | 'price' | 'priceDesc' | 'reviews' | 'distance' | 'popular' | 'newest',
           sortOrder: 'desc' as const, // Default to descending (best first)
           availableWithin: availableWithin || undefined,
           distance: selectedDistance > 0 ? selectedDistance : undefined,
+          // Marketplace v2 — quick-filter chips
+          verifiedOnly: activeQuickFilters.has('verifiedOnly') || undefined,
         };
         let data: unknown;
         if (sortBy === 'distance' && typeof navigator !== 'undefined' && navigator.geolocation) {
@@ -730,6 +732,7 @@ const SearchPage: React.FC = () => {
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4 px-1 -mx-1 scrollbar-hide">
           {[
             { key: 'bestRated', label: t('search.filters.bestRated') || 'Best Rated' },
+            { key: 'verifiedOnly', label: t('search.filters.verifiedOnly') || '✓ Verified' },
             { key: 'onSale', label: t('search.filters.onSale') || 'On Sale' },
             { key: 'instantBooking', label: t('search.filters.instantBooking') || 'Instant Booking' },
             { key: 'new', label: t('search.filters.new') || 'New' },
@@ -837,9 +840,11 @@ const SearchPage: React.FC = () => {
                   className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
-                  <option value="price">{t('search.sortBy.price') || 'Price'}</option>
+                  <option value="price">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
+                  <option value="priceDesc">{t('search.sortBy.priceDesc') || 'Price: high → low'}</option>
+                  <option value="popular">{t('search.sortBy.popular') || 'Most popular'}</option>
                   <option value="distance">{t('search.sortBy.distance') || 'Distance'}</option>
-                  <option value="reviews">{t('search.sortBy.reviews') || 'Reviews'}</option>
+                  <option value="newest">{t('search.sortBy.newest') || 'Newest'}</option>
                 </select>
               </div>
             </div>
@@ -1255,8 +1260,11 @@ const SearchPage: React.FC = () => {
                     className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     <option value="rating">{t('search.sortBy.rating')}</option>
-                    <option value="price">{t('search.sortBy.price')}</option>
+                    <option value="price">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
+                    <option value="priceDesc">{t('search.sortBy.priceDesc') || 'Price: high → low'}</option>
+                    <option value="popular">{t('search.sortBy.popular') || 'Most popular'}</option>
                     <option value="distance">{t('search.sortBy.distance')}</option>
+                    <option value="newest">{t('search.sortBy.newest') || 'Newest'}</option>
                     <option value="reviews">{t('search.sortBy.reviews')}</option>
                   </select>
                 </div>

@@ -355,9 +355,14 @@ export class SpecialistController {
         sortBy = 'rating',
         page = 1,
         limit = 20,
+        // ── Marketplace v2 filters ─────────────────────────────────
+        minPrice,
+        maxPrice,
+        verifiedOnly,
+        language,
       } = req.query;
 
-      const parsedSpecialties = specialties 
+      const parsedSpecialties = specialties
         ? (typeof specialties === 'string' ? [specialties] : specialties as string[])
         : undefined;
 
@@ -366,9 +371,13 @@ export class SpecialistController {
         parsedSpecialties,
         city as string,
         minRating ? parseFloat(minRating as string) : undefined,
-        sortBy as 'rating' | 'reviews' | 'newest',
+        sortBy as 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc',
         parseInt(page as string, 10),
-        parseInt(limit as string, 10)
+        parseInt(limit as string, 10),
+        minPrice != null && minPrice !== '' ? parseFloat(minPrice as string) : undefined,
+        maxPrice != null && maxPrice !== '' ? parseFloat(maxPrice as string) : undefined,
+        verifiedOnly === 'true' || verifiedOnly === '1',
+        (language as string) || undefined,
       );
 
       const strippedResult = {

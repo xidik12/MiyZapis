@@ -42,6 +42,7 @@ import docsRoutes from './docs';
 import accountingRoutes from './accounting';
 import calendarRoutes from './calendar';
 import businessRoutes from './businesses';
+import searchRoutes from './search';
 
 const router = Router();
 
@@ -88,6 +89,7 @@ router.use('/docs', docsRoutes);
 router.use('/accounting', accountingRoutes);
 router.use('/calendar', calendarRoutes);
 router.use('/businesses', businessRoutes);
+router.use('/search', searchRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);

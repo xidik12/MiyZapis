@@ -616,9 +616,14 @@ export class SpecialistService {
     specialties?: string[],
     city?: string,
     minRating?: number,
-    sortBy: 'rating' | 'reviews' | 'newest' = 'rating',
+    sortBy: 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc' = 'rating',
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    // ── Marketplace v2 filters ────────────────────────────────────────
+    minPrice?: number,
+    maxPrice?: number,
+    verifiedOnly?: boolean,
+    language?: string,
   ): Promise<{
     specialists: SpecialistWithUser[];
     total: number;
@@ -659,7 +664,30 @@ export class SpecialistService {
         where.rating = { gte: minRating };
       }
 
-      let orderBy: Record<string, string> = {};
+      if (verifiedOnly) {
+        where.isVerified = true;
+      }
+
+      if (language) {
+        // languages is stored as a JSON-encoded array; substring match is good enough
+        // for the filter UI (e.g. "uk" matches '["en","uk"]').
+        where.languages = { contains: language };
+      }
+
+      // Price band — keep specialists who have ≥1 active service in [min, max].
+      if (minPrice != null || maxPrice != null) {
+        const priceFilter: Record<string, number> = {};
+        if (minPrice != null) priceFilter.gte = minPrice;
+        if (maxPrice != null) priceFilter.lte = maxPrice;
+        where.services = {
+          some: {
+            isActive: true,
+            basePrice: priceFilter,
+          },
+        };
+      }
+
+      let orderBy: Record<string, string> | Record<string, string>[] = {};
       switch (sortBy) {
         case 'rating':
           orderBy = [
@@ -675,6 +703,13 @@ export class SpecialistService {
           break;
         case 'newest':
           orderBy = { createdAt: 'desc' };
+          break;
+        case 'priceAsc':
+        case 'priceDesc':
+          // Prisma can't order by aggregate of related rows directly via simple
+          // orderBy here. Apply rating sort at DB level then re-sort by min
+          // service price in memory after the listing-card enrichment step.
+          orderBy = { rating: 'desc' };
           break;
         default:
           orderBy = { rating: 'desc' };
@@ -722,6 +757,39 @@ export class SpecialistService {
         prisma.specialist.count({ where }),
       ]);
 
+      // ── Listing-card enrichment ───────────────────────────────────────
+      // Two extra aggregates in parallel: lowest active-service price per
+      // specialist and weekly booking count per specialist (social proof).
+      // Done as raw groupBy so we don't N+1 across the page.
+      const userIds = rawSpecialists.map((s) => s.userId);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const [priceAggs, bookingAggs] = await Promise.all([
+        userIds.length
+          ? prisma.service.groupBy({
+              by: ['specialistId'],
+              where: { specialistId: { in: rawSpecialists.map((s) => s.id) }, isActive: true },
+              _min: { basePrice: true },
+              _count: { _all: true },
+            })
+          : Promise.resolve([] as Array<{ specialistId: string; _min: { basePrice: { toString: () => string } | null }; _count: { _all: number } }>),
+        userIds.length
+          ? prisma.booking.groupBy({
+              by: ['specialistId'],
+              where: { specialistId: { in: userIds }, createdAt: { gte: weekAgo } },
+              _count: { _all: true },
+            })
+          : Promise.resolve([] as Array<{ specialistId: string; _count: { _all: number } }>),
+      ]);
+      const priceBySpecId = new Map<string, { lowestPrice: number | null; serviceCount: number }>();
+      for (const row of priceAggs) {
+        priceBySpecId.set(row.specialistId, {
+          lowestPrice: row._min?.basePrice ? Number(row._min.basePrice.toString()) : null,
+          serviceCount: row._count._all,
+        });
+      }
+      const bookingByUserId = new Map<string, number>();
+      for (const row of bookingAggs) bookingByUserId.set(row.specialistId, row._count._all);
+
       // Parse JSON fields for each specialist in search results
       const specialists = rawSpecialists.map(specialist => ({
         ...specialist,
@@ -737,12 +805,31 @@ export class SpecialistService {
         socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
         portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
         certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+        // Listing card data — keys here are read by the SearchPage card layout.
+        lowestServicePrice: priceBySpecId.get(specialist.id)?.lowestPrice ?? null,
+        activeServiceCount: priceBySpecId.get(specialist.id)?.serviceCount ?? 0,
+        weeklyBookingCount: bookingByUserId.get(specialist.userId) ?? 0,
       }));
+
+      // In-memory price sort — Prisma can't order by related aggregate cheaply.
+      // Specialists with no priced services sink to the bottom.
+      let finalList = specialists;
+      if (sortBy === 'priceAsc' || sortBy === 'priceDesc') {
+        const dir = sortBy === 'priceAsc' ? 1 : -1;
+        finalList = [...specialists].sort((a: any, b: any) => {
+          const av = a.lowestServicePrice;
+          const bv = b.lowestServicePrice;
+          if (av == null && bv == null) return 0;
+          if (av == null) return 1;
+          if (bv == null) return -1;
+          return (av - bv) * dir;
+        });
+      }
 
       const totalPages = Math.ceil(total / limit);
 
       return {
-        specialists: specialists as SpecialistWithUser[],
+        specialists: finalList as SpecialistWithUser[],
         total,
         page,
         totalPages,
