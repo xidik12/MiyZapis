@@ -77,7 +77,7 @@ export class AuthService {
   // Google authentication
   async googleAuth(credential: string, userType?: 'customer' | 'specialist'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }> {
     try {
-      const payload: unknown = { credential };
+      const payload: any = { credential };
       if (userType) {
         payload.userType = userType;
       }
@@ -253,7 +253,6 @@ export class AuthService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       // If 404, try different endpoints that might be available
       if (response?.status === 404) {
@@ -397,7 +396,7 @@ export class AuthService {
   }
 
   // Helper method to transform backend user format to frontend format
-  private transformUserFromBackend(backendUser: Record<string, unknown>): User {
+  private transformUserFromBackend(backendUser: any): User {
     // Debug: Log the raw backend user data
     console.log('🔍 Raw backend user data:', {
       authProvider: backendUser.authProvider,

@@ -7,8 +7,8 @@ import type { RewardRedemption } from '@/services/rewards.service';
 import type { RecurrenceData } from '@/components/modals/RecurringBookingModal';
 
 interface PaymentStepProps {
-  service: Record<string, unknown>;
-  specialist: Record<string, unknown>;
+  service: any;
+  specialist: any;
   selectedDate: Date | null;
   selectedTime: string;
 
@@ -18,8 +18,8 @@ interface PaymentStepProps {
   useWalletFirst: boolean;
   onUseWalletFirstChange: (value: boolean) => void;
   paymentLoading: boolean;
-  paymentResult: Record<string, unknown>;
-  paymentOptions: Record<string, unknown>;
+  paymentResult: any;
+  paymentOptions: any;
   showQRCode: boolean;
   onToggleQRCode: () => void;
   paymentTimeRemaining: number;
@@ -28,8 +28,8 @@ interface PaymentStepProps {
   // Step navigation
   stepsLength: number;
   onSetCurrentStep: (step: number) => void;
-  onSetBookingResult: (result: Record<string, unknown>) => void;
-  onSetPaymentResult: (result: Record<string, unknown>) => void;
+  onSetBookingResult: (result: any) => void;
+  onSetPaymentResult: (result: any) => void;
 
   // Rewards
   redemptions: RewardRedemption[];

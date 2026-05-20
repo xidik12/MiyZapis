@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
-import { FavoriteSpecialist, FavoriteService } from '../../services/favorites.service';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { 
   selectFavorites, 
@@ -161,12 +160,12 @@ const CustomerFavorites: React.FC = () => {
     return (
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 sm:mt-6 md:mt-8 gap-3 sm:gap-0">
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+          Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalItems)} of {pagination.totalItems} results
         </div>
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={!pagination.hasPreviousPage}
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrev}
             className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
@@ -176,7 +175,7 @@ const CustomerFavorites: React.FC = () => {
               key={page}
               onClick={() => handlePageChange(page)}
               className={`px-3 py-2 text-sm font-medium border rounded-xl ${
-                pagination.page === page
+                pagination.currentPage === page
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50'
               }`}
@@ -185,8 +184,8 @@ const CustomerFavorites: React.FC = () => {
             </button>
           ))}
           <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={!pagination.hasNextPage}
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNext}
             className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next

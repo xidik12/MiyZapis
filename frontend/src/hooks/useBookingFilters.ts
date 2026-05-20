@@ -51,20 +51,21 @@ export const useBookingFilters = (bookings: Booking[], itemsPerPage: number = 10
 
     // Sort bookings
     filtered.sort((a, b) => {
-      let aVal: unknown, bVal: unknown;
+      let aVal: number | string;
+      let bVal: number | string;
 
       switch (sortBy) {
         case 'date':
-          aVal = new Date(a.scheduledAt);
-          bVal = new Date(b.scheduledAt);
+          aVal = new Date(a.scheduledAt as string | number | Date).getTime();
+          bVal = new Date(b.scheduledAt as string | number | Date).getTime();
           break;
         case 'amount':
-          aVal = a.totalAmount;
-          bVal = b.totalAmount;
+          aVal = Number(a.totalAmount);
+          bVal = Number(b.totalAmount);
           break;
         case 'status':
-          aVal = a.status;
-          bVal = b.status;
+          aVal = String(a.status);
+          bVal = String(b.status);
           break;
         default:
           return 0;
