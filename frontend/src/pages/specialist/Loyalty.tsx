@@ -603,7 +603,7 @@ const SpecialistLoyalty: React.FC = () => {
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
                           <p className={`font-semibold text-sm sm:text-base ${
-                            transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || transaction.type === 'SERVICE' || transaction.type === 'BOOKING_COMPLETION' || transaction.type === 'PROFILE_VIEW'
+                            (transaction.type as string) === 'EARNED' || (transaction.type as string) === 'BONUS' || (transaction.type as string) === 'REFERRAL' || (transaction.type as string) === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
                           }`}>
@@ -635,9 +635,9 @@ const SpecialistLoyalty: React.FC = () => {
                               transaction.type === 'REDEEMED' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
                               transaction.type === 'BONUS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' :
                               transaction.type === 'REFERRAL' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
-                              transaction.type === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
-                              transaction.type === 'BOOKING_COMPLETION' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                              transaction.type === 'PROFILE_VIEW' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400' :
+                              (transaction.type as string) === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
+                              (transaction.type as string) === 'BOOKING_COMPLETION' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                              (transaction.type as string) === 'PROFILE_VIEW' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                             }`}>
                               {getTransactionTypeLabel(transaction.type)}
@@ -647,7 +647,7 @@ const SpecialistLoyalty: React.FC = () => {
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
                         <p className={`font-bold text-base sm:text-lg ${
-                          transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || transaction.type === 'SERVICE' || transaction.type === 'BOOKING_COMPLETION' || transaction.type === 'PROFILE_VIEW'
+                          (transaction.type as string) === 'EARNED' || (transaction.type as string) === 'BONUS' || (transaction.type as string) === 'REFERRAL' || (transaction.type as string) === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                             ? 'text-green-600 dark:text-green-400'
                             : 'text-red-600 dark:text-red-400'
                         }`}>
@@ -743,9 +743,8 @@ const SpecialistLoyalty: React.FC = () => {
                     <div className="relative overflow-hidden">
                       <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full" />
                       <div className="absolute inset-0 flex justify-between">
-                        {tiers.map((tier, idx) => {
+                        {tiers.map((tier) => {
                           const min = tier.minPoints;
-                          const max = tier.maxPoints ?? Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
                           const totalSpan = Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
                           const leftPct = Math.min(100, Math.max(0, (min / totalSpan) * 100));
                           const isCurrent = loyaltyStats?.currentTier?.id === tier.id;
@@ -1072,6 +1071,16 @@ const SpecialistLoyalty: React.FC = () => {
             onSubmit={(data) => handleUpdateReward(editingReward.id, data)}
           />
         )}
+
+        {/* Confirm Delete Reward */}
+        <ConfirmModal
+          open={!!deleteRewardId}
+          message={t('loyalty.confirmDeleteRewardMessage') || 'This reward will be permanently deleted.'}
+          title={t('loyalty.confirmDeleteReward') || 'Are you sure you want to delete this reward?'}
+          variant="danger"
+          onConfirm={confirmDeleteReward}
+          onCancel={() => setDeleteRewardId(null)}
+        />
       </div>
     </div>
   );
@@ -1111,11 +1120,11 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
         description: formData.description,
         type: formData.type,
         pointsRequired: formData.pointsRequired,
-        ...(formData.type === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
-        ...(formData.type === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
-        ...(formData.type === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
+        ...((formData.type as string) === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
+        ...((formData.type as string) === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
+        ...((formData.type as string) === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
         usageLimit: formData.usageLimit,
-        ...(formData.usageLimit === 'LIMITED_TOTAL' && formData.maxRedemptions && {
+        ...((formData.usageLimit as string) === 'LIMITED_TOTAL' && formData.maxRedemptions && {
           maxRedemptions: parseInt(formData.maxRedemptions)
         }),
         ...(formData.validUntil && { validUntil: new Date(formData.validUntil) }),
@@ -1187,7 +1196,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     </select>
                   </div>
 
-                  {formData.type === 'PERCENTAGE_OFF' && (
+                  {(formData.type as string) === 'PERCENTAGE_OFF' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('loyalty.discountPercent') || 'Discount Percentage'}
@@ -1204,7 +1213,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     </div>
                   )}
 
-                  {(formData.type === 'DISCOUNT_VOUCHER' || formData.type === 'SERVICE_CREDIT') && (
+                  {((formData.type as string) === 'DISCOUNT_VOUCHER' || (formData.type as string) === 'SERVICE_CREDIT') && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('loyalty.discountAmount') || 'Discount Amount ($)'}
@@ -1250,7 +1259,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     </select>
                   </div>
 
-                  {formData.usageLimit === 'LIMITED_TOTAL' && (
+                  {(formData.usageLimit as string) === 'LIMITED_TOTAL' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('loyalty.maxRedemptions') || 'Max Total Redemptions'}
@@ -1340,11 +1349,11 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
         description: formData.description,
         type: formData.type,
         pointsRequired: formData.pointsRequired,
-        ...(formData.type === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
-        ...(formData.type === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
-        ...(formData.type === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
+        ...((formData.type as string) === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
+        ...((formData.type as string) === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
+        ...((formData.type as string) === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
         usageLimit: formData.usageLimit,
-        ...(formData.usageLimit === 'LIMITED_TOTAL' && formData.maxRedemptions && {
+        ...((formData.usageLimit as string) === 'LIMITED_TOTAL' && formData.maxRedemptions && {
           maxRedemptions: parseInt(formData.maxRedemptions)
         }),
         ...(formData.validUntil && { validUntil: new Date(formData.validUntil) }),
@@ -1412,7 +1421,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                     />
                   </div>
 
-                  {formData.type === 'PERCENTAGE_OFF' && (
+                  {(formData.type as string) === 'PERCENTAGE_OFF' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('loyalty.discountPercent') || 'Discount Percentage'}
@@ -1429,7 +1438,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                     </div>
                   )}
 
-                  {(formData.type === 'DISCOUNT_VOUCHER' || formData.type === 'SERVICE_CREDIT') && (
+                  {((formData.type as string) === 'DISCOUNT_VOUCHER' || (formData.type as string) === 'SERVICE_CREDIT') && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('loyalty.discountAmount') || 'Discount Amount ($)'}
@@ -1482,13 +1491,6 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
         </div>
       </div>
 
-      <ConfirmModal
-        open={!!deleteRewardId}
-        title={t('loyalty.confirmDeleteReward') || 'Are you sure you want to delete this reward?'}
-        variant="danger"
-        onConfirm={confirmDeleteReward}
-        onCancel={() => setDeleteRewardId(null)}
-      />
     </div>
   );
 };

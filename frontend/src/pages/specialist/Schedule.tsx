@@ -392,23 +392,8 @@ const SpecialistSchedule: React.FC = () => {
     setShowBookingDetailModal(true);
   };
 
-  // Handle booking reschedule via drag and drop
-  const _handleBookingReschedule = async (_bookingId: string, newDate: Date, newTime: string) => {
-    try {
-      const [hours, minutes] = newTime.split(':').map(Number);
-      const newDateTime = new Date(newDate);
-      newDateTime.setHours(hours, minutes, 0, 0);
-
-      // TODO: Call API to reschedule booking
-      toast.success(t('schedule.bookingRescheduled') || `Booking rescheduled to ${newDateTime.toLocaleString()}`);
-
-      // Reload bookings
-      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
-    } catch (error) {
-      console.error('Failed to reschedule booking:', error);
-      toast.error(t('schedule.rescheduleError') || 'Failed to reschedule booking');
-    }
-  };
+  // Handle booking reschedule via drag and drop (TODO: implement)
+  // const handleBookingReschedule = async (bookingId: string, newDate: Date, newTime: string) => { ... };
 
   // Load availability blocks
   useEffect(() => {
@@ -671,12 +656,7 @@ const SpecialistSchedule: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const _handleCellClick = (date: Date, hour: number) => {
-    setPreSelectedDate(date);
-    setPreSelectedTime(`${hour.toString().padStart(2, '0')}:00`);
-    setEditingBlock(null);
-    setShowAddModal(true);
-  };
+  // const handleCellClick = (date: Date, hour: number) => { ... }; // TODO: wire up if needed
 
   // Backend stores local display times with UTC "Z" suffix, so use UTC methods
   // to read them back correctly. The `date` param is a local Date from getWeekDays.

@@ -288,22 +288,22 @@ export class AdminAnalyticsService {
       const posts = postsResponse.data.posts || postsResponse.data || [];
 
       // Filter posts by date range
-      const filteredPosts = posts.filter((post: Record<string, unknown>) => {
+      const filteredPosts = posts.filter((post: any) => {
         const postDate = new Date(post.createdAt);
         return postDate >= startDate && postDate <= endDate;
       });
 
       // Calculate metrics
-      const discussions = filteredPosts.filter((p: Record<string, unknown>) => p.type === 'DISCUSSION');
-      const marketplace = filteredPosts.filter((p: Record<string, unknown>) => p.type === 'SALE');
+      const discussions = filteredPosts.filter((p: any) => p.type === 'DISCUSSION');
+      const marketplace = filteredPosts.filter((p: any) => p.type === 'SALE');
 
       const metrics = {
         totalPosts: filteredPosts.length,
         totalDiscussions: discussions.length,
         totalMarketplace: marketplace.length,
-        totalViews: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0),
-        totalLikes: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0),
-        totalComments: filteredPosts.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0),
+        totalViews: filteredPosts.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0),
+        totalLikes: filteredPosts.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0),
+        totalComments: filteredPosts.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0),
         avgEngagementRate: 0
       };
 
@@ -314,7 +314,7 @@ export class AdminAnalyticsService {
 
       // Group by date for trends
       const trendMap = new Map<string, any>();
-      filteredPosts.forEach((post: Record<string, unknown>) => {
+      filteredPosts.forEach((post: any) => {
         const date = new Date(post.createdAt).toISOString().split('T')[0];
         if (!trendMap.has(date)) {
           trendMap.set(date, {
@@ -338,13 +338,13 @@ export class AdminAnalyticsService {
 
       // Top posts
       const topPosts = filteredPosts
-        .sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
+        .sort((a: any, b: any) => {
           const aEngagement = (a.viewCount || 0) + (a.likeCount || 0) * 2 + (a.commentCount || 0) * 3;
           const bEngagement = (b.viewCount || 0) + (b.likeCount || 0) * 2 + (b.commentCount || 0) * 3;
           return bEngagement - aEngagement;
         })
         .slice(0, 10)
-        .map((post: Record<string, unknown>) => ({
+        .map((post: any) => ({
           id: post.id,
           title: post.title,
           type: post.type,
@@ -364,25 +364,25 @@ export class AdminAnalyticsService {
         {
           type: 'DISCUSSION' as const,
           avgViews: discussions.length > 0
-            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0) / discussions.length
             : 0,
           avgLikes: discussions.length > 0
-            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0) / discussions.length
             : 0,
           avgComments: discussions.length > 0
-            ? discussions.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0) / discussions.length
+            ? discussions.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0) / discussions.length
             : 0
         },
         {
           type: 'SALE' as const,
           avgViews: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.viewCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: any) => sum + (p.viewCount || 0), 0) / marketplace.length
             : 0,
           avgLikes: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.likeCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0) / marketplace.length
             : 0,
           avgComments: marketplace.length > 0
-            ? marketplace.reduce((sum: number, p: Record<string, unknown>) => sum + (p.commentCount || 0), 0) / marketplace.length
+            ? marketplace.reduce((sum: number, p: any) => sum + (p.commentCount || 0), 0) / marketplace.length
             : 0
         }
       ];

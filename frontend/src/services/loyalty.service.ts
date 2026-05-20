@@ -121,7 +121,7 @@ export class LoyaltyService {
   // Initialize user loyalty profile (handles new users)
   async initUserLoyalty(): Promise<UserLoyalty> {
     try {
-      const response = await apiClient.post<{profile: Record<string, unknown>}>('/loyalty/init');
+      const response = await apiClient.post<{profile: any}>('/loyalty/init');
 
       if (!response.success || !response.data) {
         return this.getDefaultLoyaltyProfile();
@@ -155,7 +155,7 @@ export class LoyaltyService {
   async getUserLoyalty(): Promise<UserLoyalty> {
     try {
       // Try to get the profile first
-      const response = await apiClient.get<{profile: Record<string, unknown>}>('/loyalty/profile');
+      const response = await apiClient.get<{profile: any}>('/loyalty/profile');
 
       if (!response.success || !response.data) {
         // If no profile exists, try to initialize it
@@ -182,7 +182,7 @@ export class LoyaltyService {
       };
     } catch (error: unknown) {
       // If getting profile fails, try to initialize for new users
-      if (error?.response?.status === 401) {
+      if ((error as any)?.response?.status === 401) {
         console.warn('Loyalty profile authentication failed - user may need to re-login');
         return this.getDefaultLoyaltyProfile();
       }
@@ -227,7 +227,7 @@ export class LoyaltyService {
       return response.data;
     } catch (error: unknown) {
       // Check for authentication errors specifically
-      if (error?.response?.status === 401) {
+      if ((error as any)?.response?.status === 401) {
         console.warn('Loyalty stats authentication failed - user may need to re-login');
       }
       return this.getDefaultLoyaltyStats();

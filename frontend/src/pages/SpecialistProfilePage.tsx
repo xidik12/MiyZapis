@@ -41,10 +41,10 @@ const SpecialistProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
-  const [activeTab, setActiveTab] = useState<'portfolio' | 'beforeAfter'>('portfolio');
+  const [_activeTab, _setActiveTab] = useState<'portfolio' | 'beforeAfter'>('portfolio');
 
   // Helper function to get localized description with fallbacks
-  const getLocalizedDescription = (specialist: Record<string, unknown>) => {
+  const getLocalizedDescription = (specialist: any) => {
     if (!specialist) return null;
     
     // Try to get description based on current language
@@ -57,7 +57,7 @@ const SpecialistProfilePage: React.FC = () => {
   };
 
   // Helper function to format location from specialist data
-  const getFormattedLocation = (specialist: Record<string, unknown>) => {
+  const getFormattedLocation = (specialist: any) => {
     if (!specialist) return null;
     
     const parts = [];
@@ -70,7 +70,7 @@ const SpecialistProfilePage: React.FC = () => {
     return parts.length > 0 ? parts.join(', ') : null;
   };
 
-  const getBankDetails = (specialist: Record<string, unknown>) => {
+  const getBankDetails = (specialist: any) => {
     if (!specialist?.bankDetails) return null;
     if (typeof specialist.bankDetails === 'string') {
       try {
@@ -118,7 +118,6 @@ const SpecialistProfilePage: React.FC = () => {
         await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
       }
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       // Handle specific error cases
       if (response?.status === 409) {
@@ -204,7 +203,7 @@ const SpecialistProfilePage: React.FC = () => {
         const raw = Array.isArray(specialist.portfolioImages)
           ? specialist.portfolioImages
           : (typeof specialist.portfolioImages === 'string' ? JSON.parse(specialist.portfolioImages) : []);
-        imgs = raw.map((it: Record<string, unknown>) => it?.imageUrl || it).filter(Boolean);
+        imgs = raw.map((it: any) => it?.imageUrl || it).filter(Boolean);
       }
       setLightbox((prev) => ({ ...prev, images: imgs }));
     } catch {}
@@ -539,7 +538,7 @@ const SpecialistProfilePage: React.FC = () => {
                     Portfolio
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-                    {portfolioImages.map((portfolioItem: Record<string, unknown>, index: number) => {
+                    {portfolioImages.map((portfolioItem: any, index: number) => {
                       // Handle both direct base64 strings and objects with imageUrl
                       const imageUrl = portfolioItem.imageUrl || portfolioItem;
                       
@@ -653,7 +652,7 @@ const SpecialistProfilePage: React.FC = () => {
               
               {services.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
-                  {services.map((service: Record<string, unknown>) => (
+                  {services.map((service: any) => (
                     <div
                       key={service.id}
                       className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 hover:shadow-lg transition-all duration-200"
@@ -711,7 +710,7 @@ const SpecialistProfilePage: React.FC = () => {
               
               {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-4 sm:space-y-6">
-                  {reviews.slice(0, 5).map((review: Record<string, unknown>) => (
+                  {reviews.slice(0, 5).map((review: any) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-6 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg px-2 -mx-2 transition-all duration-200">
                       <div className="flex items-start space-x-2 sm:space-x-4">
                         <Avatar

@@ -87,17 +87,17 @@ const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', da
   }
 };
 
-// Category colors for charts
-const _categoryColors = {
-  'Психологічна консультація': '#3B82F6', // blue
-  'Індивідуальна терапія': '#10B981', // green
-  'Сімейна консультація': '#F59E0B', // yellow
-  'Групова терапія': '#EF4444', // red
-  'Експрес-консультація': '#8B5CF6', // purple
-  'Підліткова психологія': '#06B6D4', // cyan
-  'Терапія пар': '#EC4899', // pink
-  'Психологічна діагностика': '#84CC16', // lime
-};
+// Category colors for charts (unused, kept for reference)
+/* const categoryColors = {
+  'Психологічна консультація': '#3B82F6',
+  'Індивідуальна терапія': '#10B981',
+  'Сімейна консультація': '#F59E0B',
+  'Групова терапія': '#EF4444',
+  'Експрес-консультація': '#8B5CF6',
+  'Підліткова психологія': '#06B6D4',
+  'Терапія пар': '#EC4899',
+  'Психологічна діагностика': '#84CC16',
+}; */
 
 interface ChartProps {
   data: number[];
@@ -294,13 +294,7 @@ const SpecialistAnalytics: React.FC = () => {
   // Export handlers
   const handleExportPDF = async () => {
     try {
-      // Create a simplified analytics report
-      const _reportData = {
-        overview: analyticsData.overview,
-        performance: analyticsData.performance,
-        period: selectedPeriod,
-        generatedAt: new Date().toISOString(),
-      };
+      // Create a simplified analytics report (data gathered below in content string)
 
       // Create a data URL for the PDF content
       const content = `
