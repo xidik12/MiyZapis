@@ -55,11 +55,19 @@
     min-height: 0;
   }
 
-  /* Belt + braces: explicitly disable 3D hover transforms on touch */
+  /* Belt + braces: explicitly disable 3D hover transforms on touch.
+     :hover sticks after a tap on iOS/Android until the next interaction —
+     leaving floating buttons everywhere. Targets:
+       • the 3D system selectors (bg-primary, role=button, hover:shadow cards)
+       • Tailwind hover-translate utilities used inline on HomePage etc. */
   button:not(.no-3d):not(:disabled):hover,
   [role="button"]:not(.no-3d):not(:disabled):hover,
-  a[class*="bg-primary-6"]:not(.no-3d):hover,
-  [class*="hover:shadow-"][class*="rounded-"]:hover {
+  a[class*="bg-primary-"]:not(.no-3d):hover,
+  [class*="hover:shadow-"][class*="rounded-"]:hover,
+  [class*="hover:-translate-y"]:hover,
+  [class*="hover:translate-y"]:hover,
+  [class*="hover:scale-"]:hover,
+  [class*="hover:rotate-"]:hover {
     transform: none !important;
   }
 
