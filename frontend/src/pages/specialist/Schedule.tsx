@@ -983,7 +983,7 @@ const SpecialistSchedule: React.FC = () => {
         <MonthView
           currentDate={currentWeekStart}
           bookings={filteredBookings}
-          availabilityBlocks={availabilityBlocks}
+          availabilityBlocks={availabilityBlocks as any}
           onDateClick={(date) => {
             setPreSelectedDate(date);
             setPreSelectedTime('09:00');
@@ -1134,7 +1134,7 @@ const SpecialistSchedule: React.FC = () => {
                                     {booking.service?.name || 'Booking'}
                                   </div>
                                   <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                    {(() => { const d = new Date(booking.scheduledAt); return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
+                                    {(() => { const d = new Date(booking.scheduledAt!); return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
                                   </div>
                                 </motion.div>
                               ))}
@@ -1302,19 +1302,19 @@ const SpecialistSchedule: React.FC = () => {
             setShowBookingDetailModal(false);
             setSelectedBooking(null);
           }}
-          onReschedule={(bookingId) => {
+          onReschedule={(_bookingId) => {
             toast.info(t('schedule.rescheduleBooking') || 'Reschedule booking feature coming soon');
             setShowBookingDetailModal(false);
           }}
-          onCancel={(bookingId) => {
+          onCancel={(_bookingId) => {
             toast.info(t('schedule.cancelBooking') || 'Cancel booking feature coming soon');
             setShowBookingDetailModal(false);
           }}
-          onBookAgain={(booking) => {
+          onBookAgain={(_booking) => {
             toast.info(t('schedule.bookAgain') || 'Book again feature coming soon');
             setShowBookingDetailModal(false);
           }}
-          onLeaveReview={(bookingId) => {
+          onLeaveReview={(_bookingId) => {
             toast.info(t('schedule.leaveReview') || 'Leave review feature coming soon');
             setShowBookingDetailModal(false);
           }}
@@ -1386,7 +1386,7 @@ const SpecialistSchedule: React.FC = () => {
       <RecurringBookingModal
         isOpen={showRecurringModal}
         onClose={() => setShowRecurringModal(false)}
-        onSave={(recurrenceData: RecurrenceData) => {
+        onSave={(_recurrenceData: RecurrenceData) => {
           toast.info(t('schedule.recurringFeature') || 'Recurring booking feature coming soon');
           // TODO: Implement recurring booking creation logic
         }}

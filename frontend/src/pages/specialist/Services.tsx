@@ -52,6 +52,13 @@ interface Service {
   prepTime?: number;
   cleanupTime?: number;
   rebookCycleDays?: number;
+  // Group session
+  isGroupSession?: boolean;
+  maxParticipants?: number;
+  minParticipants?: number;
+  // Timestamps
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // No mock services - will load from backend API
@@ -588,7 +595,7 @@ const SpecialistServices: React.FC = () => {
 
   // Removed availability and timeSlots functions as they're not part of backend schema
 
-  const getLocalizedText = (item: Record<string, unknown>, field: string) => {
+  const getLocalizedText = (item: any, field: string) => {
     return item[field] || '';
   };
 
@@ -623,7 +630,7 @@ const SpecialistServices: React.FC = () => {
 
       // Re-fetch services list from backend (soft-delete excludes deleted services)
       const refreshedServices = await specialistService.getServices();
-      setServices(refreshedServices);
+      setServices(refreshedServices as any as Service[]);
       logger.debug('Service deleted successfully, refreshed list:', refreshedServices.length);
 
     } catch (error: unknown) {
@@ -654,7 +661,7 @@ const SpecialistServices: React.FC = () => {
     }
 
     try {
-      const updatedService = await specialistService.toggleServiceStatus(serviceId, isActive);
+      const updatedService = await specialistService.toggleServiceStatus(serviceId, isActive) as any as Service;
       logger.debug('Service status updated:', updatedService);
       setServices(prev => prev.map(service =>
         service.id === serviceId ? updatedService : service
@@ -878,7 +885,7 @@ const SpecialistServices: React.FC = () => {
                           const validRatings = services.filter(s => s.rating && !isNaN(s.rating));
                           return validRatings.length === 0
                             ? t('services.noDataYet') || 'No data yet'
-                            : (validRatings.reduce((sum, s) => sum + s.rating, 0) / validRatings.length).toFixed(1);
+                            : (validRatings.reduce((sum, s) => sum + (s.rating ?? 0), 0) / validRatings.length).toFixed(1);
                         })()
                     }
                   </p>
@@ -906,7 +913,7 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'USD');
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price || 0), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'USD');
                         })()
                     }
                   </p>
@@ -972,7 +979,7 @@ const SpecialistServices: React.FC = () => {
                       try {
                         const freshServices = await specialistService.getServices();
                         logger.debug('Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
-                        setServices(freshServices);
+                        setServices(freshServices as any as Service[]);
                         // toast.success(`Refreshed! Found ${freshServices.length} services on backend`);
                       } catch (error) {
                         logger.error('Refresh failed:', error);
@@ -1265,7 +1272,7 @@ const SpecialistServices: React.FC = () => {
                       />
                       <select
                         value={formData.currency}
-                        onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value as any }))}
                         className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                       >
                         <option value="UAH">₴ UAH</option>
@@ -1358,7 +1365,7 @@ const SpecialistServices: React.FC = () => {
                     <LocationPicker
                       location={locationData}
                       onLocationChange={(newLocation) => {
-                        setLocationData(newLocation);
+                        setLocationData(newLocation as any);
                         // Also update formData.serviceLocation for backwards compatibility
                         setFormData(prev => ({
                           ...prev,

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+// import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 // Helper function to get the booking currency (same as Dashboard)
-const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   return currency;
 };
-import { RootState, AppDispatch } from '../../store';
+// import { RootState, AppDispatch } from '../../store';
 import { AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { specialistService } from '../../services/specialist.service';
@@ -61,7 +61,7 @@ const calculateGrowthPercentage = (current: number, previous: number): number =>
 };
 
 // Helper function to format time periods for chart labels
-const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', data: Record<string, unknown>[]): string[] => {
+const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', data: any[]): string[] => {
   switch (period) {
     case 'daily':
       return data.map(item => {
@@ -88,7 +88,7 @@ const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', da
 };
 
 // Category colors for charts
-const categoryColors = {
+const _categoryColors = {
   'Психологічна консультація': '#3B82F6', // blue
   'Індивідуальна терапія': '#10B981', // green
   'Сімейна консультація': '#F59E0B', // yellow
@@ -295,7 +295,7 @@ const SpecialistAnalytics: React.FC = () => {
   const handleExportPDF = async () => {
     try {
       // Create a simplified analytics report
-      const reportData = {
+      const _reportData = {
         overview: analyticsData.overview,
         performance: analyticsData.performance,
         period: selectedPeriod,
@@ -309,13 +309,13 @@ Analytics Report - Generated ${new Date().toLocaleDateString()}
 Overview:
 - Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}
 - Total Bookings: ${analyticsData.overview?.totalBookings || 0}
-- Active Services: ${analyticsData.overview?.activeServices || 0}
+- Active Services: ${(analyticsData.overview as any)?.activeServices || 0}
 - Avg Rating: ${analyticsData.overview?.averageRating || 'N/A'}
 
 Performance:
 - Response Time: ${analyticsData.performance?.averageResponseTime || 'N/A'} minutes
 - Completion Rate: ${analyticsData.performance?.completionRate || 'N/A'}%
-- Conversion Rate: ${analyticsData.performance?.conversionRate || 'N/A'}%
+- Conversion Rate: ${(analyticsData.performance as any)?.conversionRate || 'N/A'}%
       `;
 
       // Create and download the file
@@ -342,11 +342,11 @@ Performance:
         ['Metric', 'Value'],
         ['Total Revenue', analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'],
         ['Total Bookings', analyticsData.overview?.totalBookings || 0],
-        ['Active Services', analyticsData.overview?.activeServices || 0],
+        ['Active Services', (analyticsData.overview as any)?.activeServices || 0],
         ['Average Rating', analyticsData.overview?.averageRating || 'N/A'],
         ['Response Time (min)', analyticsData.performance?.averageResponseTime || 'N/A'],
         ['Completion Rate (%)', analyticsData.performance?.completionRate || 'N/A'],
-        ['Conversion Rate (%)', analyticsData.performance?.conversionRate || 'N/A'],
+        ['Conversion Rate (%)', (analyticsData.performance as any)?.conversionRate || 'N/A'],
         ['Generated At', new Date().toISOString()],
       ];
 
@@ -496,7 +496,7 @@ Performance:
         };
         
 
-        const performance: Record<string, unknown> = {
+        const performance: any = {
           averageResponseTime: averageResponseTime,
           completionRate: completionRate,
           customerSatisfaction: 4.5, // Default good rating
@@ -593,16 +593,16 @@ Performance:
 
         setAnalyticsData({
           overview,
-          performance,
-          bookings,
-          revenue,
+          performance: performance as any,
+          bookings: bookings as any,
+          revenue: revenue as any,
           services
         });
         
         // Generate chart data from actual booking data based on selected period
         const generateChartDataForPeriod = (period: 'daily' | 'weekly' | 'monthly' | 'yearly') => {
           const chartDataMap = new Map();
-          const now = new Date();
+          // const _now = new Date();
           
           completedBookings.forEach(booking => {
             const bookingDate = new Date(booking.createdAt);
@@ -729,7 +729,7 @@ Performance:
             punctuality: 90,
             professionalismScore: 4.5,
             period: { start: filters.startDate, end: filters.endDate }
-          },
+          } as any,
           bookings: {
             totalBookings: 0,
             completedBookings: 0,
@@ -740,7 +740,7 @@ Performance:
             bookingsByService: [],
             averageBookingValue: 0,
             period: { start: filters.startDate, end: filters.endDate }
-          },
+          } as any,
           revenue: {
             totalRevenue: 0,
             totalPayouts: 0,
@@ -750,7 +750,7 @@ Performance:
             revenueByMonth: [],
             revenueByService: [],
             period: { start: filters.startDate, end: filters.endDate }
-          },
+          } as any,
           services: {
             topServices: [],
             servicePerformance: [],
@@ -796,7 +796,7 @@ Performance:
   };
   
   // Translate chart labels for different periods (simplified since we use numeric formats now)
-  const translateChartLabels = (labels: string[], period: string): string[] => {
+  const translateChartLabels = (labels: string[], _period: string): string[] => {
     // Since we're now using simple numeric date formats (DD/MM, MM/YY), no translation needed
     return labels;
   };
@@ -1172,6 +1172,7 @@ Performance:
               labels={serviceNames}
               color="#10B981"
               height="300px"
+              type="bar"
             />
           ) : (
             <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">

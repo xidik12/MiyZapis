@@ -18,12 +18,6 @@ interface LocationPickerProps {
   className?: string;
 }
 
-declare global {
-  interface Window {
-    google: Record<string, unknown>;
-  }
-}
-
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   location,
   onLocationChange,
@@ -55,7 +49,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       return;
     }
     
-    if (!window.google && !document.querySelector('script[src*="googleapis"]')) {
+    if (!(window as any).google && !document.querySelector('script[src*="googleapis"]')) {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
@@ -66,7 +60,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         setMapError(true);
       };
       document.head.appendChild(script);
-    } else if (window.google && window.google.maps) {
+    } else if ((window as any).google && (window as any).google.maps) {
       setMapLoaded(true);
     }
   }, []);
@@ -88,7 +82,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, []);
 
   const initializeMap = () => {
-    if (!window.google || !window.google.maps || !mapRef.current) return;
+    if (!(window as any).google || !(window as any).google.maps || !mapRef.current) return;
 
     // Default location (center of world or user's current location)
     const defaultCenter = { lat: 0, lng: 0 };
@@ -98,7 +92,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       ? { lat: location.latitude, lng: location.longitude }
       : defaultCenter;
 
-    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+    mapInstanceRef.current = new (window as any).google.maps.Map(mapRef.current, {
       center: initialCenter,
       zoom: location.latitude && location.longitude ? 15 : 2,
       mapTypeControl: true,
@@ -107,11 +101,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     });
 
     // Initialize Places service for reverse geocoding
-    placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
+    placesServiceRef.current = new (window as any).google.maps.places.PlacesService(mapInstanceRef.current);
 
     // Initialize Autocomplete for search input
     if (searchInputRef.current) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(
+      autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(
         searchInputRef.current,
         {
           fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
@@ -129,7 +123,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
 
     // Add click listener to map
-    mapInstanceRef.current.addListener('click', (event: Record<string, unknown>) => {
+    mapInstanceRef.current.addListener('click', (event: any) => {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
       
@@ -137,14 +131,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       if (markerRef.current) {
         markerRef.current.setPosition(event.latLng);
       } else {
-        markerRef.current = new window.google.maps.Marker({
+        markerRef.current = new (window as any).google.maps.Marker({
           position: event.latLng,
           map: mapInstanceRef.current,
           draggable: true,
         });
 
         // Add drag listener to marker
-        markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
+        markerRef.current.addListener('dragend', (dragEvent: any) => {
           const newLat = dragEvent.latLng.lat();
           const newLng = dragEvent.latLng.lng();
           reverseGeocode(newLat, newLng);
@@ -157,13 +151,13 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
     // If we have existing coordinates, place marker
     if (location.latitude && location.longitude) {
-      markerRef.current = new window.google.maps.Marker({
+      markerRef.current = new (window as any).google.maps.Marker({
         position: initialCenter,
         map: mapInstanceRef.current,
         draggable: true,
       });
 
-      markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
+      markerRef.current.addListener('dragend', (dragEvent: any) => {
         const newLat = dragEvent.latLng.lat();
         const newLng = dragEvent.latLng.lng();
         reverseGeocode(newLat, newLng);
@@ -189,13 +183,13 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const reverseGeocode = async (lat: number, lng: number) => {
-    if (!window.google) return;
+    if (!(window as any).google) return;
 
-    const geocoder = new window.google.maps.Geocoder();
+    const geocoder = new (window as any).google.maps.Geocoder();
     
     geocoder.geocode(
       { location: { lat, lng } },
-      (results: Record<string, unknown>[], status: string) => {
+      (results: any[], status: string) => {
         if (status === 'OK' && results[0]) {
           const locationData = extractLocationFromPlace(results[0]);
           onLocationChange({
@@ -208,7 +202,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
   };
 
-  const extractLocationFromPlace = (place: Record<string, unknown>): Location => {
+  const extractLocationFromPlace = (place: any): Location => {
     const addressComponents = place.address_components || [];
     const formattedAddress = place.formatted_address || '';
     
@@ -219,7 +213,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     let postalCode = '';
     
     // Extract address components with improved logic
-    addressComponents.forEach((component: Record<string, unknown>) => {
+    addressComponents.forEach((component: any) => {
       const types = component.types;
       
       if (types.includes('street_number')) {
@@ -258,7 +252,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return location;
   };
 
-  const handlePlaceSelect = (place: Record<string, unknown>) => {
+  const handlePlaceSelect = (place: any) => {
     if (!place.geometry || !place.geometry.location) return;
 
     const lat = place.geometry.location.lat();
@@ -277,14 +271,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     if (markerRef.current) {
       markerRef.current.setPosition({ lat, lng });
     } else {
-      markerRef.current = new window.google.maps.Marker({
+      markerRef.current = new (window as any).google.maps.Marker({
         position: { lat, lng },
         map: mapInstanceRef.current,
         draggable: true,
       });
 
       // Add drag listener to new marker
-      markerRef.current.addListener('dragend', (dragEvent: Record<string, unknown>) => {
+      markerRef.current.addListener('dragend', (dragEvent: any) => {
         const newLat = dragEvent.latLng.lat();
         const newLng = dragEvent.latLng.lng();
         reverseGeocode(newLat, newLng);
@@ -304,7 +298,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const performPlaceSearch = async (query: string) => {
-    if (!window.google || !placesServiceRef.current || !query.trim()) {
+    if (!(window as any).google || !placesServiceRef.current || !query.trim()) {
       setSearchResults([]);
       return;
     }
@@ -316,9 +310,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
     };
 
-    placesServiceRef.current.textSearch(request, (results: Record<string, unknown>[], status: string) => {
+    placesServiceRef.current.textSearch(request, (results: any[], status: string) => {
       setIsSearching(false);
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+      if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && results) {
         setSearchResults(results.slice(0, 5)); // Limit to 5 results
       } else {
         setSearchResults([]);
@@ -341,7 +335,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }, 300);
   };
 
-  const selectSearchResult = (place: Record<string, unknown>) => {
+  const selectSearchResult = (place: any) => {
     handlePlaceSelect(place);
     setSearchResults([]);
   };

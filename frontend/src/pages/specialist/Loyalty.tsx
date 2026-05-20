@@ -14,9 +14,9 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 ;
 
 const SpecialistLoyalty: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
   const { t, language } = useLanguage();
-  const { currency } = useCurrency();
+  const { currency: _currency } = useCurrency();
   
   const [loading, setLoading] = useState(true);
   const [loyaltyProfile, setLoyaltyProfile] = useState<UserLoyalty | null>(null);
