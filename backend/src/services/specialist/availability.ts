@@ -665,7 +665,12 @@ export class AvailabilityService {
     const currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
-      const dayOfWeek = currentDate.toLocaleLowerCase('en-US', { weekday: 'long' });
+      // Bug fix: `toLocaleLowerCase` does not exist on Date. The intent is
+      // "give me the weekday name in lowercase" (used as a key into the
+      // workingHours object, where keys are 'monday', 'tuesday' etc.).
+      const dayOfWeek = currentDate
+        .toLocaleString('en-US', { weekday: 'long' })
+        .toLowerCase();
       const dayWorkingHours = workingHours[dayOfWeek];
 
       const dayData = {
@@ -682,7 +687,7 @@ export class AvailabilityService {
         // Generate time slots for the working day
         const slots = this.generateTimeSlotsForDay(
           currentDate,
-          dayWorkingHours,
+          dayWorkingHours as Record<string, unknown>,
           availabilityBlocks,
           bookings
         );
@@ -711,12 +716,14 @@ export class AvailabilityService {
     const slots: TimeSlot[] = [];
     const slotDuration = 60; // 1 hour slots
 
-    if (!workingHours.start || !workingHours.end) {
+    const startStr = workingHours.start as string | undefined;
+    const endStr = workingHours.end as string | undefined;
+    if (!startStr || !endStr) {
       return slots;
     }
 
-    const [startHour, startMinute] = workingHours.start.split(':').map(Number);
-    const [endHour, endMinute] = workingHours.end.split(':').map(Number);
+    const [startHour, startMinute] = startStr.split(':').map(Number);
+    const [endHour, endMinute] = endStr.split(':').map(Number);
 
     let currentTime = new Date(date);
     currentTime.setHours(startHour, startMinute, 0, 0);
@@ -736,8 +743,8 @@ export class AvailabilityService {
 
       // Check if slot has a booking with proper overlap detection
       const booking = bookings.find(b => {
-        const bookingStart = new Date(b.scheduledAt);
-        const bookingEnd = new Date(bookingStart.getTime() + b.duration * 60 * 1000);
+        const bookingStart = new Date(b.scheduledAt as string | number | Date);
+        const bookingEnd = new Date(bookingStart.getTime() + Number(b.duration) * 60 * 1000);
         // Two time ranges overlap if: start1 < end2 && start2 < end1
         return currentTime < bookingEnd && bookingStart < slotEnd;
       });
@@ -747,7 +754,7 @@ export class AvailabilityService {
         endTime: new Date(slotEnd),
         isAvailable: !isBlocked && !booking,
         reason: isBlocked ? 'Unavailable' : booking ? 'Booked' : undefined,
-        bookingId: booking?.id,
+        bookingId: booking?.id as string | undefined,
       });
 
       currentTime = slotEnd;

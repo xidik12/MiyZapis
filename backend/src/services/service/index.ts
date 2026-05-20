@@ -519,7 +519,7 @@ export class ServiceService {
         orderBy: { createdAt: 'desc' },
       });
 
-      return services as ServiceWithDetails[];
+      return services as unknown as ServiceWithDetails[];
     } catch (error) {
       logger.error('Error getting specialist services:', error);
       throw error;
@@ -586,7 +586,7 @@ export class ServiceService {
         orderBy: { createdAt: 'desc' },
       });
 
-      return services as ServiceWithDetails[];
+      return services as unknown as ServiceWithDetails[];
     } catch (error) {
       logger.error('Error getting services by specialist ID:', error);
       throw error;
@@ -640,7 +640,7 @@ export class ServiceService {
 
       if (city) {
         where.specialist = {
-          ...where.specialist,
+          ...(where.specialist as Record<string, unknown>),
           city: { equals: city, mode: 'insensitive' },
         };
       }
@@ -1103,7 +1103,7 @@ export class ServiceService {
         take: limit,
       });
 
-      return services as ServiceWithDetails[];
+      return services as unknown as ServiceWithDetails[];
     } catch (error) {
       logger.error('Error getting popular services:', error);
       throw error;
@@ -1134,42 +1134,43 @@ export class ServiceService {
       
       for (const service of services) {
         let newCurrency = service.currency;
-        let newPrice = service.basePrice;
-        
+        const basePriceNum = Number(service.basePrice);
+        let newPrice = basePriceNum;
+
         // Smart detection based on service name and price patterns
         if (service.name.toLowerCase().includes('barber')) {
           // Barber services are typically in USD
-          if (service.basePrice >= 1000) {
+          if (basePriceNum >= 1000) {
             // This is likely UAH stored as USD, convert it
-            newPrice = service.basePrice / 37; // Convert UAH to USD
+            newPrice = basePriceNum / 37; // Convert UAH to USD
             newCurrency = 'USD';
-            logger.info(`Migrating barber service ${service.id}: ${service.basePrice} UAH -> ${newPrice} USD`);
-          } else if (service.basePrice <= 100) {
+            logger.info(`Migrating barber service ${service.id}: ${basePriceNum} UAH -> ${newPrice} USD`);
+          } else if (basePriceNum <= 100) {
             // This is likely correct USD pricing
             newCurrency = 'USD';
           }
         } else if (service.name.toLowerCase().includes('beard')) {
           // Beard trim services are typically in UAH
-          if (service.basePrice <= 100) {
+          if (basePriceNum <= 100) {
             // This is likely USD stored as UAH, convert it
-            newPrice = service.basePrice * 37; // Convert USD to UAH
+            newPrice = basePriceNum * 37; // Convert USD to UAH
             newCurrency = 'UAH';
-            logger.info(`Migrating beard service ${service.id}: ${service.basePrice} USD -> ${newPrice} UAH`);
-          } else if (service.basePrice >= 1000) {
+            logger.info(`Migrating beard service ${service.id}: ${basePriceNum} USD -> ${newPrice} UAH`);
+          } else if (basePriceNum >= 1000) {
             // This is likely correct UAH pricing
             newCurrency = 'UAH';
           }
         } else {
           // For other services, use heuristics based on price
-          if (service.basePrice >= 1000) {
+          if (basePriceNum >= 1000) {
             newCurrency = 'UAH';
-          } else if (service.basePrice <= 100) {
+          } else if (basePriceNum <= 100) {
             newCurrency = 'USD';
           }
         }
 
         // Update if currency or price changed
-        if (newCurrency !== service.currency || newPrice !== service.basePrice) {
+        if (newCurrency !== service.currency || newPrice !== basePriceNum) {
           await prisma.service.update({
             where: { id: service.id },
             data: {

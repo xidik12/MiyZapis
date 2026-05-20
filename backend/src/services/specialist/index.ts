@@ -537,7 +537,7 @@ export class SpecialistService {
         certifications: SpecialistService.parseJsonField(specialist.certifications, []),
       };
 
-      return parsedSpecialist as SpecialistWithUser;
+      return parsedSpecialist as unknown as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -603,7 +603,7 @@ export class SpecialistService {
         certifications: SpecialistService.parseJsonField(specialist.certifications, []),
       };
 
-      return parsedSpecialist as SpecialistWithUser;
+      return parsedSpecialist as unknown as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -829,7 +829,7 @@ export class SpecialistService {
       const totalPages = Math.ceil(total / limit);
 
       return {
-        specialists: finalList as SpecialistWithUser[],
+        specialists: finalList as unknown as SpecialistWithUser[],
         total,
         page,
         totalPages,
@@ -1012,7 +1012,7 @@ export class SpecialistService {
         .reduce((sum, b) => {
           // Convert booking amount to UAH base currency before summing
           const serviceCurrency = b.service?.currency || 'UAH';
-          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
           return sum + convertedAmount;
         }, 0);
 
@@ -1024,13 +1024,13 @@ export class SpecialistService {
       
       const averageMonthlyRevenue = allTimeCompleted.reduce((sum, b) => {
         const serviceCurrency = b.service?.currency || 'UAH';
-        const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+        const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
         return sum + convertedAmount;
       }, 0) / monthsInOperation;
       const averageBookingValue = allTimeCompleted.length > 0 
         ? allTimeCompleted.reduce((sum, b) => {
             const serviceCurrency = b.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
             return sum + convertedAmount;
           }, 0) / allTimeCompleted.length 
         : 0;
@@ -1071,7 +1071,7 @@ export class SpecialistService {
         })
         .reduce((sum, b) => {
           const serviceCurrency = b.service?.currency || 'UAH';
-          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
           return sum + convertedAmount;
         }, 0);
       
@@ -1082,7 +1082,7 @@ export class SpecialistService {
         })
         .reduce((sum, b) => {
           const serviceCurrency = b.service?.currency || 'UAH';
-          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
           return sum + convertedAmount;
         }, 0);
       
@@ -1105,7 +1105,7 @@ export class SpecialistService {
           })
           .reduce((sum, b) => {
             const serviceCurrency = b.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
             return sum + convertedAmount;
           }, 0);
         
@@ -1143,7 +1143,7 @@ export class SpecialistService {
           const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
           const revenue = completed.reduce((sum, b) => {
             const serviceCurrency = b.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
             return sum + convertedAmount;
           }, 0);
           
