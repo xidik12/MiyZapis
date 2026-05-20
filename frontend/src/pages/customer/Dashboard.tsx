@@ -32,6 +32,7 @@ import { PageLoader } from '@/components/ui';
 // Interface definitions for type safety
 interface CustomerStats {
   totalSpent: number;
+  monthlySpendGrowth: number;
   loyaltyPoints: number;
   lifetimePoints: number;
   currentTier: string;
@@ -209,8 +210,32 @@ const CustomerDashboard: React.FC = () => {
         }));
         setRecentBookings(recent);
 
-        // Stats (basic derived)
-        const totalSpent = completedBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        // Stats (basic derived). totalAmount is a Prisma Decimal which JSON-
+        // serialises as a string — coerce with Number() before summing, otherwise
+        // the reduce concatenates strings ("0" + "100" + "200" → "0100200").
+        const totalSpent = completedBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+
+        // Real month-over-month spend growth (replaces the hard-coded "+15%"
+        // that used to ship next to Total Spent).
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const sumInRange = (from: Date, to: Date) =>
+          completedBookings
+            .filter((b) => {
+              const d = new Date(b.scheduledAt || b.createdAt || 0);
+              return d >= from && d < to;
+            })
+            .reduce((s, b) => s + Number(b.totalAmount || 0), 0);
+        const thisMonthSpent = sumInRange(monthStart, new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1));
+        const lastMonthSpent = sumInRange(prevMonthStart, monthStart);
+        const monthlySpendGrowth =
+          lastMonthSpent > 0
+            ? Math.round(((thisMonthSpent - lastMonthSpent) / lastMonthSpent) * 100)
+            : thisMonthSpent > 0
+            ? 100
+            : 0;
+
         const servicesUsed = new Set(completedBookings.map((b) => b.service?.id || b.serviceId)).size;
         // Reviews written and average rating from my reviews endpoint
         const myReviewsList = (myReviews as any)?.reviews || [];
@@ -218,6 +243,7 @@ const CustomerDashboard: React.FC = () => {
         const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: Record<string, unknown>) => s + (Number(r.rating) || 0), 0) / reviewsWritten) : 0;
         setStats({
           totalSpent,
+          monthlySpendGrowth,
           loyaltyPoints: loyaltyProfile?.currentPoints || 0,
           lifetimePoints: loyaltyProfile?.lifetimePoints || 0,
           currentTier: loyaltyStatsData?.currentTier?.name || 'Bronze',
@@ -448,8 +474,12 @@ const CustomerDashboard: React.FC = () => {
             <StatCard
               title={t('dashboard.customer.totalSpent')}
               value={stats ? formatPrice(stats.totalSpent) : `${getCurrencySymbol()}0`}
-              change={`+15% ${t('dashboard.specialist.thisMonthImprovement')}`}
-              changeType="positive"
+              change={
+                stats && stats.monthlySpendGrowth !== 0
+                  ? `${stats.monthlySpendGrowth > 0 ? '+' : ''}${stats.monthlySpendGrowth}% ${t('dashboard.specialist.thisMonthImprovement')}`
+                  : undefined
+              }
+              changeType={stats && stats.monthlySpendGrowth >= 0 ? 'positive' : 'negative'}
               icon={CreditCardIcon}
               iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
               description={t('dashboard.specialist.allTime')}
