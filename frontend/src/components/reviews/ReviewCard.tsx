@@ -79,7 +79,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   const [showFullComment, setShowFullComment] = useState(false);
   const [showResponse, setShowResponse] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [_showReportModal, _setShowReportModal] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -301,10 +301,11 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
                 {customerName}
               </h3>
               {review.isVerified && (
-                <CheckBadgeIcon
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 flex-shrink-0"
-                  title={t('reviews.verified') || 'Verified Purchase'}
-                />
+                <span title={t('reviews.verified') || 'Verified Purchase'}>
+                  <CheckBadgeIcon
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 flex-shrink-0"
+                  />
+                </span>
               )}
             </div>
 
@@ -459,7 +460,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       {review.response && showResponse && (
         <SpecialistResponse
           response={review.response}
-          onReact={onReactToResponse ? (responseId, reaction) => onReactToResponse(review.id, reaction) : undefined}
+          onReact={onReactToResponse ? (_responseId, reaction) => onReactToResponse(review.id, reaction) : undefined}
           isExpanded={showResponse}
           onToggle={() => setShowResponse(!showResponse)}
         />

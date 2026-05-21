@@ -52,11 +52,11 @@ class LocationService {
         return [];
       }
 
-      const response = await api.get('/locations/search', {
+      const response = await api.get<{ data: any }>('/locations/search', {
         params: { q: sanitizedQuery, types },
       });
 
-      return response.data.data.predictions || [];
+      return response.data!.data.predictions || [];
     } catch (error) {
       console.error('Error searching locations:', error);
       return [];
@@ -76,9 +76,9 @@ class LocationService {
       if (placeId) params.placeId = placeId;
       if (address) params.address = sanitizeText(address);
 
-      const response = await api.get('/locations/geocode', { params });
+      const response = await api.get<{ data: any }>('/locations/geocode', { params });
 
-      return response.data.data.location || null;
+      return response.data!.data.location || null;
     } catch (error) {
       console.error('Error geocoding location:', error);
       return null;
@@ -90,11 +90,11 @@ class LocationService {
    */
   async reverseGeocode(lat: number, lng: number): Promise<LocationDetails | null> {
     try {
-      const response = await api.get('/locations/reverse-geocode', {
+      const response = await api.get<{ data: any }>('/locations/reverse-geocode', {
         params: { lat, lng },
       });
 
-      return response.data.data.location || null;
+      return response.data!.data.location || null;
     } catch (error) {
       console.error('Error reverse geocoding:', error);
       return null;
@@ -109,9 +109,9 @@ class LocationService {
       const params: Record<string, unknown> = { limit };
       if (search) params.search = sanitizeSearchQuery(search);
 
-      const response = await api.get('/locations/cities', { params });
+      const response = await api.get<{ data: any }>('/locations/cities', { params });
 
-      const cities = response.data.data.cities || [];
+      const cities = response.data!.data.cities || [];
       return cities.filter((c: CityData) => c.city && c.city.trim() !== '');
     } catch (error) {
       console.error('Error fetching cities:', error);
@@ -129,11 +129,11 @@ class LocationService {
     limit: number = 20
   ): Promise<NearbyLocation[]> {
     try {
-      const response = await api.get('/locations/nearby', {
+      const response = await api.get<{ data: any }>('/locations/nearby', {
         params: { lat, lng, radius, limit },
       });
 
-      return response.data.data.locations || [];
+      return response.data!.data.locations || [];
     } catch (error) {
       console.error('Error fetching nearby locations:', error);
       return [];

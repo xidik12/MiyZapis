@@ -54,8 +54,10 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
   }, []);
 
   const initializeGoogleSignIn = () => {
-    if (window.google) {
-      window.google.accounts.id.initialize({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (window as any).google;
+    if (g) {
+      g.accounts.id.initialize({
         client_id: clientId,
         callback: handleCredentialResponse,
         auto_select: false,
@@ -65,7 +67,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       // Use a more flexible button configuration
       const buttonContainer = document.getElementById('enhanced-google-signin-button');
       if (buttonContainer) {
-        window.google.accounts.id.renderButton(buttonContainer, {
+        g.accounts.id.renderButton(buttonContainer, {
           theme: 'outline',
           size: 'large',
           text: 'signin_with',
@@ -144,9 +146,9 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // Dispatch Google login with selected user type
-      const result = await dispatch(googleLogin({ 
-        credential: pendingGoogleData.credential, 
-        userType 
+      await dispatch(googleLogin({
+        credential: pendingGoogleData.credential as string,
+        userType
       })).unwrap();
       
       setShowUserTypeModal(false);

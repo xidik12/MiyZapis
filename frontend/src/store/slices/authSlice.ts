@@ -57,11 +57,12 @@ export const googleLogin = createAsyncThunk(
   async ({ credential, userType }: { credential: string; userType?: 'customer' | 'specialist' }, { rejectWithValue }) => {
     try {
       const response = await authService.googleAuth(credential, userType);
-      if (response.requiresUserTypeSelection) {
+      const res = response as any;
+      if (res.requiresUserTypeSelection) {
         // Return special response indicating user type selection is needed
-        return { requiresUserTypeSelection: true, googleData: response.googleData };
+        return { requiresUserTypeSelection: true, googleData: res.googleData };
       }
-      setAuthTokens(response.tokens);
+      setAuthTokens(res.tokens);
       return response;
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -214,7 +215,7 @@ export const resendVerificationEmail = createAsyncThunk(
 
 export const logout = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async (_) => {
     try {
       await authService.logout();
       clearAuthTokens();
@@ -261,7 +262,7 @@ const authSlice = createSlice({
     },
     incrementTotalBookings: (state) => {
       if (state.user) {
-        state.user.totalBookings += 1;
+        state.user.totalBookings = (state.user.totalBookings ?? 0) + 1;
       }
     },
   },

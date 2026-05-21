@@ -9,16 +9,6 @@ import {
 export class NotificationService {
   private useLocalFallback = false;
 
-  // Check if backend is available
-  private async isBackendAvailable(): Promise<boolean> {
-    try {
-      const response = await apiClient.get('/health');
-      return response.success;
-    } catch {
-      return false;
-    }
-  }
-
   // Get user notifications
   async getNotifications(filters: {
     type?: NotificationType;
@@ -96,8 +86,7 @@ export class NotificationService {
       isRead: local.isRead,
       createdAt: local.createdAt,
       actionUrl: local.actionUrl,
-      metadata: local.metadata
-    }));
+    } as Notification));
 
     const total = notifications.length;
     const page = filters.page || 1;
@@ -108,10 +97,12 @@ export class NotificationService {
       notifications,
       unreadCount,
       pagination: {
-        page,
+        currentPage: page,
         limit,
-        total,
-        totalPages
+        totalItems: total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
       }
     };
   }

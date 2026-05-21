@@ -72,7 +72,7 @@ function useScrollReveal() {
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAppSelector(selectUser);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, _setIsLoading] = useState(false);
   const [communityPosts, setCommunityPosts] = useState<PostPreview[]>([]);
   const [communityLoading, setCommunityLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
@@ -732,7 +732,8 @@ const HomePage: React.FC = () => {
             </div>
           ) : topSpecialists.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-              {topSpecialists.map((specialist: Record<string, unknown>) => {
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {topSpecialists.map((specialist: any) => {
                 const displayName = getSpecialistName(specialist);
                 return (
                   <Link

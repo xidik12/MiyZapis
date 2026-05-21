@@ -34,7 +34,7 @@ const SpecialistReviews: React.FC = () => {
     const loadSpecialistProfile = async () => {
       try {
         const profile = await specialistService.getProfile();
-        const specialistData = profile.specialist || profile;
+        const specialistData = (profile as any).specialist || profile;
         setSpecialistId(specialistData.id);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
@@ -242,12 +242,12 @@ const SpecialistReviews: React.FC = () => {
         review.id === respondingToReview.id
           ? {
               ...review,
-              response: result.response || {
-                id: result.response?.id || 'temp',
+              response: (result as any).response || {
+                id: (result as any).response?.id || 'temp',
                 message: responseText,
                 createdAt: new Date().toISOString()
               }
-            }
+            } as Review
           : review
       ));
     } catch (error: unknown) {
@@ -263,15 +263,15 @@ const SpecialistReviews: React.FC = () => {
     comment: review.comment,
     tags: review.tags,
     isVerified: review.isVerified,
-    likeCount: review.likeCount || 0,
-    dislikeCount: review.dislikeCount || 0,
-    commentCount: review.commentCount || 0,
-    userReaction: review.userReaction || null,
+    likeCount: (review as any).likeCount || 0,
+    dislikeCount: (review as any).dislikeCount || 0,
+    commentCount: (review as any).commentCount || 0,
+    userReaction: (review as any).userReaction || null,
     createdAt: review.createdAt,
     customer: review.customer,
     service: review.service,
-    response: review.response
-  }));
+    response: review.response,
+  } as ReviewCardData));
 
   // Provide default stats if none available
   const defaultStats: ReviewStats = {

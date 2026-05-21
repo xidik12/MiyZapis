@@ -12,6 +12,7 @@ export interface LocalNotification extends Omit<Notification, 'id'> {
   synced: boolean;
   createdAt: string;
   updatedAt: string;
+  metadata?: Record<string, unknown>;
 }
 
 const STORAGE_KEYS = {
@@ -68,18 +69,6 @@ export class LocalNotificationService {
       email: true,
       push: true,
       telegram: false,
-      types: {
-        booking: true,
-        payment: true,
-        review: true,
-        system: true,
-        marketing: false
-      },
-      quietHours: {
-        enabled: false,
-        start: '22:00',
-        end: '08:00'
-      }
     };
   }
 
@@ -131,7 +120,7 @@ export class LocalNotificationService {
   }
 
   // Add new notification
-  addNotification(notification: Omit<LocalNotification, 'id' | 'localId' | 'synced' | 'createdAt' | 'updatedAt'>): LocalNotification {
+  addNotification(notification: Omit<LocalNotification, 'id' | 'localId' | 'synced' | 'createdAt' | 'updatedAt'> | any): LocalNotification {
     const now = new Date().toISOString();
     const newNotification: LocalNotification = {
       ...notification,
@@ -219,7 +208,7 @@ export class LocalNotificationService {
   // Create system notifications for common events
   createBookingNotification(bookingData: Record<string, unknown>): LocalNotification {
     return this.addNotification({
-      type: 'booking',
+      type: 'booking_confirmed' as NotificationType,
       title: 'Booking Update',
       message: `Your booking for ${bookingData.serviceName} has been updated`,
       isRead: false,
@@ -230,7 +219,7 @@ export class LocalNotificationService {
 
   createPaymentNotification(paymentData: Record<string, unknown>): LocalNotification {
     return this.addNotification({
-      type: 'payment',
+      type: 'payment_received' as NotificationType,
       title: 'Payment Processed',
       message: `Payment of ${paymentData.amount} has been processed`,
       isRead: false,
@@ -241,7 +230,7 @@ export class LocalNotificationService {
 
   createSystemNotification(title: string, message: string, actionUrl?: string): LocalNotification {
     return this.addNotification({
-      type: 'system',
+      type: 'system_announcement' as NotificationType,
       title,
       message,
       isRead: false,
@@ -251,7 +240,7 @@ export class LocalNotificationService {
   }
 
   // Sync with backend when available
-  async syncWithBackend(backendService: unknown): Promise<{
+  async syncWithBackend(_backendService: unknown): Promise<{
     synced: number;
     errors: number;
   }> {

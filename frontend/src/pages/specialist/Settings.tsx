@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -41,7 +41,6 @@ const SpecialistSettings: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Modal states
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
@@ -76,7 +75,7 @@ const SpecialistSettings: React.FC = () => {
           ...prev,
           accountSettings: {
             ...prev.accountSettings,
-            autoAcceptBookings: profile.autoBooking ?? false,
+            autoAcceptBookings: (profile as any).autoBooking ?? false,
           },
           business: {
             ...prev.business,
@@ -178,7 +177,7 @@ const SpecialistSettings: React.FC = () => {
       const result = await fileUploadService.uploadAvatar(file);
 
       // Update user profile with new avatar URL
-      const updatedUser = await userService.updateProfile({ avatar: result.url });
+      await userService.updateProfile({ avatar: result.url });
 
       // Update Redux store with only the avatar field
       dispatch(updateUserProfile({ avatar: result.url }));
@@ -212,10 +211,10 @@ const SpecialistSettings: React.FC = () => {
       setUploadError('');
       
       // Update user profile to remove avatar
-      const updatedUser = await userService.updateProfile({ avatar: null });
-      
+      await userService.updateProfile({ avatar: undefined });
+
       // Update Redux store with only the avatar field
-      dispatch(updateUserProfile({ avatar: null }));
+      dispatch(updateUserProfile({ avatar: undefined }));
       
       // Update local state
       setProfileImage('');

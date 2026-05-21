@@ -57,7 +57,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     socketService.on('notification:new', handleSocketNotification);
 
     // Also listen to global updates from NotificationCenter (mark-all, delete-all)
-    const onGlobalUpdate = (e: Record<string, unknown>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const onGlobalUpdate = (e: any) => {
       const detail = e?.detail || {};
       if (typeof detail.unreadCount === 'number') {
         setUnreadCount(detail.unreadCount);

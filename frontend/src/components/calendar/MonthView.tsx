@@ -55,7 +55,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
 
   const getBookingsForDay = (date: Date): Booking[] => {
     return bookings.filter(booking => {
-      const bookingDate = parseISO(booking.scheduledAt);
+      const bookingDate = parseISO(booking.scheduledAt || "");
       return isSameDay(bookingDate, date);
     }).slice(0, 3); // Limit to 3 bookings per day for display
   };
@@ -115,7 +115,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isDayToday = isToday(day);
               const totalBookings = bookings.filter(b =>
-                isSameDay(parseISO(b.scheduledAt), day)
+                isSameDay(parseISO(b.scheduledAt || ""), day)
               ).length;
               const { available, blocked } = getAvailabilityForDay(day);
               const hasAvailability = available > 0 || blocked > 0;
@@ -181,10 +181,10 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           onBookingClick?.(booking);
                         }}
                         className={`${getBookingColor(booking.status)} text-white text-[10px] sm:text-xs px-1.5 py-1 rounded truncate hover:opacity-80 transition-opacity cursor-pointer`}
-                        title={`${format(parseISO(booking.scheduledAt), 'HH:mm')} - ${booking.service?.name || 'Booking'}`}
+                        title={`${format(parseISO(booking.scheduledAt || ""), 'HH:mm')} - ${booking.service?.name || 'Booking'}`}
                       >
                         <span className="font-medium">
-                          {format(parseISO(booking.scheduledAt), 'HH:mm')}
+                          {format(parseISO(booking.scheduledAt || ""), 'HH:mm')}
                         </span>{' '}
                         <span className="hidden sm:inline">
                           {booking.service?.name || 'Booking'}

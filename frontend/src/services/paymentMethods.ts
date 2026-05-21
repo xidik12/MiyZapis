@@ -22,19 +22,19 @@ export class PaymentMethodsService {
   // Get user's payment methods
   static async getPaymentMethods(): Promise<PaymentMethodRecord[]> {
     const response = await apiClient.get<{ paymentMethods: PaymentMethodRecord[] }>('/payments/methods/my');
-    return response.data.paymentMethods;
+    return response.data!.paymentMethods;
   }
 
   // Add a new payment method
   static async addPaymentMethod(paymentMethodData: PaymentMethodRequest): Promise<PaymentMethodRecord> {
     const response = await apiClient.post<{ paymentMethod: PaymentMethodRecord }>('/payments/methods', paymentMethodData);
-    return response.data.paymentMethod;
+    return response.data!.paymentMethod;
   }
 
   // Update an existing payment method
   static async updatePaymentMethod(methodId: string, updateData: PaymentMethodUpdateRequest): Promise<PaymentMethodRecord> {
     const response = await apiClient.put<{ paymentMethod: PaymentMethodRecord }>(`/payments/methods/${methodId}`, updateData);
-    return response.data.paymentMethod;
+    return response.data!.paymentMethod;
   }
 
   // Delete a payment method
@@ -45,6 +45,6 @@ export class PaymentMethodsService {
   // Set default payment method
   static async setDefaultPaymentMethod(methodId: string): Promise<PaymentMethodRecord> {
     const response = await apiClient.put<{ paymentMethod: PaymentMethodRecord }>(`/payments/methods/${methodId}/default`);
-    return response.data.paymentMethod;
+    return response.data!.paymentMethod;
   }
 }

@@ -60,8 +60,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
   const getBookingsForDay = (day: Date) =>
     bookings
-      .filter(b => isSameDay(parseISO(b.scheduledAt), day))
-      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+      .filter(b => isSameDay(parseISO(b.scheduledAt || ''), day))
+      .sort((a, b) => new Date(a.scheduledAt || 0).getTime() - new Date(b.scheduledAt || 0).getTime());
 
   const statusColors: Record<string, string> = {
     confirmed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
@@ -183,7 +183,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         {booking.service?.name || 'Booking'}
                       </div>
                       <div className="text-[10px] opacity-80">
-                        {format(parseISO(booking.scheduledAt), 'h:mm a')} · {booking.duration}min
+                        {format(parseISO(booking.scheduledAt || ''), 'h:mm a')} · {booking.duration}min
                       </div>
                       {booking.customer?.firstName && (
                         <div className="text-[10px] opacity-70 truncate">

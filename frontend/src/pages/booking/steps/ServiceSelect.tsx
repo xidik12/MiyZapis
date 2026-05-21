@@ -22,19 +22,19 @@ const ServiceSelect: React.FC<ServiceSelectProps> = ({ service }) => {
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h4 className="font-medium text-gray-900 dark:text-white">
-                {service.name}
+                {service.name as string}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {service.description}
+                {service.description as string}
               </p>
               <div className="flex items-center mt-2 text-sm text-gray-500">
                 <ClockIcon className="w-4 h-4 mr-1" />
-                <span>{service.duration} {t('time.minutes')}</span>
+                <span>{service.duration as string} {t('time.minutes')}</span>
               </div>
             </div>
             <div className="text-right ml-4">
               <p className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                {formatPrice(Number(service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
             </div>
           </div>

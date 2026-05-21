@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { FixedSizeList, VariableSizeList, ListChildComponentProps } from 'react-window';
+import { List, RowComponentProps } from 'react-window';
 
 /**
  * Props for VirtualList component
@@ -19,8 +19,8 @@ interface VirtualListProps<T> {
   width?: string | number;
   /**
    * Height of each item in pixels (for fixed-size lists)
-   * If provided, uses FixedSizeList
-   * If not provided, must provide getItemSize for VariableSizeList
+   * If provided, uses fixed item size
+   * If not provided, must provide getItemSize for variable-size items
    */
   itemSize?: number;
   /**
@@ -57,8 +57,6 @@ interface VirtualListProps<T> {
  * Uses react-window to only render visible items, dramatically improving
  * performance for lists with hundreds or thousands of items.
  *
- * Automatically chooses between FixedSizeList and VariableSizeList based on props.
- *
  * @example
  * // Fixed-size items
  * <VirtualList
@@ -68,19 +66,6 @@ interface VirtualListProps<T> {
  *   renderItem={(service, index, style) => (
  *     <div style={style} key={service.id}>
  *       <ServiceCard service={service} />
- *     </div>
- *   )}
- * />
- *
- * @example
- * // Variable-size items
- * <VirtualList
- *   items={bookings}
- *   height={600}
- *   getItemSize={(index) => bookings[index].expanded ? 200 : 100}
- *   renderItem={(booking, index, style) => (
- *     <div style={style} key={booking.id}>
- *       <BookingCard booking={booking} />
  *     </div>
  *   )}
  * />
@@ -97,50 +82,40 @@ export const VirtualList = <T,>({
   onScroll,
   initialScrollOffset = 0,
 }: VirtualListProps<T>) => {
-  // Wrapper component that connects react-window's props to our renderItem
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    return <>{renderItem(items[index], index, style)}</>;
-  };
-
-  // Use FixedSizeList if itemSize is provided
-  if (itemSize !== undefined) {
-    return (
-      <FixedSizeList
-        height={height}
-        width={width}
-        itemCount={items.length}
-        itemSize={itemSize}
-        overscanCount={overscanCount}
-        className={className}
-        onScroll={({ scrollOffset }) => onScroll?.(scrollOffset)}
-        initialScrollOffset={initialScrollOffset}
-      >
-        {Row}
-      </FixedSizeList>
+  if (itemSize === undefined && !getItemSize) {
+    throw new Error(
+      'VirtualList requires either itemSize (for fixed-size items) or getItemSize (for variable-size items)'
     );
   }
 
-  // Use VariableSizeList if getItemSize is provided
-  if (getItemSize) {
-    return (
-      <VariableSizeList
-        height={height}
-        width={width}
-        itemCount={items.length}
-        itemSize={getItemSize}
-        overscanCount={overscanCount}
-        className={className}
-        onScroll={({ scrollOffset }) => onScroll?.(scrollOffset)}
-        initialScrollOffset={initialScrollOffset}
-      >
-        {Row}
-      </VariableSizeList>
-    );
-  }
+  const rowHeight = itemSize !== undefined
+    ? itemSize
+    : (index: number) => getItemSize!(index);
 
-  // Fallback: throw error if neither itemSize nor getItemSize is provided
-  throw new Error(
-    'VirtualList requires either itemSize (for fixed-size items) or getItemSize (for variable-size items)'
+  const RowComponent = ({ index, style }: RowComponentProps) => (
+    <>{renderItem(items[index], index, style as CSSProperties)}</>
+  );
+
+  return (
+    <div
+      style={{ height, width, overflowY: 'auto' }}
+      className={className}
+      ref={(el) => {
+        if (el && initialScrollOffset) {
+          el.scrollTop = initialScrollOffset;
+        }
+      }}
+      onScroll={onScroll ? (e) => onScroll((e.target as HTMLDivElement).scrollTop) : undefined}
+    >
+      <List
+        rowCount={items.length}
+        rowHeight={rowHeight as any}
+        rowComponent={RowComponent}
+        rowProps={{}}
+        overscanCount={overscanCount}
+        style={{ height: '100%', width: '100%' }}
+      />
+    </div>
   );
 };
 
@@ -172,24 +147,6 @@ interface InfiniteVirtualListProps<T> extends VirtualListProps<T> {
 
 /**
  * InfiniteVirtualList component for infinite scrolling with virtual rendering
- *
- * Combines virtual scrolling with infinite loading for optimal performance
- * with large datasets.
- *
- * @example
- * <InfiniteVirtualList
- *   items={services}
- *   height={600}
- *   itemSize={120}
- *   hasMore={hasMoreServices}
- *   isLoading={loading}
- *   onLoadMore={fetchMoreServices}
- *   renderItem={(service, index, style) => (
- *     <div style={style} key={service.id}>
- *       <ServiceCard service={service} />
- *     </div>
- *   )}
- * />
  */
 export const InfiniteVirtualList = <T,>({
   hasMore,
@@ -244,10 +201,6 @@ export const InfiniteVirtualList = <T,>({
 
 /**
  * AutoSizer component wrapper for VirtualList
- * Automatically sizes the list to fit its container
- *
- * Note: This is a simple implementation. For more complex use cases,
- * consider using react-virtualized-auto-sizer package
  */
 interface AutoSizedVirtualListProps<T> extends Omit<VirtualListProps<T>, 'height' | 'width'> {
   /**

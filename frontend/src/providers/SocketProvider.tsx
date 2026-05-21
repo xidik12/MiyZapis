@@ -6,11 +6,10 @@ import { updateBookingLocal } from '@/store/slices/bookingSlice';
 import { socketService } from '@/services/socket.service';
 import { environment } from '@/config/environment';
 import { notificationService } from '@/services/notification.service';
-import type { 
-  SocketEvent, 
-  BookingSocketEvent, 
+import type {
+  BookingSocketEvent,
   NotificationSocketEvent,
-  PaymentSocketEvent 
+  PaymentSocketEvent
 } from '@/types';
 
 interface SocketContextType {
@@ -145,7 +144,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       if (event.data.newStatus && statusMessages[event.data.newStatus]) {
         dispatch(addNotification({
           id: `booking-${event.data.bookingId}-${Date.now()}`,
-          type: 'booking_status_changed',
+          type: 'booking_confirmed' as const,
           title: 'Booking Update',
           message: statusMessages[event.data.newStatus],
           data: { bookingId: event.data.bookingId },
@@ -268,7 +267,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     // Exact unread count from backend initial payload
     const handleUnreadNotifications = (data: unknown) => {
-      const count = typeof data?.count === 'number' ? data.count : undefined;
+      const count = typeof (data as any)?.count === 'number' ? (data as any).count : undefined;
       if (count !== undefined) {
         try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: count } })); } catch {}
       }
