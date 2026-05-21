@@ -8,8 +8,8 @@ import type { UserLoyalty } from '@/services/loyalty.service';
 import type { RewardRedemption } from '@/services/rewards.service';
 
 interface BookingDetailsProps {
-  service: Record<string, unknown>;
-  specialist: Record<string, unknown>;
+  service: any;
+  specialist: any;
   selectedDate: Date | null;
   selectedTime: string;
 

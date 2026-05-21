@@ -5,8 +5,12 @@ import DOMPurify from 'dompurify';
  * All user-generated content should be sanitized before rendering
  */
 
+// DOMPurify v3 dropped the namespace export — type the config inline.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SanitizerConfig = Parameters<typeof DOMPurify.sanitize>[1] & any;
+
 // Configure DOMPurify for strict sanitization
-const sanitizerConfig: DOMPurify.Config = {
+const sanitizerConfig: SanitizerConfig = {
   ALLOWED_TAGS: [
     'b', 'i', 'em', 'strong', 'u', 'p', 'br', 'span',
     'a', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre'
@@ -18,7 +22,7 @@ const sanitizerConfig: DOMPurify.Config = {
 };
 
 // Strict config for plain text only (no HTML tags)
-const strictConfig: DOMPurify.Config = {
+const strictConfig: SanitizerConfig = {
   ALLOWED_TAGS: [],
   ALLOWED_ATTR: [],
   KEEP_CONTENT: true,
@@ -30,7 +34,7 @@ const strictConfig: DOMPurify.Config = {
  */
 export const sanitizeHTML = (dirty: string | undefined | null): string => {
   if (!dirty || typeof dirty !== 'string') return '';
-  return DOMPurify.sanitize(dirty, sanitizerConfig);
+  return DOMPurify.sanitize(dirty, sanitizerConfig) as unknown as string;
 };
 
 /**
@@ -39,7 +43,7 @@ export const sanitizeHTML = (dirty: string | undefined | null): string => {
  */
 export const sanitizeText = (dirty: string | undefined | null): string => {
   if (!dirty || typeof dirty !== 'string') return '';
-  return DOMPurify.sanitize(dirty, strictConfig);
+  return DOMPurify.sanitize(dirty, strictConfig) as unknown as string;
 };
 
 /**
@@ -63,7 +67,7 @@ export const sanitizeURL = (url: string | undefined | null): string => {
     return ''; // Invalid protocol
   }
 
-  return DOMPurify.sanitize(cleaned, { ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):)/ });
+  return DOMPurify.sanitize(cleaned, { ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):)/ }) as string;
 };
 
 /**
@@ -140,7 +144,7 @@ export const sanitizeJSON = <T = unknown>(json: string | undefined | null, defau
   try {
     const parsed = JSON.parse(json);
     // Recursively sanitize string values in the parsed object
-    return sanitizeObjectStrings(parsed);
+    return sanitizeObjectStrings(parsed) as T;
   } catch {
     return defaultValue;
   }
@@ -212,7 +216,7 @@ export const containsDangerousContent = (text: string | undefined | null): boole
 export const sanitizeArray = (
   arr: unknown[] | undefined | null,
   maxLength: number = 50,
-  itemSanitizer: (item: unknown) => unknown = sanitizeText
+  itemSanitizer: (item: unknown) => unknown = sanitizeText as (item: unknown) => unknown
 ): unknown[] => {
   if (!Array.isArray(arr)) return [];
 

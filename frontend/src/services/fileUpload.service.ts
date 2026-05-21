@@ -52,10 +52,9 @@ export class FileUploadService {
       console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
       return response.data[0]; // Return the first uploaded file
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
-        message: err.message
+        message: (error as any).message
       });
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
       throw new Error(errorMessage);
@@ -68,8 +67,7 @@ export class FileUploadService {
       const uploadPromises = files.map(file => this.uploadFile(file, options));
       return await Promise.all(uploadPromises);
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = err.message || 'Failed to upload files';
+      const errorMessage = (error as any).message || 'Failed to upload files';
       throw new Error(errorMessage);
     }
   }
@@ -145,7 +143,6 @@ export class FileUploadService {
       console.log('✅ External image saved to backend:', response.data.url);
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to save external image';
       throw new Error(errorMessage);
     }
@@ -164,7 +161,6 @@ export class FileUploadService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete file';
       throw new Error(errorMessage);
     }
@@ -180,7 +176,6 @@ export class FileUploadService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get file info';
       throw new Error(errorMessage);
     }
@@ -237,7 +232,6 @@ export class FileUploadService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }

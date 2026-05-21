@@ -12,7 +12,7 @@ interface ExtendedAxiosConfig extends InternalAxiosRequestConfig {
   cachedResponse?: unknown;
   pendingRequest?: Promise<AxiosResponse>;
   cacheKey?: string;
-  metadata?: { startTime: number; url?: string; method?: string };
+  metadata?: { startTime: number; url?: string; method?: string; requestId?: string };
   skipToast?: boolean;
   _retry?: boolean;
 }
@@ -142,7 +142,8 @@ export const withRetry = async <T>(
       lastError = error;
 
       // Don't retry authentication errors or validation errors
-      if (error?.response?.status === 401 || error?.response?.status === 403 || error?.response?.status === 400) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 401 || status === 403 || status === 400) {
         throw error;
       }
 
@@ -165,7 +166,9 @@ api.interceptors.request.use(
     // Axios can only set the multipart boundary if Content-Type isn't forced.
     const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
     if (isFormData && config.headers) {
-      const headers = config.headers as Record<string, string>;
+      // axios headers can be a plain record or an AxiosHeaders instance with .delete()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const headers = config.headers as any;
       if (typeof headers.delete === 'function') {
         headers.delete('Content-Type');
       } else {
@@ -534,13 +537,12 @@ export const debugApiConnection = async () => {
     const healthResponse = await axios.get(`${environment.API_URL.replace('/api/v1', '')}/health`, { timeout: 5000 });
     logger.info('Health Check Response:', healthResponse.data);
   } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error(String(error));
     const response = (error as any)?.response;
     logger.error('Health Check Failed:', {
       status: response?.status,
       statusText: response?.statusText,
       data: response?.data,
-      message: err.message
+      message: (error as any).message
     });
   }
 
@@ -549,13 +551,12 @@ export const debugApiConnection = async () => {
     const apiResponse = await axios.get(`${environment.API_URL}`, { timeout: 5000 });
     logger.info('API v1 Response:', apiResponse.data);
   } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error(String(error));
     const response = (error as any)?.response;
     logger.error('API v1 Check Failed:', {
       status: response?.status,
       statusText: response?.statusText,
       data: response?.data,
-      message: err.message
+      message: (error as any).message
     });
   }
 };
@@ -618,13 +619,12 @@ export const runFullDiagnostics = async () => {
       });
       logger.info(`${endpoint}: ${response.status} - ${response.statusText}`);
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       logger.error(`${endpoint} failed:`, {
         status: response?.status,
         statusText: response?.statusText,
         data: response?.data,
-        message: err.message
+        message: (error as any).message
       });
     }
   }

@@ -191,10 +191,9 @@ const SpecialistSettings: React.FC = () => {
       setTimeout(() => setUploadSuccess(false), 3000);
 
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[Settings Avatar Upload] Upload failed:', error);
       setUploadError(
-        err.message ||
+        (error as any).message ||
         (language === 'uk' ? 'Помилка завантаження зображення' :
          language === 'ru' ? 'Ошибка загрузки изображения' :
          'Failed to upload image')
@@ -226,10 +225,9 @@ const SpecialistSettings: React.FC = () => {
       setTimeout(() => setUploadSuccess(false), 3000);
       
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error removing avatar:', error);
       setUploadError(
-        err.message ||
+        (error as any).message ||
         (language === 'uk' ? 'Помилка видалення зображення' :
          language === 'ru' ? 'Ошибка удаления изображения' :
          'Failed to remove image')
@@ -254,8 +252,7 @@ const SpecialistSettings: React.FC = () => {
         'Telegram unlinked'
       );
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      toast.error(err.message || 'Failed to unlink Telegram');
+      toast.error((error as any).message || 'Failed to unlink Telegram');
     } finally {
       setIsUnlinkingTelegram(false);
       setShowUnlinkTelegramModal(false);

@@ -92,12 +92,12 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   };
 
   const NavItem = ({ item, showText = true }: { item: Record<string, unknown>; showText?: boolean }) => {
-    const Icon = item.icon;
+    const Icon = item.icon as React.ComponentType<any>;
 
     if (item.isHashLink) {
       return (
         <button
-          onClick={() => handleHashLink(item.href)}
+          onClick={() => handleHashLink(item.href as string)}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
             item.current
               ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
@@ -106,7 +106,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         >
           <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
           {showText && (
-            <span className="font-semibold text-sm">{item.name}</span>
+            <span className="font-semibold text-sm">{item.name as React.ReactNode}</span>
           )}
         </button>
       );
@@ -114,7 +114,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
     return (
       <Link
-        to={item.href}
+        to={item.href as string}
         className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
           item.current
             ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
@@ -123,7 +123,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       >
         <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
         {showText && (
-          <span className="font-semibold text-sm">{item.name}</span>
+          <span className="font-semibold text-sm">{item.name as React.ReactNode}</span>
         )}
       </Link>
     );

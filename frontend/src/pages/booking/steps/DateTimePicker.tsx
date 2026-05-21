@@ -13,7 +13,7 @@ interface DateTimePickerProps {
   onTimeSelect: (time: string) => void;
   availableSlots: string[];
   slotsLoading: boolean;
-  service: Record<string, unknown>;
+  service: any;
   conflictHint: ConflictHint;
   onConflictHintDismiss: () => void;
   user: Record<string, unknown> | null;
@@ -141,12 +141,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           ) : availableSlots.length > 0 ? (
             <div className="space-y-4">
               {(() => {
-                const morning: typeof availableSlots = [];
-                const afternoon: typeof availableSlots = [];
-                const evening: typeof availableSlots = [];
+                const morning: any[] = [];
+                const afternoon: any[] = [];
+                const evening: any[] = [];
 
                 availableSlots.forEach((slot: string | Record<string, unknown>) => {
-                  const time = typeof slot === 'string' ? slot : slot.time;
+                  const time = (typeof slot === 'string' ? slot : slot.time) as string;
                   const hour = parseInt(time.split(':')[0], 10);
                   if (hour < 12) morning.push(slot);
                   else if (hour < 17) afternoon.push(slot);
@@ -164,9 +164,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                     <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{section.label}</h4>
                     <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                       {section.slots.map((slot: string | Record<string, unknown>) => {
-                        const time = typeof slot === 'string' ? slot : slot.time;
+                        const time = (typeof slot === 'string' ? slot : slot.time) as string;
                         const count = typeof slot === 'string' ? undefined : slot.count;
-                        const serviceDuration = service?.duration || 60;
+                        const serviceDuration = Number(service?.duration) || 60;
                         const endTime = calculateEndTime(time, serviceDuration);
 
                         return (

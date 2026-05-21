@@ -68,7 +68,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   if (!isOpen || !booking) return null;
 
-  const scheduledDate = new Date(booking.scheduledAt);
+  const scheduledDate = new Date(booking.scheduledAt!);
   const isUpcoming = ['PENDING', 'CONFIRMED'].includes(booking.status) && scheduledDate > new Date();
   const canCancel = isUpcoming && scheduledDate > new Date(Date.now() + 24 * 60 * 60 * 1000);
   const canReschedule = isUpcoming && scheduledDate > new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -79,7 +79,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
     : booking.specialistName || 'Unknown Specialist';
 
-  const specialistAvatar = booking.specialist?.profileImage || (booking.specialist as any)?.avatar || (booking.specialist as any)?.user?.avatar;
+  const specialistAvatar = (booking.specialist as any)?.profileImage || (booking.specialist as any)?.avatar || (booking.specialist as any)?.user?.avatar;
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
@@ -102,7 +102,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-6">
           {/* Status Badge */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${statusColors[booking.status] || statusColors.PENDING} text-center sm:text-left`}>
+            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${statusColors[booking.status as keyof typeof statusColors] || statusColors.PENDING} text-center sm:text-left`}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
             </span>
             <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left">
@@ -380,28 +380,28 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Notes */}
-          {(booking.customerNotes || booking.specialistNotes) && (
+          {((booking as any).customerNotes || (booking as any).specialistNotes) && (
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 sm:p-4">
               <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
                 {t('bookings.notes')}
               </h3>
-              {booking.customerNotes && (
+              {(booking as any).customerNotes && (
                 <div className="mb-2 sm:mb-3">
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
                     {t('bookings.yourNotes')}:
                   </p>
                   <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
-                    {booking.customerNotes}
+                    {(booking as any).customerNotes}
                   </p>
                 </div>
               )}
-              {booking.specialistNotes && (
+              {(booking as any).specialistNotes && (
                 <div>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
                     {t('bookings.specialistNotes')}:
                   </p>
                   <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
-                    {booking.specialistNotes}
+                    {(booking as any).specialistNotes}
                   </p>
                 </div>
               )}

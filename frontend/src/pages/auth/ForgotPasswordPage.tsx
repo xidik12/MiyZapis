@@ -35,9 +35,8 @@ const ForgotPasswordPage: React.FC = () => {
       await authService.forgotPassword(data.email);
       setIsSubmitted(true);
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Forgot password failed:', error);
-      setError(err.message || 'Failed to send reset email. Please try again.');
+      setError((error as any).message || 'Failed to send reset email. Please try again.');
     } finally {
       setIsLoading(false);
     }

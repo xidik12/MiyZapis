@@ -55,7 +55,6 @@ export class BookingService {
       console.log('✅ BookingService: Booking created successfully');
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       console.error('❌ BookingService: Booking creation failed:', error);
 
@@ -63,10 +62,10 @@ export class BookingService {
       if (response) {
         throw error; // Already has response structure
       } else {
-        const wrappedError = new Error(err.message || 'Failed to create booking');
+        const wrappedError = new Error((error as any).message || 'Failed to create booking');
         (wrappedError as any).response = {
-          status: err.message?.includes('conflicts detected') ? 409 : 500,
-          data: { error: err.message }
+          status: (error as any).message?.includes('conflicts detected') ? 409 : 500,
+          data: { error: (error as any).message }
         };
         throw wrappedError;
       }
@@ -109,16 +108,15 @@ export class BookingService {
       console.log('BookingService: Recurring booking created successfully');
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       console.error('BookingService: Recurring booking creation failed:', error);
       if (response) {
         throw error;
       }
-      const wrappedError = new Error(err.message || 'Failed to create recurring booking');
+      const wrappedError = new Error((error as any).message || 'Failed to create recurring booking');
       (wrappedError as any).response = {
         status: 500,
-        data: { error: err.message },
+        data: { error: (error as any).message },
       };
       throw wrappedError;
     }

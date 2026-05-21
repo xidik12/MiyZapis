@@ -51,9 +51,8 @@ const ResetPasswordPage: React.FC = () => {
       await authService.resetPassword(token, data.password);
       setIsSuccess(true);
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Password reset failed:', error);
-      setError(err.message || 'Failed to reset password. Please try again.');
+      setError((error as any).message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

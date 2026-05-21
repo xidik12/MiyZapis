@@ -816,10 +816,9 @@ const SpecialistProfile: React.FC = () => {
       event.target.value = '';
       
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('❤️ Avatar upload error:', error);
       showErrorNotification(
-        err.message || 
+        (error as any).message || 
         (language === 'uk' ? 'Помилка завантаження аватара' :
          language === 'ru' ? 'Ошибка загрузки аватара' :
          'Failed to upload avatar')
@@ -888,10 +887,9 @@ const SpecialistProfile: React.FC = () => {
       event.target.value = '';
       
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       logger.error('❌ Portfolio upload error:', error);
       showErrorNotification(
-        err.message || 
+        (error as any).message || 
         (language === 'uk' ? 'Помилка завантаження зображення' :
          language === 'ru' ? 'Ошибка загрузки изображения' :
          'Failed to upload image')
@@ -945,10 +943,9 @@ const SpecialistProfile: React.FC = () => {
       );
       event.target.value = '';
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('[Profile Payment QR Upload] Upload failed:', error);
       setPaymentQrError(
-        err.message ||
+        (error as any).message ||
         (language === 'uk' ? 'Помилка завантаження QR-коду' :
          language === 'ru' ? 'Ошибка загрузки QR-кода' :
          'Failed to upload QR code')

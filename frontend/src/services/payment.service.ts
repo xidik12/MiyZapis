@@ -130,6 +130,7 @@ export class PaymentService {
     remainingAmount?: number;
     paymentUrl?: string;
     qrCodeUrl?: string;
+    finalAmount?: number;
     message?: string;
   }> {
     console.log('💳 PaymentService: Creating Coinbase charge for crypto payment:', data);
@@ -327,8 +328,8 @@ export class PaymentService {
     expiryYear?: number;
     isDefault: boolean;
   }>> {
-    const response = await apiClient.get('/payments/methods');
-    
+    const response = await apiClient.get<{ paymentMethods: any[] }>('/payments/methods');
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment methods');
     }
@@ -389,8 +390,9 @@ export class PaymentService {
       transactions: number;
     }>;
   }> {
-    const response = await apiClient.get(`/payments/stats?period=${period}`);
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<any>(`/payments/stats?period=${period}`);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment statistics');
     }
@@ -445,8 +447,9 @@ export class PaymentService {
     currency: string;
     loyaltyPointsValue: number;
   }> {
-    const response = await apiClient.post('/payments/validate-amount', data);
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.post<any>('/payments/validate-amount', data);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to validate payment amount');
     }
@@ -461,8 +464,9 @@ export class PaymentService {
     reason?: string;
     refundPolicy: string;
   }> {
-    const response = await apiClient.get(`/payments/refund-eligibility/${bookingId}`);
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<any>(`/payments/refund-eligibility/${bookingId}`);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to check refund eligibility');
     }
@@ -507,8 +511,9 @@ export class PaymentService {
       }
     });
 
-    const response = await apiClient.get(`/payments/disputes?${params}`);
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<any>(`/payments/disputes?${params}`);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment disputes');
     }
@@ -527,7 +532,7 @@ export class PaymentService {
       formData.append(`document_${index}`, file);
     });
 
-    const response = await apiClient.post(`/payments/disputes/${disputeId}/evidence`, formData);
+    const response = await apiClient.post<{ message: string }>(`/payments/disputes/${disputeId}/evidence`, formData);
 
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to submit dispute evidence');

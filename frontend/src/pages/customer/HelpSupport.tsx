@@ -36,9 +36,8 @@ const CustomerHelpSupport: React.FC = () => {
         setFaqs(faqsResponse.faqs);
         setContactMethods(contactResponse.contactMethods);
       } catch (error: unknown) {
-        const err = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to fetch help data:', error);
-        setError(err.message || 'Failed to load help data');
+        setError((error as any).message || 'Failed to load help data');
         // Set empty arrays on error to show empty states
         setFaqs([]);
         setContactMethods([]);
@@ -81,9 +80,8 @@ const CustomerHelpSupport: React.FC = () => {
         email: '',
       });
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Failed to submit feedback:', error);
-      toast.error(err.message || 'Failed to submit feedback. Please try again.');
+      toast.error((error as any).message || 'Failed to submit feedback. Please try again.');
     }
   };
 

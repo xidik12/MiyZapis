@@ -188,9 +188,8 @@ const SpecialistFinances: React.FC = () => {
       setIsModalOpen(false);
       loadData();
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error saving expense:', error);
-      toast.error(err.message || t('finances.saveError') || 'Failed to save expense');
+      toast.error((error as any).message || t('finances.saveError') || 'Failed to save expense');
     } finally {
       setSubmitting(false);
     }
@@ -208,9 +207,8 @@ const SpecialistFinances: React.FC = () => {
       toast.success(t('finances.expenseDeleted') || 'Expense deleted');
       loadData();
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error deleting expense:', error);
-      toast.error(err.message || t('finances.deleteError') || 'Failed to delete expense');
+      toast.error((error as any).message || t('finances.deleteError') || 'Failed to delete expense');
     } finally {
       setDeleting(null);
     }

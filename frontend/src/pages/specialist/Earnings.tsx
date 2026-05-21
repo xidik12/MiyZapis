@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, DocumentArrowDownIcon, ClockIcon, ChartBarIcon, UserGroupIcon, CheckCircleIcon, WarningIcon as ExclamationTriangleIcon, WalletIcon, ArrowRightIcon, ArrowTrendingDownIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
 import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { expenseService, ExpenseSummary } from '../../services/expense.service';
@@ -54,7 +52,7 @@ interface ErrorState {
 }
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
 };
@@ -62,7 +60,6 @@ const getBookingCurrency = (booking: Record<string, unknown>): 'USD' | 'EUR' | '
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice, convertPrice, currency } = useCurrency();
-  const user = useAppSelector(selectUser);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
   const [loading, setLoading] = useState<LoadingState>({
@@ -119,7 +116,7 @@ const SpecialistEarnings: React.FC = () => {
         setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
         
         // Load data from backend endpoints - prioritize bookings API over payments API for accurate amounts
-        const [completedBookingsData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
+        const [completedBookingsData, analyticsOverview, bookingAnalytics, _servicesData, _performanceData] = await Promise.allSettled([
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
@@ -355,14 +352,14 @@ const SpecialistEarnings: React.FC = () => {
         // Transform booking data to match payout history interface
         const bookings = Array.isArray(bookingData.bookings) ? bookingData.bookings : [];
         const recentEarnings: PayoutHistory[] = bookings
-          .filter(booking => booking && booking.id && booking.totalAmount) // Only valid completed bookings
-          .map((booking: Record<string, unknown>) => {
+          .filter((booking: any) => booking && booking.id && booking.totalAmount) // Only valid completed bookings
+          .map((booking: any) => {
             return {
-              id: booking.id,
-              date: booking.completedAt || booking.updatedAt || new Date().toISOString(),
-              amount: booking.totalAmount, // Use the same field as Bookings page
+              id: booking.id as string,
+              date: (booking.completedAt || booking.updatedAt || new Date().toISOString()) as string,
+              amount: Number(booking.totalAmount), // Use the same field as Bookings page
               status: 'completed' as const,
-              method: booking.service?.name || 'Service',
+              method: (booking.service?.name || 'Service') as string,
               currency: getBookingCurrency(booking) // Add currency information
             };
           });

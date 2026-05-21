@@ -32,11 +32,7 @@ export class WayForPayService {
    */
   async createInvoice(data: WayForPayInvoiceRequest): Promise<WayForPayInvoiceResponse> {
     try {
-      const response = await apiClient.post<{
-        success: boolean;
-        data: WayForPayInvoiceResponse;
-        error?: { message: string };
-      }>(`${this.baseUrl}/wayforpay/create-invoice`, {
+      const response = await apiClient.post<any>(`${this.baseUrl}/wayforpay/create-invoice`, {
         bookingId: data.bookingId,
         amount: data.amount,
         currency: data.currency || 'UAH',
@@ -62,11 +58,7 @@ export class WayForPayService {
    */
   async getPaymentStatus(orderReference: string): Promise<WayForPayPaymentStatus> {
     try {
-      const response = await apiClient.get<{
-        success: boolean;
-        data: WayForPayPaymentStatus;
-        error?: { message: string };
-      }>(`${this.baseUrl}/wayforpay/status/${orderReference}`);
+      const response = await apiClient.get<any>(`${this.baseUrl}/wayforpay/status/${orderReference}`);
 
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get payment status');
@@ -179,9 +171,9 @@ export class WayForPayService {
   } {
     try {
       return {
-        orderId: callbackData.orderReference || '',
-        transactionStatus: callbackData.transactionStatus || 'Unknown',
-        amount: callbackData.amount || 0,
+        orderId: (callbackData.orderReference as string) || '',
+        transactionStatus: (callbackData.transactionStatus as string) || 'Unknown',
+        amount: Number(callbackData.amount) || 0,
       };
     } catch (error) {
       console.error('[WayForPay] Failed to handle payment success:', error);
@@ -199,9 +191,9 @@ export class WayForPayService {
   } {
     try {
       return {
-        orderId: callbackData.orderReference || '',
-        reason: callbackData.reason || 'Payment failed',
-        reasonCode: callbackData.reasonCode || 0,
+        orderId: (callbackData.orderReference as string) || '',
+        reason: (callbackData.reason as string) || 'Payment failed',
+        reasonCode: Number(callbackData.reasonCode) || 0,
       };
     } catch (error) {
       console.error('[WayForPay] Failed to handle payment failure:', error);

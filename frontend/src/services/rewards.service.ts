@@ -78,7 +78,7 @@ export class RewardsService {
       validFrom: data.validFrom?.toISOString(),
       validUntil: data.validUntil?.toISOString(),
     });
-    return response.data.reward;
+    return response.data!.reward;
   }
 
   static async getSpecialistRewards(specialistId?: string, includeInactive = false): Promise<LoyaltyReward[]> {
@@ -88,7 +88,7 @@ export class RewardsService {
     const response = await apiClient.get<{ rewards: LoyaltyReward[] }>(endpoint, {
       params: { includeInactive }
     });
-    return response.data.rewards;
+    return response.data!.rewards;
   }
 
   static async updateReward(rewardId: string, data: UpdateRewardData): Promise<LoyaltyReward> {
@@ -97,7 +97,7 @@ export class RewardsService {
       validFrom: data.validFrom?.toISOString(),
       validUntil: data.validUntil?.toISOString(),
     });
-    return response.data.reward;
+    return response.data!.reward;
   }
 
   static async deleteReward(rewardId: string): Promise<void> {
@@ -109,7 +109,7 @@ export class RewardsService {
     const response = await apiClient.get<{ rewards: LoyaltyReward[] }>('/rewards/available', {
       params: specialistId ? { specialistId } : {}
     });
-    return response.data.rewards;
+    return response.data!.rewards;
   }
 
   static async redeemReward(rewardId: string, bookingId?: string): Promise<RewardRedemption> {
@@ -117,18 +117,18 @@ export class RewardsService {
       rewardId,
       bookingId
     });
-    return response.data.redemption;
+    return response.data!.redemption;
   }
 
   static async getUserRedemptions(): Promise<RewardRedemption[]> {
     const response = await apiClient.get<{ redemptions: RewardRedemption[] }>('/rewards/redemptions');
-    return response.data.redemptions;
+    return response.data!.redemptions;
   }
 
   // Public methods
   static async getRewardById(rewardId: string): Promise<LoyaltyReward> {
     const response = await apiClient.get<{ reward: LoyaltyReward }>(`/rewards/${rewardId}`);
-    return response.data.reward;
+    return response.data!.reward;
   }
 
   // Helper methods

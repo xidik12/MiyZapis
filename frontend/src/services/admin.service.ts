@@ -64,9 +64,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin dashboard stats error:', error);
-      throw new Error(err.message || 'Failed to get dashboard statistics');
+      throw new Error((error as any).message || 'Failed to get dashboard statistics');
     }
   }
 
@@ -79,9 +78,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin user analytics error:', error);
-      throw new Error(err.message || 'Failed to get user analytics');
+      throw new Error((error as any).message || 'Failed to get user analytics');
     }
   }
 
@@ -94,9 +92,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin booking analytics error:', error);
-      throw new Error(err.message || 'Failed to get booking analytics');
+      throw new Error((error as any).message || 'Failed to get booking analytics');
     }
   }
 
@@ -109,9 +106,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin financial analytics error:', error);
-      throw new Error(err.message || 'Failed to get financial analytics');
+      throw new Error((error as any).message || 'Failed to get financial analytics');
     }
   }
 
@@ -124,9 +120,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin manage users error:', error);
-      throw new Error(err.message || 'Failed to manage users');
+      throw new Error((error as any).message || 'Failed to manage users');
     }
   }
 
@@ -139,9 +134,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin system health error:', error);
-      throw new Error(err.message || 'Failed to get system health');
+      throw new Error((error as any).message || 'Failed to get system health');
     }
   }
 
@@ -174,9 +168,8 @@ export class AdminService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin audit logs error:', error);
-      throw new Error(err.message || 'Failed to get audit logs');
+      throw new Error((error as any).message || 'Failed to get audit logs');
     }
   }
 }

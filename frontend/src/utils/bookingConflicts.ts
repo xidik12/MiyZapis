@@ -12,11 +12,11 @@ export interface BookingConflict {
  * Check if two bookings overlap in time
  */
 export const doBookingsOverlap = (booking1: Booking, booking2: Booking): boolean => {
-  const start1 = parseISO(booking1.scheduledAt);
-  const end1 = addMinutes(start1, booking1.duration);
+  const start1 = parseISO(booking1.scheduledAt!);
+  const end1 = addMinutes(start1, booking1.duration!);
 
-  const start2 = parseISO(booking2.scheduledAt);
-  const end2 = addMinutes(start2, booking2.duration);
+  const start2 = parseISO(booking2.scheduledAt!);
+  const end2 = addMinutes(start2, booking2.duration!);
 
   // Check if same day first
   if (!isSameDay(start1, start2)) {
@@ -31,11 +31,11 @@ export const doBookingsOverlap = (booking1: Booking, booking2: Booking): boolean
  * Calculate overlap duration in minutes
  */
 export const getOverlapDuration = (booking1: Booking, booking2: Booking): number => {
-  const start1 = parseISO(booking1.scheduledAt);
-  const end1 = addMinutes(start1, booking1.duration);
+  const start1 = parseISO(booking1.scheduledAt!);
+  const end1 = addMinutes(start1, booking1.duration!);
 
-  const start2 = parseISO(booking2.scheduledAt);
-  const end2 = addMinutes(start2, booking2.duration);
+  const start2 = parseISO(booking2.scheduledAt!);
+  const end2 = addMinutes(start2, booking2.duration!);
 
   if (!doBookingsOverlap(booking1, booking2)) {
     return 0;

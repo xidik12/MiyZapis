@@ -14,7 +14,7 @@ export class ServiceService {
     // Map frontend filters to backend parameters
     if (filters.query) params.append('search', filters.query);
     if (filters.category) params.append('category', filters.category);
-    if (filters.location) params.append('location', filters.location);
+    if (filters.location) params.append('location', typeof filters.location === 'string' ? filters.location : JSON.stringify(filters.location));
     if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
     if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
     if (filters.rating) params.append('rating', filters.rating.toString());
@@ -40,14 +40,15 @@ export class ServiceService {
         currentPage: response.data.page || 1,
         totalPages: response.data.totalPages || 1,
         totalItems: response.data.total || 0,
-        itemsPerPage: 20,
+        limit: 20,
         hasNext: (response.data.page || 1) < (response.data.totalPages || 1),
         hasPrev: (response.data.page || 1) > 1
       },
       filters: {
         categories: [],
         priceRanges: [],
-        specialties: []
+        specialties: [],
+        locations: []
       }
     };
   }
@@ -147,7 +148,11 @@ export class ServiceService {
     specialists: Array<{ id: string; businessName: string; specialties: string[] }>;
     categories: Array<{ id: string; name: string }>;
   }> {
-    const response = await apiClient.get(`/services/suggestions?q=${encodeURIComponent(query)}&limit=${limit}`);
+    const response = await apiClient.get<{
+      services: Array<{ id: string; name: string; category: string }>;
+      specialists: Array<{ id: string; businessName: string; specialties: string[] }>;
+      categories: Array<{ id: string; name: string }>;
+    }>(`/services/suggestions?q=${encodeURIComponent(query)}&limit=${limit}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get search suggestions');
     }
@@ -157,7 +162,7 @@ export class ServiceService {
   // Get service pricing range for a category
   async getPricingRange(categoryId?: string): Promise<{ min: number; max: number; average: number; currency: string }> {
     const url = categoryId ? `/services/pricing-range?category=${categoryId}` : '/services/pricing-range';
-    const response = await apiClient.get(url);
+    const response = await apiClient.get<{ min: number; max: number; average: number; currency: string }>(url);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get pricing range');
     }
@@ -182,7 +187,7 @@ export class ServiceService {
     totalSlots: number;
     availableSlots: number;
   }>> {
-    const response = await apiClient.get(`/services/${serviceId}/availability?days=${days}`);
+    const response = await apiClient.get<{ availability: Array<{ date: string; available: boolean; earliestSlot?: string; totalSlots: number; availableSlots: number }> }>(`/services/${serviceId}/availability?days=${days}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get service availability');
     }
@@ -267,7 +272,7 @@ export class ServiceService {
       uniqueFeatures: string[];
     }>;
   }> {
-    const response = await apiClient.post('/services/compare', { serviceIds });
+    const response = await apiClient.post<{ services: Array<Service & { pros: string[]; cons: string[]; uniqueFeatures: string[] }> }>('/services/compare', { serviceIds });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to compare services');
     }

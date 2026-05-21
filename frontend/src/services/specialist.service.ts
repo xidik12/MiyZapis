@@ -277,11 +277,10 @@ export class SpecialistService {
       logger.debug('API: Service deleted successfully');
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
       logger.error('API: Service deletion error:', {
         serviceId,
-        error: err.message,
+        error: (error as any).message,
         response: response?.data,
         status: response?.status
       });
@@ -295,7 +294,7 @@ export class SpecialistService {
         throw new Error('You do not have permission to delete this service.');
       }
 
-      throw new Error(err.message || 'Failed to delete service');
+      throw new Error((error as any).message || 'Failed to delete service');
     }
   }
 

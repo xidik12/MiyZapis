@@ -78,17 +78,16 @@ const VerifyEmailPage: React.FC = () => {
         setMessage(result.error?.message || 'Email verification failed.');
       }
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       setStatus('error');
       
-      if (err.message?.includes('expired')) {
+      if ((error as any).message?.includes('expired')) {
         setStatus('expired');
         setMessage('Your verification link has expired. Please request a new one.');
-      } else if (err.message?.includes('invalid')) {
+      } else if ((error as any).message?.includes('invalid')) {
         setStatus('invalid');
         setMessage('Invalid verification link. Please check your email and try again.');
       } else {
-        setMessage(err.message || 'Email verification failed. Please try again.');
+        setMessage((error as any).message || 'Email verification failed. Please try again.');
       }
     }
   };
@@ -119,8 +118,7 @@ const VerifyEmailPage: React.FC = () => {
         setResendMessage(result.error?.message || 'Failed to send verification email.');
       }
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      setResendMessage(err.message || 'Failed to send verification email.');
+      setResendMessage((error as any).message || 'Failed to send verification email.');
     } finally {
       setIsResending(false);
     }

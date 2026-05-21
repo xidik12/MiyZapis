@@ -125,11 +125,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         toast.success(t('bookingDetails.messageSent') || 'Message sent');
         return;
       } catch (createErr: unknown) {
-        console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
+        console.warn('Create conversation failed, attempting to find existing one:', (createErr as any)?.response?.data || (createErr as any)?.message);
         // Fallback: fetch conversations and find one matching this booking
         try {
           const { conversations } = await messagesService.getConversations(1, 50);
-          const existing = conversations.find((c: Record<string, unknown>) => {
+          const existing = (conversations as any[]).find((c: Record<string, unknown>) => {
             const cb = c.booking as Record<string, unknown> | undefined;
             const cc = c.customer as Record<string, unknown> | undefined;
             const cs = c.specialist as Record<string, unknown> | undefined;
@@ -847,9 +847,9 @@ const SpecialistBookings: React.FC = () => {
       }
       
       if (sortOrder === 'asc') {
-        return aVal > bVal ? 1 : -1;
+        return (aVal as any) > (bVal as any) ? 1 : -1;
       } else {
-        return aVal < bVal ? 1 : -1;
+        return (aVal as any) < (bVal as any) ? 1 : -1;
       }
     });
     
@@ -913,9 +913,8 @@ const SpecialistBookings: React.FC = () => {
       dispatch(fetchBookings({ filters: {}, userType }));
       
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      toast.error(`${t('specialist.bookings.toast.error')}: ${err.message}`);
+      toast.error(`${t('specialist.bookings.toast.error')}: ${(error as any).message}`);
     }
   };
   
@@ -985,7 +984,7 @@ const SpecialistBookings: React.FC = () => {
       console.error('Failed to submit review:', error);
       
       // Show user-friendly error message
-      const errorMessage = error?.message || 'Failed to submit review. Please try again.';
+      const errorMessage = (error as any)?.message || 'Failed to submit review. Please try again.';
       toast.error(`${t('specialist.bookings.toast.error')}: ${errorMessage}`);
       
       // Keep the modal open so user can try again
@@ -1509,7 +1508,7 @@ const SpecialistBookings: React.FC = () => {
                       <div className="text-sm text-gray-900 dark:text-white">
                         {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{getTranslatedDuration(booking.duration)}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{getTranslatedDuration(booking.duration ?? '')}</div>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">

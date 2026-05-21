@@ -194,9 +194,8 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const response = (error as any)?.response;
-      const errorMessage = response?.data?.error?.message || err.message || 'Failed to get analytics overview';
+      const errorMessage = response?.data?.error?.message || (error as any).message || 'Failed to get analytics overview';
       console.error('Analytics overview API call failed:', errorMessage);
       console.error('Error details:', {
         status: response?.status,
@@ -225,7 +224,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get booking analytics';
       throw new Error(errorMessage);
     }
@@ -248,7 +246,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get revenue analytics';
       throw new Error(errorMessage);
     }
@@ -271,7 +268,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get customer analytics';
       throw new Error(errorMessage);
     }
@@ -294,7 +290,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get performance analytics';
       throw new Error(errorMessage);
     }
@@ -317,7 +312,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get service analytics';
       throw new Error(errorMessage);
     }
@@ -348,8 +342,7 @@ export class AnalyticsService {
 
       return response.data as Blob;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      const errorMessage = err.message || 'Failed to export analytics data';
+      const errorMessage = (error as any).message || 'Failed to export analytics data';
       throw new Error(errorMessage);
     }
   }
@@ -378,7 +371,6 @@ export class AnalyticsService {
       }
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       const errorMessage = error instanceof Error ? error.message : 'Failed to get real-time metrics';
       throw new Error(errorMessage);
     }

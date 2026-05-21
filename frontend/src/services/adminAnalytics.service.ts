@@ -92,9 +92,8 @@ export class AdminAnalyticsService {
       this.cache.set(cacheKey, stats);
       return stats;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin dashboard stats error:', error);
-      throw new Error(err.message || 'Failed to get dashboard statistics');
+      throw new Error((error as any).message || 'Failed to get dashboard statistics');
     }
   }
 
@@ -126,9 +125,8 @@ export class AdminAnalyticsService {
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin user analytics error:', error);
-      throw new Error(err.message || 'Failed to get user analytics');
+      throw new Error((error as any).message || 'Failed to get user analytics');
     }
   }
 
@@ -157,9 +155,8 @@ export class AdminAnalyticsService {
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin booking analytics error:', error);
-      throw new Error(err.message || 'Failed to get booking analytics');
+      throw new Error((error as any).message || 'Failed to get booking analytics');
     }
   }
 
@@ -188,9 +185,8 @@ export class AdminAnalyticsService {
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin financial analytics error:', error);
-      throw new Error(err.message || 'Failed to get financial analytics');
+      throw new Error((error as any).message || 'Failed to get financial analytics');
     }
   }
 
@@ -219,9 +215,8 @@ export class AdminAnalyticsService {
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin referral analytics error:', error);
-      throw new Error(err.message || 'Failed to get referral analytics');
+      throw new Error((error as any).message || 'Failed to get referral analytics');
     }
   }
 
@@ -244,9 +239,8 @@ export class AdminAnalyticsService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin system health error:', error);
-      throw new Error(err.message || 'Failed to get system health');
+      throw new Error((error as any).message || 'Failed to get system health');
     }
   }
 
@@ -578,9 +572,8 @@ export class AdminAnalyticsService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin list users error:', error);
-      throw new Error(err.message || 'Failed to list users');
+      throw new Error((error as any).message || 'Failed to list users');
     }
   }
 
@@ -604,9 +597,8 @@ export class AdminAnalyticsService {
 
       return response.data;
     } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Admin manage users error:', error);
-      throw new Error(err.message || 'Failed to manage users');
+      throw new Error((error as any).message || 'Failed to manage users');
     }
   }
 
