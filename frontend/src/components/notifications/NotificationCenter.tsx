@@ -32,7 +32,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
   const [isFiltering, setIsFiltering] = useState(false);
-  const [serviceStatus, setServiceStatus] = useState<{
+  const [_serviceStatus, setServiceStatus] = useState<{
     mode: 'backend' | 'local';
     hasLocalData: boolean;
     localCount: number;

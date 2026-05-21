@@ -174,7 +174,8 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
   if (loading) return <PageLoader />;
   if (!business) return <p className="p-8 text-gray-500">Business not found.</p>;
 
-  const myMember = (business.members ?? []).find((m: any) => m.user?.id === undefined);
+  // myMember unused but kept for future use
+  void (business.members ?? []).find((m: any) => m.user?.id === undefined);
   const canManage = !!dashboard; // proxy: dashboard requires OWNER/MANAGER
 
   return (

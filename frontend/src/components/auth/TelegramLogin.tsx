@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disabled = false }) => {
+const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disabled: _disabled = false }) => {
   const { t } = useLanguage();
   const dispatch = useAppDispatch();
   const rawBotUsername = (import.meta.env as any).VITE_TELEGRAM_BOT_USERNAME;
@@ -32,7 +32,7 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
       // computes the hash only over fields that are present.
       // Sending empty strings breaks the hash verification.
       const telegramData: Record<string, any> = {
-        telegramId: user.id.toString(),
+        telegramId: String(user.id),
         firstName: user.first_name,
         authDate: user.auth_date,
         hash: user.hash,
@@ -41,7 +41,7 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
       if (user.username) telegramData.username = user.username;
       if (user.photo_url) telegramData.photoUrl = user.photo_url;
 
-      await dispatch(telegramLogin(telegramData)).unwrap();
+      await dispatch(telegramLogin(telegramData as any)).unwrap();
       onSuccess?.();
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));

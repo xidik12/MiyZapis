@@ -1,3 +1,7 @@
+import type { Booking, BookingStatus } from '../types';
+
+export type { Booking, BookingStatus };
+
 export interface FilterState {
   status: string;
   dateRange: string;
@@ -52,5 +56,4 @@ export interface ReviewSubmissionData {
   tags: string[];
 }
 
-// Re-export the main Booking type from the main types file
-export type { Booking, BookingStatus } from '../types';
+// Re-exported at top of file

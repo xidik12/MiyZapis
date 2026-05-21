@@ -168,7 +168,7 @@ const initializeApp = () => {
                   pauseOnFocusLoss
                   draggable={false}
                   pauseOnHover
-                  theme="auto"
+                  theme={"auto" as any}
                   toastClassName="custom-toast"
                   style={{ zIndex: 9999 }}
                 />

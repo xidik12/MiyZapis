@@ -48,7 +48,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
         </thead>
         <tbody className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm divide-y divide-gray-200/50 dark:divide-gray-700/50">
           {bookings.map((booking, index) => {
-            const scheduledDate = new Date(booking.scheduledAt);
+            const scheduledDate = new Date(booking.scheduledAt || '');
             const specialistName = getSpecialistName(booking);
             const specialistAvatar = getSpecialistAvatar(booking);
 
@@ -101,7 +101,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex px-3 py-1.5 text-xs font-bold rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md ${statusColors[booking.status] || statusColors.PENDING}`}>
+                  <span className={`inline-flex px-3 py-1.5 text-xs font-bold rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md ${(statusColors as Record<string, string>)[booking.status] || statusColors.PENDING}`}>
                     {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                   </span>
                 </td>

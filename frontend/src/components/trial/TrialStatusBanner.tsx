@@ -15,7 +15,7 @@ interface TrialStatusBannerProps {
 }
 
 export const TrialStatusBanner: React.FC<TrialStatusBannerProps> = ({
-  trialStartDate,
+  trialStartDate: _trialStartDate,
   trialEndDate,
   isInTrial,
   userType,

@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface ConfirmModalProps {
   open: boolean;
   title: string;
-  message: string;
+  message?: string;
   confirmText?: string;
   cancelText?: string;
   loading?: boolean;

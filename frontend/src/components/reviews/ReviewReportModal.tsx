@@ -24,7 +24,7 @@ export const ReviewReportModal: React.FC<ReviewReportModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  reviewId
+  reviewId: _reviewId
 }) => {
   const { t } = useLanguage();
   const [selectedReason, setSelectedReason] = useState('');

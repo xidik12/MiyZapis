@@ -65,7 +65,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({
               <div className="flex items-center text-sm mt-1">
                 <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  {service?.name} ({service?.duration} {t('time.minutes') || 'min'})
+                  {String(service?.name ?? '')} ({String(service?.duration ?? '')} {t('time.minutes') || 'min'})
                 </span>
               </div>
             </div>

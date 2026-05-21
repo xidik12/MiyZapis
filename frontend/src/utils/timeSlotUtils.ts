@@ -69,7 +69,6 @@ export const filterSlotsByDuration = (
     return slots;
   }
 
-  const slotsNeeded = Math.ceil(durationMinutes / slotDuration);
   const validStartTimes: string[] = [];
 
   for (const slot of slots) {

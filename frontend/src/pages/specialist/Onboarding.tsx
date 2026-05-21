@@ -125,6 +125,7 @@ const SpecialistOnboarding: React.FC = () => {
   const [profileSaved, setProfileSaved] = useState(false);
   const [serviceSaved, setServiceSaved] = useState(false);
   const [scheduleSaved, setScheduleSaved] = useState(false);
+  const [onboardingReady, setOnboardingReady] = useState(false);
 
   // Pre-fill from existing profile if available
   useEffect(() => {

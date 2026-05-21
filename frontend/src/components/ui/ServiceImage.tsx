@@ -21,7 +21,7 @@ export const ServiceImage: React.FC<ServiceImageProps> = ({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(!!src);
   const [shouldLoad, setShouldLoad] = useState(!lazy);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Set up intersection observer for lazy loading

@@ -111,8 +111,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
             }}
             labelStyle={{ color: isDark ? '#F3F4F6' : '#111827', fontWeight: 600 }}
             itemStyle={{ color: isDark ? '#D1D5DB' : '#6B7280' }}
-            formatter={(value: number) => formatCurrency(value)}
-            labelFormatter={formatDate}
+            formatter={((value: number) => formatCurrency(value)) as any}
+            labelFormatter={formatDate as any}
           />
           {showLegend && (
             <Legend

@@ -29,7 +29,7 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
   const user = useAppSelector(selectUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -142,12 +142,12 @@ export const Header: React.FC = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
                     } cursor-pointer`}
                   >
-                    {item.icon && <item.icon className="w-4 h-4" />}
+                    {(item as any).icon && (() => { const Icon = (item as any).icon; return <Icon className="w-4 h-4" />; })()}
                     <span className={item.href === '/' ? 'hidden lg:inline' : ''}>{item.name}</span>
                   </a>
                 );
               }
-              
+
               return (
                 <Link
                   key={item.name}

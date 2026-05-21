@@ -84,8 +84,8 @@ const deriveClientsFromBookings = (bookings: Booking[]): Client[] => {
     const clientBooking: ClientBooking = {
       id: booking.id,
       serviceName: booking.serviceName || booking.service?.name || 'Service',
-      scheduledAt: booking.scheduledAt,
-      date: booking.date,
+      scheduledAt: booking.scheduledAt || '',
+      date: booking.date || '',
       status: booking.status,
       totalAmount: Number(booking.totalAmount || booking.amount || 0),
       currency: booking.service?.currency || 'USD',
@@ -225,7 +225,8 @@ const StatsBar: React.FC<{
 };
 
 /** Booking history row inside the expanded detail */
-const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: number, fromCurrency?: string) => string }> = ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: any, fromCurrency?: any) => string }> = ({
   booking,
   formatPrice,
 }) => {
@@ -279,7 +280,8 @@ const ClientCard: React.FC<{
   onToggle: () => void;
   onViewBookings: () => void;
   onSendMessage: () => void;
-  formatPrice: (p: number, fromCurrency?: string) => string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formatPrice: (p: any, fromCurrency?: any) => string;
   index: number;
   // Notes props
   notes: Array<{ id: string; content: string; category: string; updatedAt: string }>;

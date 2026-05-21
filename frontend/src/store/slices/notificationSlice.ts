@@ -95,7 +95,7 @@ const notificationSlice = createSlice({
         state.notifications.splice(index, 1);
       }
     },
-    updateNotificationMessages: (state, action: PayloadAction<{ t: (key: string) => string }>) => {
+    updateNotificationMessages: (_state, _action: PayloadAction<{ t: (key: string) => string }>) => {
       // No mock notifications to update - real notifications will come from backend
     },
   },

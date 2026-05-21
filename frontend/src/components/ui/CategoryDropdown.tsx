@@ -24,7 +24,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   const { language, t } = useLanguage();
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, _setSearchTerm] = useState('');
 
   const allCategories = useMemo(() => getAllCategories(), []);
   
@@ -68,9 +68,6 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   // Check if the value is a known category ID or a custom category string
   const isKnownCategory = allCategories.some(cat => cat.id === value);
-  const selectedCategoryName = isKnownCategory
-    ? getCategoryName(value, language as 'en' | 'uk' | 'ru')
-    : value; // For custom categories, show the value directly
   const placeholderLabel = t('serviceForm.selectCategory') || placeholder || 'Select a category';
 
   return (

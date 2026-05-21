@@ -105,7 +105,7 @@ export class WalletService {
   async getWalletSummary(): Promise<WalletSummary> {
     // This endpoint might not exist yet, so we'll construct it from balance and transactions
     try {
-      const [balance, transactions] = await Promise.all([
+      const [balance, _transactions] = await Promise.all([
         this.getBalance(),
         this.getTransactionHistory({ limit: 1 })
       ]);

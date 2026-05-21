@@ -134,7 +134,7 @@ export const ComparisonBarChart: React.FC<ComparisonBarChartProps> = ({
             }}
             labelStyle={{ color: isDark ? '#F3F4F6' : '#111827', fontWeight: 600 }}
             itemStyle={{ color: isDark ? '#D1D5DB' : '#6B7280' }}
-            formatter={(value: number) => formatValue(value)}
+            formatter={((value: number) => formatValue(value)) as any}
           />
           {showLegend && (
             <Legend

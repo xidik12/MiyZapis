@@ -15,12 +15,11 @@ interface BadgeWithStatus extends LoyaltyBadge {
 }
 
 const CustomerBadges: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
   const { t } = useLanguage();
   
   const [loading, setLoading] = useState(true);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
-  const [availableBadges, setAvailableBadges] = useState<LoyaltyBadge[]>([]);
   const [badges, setBadges] = useState<BadgeWithStatus[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
@@ -38,7 +37,6 @@ const CustomerBadges: React.FC = () => {
       ]);
 
       setUserBadges(earnedBadges);
-      setAvailableBadges(allBadges);
 
       // Combine badges with earned status
       const badgesWithStatus: BadgeWithStatus[] = allBadges.map((badge) => {
@@ -62,8 +60,7 @@ const CustomerBadges: React.FC = () => {
 
   const getBadgeIcon = (category: string, isEarned: boolean) => {
     const iconClass = `h-8 w-8 ${isEarned ? 'text-yellow-500' : 'text-gray-400'}`;
-    const IconComponent = isEarned ? 'solid' : 'outline';
-    
+
     switch (category.toLowerCase()) {
       case 'achievement':
         return isEarned ? <TrophyIcon className={iconClass} /> : <TrophyIcon className={iconClass} />;

@@ -5,7 +5,7 @@ interface TypingIndicatorProps {
   senderName?: string;
 }
 
-export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ senderName }) => {
+export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ senderName: _senderName }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

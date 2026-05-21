@@ -64,7 +64,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
               {user.firstName} {user.lastName}
             </p>
             <p className="text-xs text-gray-500 truncate">{user.email}</p>
-            {user.userType === 'customer' && user.loyaltyPoints > 0 && (
+            {user.userType === 'customer' && (user.loyaltyPoints || 0) > 0 && (
               <p className="text-xs text-primary-600 font-medium">
                 {user.loyaltyPoints} points
               </p>

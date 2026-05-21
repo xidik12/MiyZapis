@@ -95,7 +95,7 @@ export function getGoogleCalendarUrl(event: CalendarEvent): string {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export function getAppleCalendarUrl(event: CalendarEvent): string {
+export function getAppleCalendarUrl(_event: CalendarEvent): string {
   // Apple Calendar uses the webcal protocol or .ics download
   // For web, we'll just trigger .ics download which opens in Apple Calendar
   return '#';

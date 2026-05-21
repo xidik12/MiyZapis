@@ -61,8 +61,8 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [_sendingMessage, setSendingMessage] = useState(false);
+  const [isTyping, _setIsTyping] = useState(false);
   const [creatingConversation, setCreatingConversation] = useState(false);
 
   const isMountedRef = useRef(true);

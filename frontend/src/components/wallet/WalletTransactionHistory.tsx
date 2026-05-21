@@ -89,9 +89,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
     }
   };
 
-  const formatTransactionType = (type: WalletTransaction['type']) => {
-    return walletService.formatTransactionType(type);
-  };
+
 
   const formatTransactionReason = (reason: string) => {
     return walletService.formatTransactionReason(reason);

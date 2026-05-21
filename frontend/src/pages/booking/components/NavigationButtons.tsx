@@ -41,11 +41,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     helperText = t('booking.completePaymentFirst') || 'Please complete payment to continue';
   }
 
-  const isNextDisabled =
+  const isNextDisabled: boolean =
     paymentLoading ||
     (currentStepId === 'datetime' && (!selectedDate || !selectedTime)) ||
     (currentStepId === 'details' && !service) ||
-    (currentStepId === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')));
+    (currentStepId === 'payment' && (!paymentResult || ((paymentResult.requiresPayment as boolean) && paymentResult.status !== 'COMPLETED')));
 
   return (
     <div className="pb-safe-bottom">

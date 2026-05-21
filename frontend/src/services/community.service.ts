@@ -179,7 +179,8 @@ class CommunityService {
       ? `${this.baseUrl}/posts?${queryString}`
       : `${this.baseUrl}/posts`;
 
-    const response = await apiClient.get<GetPostsResponse>(url, options?.skipCache ? { skipCache: true } : undefined);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await apiClient.get<GetPostsResponse>(url, options?.skipCache ? { skipCache: true } as any : undefined);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load community posts');
     }
@@ -192,7 +193,8 @@ class CommunityService {
   async getPostById(id: string, options?: { skipCache?: boolean }): Promise<Post> {
     const response = await apiClient.get<{ post: Post }>(
       `${this.baseUrl}/posts/${id}`,
-      options?.skipCache ? { skipCache: true } : undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      options?.skipCache ? { skipCache: true } as any : undefined
     );
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load post');
@@ -267,7 +269,8 @@ class CommunityService {
 
     const response = await apiClient.get<GetCommentsResponse>(
       url,
-      options?.skipCache ? { skipCache: true } : undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      options?.skipCache ? { skipCache: true } as any : undefined
     );
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load comments');

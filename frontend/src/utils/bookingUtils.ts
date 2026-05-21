@@ -43,7 +43,8 @@ export const getSpecialistName = (booking: Booking): string => {
 };
 
 export const getSpecialistAvatar = (booking: Booking): string | undefined => {
-  return booking.specialist?.profileImage || booking.specialist?.user?.avatar;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (booking.specialist as any)?.profileImage || booking.specialist?.user?.avatar;
 };
 
 export const getSpecialistRating = (booking: Booking): number => {
@@ -55,14 +56,14 @@ export const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
 };
 
 export const canCancelBooking = (booking: Booking): boolean => {
-  const scheduledDate = new Date(booking.scheduledAt);
-  const isUpcoming = ['PENDING', 'CONFIRMED'].includes(booking.status) && scheduledDate > new Date();
+  const scheduledDate = new Date(booking.scheduledAt as string | number | Date);
+  const isUpcoming = (['PENDING', 'CONFIRMED'] as string[]).includes(booking.status) && scheduledDate > new Date();
   return isUpcoming && scheduledDate > new Date(Date.now() + 24 * 60 * 60 * 1000);
 };
 
 export const canRescheduleBooking = (booking: Booking): boolean => {
-  const scheduledDate = new Date(booking.scheduledAt);
-  const isUpcoming = ['PENDING', 'CONFIRMED'].includes(booking.status) && scheduledDate > new Date();
+  const scheduledDate = new Date(booking.scheduledAt as string | number | Date);
+  const isUpcoming = (['PENDING', 'CONFIRMED'] as string[]).includes(booking.status) && scheduledDate > new Date();
   return isUpcoming && scheduledDate > new Date(Date.now() + 24 * 60 * 60 * 1000);
 };
 

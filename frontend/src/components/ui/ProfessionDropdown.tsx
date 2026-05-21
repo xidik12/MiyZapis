@@ -88,7 +88,6 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
     }
   };
 
-  const selectedProfessionName = value ? getProfessionName(value, language as 'en' | 'uk' | 'ru') : '';
   const placeholderLabel = t('professionForm.selectProfession') || placeholder || 'Select a profession';
 
   const getCategoryDisplayName = (categoryId: string) => {

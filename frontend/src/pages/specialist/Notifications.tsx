@@ -16,7 +16,7 @@ interface Notification {
 }
 
 const SpecialistNotifications: React.FC = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'payment' | 'review' | 'system'>('all');

@@ -160,7 +160,14 @@ export class AdminService {
 
       const response = await apiClient.get<{
         auditLogs: AuditLog[];
-        pagination: Record<string, unknown>;
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalItems: number;
+          itemsPerPage: number;
+          hasNext: boolean;
+          hasPrev: boolean;
+        };
       }>(`/admin/audit-logs?${params.toString()}`);
       
       if (!response.success || !response.data) {

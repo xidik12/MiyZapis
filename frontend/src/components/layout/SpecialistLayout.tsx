@@ -138,7 +138,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { currency, setCurrency, getCurrencySymbol } = useCurrency();
+  const { currency, setCurrency } = useCurrency();
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();

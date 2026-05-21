@@ -18,7 +18,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import ReferralCreateModal from './ReferralCreateModal';
 import ReferralTracker from './ReferralTracker';
 
-const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, className }) => {
+const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userType, className }) => {
   const { t } = useLanguage();
   const [config, setConfig] = useState<ReferralConfigResponse | null>(null);
   const [analytics, setAnalytics] = useState<ReferralAnalytics | null>(null);

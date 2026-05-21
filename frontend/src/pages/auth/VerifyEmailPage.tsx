@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/redux';
+// import { useAppDispatch } from '@/hooks/redux';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@/components/icons';
@@ -11,7 +11,6 @@ const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { t } = useLanguage();
 
   const [status, setStatus] = useState<VerificationStatus>('loading');

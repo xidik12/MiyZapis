@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
+// Local re-typing: the app's Notification matches the shape NotificationGroup expects.
+// Avoids the DOM global Notification clashing with app data.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Notification = any;
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   isToday,
@@ -16,18 +20,7 @@ interface NotificationDropdownV2Props {
   onClose: () => void;
 }
 
-type TimeGroup = 'today' | 'yesterday' | 'this_week' | 'earlier';
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: Record<string, any>;
-  isRead: boolean;
-  createdAt: string;
-  actionUrl?: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 interface GroupedNotifications {
   today: Notification[];

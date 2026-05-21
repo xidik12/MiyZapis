@@ -33,7 +33,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  bookingId,
+  bookingId: _bookingId,
   serviceName: propServiceName,
   specialistName: propSpecialistName,
   booking,
@@ -99,7 +99,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     }
   };
 
-  const toggleTag = (tag: string, displayTag: string) => {
+  const toggleTag = (tag: string, _displayTag: string) => {
     setSelectedTags(prev =>
       prev.includes(tag)
         ? prev.filter(t => t !== tag)

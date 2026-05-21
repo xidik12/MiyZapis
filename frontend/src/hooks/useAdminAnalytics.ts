@@ -71,7 +71,7 @@ export const useAdminAnalytics = (
       const message = error instanceof Error ? error.message : String(error);
       const errorMessage = message || 'Failed to fetch analytics data';
       setError(errorMessage);
-      console.error('useAdminAnalytics error:', err);
+      console.error('useAdminAnalytics error:', error);
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ export const useSpecificAnalytics = <T>(
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       setError(message || 'Failed to fetch data');
-      console.error('useSpecificAnalytics error:', err);
+      console.error('useSpecificAnalytics error:', error);
     } finally {
       setLoading(false);
     }

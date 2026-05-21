@@ -299,7 +299,14 @@ export class BookingService {
     averageRating: number;
     completionRate: number;
   }> {
-    const response = await apiClient.get(`/bookings/stats?period=${period}`);
+    const response = await apiClient.get<{
+      totalBookings: number;
+      completedBookings: number;
+      cancelledBookings: number;
+      totalRevenue: number;
+      averageRating: number;
+      completionRate: number;
+    }>(`/bookings/stats?period=${period}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get booking statistics');
     }
@@ -348,7 +355,10 @@ export class BookingService {
       params.append('excludeBookingId', excludeBookingId);
     }
 
-    const response = await apiClient.get(`/bookings/check-conflicts?${params}`);
+    const response = await apiClient.get<{
+      hasConflicts: boolean;
+      conflicts: Array<{ bookingId: string; startTime: string; endTime: string }>;
+    }>(`/bookings/check-conflicts?${params}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to check booking conflicts');
     }

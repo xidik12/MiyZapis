@@ -12,7 +12,7 @@ export const useBookingOperations = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  const handleRescheduleBooking = useCallback((bookingId: string) => {
+  const handleRescheduleBooking = useCallback((_bookingId: string) => {
     toast.info(t('booking.rescheduleAlert'));
   }, [t]);
 

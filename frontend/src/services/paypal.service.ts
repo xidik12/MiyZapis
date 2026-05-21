@@ -63,11 +63,7 @@ export class PayPalService {
    */
   async createOrder(data: PayPalOrderRequest): Promise<PayPalOrderResponse> {
     try {
-      const response = await apiClient.post<{
-        success: boolean;
-        data: PayPalOrderResponse;
-        error?: { message: string };
-      }>(`${this.baseUrl}/paypal/create-order`, {
+      const response = await apiClient.post<PayPalOrderResponse>(`${this.baseUrl}/paypal/create-order`, {
         bookingId: data.bookingId,
         amount: data.amount,
         currency: data.currency || 'USD',
@@ -91,11 +87,7 @@ export class PayPalService {
    */
   async captureOrder(data: PayPalCaptureRequest): Promise<PayPalCaptureResponse> {
     try {
-      const response = await apiClient.post<{
-        success: boolean;
-        data: PayPalCaptureResponse;
-        error?: { message: string };
-      }>(`${this.baseUrl}/paypal/capture-order`, {
+      const response = await apiClient.post<PayPalCaptureResponse>(`${this.baseUrl}/paypal/capture-order`, {
         orderId: data.orderId,
         metadata: data.metadata,
       });
@@ -116,11 +108,7 @@ export class PayPalService {
    */
   async getOrderDetails(orderId: string): Promise<PayPalOrderDetails> {
     try {
-      const response = await apiClient.get<{
-        success: boolean;
-        data: PayPalOrderDetails;
-        error?: { message: string };
-      }>(`${this.baseUrl}/paypal/order/${orderId}`);
+      const response = await apiClient.get<PayPalOrderDetails>(`${this.baseUrl}/paypal/order/${orderId}`);
 
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get order details');

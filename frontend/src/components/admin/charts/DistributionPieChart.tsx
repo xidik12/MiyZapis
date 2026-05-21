@@ -116,19 +116,19 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
             }}
             labelStyle={{ color: isDark ? '#F3F4F6' : '#111827', fontWeight: 600 }}
             itemStyle={{ color: isDark ? '#D1D5DB' : '#6B7280' }}
-            formatter={(value: number, name: string) => [
+            formatter={((value: number, name: string) => [
               `${formatValue(value)} (${calculatePercentage(value, total)})`,
               name
-            ]}
+            ]) as any}
           />
           {showLegend && (
             <Legend
               verticalAlign="bottom"
               height={36}
-              formatter={(value, entry: { payload: { value: number } }) => {
-                const percentage = calculatePercentage(entry.payload.value, total);
+              formatter={((value: any, entry: any) => {
+                const percentage = calculatePercentage(entry?.payload?.value || 0, total);
                 return `${value} (${percentage})`;
-              }}
+              }) as any}
             />
           )}
         </PieChart>

@@ -67,7 +67,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const handleNotificationClick = (notification: Record<string, unknown>) => {
     if (!notification.isRead) {
-      handleMarkAsRead(notification.id);
+      handleMarkAsRead(notification.id as string);
     }
     onClose();
   };
@@ -164,7 +164,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   animationDelay: `${index * 50}ms`,
                   animation: isAnimating ? 'slideInRight 0.3s ease-out forwards' : 'none'
                 }}
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => handleNotificationClick(notification as unknown as Record<string, unknown>)}
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-0.5">

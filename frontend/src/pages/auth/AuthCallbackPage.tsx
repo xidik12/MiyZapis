@@ -16,7 +16,7 @@ import { PageLoader } from '@/components/ui';
 const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
 

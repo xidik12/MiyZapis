@@ -25,7 +25,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   alt,
   size = 'md',
   className = '',
-  fallbackIcon = true,
+  fallbackIcon: _fallbackIcon = true,
   lazy = false,
   onError,
   onLoad

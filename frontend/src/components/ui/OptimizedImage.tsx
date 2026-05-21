@@ -112,7 +112,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           }, timeoutDuration);
           setTimeoutId(timeout);
         })
-        .catch((fetchError) => {
+        .catch((_fetchError) => {
           // Network error or file doesn't exist
           console.log('🚨 Backend file HEAD request failed - file likely missing:', src);
           console.log('💡 Suggestion: Files may have been lost during deployment. Consider re-uploading images or implementing cloud storage.');
@@ -209,8 +209,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return originalSrc;
   };
 
-  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const img = event.currentTarget;
+  const handleImageError = (_event: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.log('🚨 OptimizedImage failed to load:', imageSrc);
     
     // Clear timeout when we get an error
@@ -233,7 +232,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       console.log('❌ Base64 image failed to load - this indicates corrupted data');
       setHasError(true);
       setIsLoading(false);
-      onError?.(event);
+      onError?.(_event as any);
       return;
     }
 
@@ -263,7 +262,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     console.log('❌ All image loading attempts failed for:', src);
     setHasError(true);
     setIsLoading(false);
-    onError?.(event);
+    onError?.(_event);
   };
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {

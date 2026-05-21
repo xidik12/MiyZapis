@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,7 +30,6 @@ const CreatePostPage: React.FC = () => {
   });
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadPost = async () => {

@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useLanguage();
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
 
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const error = useAppSelector(selectAuthError);
@@ -95,7 +95,7 @@ const LoginPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    setValue: _setValue,
   } = useForm<LoginFormData>({
     defaultValues: {
       email: '',
@@ -142,7 +142,7 @@ const LoginPage: React.FC = () => {
       // Navigation will happen automatically due to the useEffect above
     } catch (error: unknown) {
       // Check if this is an email verification error
-      const errorMessage = error?.message || error?.toString() || '';
+      const errorMessage = (error as any)?.message || String(error) || '';
       if (isEmailNotVerified(errorMessage)) {
         // Store email for resend button
         setUnverifiedEmail(data.email);

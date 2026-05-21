@@ -107,7 +107,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
         </h3>
         <div className="space-y-3">
           {[5, 4, 3, 2, 1].map((rating) => {
-            const count = stats.ratingDistribution[rating] || 0;
+            const count = (stats.ratingDistribution as Record<number, number>)[rating] || 0;
             const percentage = stats.totalReviews > 0
               ? (count / stats.totalReviews) * 100
               : 0;

@@ -154,7 +154,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
               variant="secondary"
               size="sm"
               loading={copying}
-              leftIcon={copying ? <ClipboardDocumentCheckIcon className="h-4 w-4" /> : <ClipboardDocumentIcon className="h-4 w-4" />}
+              leftIcon={<ClipboardDocumentIcon className="h-4 w-4" />}
               className="flex-1"
             >
               {copying ? t('referral.actions.copied') : t('referral.actions.copyLink')}

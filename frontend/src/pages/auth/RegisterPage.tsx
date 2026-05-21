@@ -32,7 +32,7 @@ const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useLanguage();
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
   
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const error = useAppSelector(selectAuthError);

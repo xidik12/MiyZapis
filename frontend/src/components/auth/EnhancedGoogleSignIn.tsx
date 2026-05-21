@@ -92,7 +92,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // Dispatch Google login action without userType first
-      const result = await dispatch(googleLogin({ credential: response.credential })).unwrap();
+      const result = await dispatch(googleLogin({ credential: response.credential as string })).unwrap();
 
       // Check if user type selection is required
       if ('requiresUserTypeSelection' in result && result.requiresUserTypeSelection) {
