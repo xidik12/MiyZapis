@@ -30,6 +30,12 @@ export interface Expense {
   recurringFrequency?: RecurringFrequency;
   notes?: string;
   receiptUrl?: string;
+  // Tax fields — drive the deductible side of the accounting service's
+  // tax estimator. Without these the calculator under-deducts.
+  isTaxDeductible?: boolean;
+  vatAmount?: number;
+  vendorName?: string;
+  vendorTaxId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +90,10 @@ export interface CreateExpenseData {
   recurringFrequency?: RecurringFrequency;
   notes?: string;
   receiptUrl?: string;
+  isTaxDeductible?: boolean;
+  vatAmount?: number;
+  vendorName?: string;
+  vendorTaxId?: string;
 }
 
 export interface UpdateExpenseData {
@@ -95,6 +105,10 @@ export interface UpdateExpenseData {
   isRecurring?: boolean;
   recurringFrequency?: RecurringFrequency;
   notes?: string;
+  isTaxDeductible?: boolean;
+  vatAmount?: number;
+  vendorName?: string;
+  vendorTaxId?: string;
   receiptUrl?: string;
 }
 

@@ -250,7 +250,11 @@ export class ExpenseController {
         isRecurring = false,
         recurringFrequency,
         notes,
-        receiptUrl
+        receiptUrl,
+        isTaxDeductible,
+        vatAmount,
+        vendorName,
+        vendorTaxId,
       } = req.body;
 
       // Validate category
@@ -288,7 +292,11 @@ export class ExpenseController {
           isRecurring,
           recurringFrequency: isRecurring ? recurringFrequency : null,
           notes: notes?.trim() || null,
-          receiptUrl: receiptUrl || null
+          receiptUrl: receiptUrl || null,
+          isTaxDeductible: typeof isTaxDeductible === 'boolean' ? isTaxDeductible : true,
+          vatAmount: vatAmount != null && Number(vatAmount) > 0 ? Number(vatAmount) : null,
+          vendorName: vendorName?.trim() || null,
+          vendorTaxId: vendorTaxId?.trim() || null,
         }
       });
 
@@ -315,7 +323,11 @@ export class ExpenseController {
         isRecurring,
         recurringFrequency,
         notes,
-        receiptUrl
+        receiptUrl,
+        isTaxDeductible,
+        vatAmount,
+        vendorName,
+        vendorTaxId,
       } = req.body;
 
       // Check if expense exists and belongs to user
@@ -365,6 +377,12 @@ export class ExpenseController {
       if (recurringFrequency !== undefined) updateData.recurringFrequency = recurringFrequency;
       if (notes !== undefined) updateData.notes = notes?.trim() || null;
       if (receiptUrl !== undefined) updateData.receiptUrl = receiptUrl || null;
+      if (isTaxDeductible !== undefined) updateData.isTaxDeductible = !!isTaxDeductible;
+      if (vatAmount !== undefined) {
+        updateData.vatAmount = vatAmount != null && Number(vatAmount) > 0 ? Number(vatAmount) : null;
+      }
+      if (vendorName !== undefined) updateData.vendorName = vendorName?.trim() || null;
+      if (vendorTaxId !== undefined) updateData.vendorTaxId = vendorTaxId?.trim() || null;
 
       const expense = await prisma.expense.update({
         where: { id },

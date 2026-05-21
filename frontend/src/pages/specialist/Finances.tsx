@@ -57,6 +57,10 @@ interface ExpenseFormData {
   isRecurring: boolean;
   recurringFrequency: RecurringFrequency | '';
   notes: string;
+  isTaxDeductible: boolean;
+  vatAmount: string;
+  vendorName: string;
+  vendorTaxId: string;
 }
 
 const initialFormData: ExpenseFormData = {
@@ -67,7 +71,11 @@ const initialFormData: ExpenseFormData = {
   date: new Date().toISOString().split('T')[0],
   isRecurring: false,
   recurringFrequency: '',
-  notes: ''
+  notes: '',
+  isTaxDeductible: true,  // Most business expenses are deductible — default to true so users don't have to remember.
+  vatAmount: '',
+  vendorName: '',
+  vendorTaxId: '',
 };
 
 const SpecialistFinances: React.FC = () => {
@@ -141,7 +149,11 @@ const SpecialistFinances: React.FC = () => {
       date: new Date(expense.date).toISOString().split('T')[0],
       isRecurring: expense.isRecurring,
       recurringFrequency: expense.recurringFrequency || '',
-      notes: expense.notes || ''
+      notes: expense.notes || '',
+      isTaxDeductible: expense.isTaxDeductible ?? true,
+      vatAmount: expense.vatAmount != null ? String(expense.vatAmount) : '',
+      vendorName: expense.vendorName || '',
+      vendorTaxId: expense.vendorTaxId || '',
     });
     setIsModalOpen(true);
   };
@@ -174,7 +186,11 @@ const SpecialistFinances: React.FC = () => {
         recurringFrequency: formData.isRecurring && formData.recurringFrequency
           ? formData.recurringFrequency as RecurringFrequency
           : undefined,
-        notes: formData.notes.trim() || undefined
+        notes: formData.notes.trim() || undefined,
+        isTaxDeductible: formData.isTaxDeductible,
+        vatAmount: formData.vatAmount ? Number(formData.vatAmount) : undefined,
+        vendorName: formData.vendorName.trim() || undefined,
+        vendorTaxId: formData.vendorTaxId.trim() || undefined,
       };
 
       if (editingExpense) {
@@ -657,6 +673,70 @@ const SpecialistFinances: React.FC = () => {
                     </select>
                   </div>
                 )}
+
+                {/* Tax-deductible toggle — flows into the Accounting tax estimator. */}
+                <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isTaxDeductible}
+                      onChange={(e) => setFormData({ ...formData, isTaxDeductible: e.target.checked })}
+                      className="mt-0.5 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('finances.taxDeductible') || 'Tax-deductible'}
+                      </span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        {t('finances.taxDeductibleHint') || 'Counts against gross income in the tax estimator.'}
+                      </span>
+                    </span>
+                  </label>
+
+                  {/* VAT — input VAT the specialist paid that may be reclaimable */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('finances.vatAmount') || 'VAT included'}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.vatAmount}
+                      onChange={(e) => setFormData({ ...formData, vatAmount: e.target.value })}
+                      placeholder="0.00"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+
+                  {/* Vendor — useful for accountant lookups */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('finances.vendorName') || 'Vendor'}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.vendorName}
+                        onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })}
+                        placeholder={t('finances.vendorPlaceholder') || 'Supplier name'}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('finances.vendorTaxId') || 'Vendor tax ID'}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.vendorTaxId}
+                        onChange={(e) => setFormData({ ...formData, vendorTaxId: e.target.value })}
+                        placeholder={t('finances.vendorTaxIdPlaceholder') || 'Optional'}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 {/* Notes */}
                 <div>
