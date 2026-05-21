@@ -7,15 +7,86 @@ import { selectIsAuthenticated, selectUser } from '@/store/slices/authSlice';
 import { communityService, Comment, Post } from '@/services';
 import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { formatDateRelative } from '@/utils/dateUtils';
 import {
   HeartIcon,
   ChatBubbleLeftIcon,
   EyeIcon,
   ArrowLeftIcon,
   BookmarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+
+// ── Lightbox overlay ────────────────────────────────────────────────────────
+interface LightboxOverlayProps {
+  images: string[];
+  index: number;
+  onClose: () => void;
+  onNav: (idx: number) => void;
+}
+
+const LightboxOverlay: React.FC<LightboxOverlayProps> = ({ images, index, onClose, onNav }) => {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') onNav((index - 1 + images.length) % images.length);
+      if (e.key === 'ArrowRight') onNav((index + 1) % images.length);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [images.length, index, onClose, onNav]);
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      {/* Counter */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium bg-black/40 px-3 py-1 rounded-full select-none">
+        {index + 1} / {images.length}
+      </div>
+      {/* Close */}
+      <button
+        className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+        onClick={onClose}
+        aria-label="Close"
+      >
+        <XMarkIcon className="w-8 h-8" />
+      </button>
+      {/* Image */}
+      <img
+        src={getAbsoluteImageUrl(images[index])}
+        alt={`Image ${index + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl shadow-2xl select-none"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {images.length > 1 && (
+        <>
+          <button
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onNav((index - 1 + images.length) % images.length); }}
+            aria-label="Previous image"
+          >
+            <ChevronLeftIcon className="w-6 h-6" />
+          </button>
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onNav((index + 1) % images.length); }}
+            aria-label="Next image"
+          >
+            <ChevronRightIcon className="w-6 h-6" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
 
 const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -35,6 +106,7 @@ const PostDetailPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
+  const [collapsedReplies, setCollapsedReplies] = useState<Record<string, boolean>>({});
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
@@ -170,128 +242,194 @@ const PostDetailPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+  const formatDate = (dateString: string) =>
+    formatDateRelative(dateString, undefined, {
+      justNow: t('community.justNow') || 'Just now',
+      ago: t('community.ago') || 'ago',
+      yesterday: t('community.yesterday') || 'Yesterday',
+    });
 
-  const renderComment = (comment: Comment, depth: number = 0) => (
-    <div key={comment.id} className={`border-l ${depth > 0 ? 'ml-4 pl-4' : ''} border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-r-lg px-3 py-2 -mx-1 transition-all duration-200`}>
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0">
-          {comment.author.avatar ? (
-            <img
-              src={getAbsoluteImageUrl(comment.author.avatar)}
-              alt={comment.author.firstName}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-medium">
-                {comment.author.firstName.charAt(0)}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <span className="font-medium text-gray-900 dark:text-white">
-              {comment.author.firstName} {comment.author.lastName?.charAt(0)}.
-            </span>
-            <span>{formatDate(comment.createdAt)}</span>
-          </div>
-          {editingComment === comment.id ? (
-            <div className="mt-1">
-              <textarea
-                value={editCommentText}
-                onChange={(e) => setEditCommentText(e.target.value)}
-                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                rows={2}
+  const REPLIES_COLLAPSE_THRESHOLD = 3;
+
+  const renderComment = (comment: Comment, depth: number = 0) => {
+    const hasReplies = comment.replies && comment.replies.length > 0;
+    const replyCount = comment.replies?.length ?? 0;
+    const isCollapsed = collapsedReplies[comment.id] !== false && replyCount > REPLIES_COLLAPSE_THRESHOLD;
+
+    return (
+      <div
+        key={comment.id}
+        data-tilt-soft
+        className={`float-card border-l ${depth > 0 ? 'ml-4 pl-4' : ''} border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-r-lg px-3 py-2 -mx-1 transition-all duration-200`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            {comment.author.avatar ? (
+              <img
+                src={getAbsoluteImageUrl(comment.author.avatar)}
+                alt={comment.author.firstName}
+                className="w-8 h-8 rounded-full object-cover"
               />
-              <div className="flex gap-2 mt-1">
-                <button
-                  onClick={async () => {
-                    try {
-                      await communityService.updateComment(comment.id, editCommentText);
-                      setEditingComment(null);
-                      loadComments();
-                    } catch {}
-                  }}
-                  className="text-xs text-primary-500 hover:text-primary-600"
-                >
-                  Save
-                </button>
-                <button onClick={() => setEditingComment(null)} className="text-xs text-gray-500">Cancel</button>
+            ) : (
+              <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">
+                  {comment.author.firstName.charAt(0)}
+                </span>
               </div>
-            </div>
-          ) : (
-            <p className="mt-1 text-gray-700 dark:text-gray-300">{comment.content}</p>
-          )}
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-            <button
-              onClick={() => handleCommentLike(comment.id)}
-              className={`cursor-pointer flex items-center gap-1 hover:scale-110 active:scale-95 transition-all duration-200 ${comment.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
-            >
-              {comment.isLiked ? <HeartIconSolid className="w-4 h-4" /> : <HeartIcon className="w-4 h-4" />}
-              <span>{comment.likeCount}</span>
-            </button>
-            <button
-              onClick={() => setActiveReply(activeReply === comment.id ? null : comment.id)}
-              className="cursor-pointer hover:text-primary-500 transition-all duration-200"
-            >
-              {t('community.reply') || 'Reply'}
-            </button>
-            {user && comment.author.id === user.id && (
-              <>
-                <button
-                  onClick={() => {
-                    setEditingComment(comment.id);
-                    setEditCommentText(comment.content);
-                  }}
-                  className="text-xs text-gray-500 hover:text-primary-500"
-                >
-                  {t('community.editComment') || 'Edit'}
-                </button>
-                <button
-                  onClick={() => setDeleteCommentId(comment.id)}
-                  className="text-xs text-gray-500 hover:text-red-500"
-                >
-                  {t('community.deleteComment') || 'Delete'}
-                </button>
-              </>
             )}
           </div>
-          {activeReply === comment.id && (
-            <div className="mt-3">
-              <textarea
-                value={replyText[comment.id] || ''}
-                onChange={(e) => setReplyText((prev) => ({ ...prev, [comment.id]: e.target.value }))}
-                placeholder={t('community.addReply') || 'Write a reply...'}
-                className="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                rows={3}
-              />
-              <div className="flex items-center gap-2 mt-2">
-                <button
-                  onClick={() => handleReply(comment.id)}
-                  className="cursor-pointer px-3 py-1.5 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600 transition-all duration-200"
-                >
-                  {t('community.postReply') || 'Post reply'}
-                </button>
-                <button
-                  onClick={() => setActiveReply(null)}
-                  className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                >
-                  {t('common.cancel') || 'Cancel'}
-                </button>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-medium text-gray-900 dark:text-white">
+                {comment.author.firstName} {comment.author.lastName?.charAt(0)}.
+              </span>
+              <span title={new Date(comment.createdAt).toLocaleString()}>{formatDate(comment.createdAt)}</span>
+            </div>
+            {editingComment === comment.id ? (
+              <div className="mt-1">
+                <textarea
+                  value={editCommentText}
+                  onChange={(e) => setEditCommentText(e.target.value)}
+                  className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  rows={2}
+                />
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={async () => {
+                      try {
+                        await communityService.updateComment(comment.id, editCommentText);
+                        setEditingComment(null);
+                        loadComments();
+                      } catch {}
+                    }}
+                    className="text-xs text-primary-500 hover:text-primary-600"
+                  >
+                    {t('common.save') || 'Save'}
+                  </button>
+                  <button onClick={() => setEditingComment(null)} className="text-xs text-gray-500">
+                    {t('common.cancel') || 'Cancel'}
+                  </button>
+                </div>
               </div>
+            ) : (
+              <p className="mt-1 text-gray-700 dark:text-gray-300">{comment.content}</p>
+            )}
+            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <button
+                onClick={() => handleCommentLike(comment.id)}
+                className={`cursor-pointer flex items-center gap-1 hover:scale-110 active:scale-95 transition-all duration-200 ${comment.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+              >
+                {comment.isLiked ? <HeartIconSolid className="w-4 h-4" /> : <HeartIcon className="w-4 h-4" />}
+                <span>{comment.likeCount}</span>
+              </button>
+              <button
+                onClick={() => setActiveReply(activeReply === comment.id ? null : comment.id)}
+                className="cursor-pointer hover:text-primary-500 transition-all duration-200"
+              >
+                {t('community.reply') || 'Reply'}
+              </button>
+              {user && comment.author.id === user.id && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditingComment(comment.id);
+                      setEditCommentText(comment.content);
+                    }}
+                    className="text-xs text-gray-500 hover:text-primary-500"
+                  >
+                    {t('community.editComment') || 'Edit'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteCommentId(comment.id)}
+                    className="text-xs text-gray-500 hover:text-red-500"
+                  >
+                    {t('community.deleteComment') || 'Delete'}
+                  </button>
+                </>
+              )}
             </div>
-          )}
-          {comment.replies && comment.replies.length > 0 && (
-            <div className="mt-4 space-y-4">
-              {comment.replies.map((reply) => renderComment(reply, depth + 1))}
-            </div>
-          )}
+
+            {/* Pill-shaped reply input with avatar */}
+            {activeReply === comment.id && (
+              <div className="mt-3 flex items-start gap-2">
+                {user?.avatar ? (
+                  <img
+                    src={getAbsoluteImageUrl(user.avatar as string)}
+                    alt=""
+                    className="w-7 h-7 rounded-full object-cover flex-shrink-0 mt-1"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-white text-xs font-medium">
+                      {user?.firstName?.charAt(0) ?? '?'}
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-4 pr-1 py-1 focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/30 transition-all">
+                  <input
+                    type="text"
+                    value={replyText[comment.id] || ''}
+                    onChange={(e) => setReplyText((prev) => ({ ...prev, [comment.id]: e.target.value }))}
+                    onKeyDown={(e) => e.key === 'Enter' && handleReply(comment.id)}
+                    placeholder={t('community.addReply') || 'Write a reply...'}
+                    className="flex-1 text-sm bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleReply(comment.id)}
+                    disabled={!replyText[comment.id]?.trim()}
+                    className="cursor-pointer px-3 py-1 bg-primary-500 text-white rounded-full text-xs font-medium hover:bg-primary-600 disabled:opacity-50 transition-all duration-200"
+                  >
+                    {t('community.postReply') || 'Reply'}
+                  </button>
+                  <button
+                    onClick={() => setActiveReply(null)}
+                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Replies with collapse */}
+            {hasReplies && (
+              <div className="mt-4">
+                {replyCount > REPLIES_COLLAPSE_THRESHOLD && (
+                  <button
+                    onClick={() =>
+                      setCollapsedReplies((prev) => ({
+                        ...prev,
+                        [comment.id]: !isCollapsed,
+                      }))
+                    }
+                    className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 mb-2 transition-colors"
+                  >
+                    {isCollapsed ? (
+                      <>
+                        <ChevronRightIcon className="w-3.5 h-3.5" />
+                        {`${t('community.showReplies') || 'Show'} ${replyCount} ${t('community.replies') || 'replies'}`}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronLeftIcon className="w-3.5 h-3.5 rotate-90" />
+                        {t('community.hideReplies') || 'Hide replies'}
+                      </>
+                    )}
+                  </button>
+                )}
+                {!isCollapsed && (
+                  <div className="space-y-4">
+                    {comment.replies!.map((reply) => renderComment(reply, depth + 1))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return <PageLoader />;
@@ -525,26 +663,49 @@ const PostDetailPage: React.FC = () => {
 
         {/* Comments */}
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {t('community.comments') || 'Comments'}
-          </h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('community.comments') || 'Comments'}
+            </h2>
+            {comments.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[1.4rem] h-6 px-1.5 rounded-full text-xs font-bold bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
+                {comments.length}
+              </span>
+            )}
+          </div>
 
           {isAuthenticated ? (
-            <div className="mb-6">
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={t('community.addComment') || 'Add a comment...'}
-                className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                rows={4}
-              />
-              <div className="flex justify-end mt-2">
-                <button
-                  onClick={handleCreateComment}
-                  className="cursor-pointer px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-all duration-200"
-                >
-                  {t('community.postComment') || 'Post comment'}
-                </button>
+            <div className="mb-6 flex items-start gap-3">
+              {user?.avatar ? (
+                <img
+                  src={getAbsoluteImageUrl(user.avatar as string)}
+                  alt=""
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0 mt-0.5"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-sm font-medium">
+                    {user?.firstName?.charAt(0) ?? '?'}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/30 transition-all">
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t('community.addComment') || 'Add a comment...'}
+                  className="w-full px-4 pt-3 pb-2 text-gray-900 dark:text-white bg-transparent resize-none focus:outline-none"
+                  rows={3}
+                />
+                <div className="flex justify-end px-3 pb-3">
+                  <button
+                    onClick={handleCreateComment}
+                    disabled={!commentText.trim()}
+                    className="cursor-pointer px-4 py-1.5 bg-primary-500 text-white rounded-full text-sm font-medium hover:bg-primary-600 disabled:opacity-50 transition-all duration-200"
+                  >
+                    {t('community.postComment') || 'Post comment'}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -643,45 +804,12 @@ const PostDetailPage: React.FC = () => {
       )}
 
       {lightbox.open && lightbox.images.length > 0 && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setLightbox({ ...lightbox, open: false })}
-        >
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center px-2 sm:px-4" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl font-bold z-10"
-              onClick={() => setLightbox({ ...lightbox, open: false })}
-            >
-              ✕
-            </button>
-            <img
-              src={getAbsoluteImageUrl(lightbox.images[lightbox.index])}
-              alt={`Image ${lightbox.index + 1}`}
-              className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl"
-            />
-            {lightbox.images.length > 1 && (
-              <div className="flex justify-between w-full mt-4 px-4">
-                <button
-                  className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-                  onClick={() => setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length })}
-                >
-                  ← {t('common.previous') || 'Previous'}
-                </button>
-                <span className="text-white/60 self-center">
-                  {lightbox.index + 1} / {lightbox.images.length}
-                </span>
-                <button
-                  className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-                  onClick={() => setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length })}
-                >
-                  {t('common.next') || 'Next'} →
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <LightboxOverlay
+          images={lightbox.images}
+          index={lightbox.index}
+          onClose={() => setLightbox({ ...lightbox, open: false })}
+          onNav={(idx) => setLightbox({ ...lightbox, index: idx })}
+        />
       )}
     </div>
   );

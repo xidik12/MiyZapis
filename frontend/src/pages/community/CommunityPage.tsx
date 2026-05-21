@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectIsAuthenticated } from '@/store/slices/authSlice';
 import { communityService, Post, PostType } from '@/services';
-import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { formatDateRelative } from '@/utils/dateUtils';
 import {
@@ -14,12 +13,138 @@ import {
   EyeIcon,
   MagnifyingGlassIcon,
   BookmarkIcon,
+  FunnelIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+import CreatePostFAB from '@/components/community/CreatePostFAB';
+import HashtagChips from '@/components/community/HashtagChips';
+import TrendingRail from '@/components/community/TrendingRail';
+import { topHashtags, hashtagToSearchQuery } from '@/utils/hashtags';
 
 type SortBy = 'createdAt' | 'likeCount' | 'commentCount';
 type ViewMode = 'ALL' | PostType | 'SAVED';
 
+interface FilterPreset {
+  name: string;
+  data: {
+    activeFilter: ViewMode;
+    searchQuery: string;
+    sortBy: SortBy;
+    minPrice: string;
+    maxPrice: string;
+  };
+}
+
+const PRESETS_KEY = 'community-presets';
+const MAX_PRESETS = 8;
+
+// ── Skeleton loader ─────────────────────────────────────────────────────────
+const PostCardSkeleton: React.FC = () => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+    <div className="flex items-start gap-4">
+      {/* Avatar */}
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+      <div className="flex-1 min-w-0">
+        {/* Badge row */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-5 w-20 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="h-5 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+        </div>
+        {/* Title */}
+        <div className="h-6 w-3/4 rounded-md bg-gray-200 dark:bg-gray-700 mb-2" />
+        {/* Content lines */}
+        <div className="space-y-1.5 mt-3">
+          <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+        {/* Meta */}
+        <div className="flex items-center gap-4 mt-4">
+          <div className="h-3.5 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-3.5 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+        {/* Action pills */}
+        <div className="flex items-center gap-6 mt-4">
+          <div className="h-5 w-10 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-5 w-10 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-5 w-10 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+      </div>
+      {/* Image thumb */}
+      <div className="flex-shrink-0 hidden sm:block w-24 h-24 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  </div>
+);
+
+// ── Lightbox ────────────────────────────────────────────────────────────────
+interface LightboxProps {
+  images: string[];
+  index: number;
+  onClose: () => void;
+  onNav: (idx: number) => void;
+}
+
+const Lightbox: React.FC<LightboxProps> = ({ images, index, onClose, onNav }) => {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') onNav((index - 1 + images.length) % images.length);
+      if (e.key === 'ArrowRight') onNav((index + 1) % images.length);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [images.length, index, onClose, onNav]);
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Counter */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium bg-black/40 px-3 py-1 rounded-full select-none">
+        {index + 1} / {images.length}
+      </div>
+      {/* Close */}
+      <button
+        className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+        onClick={onClose}
+        aria-label="Close"
+      >
+        <XMarkIcon className="w-8 h-8" />
+      </button>
+      {/* Image */}
+      <img
+        src={getAbsoluteImageUrl(images[index])}
+        alt={`Image ${index + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl shadow-2xl select-none"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {/* Arrow buttons */}
+      {images.length > 1 && (
+        <>
+          <button
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onNav((index - 1 + images.length) % images.length); }}
+            aria-label="Previous image"
+          >
+            <ChevronLeftIcon className="w-6 h-6" />
+          </button>
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onNav((index + 1) % images.length); }}
+            aria-label="Next image"
+          >
+            <ChevronRightIcon className="w-6 h-6" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ── Main component ───────────────────────────────────────────────────────────
 const CommunityPage: React.FC = () => {
   const { t } = useLanguage();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -45,6 +170,92 @@ const CommunityPage: React.FC = () => {
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
 
+  // Presets state
+  const [presets, setPresets] = useState<FilterPreset[]>(() => {
+    try {
+      const raw = localStorage.getItem(PRESETS_KEY);
+      return raw ? (JSON.parse(raw) as FilterPreset[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [showPresetInput, setShowPresetInput] = useState(false);
+  const [presetName, setPresetName] = useState('');
+  const presetInputRef = useRef<HTMLInputElement>(null);
+
+  // Lightbox state
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+
+  // Active hashtag filter (drives a #-prefixed search query)
+  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+
+  // Trending hashtags derived from the current feed
+  const topTags = useMemo(() => topHashtags(posts, 12), [posts]);
+
+  const handleHashtagSelect = (slug: string | null) => {
+    setActiveHashtag(slug);
+    setSearchQuery(slug ? hashtagToSearchQuery(slug) : '');
+    setCurrentPage(1);
+    setSearchParams((params) => {
+      if (slug) params.set('search', hashtagToSearchQuery(slug));
+      else params.delete('search');
+      params.set('page', '1');
+      return params;
+    });
+  };
+
+  // Persist presets to localStorage
+  useEffect(() => {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  }, [presets]);
+
+  // Focus preset input when shown
+  useEffect(() => {
+    if (showPresetInput) presetInputRef.current?.focus();
+  }, [showPresetInput]);
+
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) return;
+    const newPreset: FilterPreset = {
+      name,
+      data: { activeFilter, searchQuery, sortBy, minPrice, maxPrice },
+    };
+    setPresets((prev) => {
+      const without = prev.filter((p) => p.name !== name);
+      return [newPreset, ...without].slice(0, MAX_PRESETS);
+    });
+    setPresetName('');
+    setShowPresetInput(false);
+  };
+
+  const applyPreset = (preset: FilterPreset) => {
+    setActiveFilter(preset.data.activeFilter);
+    setSearchQuery(preset.data.searchQuery);
+    setSortBy(preset.data.sortBy);
+    setMinPrice(preset.data.minPrice);
+    setMaxPrice(preset.data.maxPrice);
+    setCurrentPage(1);
+    setSearchParams((params) => {
+      if (preset.data.activeFilter === 'ALL') {
+        params.delete('type');
+      } else {
+        params.set('type', preset.data.activeFilter);
+      }
+      if (preset.data.searchQuery) {
+        params.set('search', preset.data.searchQuery);
+      } else {
+        params.delete('search');
+      }
+      params.set('page', '1');
+      return params;
+    });
+  };
+
+  const deletePreset = (name: string) => {
+    setPresets((prev) => prev.filter((p) => p.name !== name));
+  };
+
   // Fetch posts
   const fetchPosts = useCallback(async (page: number = 1, append: boolean = false) => {
     try {
@@ -55,7 +266,6 @@ const CommunityPage: React.FC = () => {
       }
       setError(null);
 
-      // Handle "Saved" tab separately
       if (activeFilter === 'SAVED') {
         try {
           const response = await communityService.getBookmarkedPosts(page, 20);
@@ -91,7 +301,6 @@ const CommunityPage: React.FC = () => {
         filters.search = searchQuery.trim();
       }
 
-      // Price range filters (only for SALE/RENT)
       if ((activeFilter === 'SALE' || activeFilter === 'RENT') && minPrice) {
         const min = parseFloat(minPrice);
         if (!isNaN(min) && min >= 0) filters.minPrice = min;
@@ -132,7 +341,6 @@ const CommunityPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchPosts(1);
@@ -147,11 +355,9 @@ const CommunityPage: React.FC = () => {
     });
   };
 
-  // Handle filter change
   const handleFilterChange = (filter: ViewMode) => {
     setActiveFilter(filter);
     setCurrentPage(1);
-    // Reset price range when switching away from SALE/RENT
     if (filter !== 'SALE' && filter !== 'RENT') {
       setMinPrice('');
       setMaxPrice('');
@@ -167,23 +373,17 @@ const CommunityPage: React.FC = () => {
     });
   };
 
-  // Handle sort change
   const handleSortChange = (value: SortBy) => {
     setSortBy(value);
     setCurrentPage(1);
   };
 
-  // Handle price range apply
   const handlePriceRangeApply = () => {
     fetchPosts(1);
   };
 
-  // Handle like
   const handleLike = async (postId: string) => {
-    if (!isAuthenticated) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     try {
       const response = await communityService.togglePostLike(postId);
       setPosts((prev) =>
@@ -198,7 +398,6 @@ const CommunityPage: React.FC = () => {
     }
   };
 
-  // Handle bookmark
   const handleBookmark = async (postId: string) => {
     if (!isAuthenticated) return;
     try {
@@ -215,24 +414,18 @@ const CommunityPage: React.FC = () => {
     }
   };
 
-  // Load more
   const loadMore = () => {
     if (currentPage < totalPages && !loadingMore) {
       fetchPosts(currentPage + 1, true);
     }
   };
 
-  // Using shared formatDateRelative from @/utils/dateUtils
   const formatDate = (dateString: string) =>
     formatDateRelative(dateString, undefined, {
       justNow: t('community.justNow') || 'Just now',
       ago: t('community.ago') || 'ago',
       yesterday: t('community.yesterday') || 'Yesterday',
     });
-
-  if (loading && posts.length === 0) {
-    return <PageLoader />;
-  }
 
   const filterButtonBase = 'cursor-pointer px-4 py-2 rounded-lg font-medium transition-all duration-200';
   const filterButtonInactive = 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600';
@@ -260,6 +453,17 @@ const CommunityPage: React.FC = () => {
             </Link>
           )}
         </div>
+
+        {/* Trending posts — ranked by likes + comments + recency. Hidden if < 3 candidates. */}
+        <TrendingRail posts={posts} label={t('community.trending') || 'Trending'} />
+
+        {/* Trending hashtags derived from the feed content. Click to filter, click again to clear. */}
+        <HashtagChips
+          tags={topTags}
+          activeSlug={activeHashtag ?? undefined}
+          onSelect={handleHashtagSelect}
+          label={t('community.topics') || 'Topics'}
+        />
 
         {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -346,7 +550,76 @@ const CommunityPage: React.FC = () => {
             <option value="likeCount">{t('community.sort.popular') || 'Most Popular'}</option>
             <option value="commentCount">{t('community.sort.discussed') || 'Most Discussed'}</option>
           </select>
+
+          {/* Save Filter Preset button */}
+          <div className="relative">
+            {showPresetInput ? (
+              <div className="flex items-center gap-1">
+                <input
+                  ref={presetInputRef}
+                  type="text"
+                  value={presetName}
+                  onChange={(e) => setPresetName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') savePreset();
+                    if (e.key === 'Escape') { setShowPresetInput(false); setPresetName(''); }
+                  }}
+                  placeholder="Preset name"
+                  className="w-32 px-2 py-1.5 text-sm border border-primary-300 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <button
+                  onClick={savePreset}
+                  disabled={!presetName.trim() || presets.length >= MAX_PRESETS}
+                  className="px-2 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors"
+                >
+                  {t('common.save') || 'Save'}
+                </button>
+                <button
+                  onClick={() => { setShowPresetInput(false); setPresetName(''); }}
+                  className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowPresetInput(true)}
+                disabled={presets.length >= MAX_PRESETS}
+                title={t('community.saveFilter') || 'Save filter preset'}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-primary-300 transition-all disabled:opacity-40"
+              >
+                <FunnelIcon className="w-4 h-4" />
+                {t('community.saveFilter') || 'Save filter'}
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Preset chips */}
+        {presets.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {presets.map((preset) => (
+              <div
+                key={preset.name}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-700 group"
+              >
+                <button
+                  onClick={() => applyPreset(preset)}
+                  className="hover:text-primary-900 dark:hover:text-primary-100 transition-colors"
+                >
+                  {preset.name}
+                </button>
+                <button
+                  onClick={() => deletePreset(preset.name)}
+                  className="ml-1 text-primary-400 hover:text-red-500 transition-colors"
+                  aria-label={`Remove preset ${preset.name}`}
+                >
+                  <XMarkIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Price Range Filter */}
         {(activeFilter === 'SALE' || activeFilter === 'RENT') && (
@@ -389,8 +662,17 @@ const CommunityPage: React.FC = () => {
           </div>
         )}
 
+        {/* Skeleton loaders */}
+        {loading && posts.length === 0 && (
+          <div className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PostCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
         {/* Posts List */}
-        {posts.length === 0 && !loading ? (
+        {!loading && posts.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               {activeFilter === 'SAVED' ? (
@@ -419,11 +701,12 @@ const CommunityPage: React.FC = () => {
               </Link>
             )}
           </div>
-        ) : (
+        ) : posts.length > 0 ? (
           <div className="space-y-4">
             {posts.map((post) => (
               <div
                 key={post.id}
+                data-tilt-soft
                 className={`cursor-pointer bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 p-6 hover:shadow-lg transition-all duration-200 relative ${
                   post.listingStatus && post.listingStatus !== 'ACTIVE' ? 'opacity-75' : ''
                 }`}
@@ -500,12 +783,12 @@ const CommunityPage: React.FC = () => {
                       </h2>
                     </Link>
 
-                    {/* Price for Sale/Rent posts */}
+                    {/* Price for Sale/Rent posts — embossed badge */}
                     {(post.type === 'SALE' || post.type === 'RENT') && post.price != null && (
-                      <p className={`text-lg font-bold mt-1 ${
+                      <p className={`inline-block text-lg font-bold mt-1 px-2 py-0.5 rounded-lg shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)] ${
                         post.type === 'RENT'
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-green-600 dark:text-green-400'
+                          ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20'
+                          : 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20'
                       }`}>
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
                         {post.type === 'RENT' && <span className="text-sm font-normal text-gray-500"> / {t('community.perMonth') || 'mo'}</span>}
@@ -558,7 +841,6 @@ const CommunityPage: React.FC = () => {
                         <span>{post.viewCount}</span>
                       </div>
 
-                      {/* Bookmark Button */}
                       {isAuthenticated && (
                         <button
                           onClick={(e) => {
@@ -582,21 +864,30 @@ const CommunityPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Post Image Preview */}
+                  {/* Post Image Preview — clickable for lightbox */}
                   {post.images && post.images.length > 0 && (
                     <div className="flex-shrink-0 hidden sm:block">
                       <img
                         src={getAbsoluteImageUrl(post.images[0])}
                         alt=""
-                        className="w-24 h-24 rounded-lg object-cover"
+                        className="w-24 h-24 rounded-lg object-cover hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setLightbox({ images: post.images!, index: 0 });
+                        }}
                       />
+                      {post.images.length > 1 && (
+                        <span className="block text-center text-xs text-gray-400 mt-1">
+                          +{post.images.length - 1}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         {/* Load More */}
         {currentPage < totalPages && (
@@ -613,7 +904,7 @@ const CommunityPage: React.FC = () => {
           </div>
         )}
 
-        {/* Login Prompt for unauthenticated users */}
+        {/* Login Prompt */}
         {!isAuthenticated && posts.length > 0 && (
           <div className="mt-8 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-6 text-center">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -640,6 +931,19 @@ const CommunityPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <Lightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          onClose={() => setLightbox(null)}
+          onNav={(idx) => setLightbox({ ...lightbox, index: idx })}
+        />
+      )}
+
+      {/* Mobile-first floating create button. Authenticated-only; hides on scroll-down. */}
+      <CreatePostFAB />
     </div>
   );
 };
