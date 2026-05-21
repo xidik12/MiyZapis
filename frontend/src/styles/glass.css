@@ -1,0 +1,173 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * Glass morphism + lightweight 3D accents
+ * ──────────────────────────────────────────────────────────────────────
+ * Designed to be PERFORMANT:
+ *  • backdrop-filter is GPU-accelerated, but heavy if stacked on many
+ *    elements — applied ONLY to overlay/floating surfaces (modals,
+ *    bottom nav, dropdowns, mobile header)
+ *  • Rotations + parallax are gated on @media (hover: hover) and
+ *    @media (prefers-reduced-motion: no-preference) so phones don't
+ *    waste cycles
+ *  • All transforms use translate3d / rotate / scale (compositor-only)
+ * ──────────────────────────────────────────────────────────────────────*/
+
+/* ── 1. Glass surfaces — frosted overlay panels ─────────────────────── */
+/* Apply with `.glass` utility class, or auto-applied to common overlays. */
+
+.glass,
+nav[class*="fixed bottom-0"][class*="lg:hidden"],
+header[class*="sticky top-0"],
+[role="dialog"][class*="rounded-"] {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.70) 100%
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.75) inset,
+    0 8px 24px -8px rgba(0, 0, 0, 0.18),
+    0 24px 48px -12px rgba(0, 0, 0, 0.12);
+}
+
+.dark .glass,
+.dark nav[class*="fixed bottom-0"][class*="lg:hidden"],
+.dark header[class*="sticky top-0"],
+.dark [role="dialog"][class*="rounded-"] {
+  background: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 0.78) 0%,
+    rgba(17, 24, 39, 0.62) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 8px 24px -8px rgba(0, 0, 0, 0.50),
+    0 24px 48px -12px rgba(0, 0, 0, 0.35);
+}
+
+/* Strong-glass variant for hero modals / lightboxes */
+.glass-strong {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.90) 0%,
+    rgba(255, 255, 255, 0.78) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+/* ── 2. Floating cards with proper 3D depth ─────────────────────────── */
+/* Adds tilt on hover for desktop, sits flat on mobile. Auto-applied to
+   cards with `.float-card` or any card with `data-float` attribute. */
+@media (hover: hover) and (pointer: fine) {
+  .float-card,
+  [data-float] {
+    transition:
+      transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .float-card:hover,
+  [data-float]:hover {
+    transform: perspective(1200px) translate3d(0, -6px, 0) rotateX(2deg) rotateY(-1deg);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.85) inset,
+      0 12px 24px -6px rgba(0, 0, 0, 0.18),
+      0 32px 64px -16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* ── 3. Spinning + floating decorative accents ──────────────────────── */
+/* Pure CSS decorations the page can drop in for visual energy.
+   Use `.deco-orb` to add a soft floating gradient orb behind content. */
+
+@keyframes deco-spin-slow { to { transform: rotate(360deg); } }
+@keyframes deco-spin-rev  { to { transform: rotate(-360deg); } }
+@keyframes deco-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(0, -12px, 0) scale(1.03); }
+}
+@keyframes deco-pulse-glow {
+  0%, 100% { opacity: 0.5; filter: blur(40px); }
+  50%      { opacity: 0.75; filter: blur(60px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .deco-spin       { animation: deco-spin-slow 24s linear infinite; }
+  .deco-spin-rev   { animation: deco-spin-rev 32s linear infinite; }
+  .deco-float      { animation: deco-float 6s ease-in-out infinite; }
+  .deco-pulse-glow { animation: deco-pulse-glow 4s ease-in-out infinite; }
+}
+
+/* Soft gradient orb you can stack behind sections.
+   <div class="deco-orb deco-pulse-glow"></div> */
+.deco-orb {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 151, 242, 0.45), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+.deco-orb.amber  { background: radial-gradient(circle, rgba(245, 158, 11, 0.40), transparent 70%); }
+.deco-orb.pink   { background: radial-gradient(circle, rgba(236, 72, 153, 0.40), transparent 70%); }
+.deco-orb.teal   { background: radial-gradient(circle, rgba(20, 184, 166, 0.40), transparent 70%); }
+.deco-orb.purple { background: radial-gradient(circle, rgba(168, 85, 247, 0.40), transparent 70%); }
+
+/* Decorative ring — a slowly-spinning thin circle outline */
+.deco-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 4. 3D pill / chip "stickers" — for status badges, tags ─────────── */
+.sticker-3d {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 50%);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.65) inset,
+    0 -2px 0 0 rgba(0, 0, 0, 0.12) inset,
+    0 2px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* ── 5. Avatar / icon-circle 3D ────────────────────────────────────── */
+/* For round elements (avatars, icon backgrounds). Subtle inset highlight
+   + drop shadow makes them look like physical chips. */
+.chip-3d,
+[class*="rounded-full"][class*="bg-"]:not(.no-3d):not([class*="w-2"]):not([class*="w-3"]):not([class*="h-2"]):not([class*="h-3"]) {
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.40) inset,
+    0 -1px 2px 0 rgba(0, 0, 0, 0.18) inset,
+    0 4px 8px -2px rgba(0, 0, 0, 0.20);
+}
+
+/* ── 6. Spinning icon utility — for "active/loading" indicators ─────── */
+@media (prefers-reduced-motion: no-preference) {
+  .icon-spin-soft { animation: deco-spin-slow 8s linear infinite; }
+  .icon-bob       { animation: deco-float 3s ease-in-out infinite; }
+}
+
+/* ── 7. Tilt-on-hover for any card you add data-tilt-soft to ─────────
+   (Lighter than the cuteTilt JS — pure CSS, mouseenter only) */
+@media (hover: hover) {
+  [data-tilt-soft] {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  [data-tilt-soft]:hover {
+    transform: perspective(1000px) rotateX(3deg) rotateY(-2deg) translate3d(0, -4px, 0);
+  }
+}
+
+/* ── 8. Page-level perspective so all 3D feels consistent ───────────── */
+body { perspective: 2000px; }

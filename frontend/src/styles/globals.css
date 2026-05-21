@@ -12,6 +12,10 @@
 /* Mobile fixes — must load AFTER 3d-cute.css so it can override touch
  * behaviour. Force 16px inputs, 44px tap targets, disable hover-stickiness. */
 @import './mobile-fixes.css';
+/* Glass morphism + floating cards + decorative orbs/rings. Performant
+ * (backdrop-filter only on overlays; animations gated on hover-capable
+ * + no-reduced-motion). */
+@import './glass.css';
 
 @tailwind base;
 @tailwind components;
