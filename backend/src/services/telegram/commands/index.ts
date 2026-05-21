@@ -221,7 +221,7 @@ export async function handleLinkCode(ctx: BotContext, code: string) {
   const siteUrl = getSiteUrl();
 
   try {
-    const linkedUserId = consumeLinkCode(code);
+    const linkedUserId = await consumeLinkCode(code);
 
     if (!linkedUserId) {
       await ctx.reply(

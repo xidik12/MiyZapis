@@ -180,7 +180,7 @@ if (bot) {
     const telegramId = ctx.from.id.toString();
 
     try {
-      const linkedUserId = consumeLinkCode(code);
+      const linkedUserId = await consumeLinkCode(code);
 
       if (!linkedUserId) {
         await ctx.reply(

@@ -339,7 +339,7 @@ router.post('/telegram/generate-link-code', authenticateToken, async (req: Authe
       );
     }
 
-    const code = generateLinkCode(userId!);
+    const code = await generateLinkCode(userId!);
 
     return res.json(createSuccessResponse({
       code,
