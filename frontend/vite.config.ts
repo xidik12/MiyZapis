@@ -39,6 +39,11 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Force-claim clients on activation so a returning user gets the new
+        // bundle on next navigation instead of waiting for every tab to close.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

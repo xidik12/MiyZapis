@@ -13,46 +13,32 @@
  * Respects prefers-reduced-motion: skips the hover/press transitions.
  * ──────────────────────────────────────────────────────────────────────*/
 
-/* ── Buttons — chunky, pronounced 3D ────────────────────────────────── */
+/* ── Buttons — restrained, no chunky bevel ──────────────────────────── */
+/* User feedback: the heavy multi-layer bevel looked too "3D" / clay-like.
+   Reverted to a default Tailwind feel: no inset highlights, no thick
+   bottom bevel, only a tiny drop shadow that's barely there. Hover gives
+   a subtle 1px lift on devices with a real cursor. Touch devices stay
+   flat (no sticky :hover state after tap). */
+
 button:not(.no-3d):not(:disabled),
 a[class*="bg-primary-6"]:not(.no-3d),
 a[class*="bg-primary-7"]:not(.no-3d),
 a[class*="bg-sky-"]:not(.no-3d),
 [role="button"]:not(.no-3d):not(:disabled) {
-  box-shadow:
-    /* top highlight (light from above) */
-    0 1px 0 0 rgba(255, 255, 255, 0.55) inset,
-    /* thick bottom bevel — gives the "chunky 3D" look */
-    0 -3px 0 0 rgba(0, 0, 0, 0.18) inset,
-    /* contact shadow */
-    0 2px 0 -1px rgba(0, 0, 0, 0.20),
-    /* mid drop */
-    0 4px 8px -2px rgba(0, 0, 0, 0.22),
-    /* far drop for depth */
-    0 8px 20px -4px rgba(0, 0, 0, 0.16);
   transition:
     transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s ease;
-  will-change: transform, box-shadow;
+    box-shadow 0.18s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-/* Hover-lift only on devices that actually hover (cursor / stylus). On touch
-   devices :hover can stick after a tap, leaving buttons floating until the
-   next interaction. */
 @media (hover: hover) {
   button:not(.no-3d):not(:disabled):hover,
   a[class*="bg-primary-6"]:not(.no-3d):hover,
   a[class*="bg-primary-7"]:not(.no-3d):hover,
   a[class*="bg-sky-"]:not(.no-3d):hover,
   [role="button"]:not(.no-3d):not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.65) inset,
-      0 -3px 0 0 rgba(0, 0, 0, 0.18) inset,
-      0 4px 0 -1px rgba(0, 0, 0, 0.22),
-      0 8px 16px -2px rgba(0, 0, 0, 0.28),
-      0 16px 32px -6px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
   }
 }
 
@@ -61,39 +47,14 @@ a[class*="bg-primary-6"]:not(.no-3d):active,
 a[class*="bg-primary-7"]:not(.no-3d):active,
 a[class*="bg-sky-"]:not(.no-3d):active,
 [role="button"]:not(.no-3d):not(:disabled):active {
-  /* The whole button squishes down — bevel collapses, drop shadow shrinks. */
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.20) inset,
-    0 1px 0 0 rgba(0, 0, 0, 0.10) inset,
-    0 1px 0 -1px rgba(0, 0, 0, 0.18),
-    0 1px 3px rgba(0, 0, 0, 0.15);
-  transition-duration: 0.05s;
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.06s;
 }
 
 button:disabled,
 button[aria-disabled="true"],
 [role="button"][aria-disabled="true"] {
-  box-shadow: none;
   transform: none;
-}
-
-/* Buttons used purely as wrappers (e.g. icon-only with no background)
-   shouldn't get the chunky depth — only buttons that look like buttons.
-   Tailwind's "btn-clean" / unstyled / link variants get a hint. */
-button[class*="text-gray-"]:not([class*="bg-"]):not(.no-3d),
-button[class*="text-primary-"]:not([class*="bg-"]):not(.no-3d) {
-  box-shadow: none;
-}
-
-@media (hover: hover) {
-  button[class*="text-gray-"]:not([class*="bg-"]):not(.no-3d):hover,
-  button[class*="text-primary-"]:not([class*="bg-"]):not(.no-3d):hover {
-    box-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.06),
-      0 4px 8px rgba(0, 0, 0, 0.04);
-    transform: translateY(-0.5px);
-  }
 }
 
 /* ── Inputs / textarea / select — clearly sunken into the page ──────── */
@@ -128,18 +89,12 @@ textarea:not(.no-3d):focus {
 [class*="dark:bg-gray-800"][class*="rounded-"]:not(.no-3d),
 [class*="bg-gray-50"][class*="rounded-"]:not(.no-3d),
 [class*="bg-gray-900"][class*="rounded-"]:not(.no-3d) {
+  /* Subtle lift only — let Tailwind's own shadow utilities (shadow-sm/md/lg)
+     drive the actual surface depth on a per-component basis. */
   box-shadow:
-    /* top highlight — soft white rim along the top edge */
-    0 1px 0 0 rgba(255, 255, 255, 0.85) inset,
-    /* faint inner bottom shadow for depth inside the card */
-    0 -1px 0 0 rgba(0, 0, 0, 0.04) inset,
-    /* immediate contact shadow */
-    0 2px 4px rgba(0, 0, 0, 0.08),
-    /* primary lift shadow */
-    0 8px 20px -2px rgba(0, 0, 0, 0.12),
-    /* far ambient shadow */
-    0 24px 48px -8px rgba(0, 0, 0, 0.10);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 /* Cards inside other cards shouldn't double-shadow */
@@ -155,13 +110,7 @@ textarea:not(.no-3d):focus {
 @media (hover: hover) {
   [class*="hover:shadow-"][class*="rounded-"]:hover,
   [class*="bg-surface"][class*="rounded-"]:not(.no-3d):hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.9) inset,
-      0 -1px 0 0 rgba(0, 0, 0, 0.04) inset,
-      0 4px 8px rgba(0, 0, 0, 0.10),
-      0 16px 32px -4px rgba(0, 0, 0, 0.18),
-      0 32px 64px -12px rgba(0, 0, 0, 0.14) !important;
+    transform: translateY(-1px);
   }
 }
 
@@ -182,48 +131,20 @@ button[class*="text-primary-600"][class*="border-b-2"] {
     0 -1px 0 rgba(255, 255, 255, 0.4) !important;
 }
 
-/* ── Banner-grade depth (hero blocks, callouts) ─────────────────────── */
-.banner-3d,
-[class*="bg-gradient-to"][class*="rounded-"]:not(.no-3d) {
+/* ── Banner-grade depth (hero blocks, callouts) — opt-in only ──────── */
+.banner-3d {
   box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.45) inset,
-    0 -3px 0 0 rgba(0, 0, 0, 0.18) inset,
-    0 4px 0 -1px rgba(0, 0, 0, 0.22),
-    0 8px 16px rgba(0, 0, 0, 0.18),
-    0 24px 48px rgba(0, 0, 0, 0.16),
-    0 48px 96px rgba(0, 0, 0, 0.10);
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Dark mode: swap white-tinted shadows for darker tones + glow ──── */
-.dark button:not(.no-3d):not(:disabled),
-.dark a[class*="bg-primary-6"]:not(.no-3d),
-.dark a[class*="bg-primary-7"]:not(.no-3d),
-.dark [role="button"]:not(.no-3d):not(:disabled) {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.10) inset,
-    0 -2px 0 0 rgba(0, 0, 0, 0.40) inset,
-    0 2px 4px rgba(0, 0, 0, 0.45),
-    0 8px 16px rgba(0, 0, 0, 0.25);
-}
-
-@media (hover: hover) {
-  .dark button:not(.no-3d):not(:disabled):hover,
-  .dark a[class*="bg-primary-6"]:not(.no-3d):hover,
-  .dark a[class*="bg-primary-7"]:not(.no-3d):hover {
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.12) inset,
-      0 -2px 0 0 rgba(0, 0, 0, 0.40) inset,
-      0 6px 14px rgba(0, 0, 0, 0.50),
-      0 12px 24px rgba(59, 151, 242, 0.20);
-  }
-}
+/* ── Dark mode: no extra button shadows (default Tailwind look) ─────── */
 
 .dark [class*="bg-white"][class*="rounded-"]:not(.no-3d),
 .dark [class*="dark:bg-gray-800"][class*="rounded-"]:not(.no-3d) {
   box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
-    0 4px 12px rgba(0, 0, 0, 0.40),
-    0 12px 24px rgba(0, 0, 0, 0.20);
+    0 1px 2px rgba(0, 0, 0, 0.30),
+    0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.no-3d),
