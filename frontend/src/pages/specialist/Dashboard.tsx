@@ -554,7 +554,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           )}
         </div>
         <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       </div>
     </div>
@@ -597,6 +597,8 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </button>
           {specialistSlug && (
             <ShareButton
+              variant="icon"
+              className="h-10 w-10 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
               url={`${window.location.origin}/s/${specialistSlug}`}
               title={`${user?.firstName} ${user?.lastName} — MiyZapys`}
               text={t('dashboard.shareProfile') || 'Share Your Profile'}
@@ -623,7 +625,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             : dashboardData.stats.thisWeekBookings > 0 ? `${dashboardData.stats.thisWeekBookings} ${t('dashboard.weekOverWeek') || 'this week'}` : ''}
           changeType={dashboardData.stats.thisWeekBookings >= dashboardData.stats.lastWeekBookings ? 'positive' : 'negative'}
           icon={CalendarIcon}
-          iconBg="bg-primary-500"
+          iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.allTime')}
         />
         <StatCard
@@ -634,7 +636,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             : dashboardData.stats.thisWeekRevenue > 0 ? `${formatPrice(dashboardData.stats.thisWeekRevenue, currency)} ${t('dashboard.weekOverWeek') || 'this week'}` : ''}
           changeType={dashboardData.stats.thisWeekRevenue >= dashboardData.stats.lastWeekRevenue ? 'positive' : 'negative'}
           icon={CurrencyDollarIcon}
-          iconBg="bg-success-500"
+          iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.allTime')}
         />
         <StatCard
@@ -643,7 +645,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={undefined}
           changeType="positive"
           icon={StarIcon}
-          iconBg="bg-warning-500"
+          iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />
         <StatCard
@@ -654,7 +656,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={undefined}
           changeType="positive"
           icon={ClockIcon}
-          iconBg="bg-info-500"
+          iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.averageTime')}
         />
       </div>

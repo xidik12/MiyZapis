@@ -418,7 +418,7 @@ const CustomerDashboard: React.FC = () => {
           )}
         </div>
         <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       </div>
     </div>
@@ -447,7 +447,7 @@ const CustomerDashboard: React.FC = () => {
             <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Link
                 to="/search"
-                className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
                 <MagnifyingGlassIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.customer.findSpecialists')}
@@ -482,7 +482,7 @@ const CustomerDashboard: React.FC = () => {
               }
               changeType={stats && stats.monthlySpendGrowth >= 0 ? 'positive' : 'negative'}
               icon={CreditCardIcon}
-              iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
+              iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
               description={t('dashboard.specialist.allTime')}
             />
             <StatCard
@@ -491,7 +491,7 @@ const CustomerDashboard: React.FC = () => {
               change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
               icon={GiftIcon}
-              iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+              iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
               description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
               onClick={() => navigate('/loyalty')}
             />
@@ -501,7 +501,7 @@ const CustomerDashboard: React.FC = () => {
               change={`${stats ? stats.completedBookings : 0}/${stats ? stats.totalBookings : 0} ${t('dashboard.booking.status.completed').toLowerCase()}`}
               changeType="positive"
               icon={StarIcon}
-              iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
+              iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
           <StatCard
@@ -510,7 +510,7 @@ const CustomerDashboard: React.FC = () => {
             change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
             changeType="positive"
             icon={HeartIcon}
-            iconBg="bg-gradient-to-br from-info-500 to-info-600"
+            iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
             description={`${t('dashboard.customer.memberSince')} ${user?.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()}`}
           />
             <StatCard
@@ -519,7 +519,7 @@ const CustomerDashboard: React.FC = () => {
               change={undefined}
               changeType="positive"
               icon={ChatBubbleLeftRightIcon}
-              iconBg="bg-gradient-to-br from-secondary-500 to-secondary-600"
+              iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
               description={t('dashboard.specialist.allTime')}
             />
         </div>
