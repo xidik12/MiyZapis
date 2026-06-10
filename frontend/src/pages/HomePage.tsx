@@ -347,7 +347,7 @@ const HomePage: React.FC = () => {
       {/*  HERO SECTION — Aurora mesh gradient background               */}
       {/* ============================================================ */}
       <section className="relative w-full overflow-hidden bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900">
-        <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 sm:py-16 lg:py-20 prevent-overflow">
+        <div className="relative w-full max-w-6xl mx-auto mobile-container py-10 sm:py-12 lg:py-14 prevent-overflow">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             {/* Left: copy + search */}
             <div className="max-w-xl">
@@ -454,7 +454,7 @@ const HomePage: React.FC = () => {
       {/*  VALUE / TRUST STRIP                                          */}
       {/* ============================================================ */}
       <section className="border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950">
-        <div className="max-w-7xl mx-auto mobile-container py-5 sm:py-6">
+        <div className="max-w-6xl mx-auto mobile-container py-5 sm:py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
             {[
               { Icon: ShieldCheckIcon, label: t('home.trust.verified') },
@@ -476,11 +476,11 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  CATEGORIES SECTION                                           */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
         <div>
           <div
             ref={catReveal.ref}
-            className={`w-full max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
+            className={`w-full max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10">
               <div>
@@ -498,7 +498,7 @@ const HomePage: React.FC = () => {
             </div>
 
             {categoriesLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={`cat-skel-${i}`} className="rounded-xl p-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
                     <div className="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-700 mb-5 animate-pulse" />
@@ -542,7 +542,7 @@ const HomePage: React.FC = () => {
                 </div>
 
                 {/* Desktop grid */}
-                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                   {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
                     const CategoryIcon = resolveCategoryIcon(slug, category.name as string);
@@ -580,12 +580,12 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  HOW IT WORKS — Connected timeline                            */}
       {/* ============================================================ */}
-      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+      <section id="how-it-works" className="py-10 sm:py-12 lg:py-14 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={howReveal.ref}
-          className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
+          className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
         >
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-8 sm:mb-10">
             <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
               {t('howItWorks.title')}
             </h2>
@@ -677,11 +677,11 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  POPULAR SERVICES                                             */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
         <div>
           <div
             ref={servicesReveal.ref}
-            className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
+            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
               <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -769,12 +769,12 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  FEATURED SPECIALISTS                                         */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+      <section className="py-10 sm:py-12 lg:py-14 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={specReveal.ref}
-          className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${specReveal.isVisible ? 'visible' : ''}`}
+          className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${specReveal.isVisible ? 'visible' : ''}`}
         >
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-8 sm:mb-10">
             <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
               {t('featuredSpecialists.title')}
             </h2>
@@ -784,10 +784,10 @@ const HomePage: React.FC = () => {
           </div>
 
           {specialistsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={`spec-skel-${i}`} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
-                  <div className="w-full h-44 bg-gray-100 dark:bg-gray-700 animate-pulse" />
+                  <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 animate-pulse" />
                   <div className="p-5 space-y-3">
                     <div className="h-5 w-2/3 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                     <div className="h-4 w-1/2 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
@@ -797,7 +797,7 @@ const HomePage: React.FC = () => {
               ))}
             </div>
           ) : topSpecialists.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {topSpecialists.map((specialist: any) => {
                 const displayName = getSpecialistName(specialist);
@@ -808,7 +808,7 @@ const HomePage: React.FC = () => {
                     className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                   >
                     {/* Image (real photo when available; quiet neutral placeholder otherwise) */}
-                    <div className="relative w-full h-44 flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <div className="relative w-full h-40 flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-800">
                       {specialist.avatar ? (
                         <img
                           src={specialist.avatar as string}
@@ -880,11 +880,11 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  BROWSE BY CITY                                               */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
         <div>
           <div
             ref={citiesReveal.ref}
-            className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
+            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
               <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -1037,11 +1037,11 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  COMMUNITY PREVIEW                                            */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
         <div>
           <div
             ref={commReveal.ref}
-            className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${commReveal.isVisible ? 'visible' : ''}`}
+            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${commReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10">
               <div className="px-2 sm:px-0">
@@ -1140,7 +1140,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  FOR SPECIALISTS — Split layout + phone mockup                */}
       {/* ============================================================ */}
-      <section id="for-specialists" className="relative py-14 sm:py-16 lg:py-24 w-full prevent-overflow overflow-hidden">
+      <section id="for-specialists" className="relative py-12 sm:py-14 lg:py-16 w-full prevent-overflow overflow-hidden">
         {/* Gradient background */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{
           background: 'linear-gradient(135deg, #0c4a6e 0%, #0284C7 40%, #0369a1 70%, #0c4a6e 100%)',
@@ -1163,7 +1163,7 @@ const HomePage: React.FC = () => {
 
         <div
           ref={forSpecReveal.ref}
-          className={`relative max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${forSpecReveal.isVisible ? 'visible' : ''}`}
+          className={`relative max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${forSpecReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left content */}
@@ -1307,7 +1307,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  FINAL CTA                                                    */}
       {/* ============================================================ */}
-      <section className="py-14 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+      <section className="py-12 sm:py-14 lg:py-16 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={ctaReveal.ref}
           className={`max-w-3xl mx-auto mobile-container prevent-overflow text-center reveal-up ${ctaReveal.isVisible ? 'visible' : ''}`}
