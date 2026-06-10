@@ -354,7 +354,7 @@ const HomePage: React.FC = () => {
       {/*  HERO SECTION — Aurora mesh gradient background               */}
       {/* ============================================================ */}
       <section className="relative w-full overflow-hidden bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900">
-        <div className="relative w-full max-w-6xl mx-auto mobile-container py-10 sm:py-12 lg:py-14 prevent-overflow">
+        <div className="relative w-full !max-w-6xl mx-auto mobile-container py-10 sm:py-12 lg:py-14 prevent-overflow">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             {/* Left: copy + search */}
             <div className="max-w-xl">
@@ -461,7 +461,7 @@ const HomePage: React.FC = () => {
       {/*  VALUE / TRUST STRIP                                          */}
       {/* ============================================================ */}
       <section className="border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950">
-        <div className="max-w-6xl mx-auto mobile-container py-5 sm:py-6">
+        <div className="!max-w-6xl mx-auto mobile-container py-5 sm:py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
             {[
               { Icon: ShieldCheckIcon, label: t('home.trust.verified') },
@@ -487,7 +487,7 @@ const HomePage: React.FC = () => {
         <div>
           <div
             ref={catReveal.ref}
-            className={`w-full max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
+            className={`w-full !max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10">
               <div>
@@ -590,7 +590,7 @@ const HomePage: React.FC = () => {
       <section id="how-it-works" className="py-10 sm:py-12 lg:py-14 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={howReveal.ref}
-          className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
+          className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -676,7 +676,7 @@ const HomePage: React.FC = () => {
         <div>
           <div
             ref={servicesReveal.ref}
-            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
+            className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
               <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -767,7 +767,7 @@ const HomePage: React.FC = () => {
       <section className="py-10 sm:py-12 lg:py-14 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={specReveal.ref}
-          className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${specReveal.isVisible ? 'visible' : ''}`}
+          className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${specReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -879,7 +879,7 @@ const HomePage: React.FC = () => {
         <div>
           <div
             ref={citiesReveal.ref}
-            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
+            className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
               <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
@@ -1036,7 +1036,7 @@ const HomePage: React.FC = () => {
         <div>
           <div
             ref={commReveal.ref}
-            className={`max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${commReveal.isVisible ? 'visible' : ''}`}
+            className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${commReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10">
               <div className="px-2 sm:px-0">
@@ -1157,7 +1157,7 @@ const HomePage: React.FC = () => {
 
         <div
           ref={forSpecReveal.ref}
-          className={`relative max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${forSpecReveal.isVisible ? 'visible' : ''}`}
+          className={`relative !max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${forSpecReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left content */}

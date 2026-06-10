@@ -84,7 +84,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
+      <div className="w-full !max-w-6xl mx-auto mobile-container prevent-overflow">
         <div className="flex justify-between items-center gap-3 h-14 xs:h-16 sm:h-16">
           {/* Logo and brand */}
           <div className="flex items-center flex-shrink-0">
@@ -130,7 +130,7 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl transition-colors duration-150 ${
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors duration-150 ${
                       item.current
                         ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
                         : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -146,7 +146,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl transition-colors duration-150 ${
+                  className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors duration-150 ${
                     item.current
                       ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
                       : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -168,8 +168,10 @@ export const Header: React.FC = () => {
               <LanguageToggle />
             </div>
             
-            {/* Theme toggle - larger on mobile for better touch targets */}
-            <ThemeToggle size="lg" className="sm:!h-10 sm:!w-10" />
+            {/* Theme toggle - desktop bar only (mobile has it inside the menu) */}
+            <div className="hidden sm:flex items-center">
+              <ThemeToggle size="md" className="!h-10 !w-10" />
+            </div>
 
             {isAuthenticated ? (
               <>
@@ -226,13 +228,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="hidden sm:flex text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="hidden sm:inline-flex items-center h-10 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary-600 px-3 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold hover:bg-primary-700 transition-colors duration-150 whitespace-nowrap"
+                  className="inline-flex items-center h-10 bg-primary-600 text-white px-4 sm:px-6 rounded-xl text-xs sm:text-sm font-semibold hover:bg-primary-700 transition-colors duration-150 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
@@ -242,12 +244,17 @@ export const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden mobile-touch-target p-2 text-gray-500 hover:text-primary-600 transition-colors duration-150 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 mobile-touch"
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              className="sm:hidden inline-flex items-center justify-center h-10 w-10 text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-150 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {isMobileMenuOpen ? (
-                <XMarkIcon className="w-7 h-7" />
+                <svg className="w-6 h-6 stroke-gray-700 dark:stroke-gray-200" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
               ) : (
-                <Bars3Icon className="w-7 h-7" />
+                <svg className="w-6 h-6 stroke-gray-700 dark:stroke-gray-200" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
               )}
             </button>
           </div>

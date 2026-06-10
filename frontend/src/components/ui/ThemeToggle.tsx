@@ -39,9 +39,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      <div className="relative">
+      <div className={`relative ${iconSizeClasses[size]}`}>
         {/* Sun Icon */}
-        <SunIcon 
+        <SunIcon
           className={`
             ${iconSizeClasses[size]}
             text-yellow-500 dark:text-yellow-400 transition-all duration-300
