@@ -162,3 +162,6 @@ playwright/.cache/
 *.tgz
 *.tar.gz.firecrawl/
 docs/
+
+# Design component reference libraries (cherry-pick from, not bundled)
+.design-refs/
