@@ -15,7 +15,8 @@ import { RewardsService } from '@/services/rewards.service';
 import { filterSlotsByDuration } from '../../utils/timeSlotUtils';
 import { environment } from '@/config/environment';
 import { logger } from '@/utils/logger';
-import { ArrowLeftIcon } from '@/components/icons';
+import { ArrowLeftIcon, ShieldCheckIcon } from '@/components/icons';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { fireSuccessConfetti } from '@/utils/confetti';
 import { PageLoader } from '@/components/ui';
 import type { RecurrenceData } from '@/components/modals/RecurringBookingModal';
@@ -77,6 +78,7 @@ const BookingFlow: React.FC = () => {
 
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((state.service?.price ?? state.service?.basePrice ?? 0) - discount));
+  const { formatPrice } = useCurrency();
 
   // Streamlined 3-step flow when service is pre-selected and not a group session
   // Full flow for complex bookings (no service pre-selected, or group sessions)
@@ -1096,9 +1098,9 @@ const BookingFlow: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="mb-6 md:mb-8">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
@@ -1112,40 +1114,108 @@ const BookingFlow: React.FC = () => {
           </h1>
 
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {state.specialist.user?.firstName} {state.specialist.user?.lastName} - {translateProfession(state.specialist.businessName, t)}
+            {state.specialist.user?.firstName} {state.specialist.user?.lastName} · {translateProfession(state.specialist.businessName, t)}
           </p>
         </div>
 
-        {/* Progress Steps */}
-        <BookingProgress steps={steps} currentStep={state.currentStep} />
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:items-start">
+          {/* LEFT: stepper + step content + nav */}
+          <div className="min-w-0">
+            <BookingProgress steps={steps} currentStep={state.currentStep} />
 
-        {/* Step Content */}
-        <div className="mb-4 sm:mb-6 md:mb-8 min-h-[300px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={steps[state.currentStep]?.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-            >
-              {renderStepContent()}
-            </motion.div>
-          </AnimatePresence>
+            <div className="mb-4 sm:mb-6 md:mb-8 min-h-[300px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={steps[state.currentStep]?.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                >
+                  {renderStepContent()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <NavigationButtons
+              steps={steps}
+              currentStep={state.currentStep}
+              paymentLoading={state.paymentLoading}
+              selectedDate={state.selectedDate}
+              selectedTime={state.selectedTime}
+              service={state.service}
+              paymentResult={state.paymentResult}
+              onNext={handleNextStep}
+              onPrev={handlePrevStep}
+            />
+          </div>
+
+          {/* RIGHT: sticky booking summary (ProfiHub-style) */}
+          <aside className="hidden lg:block">
+            <div className="lg:sticky lg:top-24 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('booking.summary')}</h3>
+
+              {/* Specialist */}
+              <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
+                {state.specialist.user?.avatar ? (
+                  <img src={state.specialist.user.avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
+                ) : (
+                  <span className="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center font-semibold">
+                    {(state.specialist.user?.firstName || 'M').charAt(0)}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 dark:text-white truncate">
+                    {state.specialist.user?.firstName} {state.specialist.user?.lastName}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {translateProfession(state.specialist.businessName, t)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Service */}
+              <div className="flex items-start justify-between gap-3 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{t('booking.service')}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{state.service?.name || '—'}</p>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                  {formatPrice(state.service?.price ?? state.service?.basePrice ?? 0, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                </p>
+              </div>
+
+              {/* Date & time */}
+              <div className="py-3 border-b border-gray-100 dark:border-gray-800">
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{t('booking.dateTime')}</p>
+                <p className={`text-sm font-medium ${state.selectedDate ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                  {state.selectedDate
+                    ? `${new Date(state.selectedDate).toLocaleDateString()}${state.selectedTime ? `, ${state.selectedTime}` : ''}`
+                    : t('booking.notSelected')}
+                </p>
+              </div>
+
+              {/* Total */}
+              <div className="flex items-center justify-between py-4">
+                <span className="font-semibold text-gray-900 dark:text-white">{t('booking.estimatedTotal')}</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {formatPrice(finalPrice, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                </span>
+              </div>
+
+              {/* Secure note */}
+              <div className="flex gap-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 p-3">
+                <ShieldCheckIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{t('booking.secureBooking')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-0.5">{t('booking.secureBookingDesc')}</p>
+                </div>
+              </div>
+
+              <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-3">{t('booking.notChargedYet')}</p>
+            </div>
+          </aside>
         </div>
-
-        {/* Navigation Buttons */}
-        <NavigationButtons
-          steps={steps}
-          currentStep={state.currentStep}
-          paymentLoading={state.paymentLoading}
-          selectedDate={state.selectedDate}
-          selectedTime={state.selectedTime}
-          service={state.service}
-          paymentResult={state.paymentResult}
-          onNext={handleNextStep}
-          onPrev={handlePrevStep}
-        />
       </div>
 
       {/* Waitlist Modal */}

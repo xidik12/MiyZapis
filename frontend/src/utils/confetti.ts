@@ -1,5 +1,4 @@
 import confetti from 'canvas-confetti';
-import { balloons } from 'balloons-js';
 
 export function fireConfetti() {
   confetti({
@@ -10,14 +9,6 @@ export function fireConfetti() {
 }
 
 export function fireSuccessConfetti() {
-  // A balloon burst is the headline celebration; a light side-confetti adds sparkle.
-  // Guarded so a celebration effect can never break a successful booking flow.
-  try {
-    balloons();
-  } catch {
-    /* effect-only; ignore */
-  }
-
   const end = Date.now() + 500;
   const colors = ['#2069cf', '#3a87e0', '#93c5fd'];
 
