@@ -102,155 +102,26 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* ── Icon contrast on dark/colored backgrounds ───────────────────────
-   Buttons / links with dark or saturated backgrounds need their child
-   icons in white (or near-white) for legibility. Heroicons and our
-   wrapped SVGs inherit `color`, so setting it on the button propagates.
-
-   Targets: any button/link whose className contains a colored *-500/600/
-   700/800/900 background OR explicit `bg-black`. We do NOT touch outline
-   / ghost buttons (those need dark icons on light bg). */
-
-button[class*="bg-primary-5"] *,    button[class*="bg-primary-6"] *,
-button[class*="bg-primary-7"] *,    button[class*="bg-primary-8"] *,
-button[class*="bg-primary-9"] *,
-button[class*="bg-sky-5"] *,        button[class*="bg-sky-6"] *,
-button[class*="bg-sky-7"] *,        button[class*="bg-sky-8"] *,
-button[class*="bg-sky-9"] *,
-button[class*="bg-blue-5"] *,       button[class*="bg-blue-6"] *,
-button[class*="bg-blue-7"] *,       button[class*="bg-blue-8"] *,
-button[class*="bg-blue-9"] *,
-button[class*="bg-success-5"] *,    button[class*="bg-success-6"] *,
-button[class*="bg-success-7"] *,
-button[class*="bg-green-5"] *,      button[class*="bg-green-6"] *,
-button[class*="bg-green-7"] *,
-button[class*="bg-red-5"] *,        button[class*="bg-red-6"] *,
-button[class*="bg-red-7"] *,
-button[class*="bg-warning-5"] *,    button[class*="bg-warning-6"] *,
-button[class*="bg-orange-5"] *,     button[class*="bg-orange-6"] *,
-button[class*="bg-amber-5"] *,      button[class*="bg-amber-6"] *,
-button[class*="bg-yellow-5"] *,     button[class*="bg-yellow-6"] *,
-button[class*="bg-purple-5"] *,     button[class*="bg-purple-6"] *,
-button[class*="bg-purple-7"] *,
-button[class*="bg-indigo-5"] *,     button[class*="bg-indigo-6"] *,
-button[class*="bg-indigo-7"] *,
-button[class*="bg-pink-5"] *,       button[class*="bg-pink-6"] *,
-button[class*="bg-emerald-5"] *,    button[class*="bg-emerald-6"] *,
-button[class*="bg-emerald-7"] *,
-button[class*="bg-teal-5"] *,       button[class*="bg-teal-6"] *,
-button[class*="bg-cyan-5"] *,       button[class*="bg-cyan-6"] *,
-button[class*="bg-info-5"] *,       button[class*="bg-info-6"] *,
-button[class*="bg-error-5"] *,      button[class*="bg-error-6"] *,
-button[class*="bg-secondary-5"] *,  button[class*="bg-secondary-6"] *,
-button[class*="bg-secondary-7"] *,
-button[class*="bg-black"] *,
-button[class*="bg-gray-8"] *,       button[class*="bg-gray-9"] *,
-button[class*="bg-slate-8"] *,      button[class*="bg-slate-9"] *,
-a[class*="bg-primary-5"] *,         a[class*="bg-primary-6"] *,
-a[class*="bg-primary-7"] *,         a[class*="bg-primary-8"] *,
-a[class*="bg-sky-5"] *,             a[class*="bg-sky-6"] *,
-a[class*="bg-sky-7"] *,             a[class*="bg-sky-8"] *,
-a[class*="bg-blue-5"] *,            a[class*="bg-blue-6"] *,
-a[class*="bg-blue-7"] *,            a[class*="bg-blue-8"] * {
-  color: #ffffff;
-}
-
-/* Same target list — explicitly force SVG stroke + fill on icons inside
-   to handle libraries (lucide-react, phosphor) that set `stroke="currentColor"`
-   but also some legacy icons that hard-code dark fills. */
-button[class*="bg-primary-5"] svg,    button[class*="bg-primary-6"] svg,
-button[class*="bg-primary-7"] svg,    button[class*="bg-primary-8"] svg,
-button[class*="bg-primary-9"] svg,
-button[class*="bg-sky-5"] svg,        button[class*="bg-sky-6"] svg,
-button[class*="bg-sky-7"] svg,        button[class*="bg-sky-8"] svg,
-button[class*="bg-blue-5"] svg,       button[class*="bg-blue-6"] svg,
-button[class*="bg-blue-7"] svg,       button[class*="bg-blue-8"] svg,
-button[class*="bg-success-5"] svg,    button[class*="bg-success-6"] svg,
-button[class*="bg-green-5"] svg,      button[class*="bg-green-6"] svg,
-button[class*="bg-red-5"] svg,        button[class*="bg-red-6"] svg,
-button[class*="bg-warning-5"] svg,    button[class*="bg-warning-6"] svg,
-button[class*="bg-orange-5"] svg,     button[class*="bg-orange-6"] svg,
-button[class*="bg-amber-5"] svg,      button[class*="bg-amber-6"] svg,
-button[class*="bg-purple-5"] svg,     button[class*="bg-purple-6"] svg,
-button[class*="bg-indigo-5"] svg,     button[class*="bg-indigo-6"] svg,
-button[class*="bg-pink-5"] svg,       button[class*="bg-pink-6"] svg,
-button[class*="bg-emerald-5"] svg,    button[class*="bg-emerald-6"] svg,
-button[class*="bg-teal-5"] svg,       button[class*="bg-teal-6"] svg,
-button[class*="bg-cyan-5"] svg,       button[class*="bg-cyan-6"] svg,
-button[class*="bg-info-5"] svg,       button[class*="bg-info-6"] svg,
-button[class*="bg-error-5"] svg,      button[class*="bg-error-6"] svg,
-button[class*="bg-secondary-5"] svg,  button[class*="bg-secondary-6"] svg,
-button[class*="bg-black"] svg,
-button[class*="bg-gray-8"] svg,       button[class*="bg-gray-9"] svg,
-button[class*="bg-slate-8"] svg,      button[class*="bg-slate-9"] svg,
-a[class*="bg-primary-5"] svg,         a[class*="bg-primary-6"] svg,
-a[class*="bg-primary-7"] svg,         a[class*="bg-primary-8"] svg,
-a[class*="bg-sky-5"] svg,             a[class*="bg-sky-6"] svg,
-a[class*="bg-sky-7"] svg,             a[class*="bg-sky-8"] svg,
-a[class*="bg-blue-5"] svg,            a[class*="bg-blue-6"] svg {
+/* ── Icon contrast on SOLID colored backgrounds ──────────────
+   Force child icons white ONLY inside buttons/links whose background is a
+   genuine solid saturated colour, matched as a STANDALONE class via
+   [class~=...] (exact token). The old [class*=...] rules over-matched light
+   shades (bg-primary-50), hover/dark variants (hover:bg-*, dark:hover:bg-*),
+   and soft icon chips — forcing icons white-on-light => invisible across the
+   whole app. Outline / ghost / soft-tint buttons are left untouched. */
+:is(button, a, [role="button"]):is(
+  [class~="bg-primary-500"],[class~="bg-primary-600"],[class~="bg-primary-700"],[class~="bg-primary-800"],[class~="bg-primary-900"],
+  [class~="bg-sky-500"],[class~="bg-sky-600"],[class~="bg-sky-700"],[class~="bg-sky-800"],
+  [class~="bg-blue-500"],[class~="bg-blue-600"],[class~="bg-blue-700"],[class~="bg-blue-800"],
+  [class~="bg-success-500"],[class~="bg-success-600"],[class~="bg-green-500"],[class~="bg-green-600"],[class~="bg-green-700"],
+  [class~="bg-red-500"],[class~="bg-red-600"],[class~="bg-red-700"],[class~="bg-error-500"],[class~="bg-error-600"],
+  [class~="bg-warning-500"],[class~="bg-warning-600"],[class~="bg-amber-500"],[class~="bg-amber-600"],[class~="bg-orange-500"],[class~="bg-orange-600"],
+  [class~="bg-purple-500"],[class~="bg-purple-600"],[class~="bg-indigo-500"],[class~="bg-indigo-600"],
+  [class~="bg-emerald-500"],[class~="bg-emerald-600"],[class~="bg-teal-500"],[class~="bg-teal-600"],
+  [class~="bg-gray-800"],[class~="bg-gray-900"],[class~="bg-slate-800"],[class~="bg-slate-900"],[class~="bg-black"]
+) svg {
   color: #ffffff;
   fill: currentColor;
-}
-
-/* Icons inside gradient buttons (e.g. bg-gradient-to-r from-primary-500 to-secondary-500)
-   — same rule. */
-button[class*="bg-gradient-to"] *,
-a[class*="bg-gradient-to"] *,
-[role="button"][class*="bg-gradient-to"] * {
-  color: #ffffff;
-}
-button[class*="bg-gradient-to"] svg,
-a[class*="bg-gradient-to"] svg,
-[role="button"][class*="bg-gradient-to"] svg {
-  color: #ffffff;
-  fill: currentColor;
-}
-
-/* Round colored "icon background" divs (StatCard icons, profile badges):
-   `<div class="p-3 rounded-xl bg-primary-500"><Icon /></div>` — force
-   the contained icon to white. */
-div[class*="rounded-"][class*="bg-primary-5"]  svg,
-div[class*="rounded-"][class*="bg-primary-6"]  svg,
-div[class*="rounded-"][class*="bg-primary-7"]  svg,
-div[class*="rounded-"][class*="bg-primary-8"]  svg,
-div[class*="rounded-"][class*="bg-sky-5"]      svg,
-div[class*="rounded-"][class*="bg-sky-6"]      svg,
-div[class*="rounded-"][class*="bg-sky-7"]      svg,
-div[class*="rounded-"][class*="bg-blue-5"]     svg,
-div[class*="rounded-"][class*="bg-blue-6"]     svg,
-div[class*="rounded-"][class*="bg-success-5"]  svg,
-div[class*="rounded-"][class*="bg-success-6"]  svg,
-div[class*="rounded-"][class*="bg-green-5"]    svg,
-div[class*="rounded-"][class*="bg-green-6"]    svg,
-div[class*="rounded-"][class*="bg-red-5"]      svg,
-div[class*="rounded-"][class*="bg-red-6"]      svg,
-div[class*="rounded-"][class*="bg-warning-5"]  svg,
-div[class*="rounded-"][class*="bg-warning-6"]  svg,
-div[class*="rounded-"][class*="bg-amber-5"]    svg,
-div[class*="rounded-"][class*="bg-amber-6"]    svg,
-div[class*="rounded-"][class*="bg-purple-5"]   svg,
-div[class*="rounded-"][class*="bg-purple-6"]   svg,
-div[class*="rounded-"][class*="bg-indigo-5"]   svg,
-div[class*="rounded-"][class*="bg-indigo-6"]   svg,
-div[class*="rounded-"][class*="bg-pink-5"]     svg,
-div[class*="rounded-"][class*="bg-pink-6"]     svg,
-div[class*="rounded-"][class*="bg-emerald-5"]  svg,
-div[class*="rounded-"][class*="bg-emerald-6"]  svg,
-div[class*="rounded-"][class*="bg-teal-5"]     svg,
-div[class*="rounded-"][class*="bg-teal-6"]     svg,
-div[class*="rounded-"][class*="bg-cyan-5"]     svg,
-div[class*="rounded-"][class*="bg-cyan-6"]     svg,
-div[class*="rounded-"][class*="bg-info-5"]     svg,
-div[class*="rounded-"][class*="bg-info-6"]     svg,
-div[class*="rounded-"][class*="bg-error-5"]    svg,
-div[class*="rounded-"][class*="bg-error-6"]    svg,
-div[class*="rounded-"][class*="bg-black"]      svg,
-div[class*="rounded-"][class*="bg-gray-8"]     svg,
-div[class*="rounded-"][class*="bg-gray-9"]     svg,
-div[class*="rounded-"][class*="bg-gradient-to"] svg,
-span[class*="rounded-"][class*="bg-primary-"]  svg,
-span[class*="rounded-"][class*="bg-gradient-to"] svg {
-  color: #ffffff;
 }
 
 /* Escape hatch: any element marked .icon-light keeps light text.

@@ -1260,6 +1260,7 @@ const uk: Record<string, string> = {
   'finances.frequency.quarterly': 'Щоквартально',
   'finances.frequency.yearly': 'Щорічно',
   'community.title': 'Спільнота',
+  'community.saveFilter': 'Зберегти фільтр',
   'community.subtitle': 'Приєднуйтесь до обговорень та оголошень',
   'community.viewAll': 'Всі публікації',
   'community.createPost': 'Створити',

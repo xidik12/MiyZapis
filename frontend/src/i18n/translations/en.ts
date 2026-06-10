@@ -1263,6 +1263,7 @@ const en: Record<string, string> = {
   'finances.frequency.quarterly': 'Quarterly',
   'finances.frequency.yearly': 'Yearly',
   'community.title': 'Community',
+  'community.saveFilter': 'Save filter',
   'community.subtitle': 'Join discussions and discover listings',
   'community.viewAll': 'View All Posts',
   'community.createPost': 'Create Post',

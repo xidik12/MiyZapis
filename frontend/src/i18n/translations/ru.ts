@@ -1260,6 +1260,7 @@ const ru: Record<string, string> = {
   'finances.frequency.quarterly': 'Ежеквартально',
   'finances.frequency.yearly': 'Ежегодно',
   'community.title': 'Сообщество',
+  'community.saveFilter': 'Сохранить фильтр',
   'community.subtitle': 'Присоединяйтесь к обсуждениям и объявлениям',
   'community.viewAll': 'Все публикации',
   'community.createPost': 'Создать',
