@@ -470,26 +470,7 @@ const SearchPage: React.FC = () => {
       key={service.id}
       className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
     >
-      {/* Portfolio thumbnails */}
-      {service.portfolioImages && service.portfolioImages.length > 0 && (
-        <div className="flex space-x-1 overflow-x-auto pb-2 mb-2 -mx-1 px-1 scrollbar-hide">
-          {service.portfolioImages.slice(0, 3).map((img: any, idx: number) => {
-            const imageUrl = typeof img === 'string' ? img : img?.imageUrl || img;
-            if (!imageUrl) return null;
-            return (
-              <div key={idx} className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                <img
-                  src={imageUrl}
-                  alt={`Portfolio ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Portfolio lives on the specialist profile — search cards stay clean (ProfiHub-style) */}
       <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="relative flex-shrink-0 self-center sm:self-start">
           <Avatar
