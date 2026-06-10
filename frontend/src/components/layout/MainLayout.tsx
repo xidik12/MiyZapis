@@ -19,14 +19,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const density = useAppSelector(selectDensity);
 
   return (
-    <div className={`min-h-screen bg-white dark:bg-gray-950 flex flex-col w-full overflow-x-hidden prevent-overflow ${density === 'compact' ? 'density-compact' : 'density-comfortable'}`}>
+    <div className={`min-h-screen bg-white dark:bg-gray-950 flex flex-col w-full overflow-x-clip prevent-overflow ${density === 'compact' ? 'density-compact' : 'density-comfortable'}`}>
       <a href="#main-content" className="skip-link">Skip to content</a>
 
       {/* Top navigation — responsive (Header has its own mobile menu) */}
       <Header />
 
       {/* Main Content */}
-      <main id="main-content" className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area">
+      <main id="main-content" className="flex-1 w-full overflow-x-clip prevent-overflow mobile-safe-area">
         <div className="w-full prevent-overflow">
           <div key={location.pathname} className="page-enter">
             {children}
