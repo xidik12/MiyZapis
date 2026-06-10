@@ -800,54 +800,55 @@ const HomePage: React.FC = () => {
                   <Link
                     key={specialist.id as string}
                     to={`/specialist/${specialist.id}`}
-                    className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
+                    className="group flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors duration-200 hover:border-sky-300 dark:hover:border-sky-700"
                   >
-                    {/* Image (real photo when available; quiet neutral placeholder otherwise) */}
-                    <div className="relative w-full h-40 flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    {/* Avatar + identity (compact — looks intentional with or without a photo) */}
+                    <div className="flex items-center gap-4">
                       {specialist.avatar ? (
                         <img
                           src={specialist.avatar as string}
                           alt={displayName}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="h-16 w-16 rounded-full object-cover flex-shrink-0"
                         />
                       ) : (
-                        <span className="text-5xl font-semibold text-gray-300 dark:text-gray-600 tracking-tight">
+                        <span className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center text-xl font-semibold flex-shrink-0">
                           {initialsOf(displayName)}
                         </span>
                       )}
-                      {/* Bottom gradient overlay only over real photos */}
-                      {specialist.avatar && <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />}
-                      {/* Rating badge overlay */}
-                      {specialist.averageRating && (
-                        <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white" style={{
-                          background: 'rgba(0,0,0,0.45)',
-                          backdropFilter: 'blur(8px)',
-                        }}>
-                          <StarIcon className="w-3.5 h-3.5 text-amber-400" active />
-                          {(specialist.averageRating as number)?.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-5">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors mz-heading">
-                        {displayName}
-                      </h3>
-                      {specialist.specialties && (specialist.specialties as string[]).length > 0 && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate">{(specialist.specialties as string[])[0]}</p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {specialist.reviewCount != null && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              ({specialist.reviewCount as number} {t('community.comments') || 'reviews'})
-                            </span>
-                          )}
-                        </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                          {displayName}
+                        </h3>
+                        {specialist.specialties && (specialist.specialties as string[])[0] && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{(specialist.specialties as string[])[0]}</p>
+                        )}
                         {specialist.city && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{specialist.city as string}</span>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{specialist.city as string}</p>
                         )}
                       </div>
+                    </div>
+
+                    {/* Footer: rating + view profile */}
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/60">
+                      {(specialist.averageRating ?? specialist.rating) != null ? (
+                        <div className="flex items-center gap-1">
+                          <StarIcon className="w-4 h-4 text-amber-400" active />
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {Number(specialist.averageRating ?? specialist.rating).toFixed(1)}
+                          </span>
+                          {specialist.reviewCount != null && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">({specialist.reviewCount as number})</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <CheckBadgeIcon className="w-4 h-4" /> {t('hero.featuredSpecialist')}
+                        </span>
+                      )}
+                      <span className="text-sm font-medium text-sky-600 dark:text-sky-400 inline-flex items-center gap-1">
+                        {t('actions.viewProfile')}
+                        <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </span>
                     </div>
                   </Link>
                 );
