@@ -18,6 +18,24 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   'technology': RobotIcon,
 };
 
+// Category slugs are dynamic (e.g. "manicure-pedicure", "car-inspection"), so an
+// exact map misses most and everything falls back to one icon. Resolve by keyword
+// to give each category a meaningful, distinct glyph.
+const ICON_KEYWORDS: Array<[RegExp, React.ComponentType<{ className?: string }>]> = [
+  [/massage|health|fitness|therapy|medical|dental|spa|wellness|yoga|nutrition/i, HeartIcon],
+  [/home|clean|repair|car|auto|inspect|plumb|garden|move|handy|electric/i, HomeIcon],
+  [/business|professional|account|legal|consult|financ|tax|market|hr\b/i, BriefcaseIcon],
+  [/tutor|educat|lesson|teach|language|course|train|coach|academ|school/i, BookOpenIcon],
+  [/tech|app|software|\bit\b|web|develop|comput|digital|data|code/i, RobotIcon],
+  [/beauty|hair|manicure|pedicure|nail|makeup|barber|styl|cosmet|skin|lash|brow/i, SparklesIcon],
+];
+const resolveCategoryIcon = (slug: string, name?: string) => {
+  if (categoryIcons[slug]) return categoryIcons[slug];
+  const hay = `${slug} ${name || ''}`;
+  for (const [re, Icon] of ICON_KEYWORDS) if (re.test(hay)) return Icon;
+  return SparklesIcon;
+};
+
 // Per-category accent palette — a service directory benefits from colour-coded
 // types (meaningful, not decorative). Full class strings so Tailwind JIT keeps them.
 // Avatar fallback gradients — photoless specialists get colourful initials
@@ -479,7 +497,7 @@ const HomePage: React.FC = () => {
                 <div className="sm:hidden flex overflow-x-auto gap-3 pb-4 px-1 scrollbar-hide snap-x snap-mandatory -mx-3">
                   {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
-                    const CategoryIcon = categoryIcons[slug] || SparklesIcon;
+                    const CategoryIcon = resolveCategoryIcon(slug, category.name as string);
                     const accent = categoryAccents[idx % categoryAccents.length];
                     return (
                       <Link
@@ -513,7 +531,7 @@ const HomePage: React.FC = () => {
                 <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                   {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
-                    const CategoryIcon = categoryIcons[slug] || SparklesIcon;
+                    const CategoryIcon = resolveCategoryIcon(slug, category.name as string);
                     const accent = categoryAccents[idx % categoryAccents.length];
                     return (
                       <Link
