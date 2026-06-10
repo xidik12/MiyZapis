@@ -87,13 +87,18 @@ function useScrollReveal() {
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el) { setIsVisible(true); return; }
+    // Already in view on mount → reveal immediately (above-the-fold).
+    if (el.getBoundingClientRect().top < window.innerHeight) { setIsVisible(true); return; }
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
       { threshold: 0.12 }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    // Safety net: never leave a section hidden, even if the observer never fires
+    // (headless render, hidden tab, JS hiccup). Motion enhances a guaranteed reveal.
+    const fallback = window.setTimeout(() => setIsVisible(true), 1500);
+    return () => { observer.disconnect(); window.clearTimeout(fallback); };
   }, []);
 
   return { ref, isVisible };
@@ -297,12 +302,13 @@ const HomePage: React.FC = () => {
         .timeline-line {
           position: absolute;
           top: 28px;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #0284C7, #0EA5E9, #059669, #0EA5E9);
+          left: 7%;
+          right: 7%;
+          height: 2px;
+          background: rgb(229 231 235);
           border-radius: 2px;
         }
+        .dark .timeline-line { background: rgb(55 65 81); }
         @media (max-width: 1023px) {
           .timeline-line {
             top: 0;
@@ -610,14 +616,9 @@ const HomePage: React.FC = () => {
                   >
                     {/* Circle on the line */}
                     <div className="absolute top-0 left-0 right-0 flex justify-center" style={{ left: `${index * 25}%`, width: '25%' }}>
-                      <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-10"
-                        style={{
-                          background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
-                          boxShadow: '0 4px 14px rgba(2,132,199,0.3)',
-                        }}
-                      >
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-10 bg-primary-600">
                         <step.icon className="w-6 h-6 text-white" />
-                        <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shadow-md">
+                        <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold flex items-center justify-center">
                           {step.step}
                         </span>
                       </div>
@@ -639,22 +640,15 @@ const HomePage: React.FC = () => {
           <div className="lg:hidden">
             <div className="relative pl-14 sm:pl-16">
               {/* Vertical line */}
-              <div className="absolute left-[26px] sm:left-[30px] top-0 bottom-0 w-[3px] rounded-full" style={{
-                background: 'linear-gradient(180deg, #0284C7, #0EA5E9, #059669, #0EA5E9)',
-              }} />
+              <div className="absolute left-[26px] sm:left-[30px] top-0 bottom-0 w-[2px] rounded-full bg-gray-200 dark:bg-gray-700" />
 
               <div className="space-y-8 sm:space-y-10">
                 {howItWorksSteps.map((step) => (
                   <div key={step.step} className="relative">
                     {/* Circle */}
-                    <div className="absolute -left-14 sm:-left-16 top-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center z-10"
-                      style={{
-                        background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
-                        boxShadow: '0 4px 14px rgba(2,132,199,0.25)',
-                      }}
-                    >
+                    <div className="absolute -left-14 sm:-left-16 top-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center z-10 bg-primary-600">
                       <step.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold flex items-center justify-center">
                         {step.step}
                       </span>
                     </div>
@@ -868,8 +862,7 @@ const HomePage: React.FC = () => {
           <div className="text-center mt-10">
             <Link
               to="/search"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white transition-all duration-250"
-              style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200"
             >
               {t('featuredSpecialists.viewAll')}
               <ArrowRightIcon className="w-4 h-4" />
@@ -1055,8 +1048,7 @@ const HomePage: React.FC = () => {
               </div>
               <Link
                 to="/community"
-                className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all duration-250 hover:shadow-lg self-start sm:self-auto"
-                style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
+                className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 self-start sm:self-auto"
               >
                 {t('community.viewAll')}
                 <ArrowRightIcon className="w-4 h-4" />
@@ -1333,8 +1325,7 @@ const HomePage: React.FC = () => {
               {user ? (
                 <Link
                   to="/search"
-                  className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250"
-                  style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
+                  className="inline-flex items-center justify-center gap-2 text-white bg-primary-600 hover:bg-primary-700 px-8 py-3.5 rounded-xl text-base font-semibold transition-colors duration-200"
                 >
                   {t('cta.browseServices')}
                   <ArrowRightIcon className="w-4 h-4" />
@@ -1343,8 +1334,7 @@ const HomePage: React.FC = () => {
                 <>
                   <Link
                     to="/auth/register"
-                    className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250"
-                    style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
+                    className="inline-flex items-center justify-center gap-2 text-white bg-primary-600 hover:bg-primary-700 px-8 py-3.5 rounded-xl text-base font-semibold transition-colors duration-200"
                   >
                     {t('cta.signUpCustomer')}
                   </Link>
