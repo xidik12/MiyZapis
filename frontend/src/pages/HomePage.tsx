@@ -5,6 +5,7 @@ import { selectUser } from '@/store/slices/authSlice';
 import { SearchBar } from '@/components/common/SearchBar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { translateProfession } from '@/utils/profession';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { locationService, CityData } from '@/services/location.service';
 import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
@@ -403,7 +404,7 @@ const HomePage: React.FC = () => {
 
             {/* Right: photo + floating specialist card */}
             <div className="relative hidden lg:block">
-              <div className="relative aspect-[4/5] max-h-[560px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
+              <div className="relative aspect-[4/5] max-h-[480px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
                 <img
                   src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80"
                   alt={t('hero.title1')}
@@ -411,40 +412,40 @@ const HomePage: React.FC = () => {
                   className="h-full w-full object-cover"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://picsum.photos/seed/miyzapis-professional/900/1120'; }}
                 />
-              </div>
 
-              {topSpecialists.length > 0 && (() => {
-                const sp: any = topSpecialists[0];
-                const name = getSpecialistName(sp);
-                return (
-                  <div className="absolute -bottom-5 left-5 right-5 max-w-[340px] rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.25)] p-3 flex items-center gap-3">
-                    {sp.avatar ? (
-                      <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <span className="h-11 w-11 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-semibold flex-shrink-0">
-                        {name?.charAt(0) || 'M'}
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{name}</p>
-                      {sp.specialties && (sp.specialties as string[])[0] && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{(sp.specialties as string[])[0]}</p>
+                {topSpecialists.length > 0 && (() => {
+                  const sp: any = topSpecialists[0];
+                  const name = getSpecialistName(sp);
+                  const rating = sp.averageRating ?? sp.rating;
+                  const subtitle = (sp.specialties && (sp.specialties as string[])[0])
+                    || translateProfession(sp.businessName, t)
+                    || t('hero.featuredSpecialist');
+                  return (
+                    // Contained inside the photo (bottom band) — never clipped.
+                    <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
+                      {sp.avatar ? (
+                        <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0" />
+                      ) : (
+                        <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
+                          {name?.charAt(0) || 'M'}
+                        </span>
                       )}
-                      {sp.averageRating != null && (
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <StarIcon className="w-3.5 h-3.5 text-amber-400" active />
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                            {(sp.averageRating as number).toFixed(1)}
-                          </span>
-                          {sp.reviewCount != null && (
-                            <span className="text-xs text-gray-400">({sp.reviewCount as number})</span>
-                          )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{subtitle}</p>
+                      </div>
+                      {rating != null ? (
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <StarIcon className="w-4 h-4 text-amber-400" active />
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{Number(rating).toFixed(1)}</span>
                         </div>
+                      ) : (
+                        <CheckBadgeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
                       )}
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>
