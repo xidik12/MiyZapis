@@ -38,20 +38,8 @@ const resolveCategoryIcon = (slug: string, name?: string) => {
 
 // Per-category accent palette — a service directory benefits from colour-coded
 // types (meaningful, not decorative). Full class strings so Tailwind JIT keeps them.
-// Avatar fallback gradients — photoless specialists get colourful initials
-// (conventional for avatars; keyed by name so each person is stable).
-const avatarGradients = [
-  'from-sky-400 to-blue-600',
-  'from-violet-400 to-purple-600',
-  'from-emerald-400 to-teal-600',
-  'from-amber-400 to-orange-600',
-  'from-rose-400 to-pink-600',
-  'from-cyan-400 to-sky-600',
-];
 const initialsOf = (name: string) =>
   (name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '★';
-const gradientFor = (name: string) =>
-  avatarGradients[((name || '').charCodeAt(0) || 0) % avatarGradients.length];
 
 const categoryAccents = [
   { chip: 'bg-sky-100 dark:bg-sky-900/30', icon: 'text-sky-600 dark:text-sky-400', hoverBorder: 'hover:border-sky-300 dark:hover:border-sky-700', hoverText: 'group-hover:text-sky-600', glow: 'from-sky-50' },
@@ -463,6 +451,29 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* ============================================================ */}
+      {/*  VALUE / TRUST STRIP                                          */}
+      {/* ============================================================ */}
+      <section className="border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950">
+        <div className="max-w-7xl mx-auto mobile-container py-5 sm:py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+            {[
+              { Icon: ShieldCheckIcon, label: t('home.trust.verified') },
+              { Icon: ClockIcon, label: t('home.trust.instant') },
+              { Icon: CreditCardIcon, label: t('home.trust.secure') },
+              { Icon: ChatBubbleLeftRightIcon, label: t('home.trust.support') },
+            ].map((it, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                  <it.Icon className="w-5 h-5" />
+                </span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-tight">{it.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
       {/*  CATEGORIES SECTION                                           */}
       {/* ============================================================ */}
       <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
@@ -471,13 +482,19 @@ const HomePage: React.FC = () => {
             ref={catReveal.ref}
             className={`w-full max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${catReveal.isVisible ? 'visible' : ''}`}
           >
-            <div className="text-center mb-10 sm:mb-14">
-              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
-                {t('categories.title')}
-              </h2>
-              <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
-                {t('categories.subtitle')}
-              </p>
+            <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10">
+              <div>
+                <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  {t('categories.title')}
+                </h2>
+                <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
+                  {t('categories.subtitle')}
+                </p>
+              </div>
+              <Link to="/search" className="hidden sm:inline-flex items-center gap-1.5 flex-shrink-0 text-sm font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
+                {t('categories.browseAll') || 'Browse all'}
+                <ArrowRightIcon className="w-4 h-4" />
+              </Link>
             </div>
 
             {categoriesLoading ? (
@@ -503,25 +520,22 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className={`group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 ${accent.hoverBorder}`}
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-600"
                       >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${accent.chip}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${accent.chip}`}>
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
                         </div>
-                        <h3 className={`text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 transition-colors duration-200 ${accent.hoverText}`}>
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
                           {category.name as string}
                         </h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed min-h-[2.5rem]">
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
-                        <div className="flex items-center justify-between text-sm">
-                          {category.serviceCount != null ? (
-                            <span className={`font-semibold px-2.5 py-0.5 rounded-full text-xs ${accent.chip} ${accent.icon}`}>
-                              {category.serviceCount as number} {t('services.count')}
-                            </span>
-                          ) : <span />}
-                          <ArrowRightIcon className={`w-4 h-4 text-gray-300 transition-all duration-200 group-hover:translate-x-0.5 ${accent.icon.replace('text-', 'group-hover:text-')}`} />
-                        </div>
+                        {category.serviceCount != null && (
+                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400">
+                            {category.serviceCount as number} {t('services.count')}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
@@ -537,28 +551,22 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className={`group relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 transition-all duration-300 hover:-translate-y-0.5 ${accent.hoverBorder}`}
-                        style={{ transitionDelay: `${idx * 50}ms` }}
+                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 p-6 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-700"
                       >
-                        {/* soft corner glow on hover */}
-                        <div className={`pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br ${accent.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:opacity-0`} />
-                        <div className={`relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${accent.chip}`}>
-                          <CategoryIcon className={`w-7 h-7 ${accent.icon}`} />
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${accent.chip}`}>
+                          <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
                         </div>
-                        <h3 className={`relative text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 transition-colors duration-200 ${accent.hoverText}`}>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                           {category.name as string}
                         </h3>
-                        <p className="relative text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed line-clamp-2 min-h-[2.5rem]">
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
-                        <div className="relative flex items-center justify-between text-sm">
-                          {category.serviceCount != null ? (
-                            <span className={`font-semibold px-3 py-1 rounded-full text-xs ${accent.chip} ${accent.icon}`}>
-                              {category.serviceCount as number} {t('services.count')}
-                            </span>
-                          ) : <span />}
-                          <ArrowRightIcon className={`w-5 h-5 text-gray-300 transition-all duration-200 group-hover:translate-x-1 ${accent.icon.replace('text-', 'group-hover:text-')}`} />
-                        </div>
+                        {category.serviceCount != null && (
+                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400">
+                            {category.serviceCount as number} {t('services.count')}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
@@ -799,8 +807,8 @@ const HomePage: React.FC = () => {
                     to={`/specialist/${specialist.id}`}
                     className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                   >
-                    {/* Image + overlay gradient */}
-                    <div className={`relative w-full h-44 flex items-center justify-center overflow-hidden ${specialist.avatar ? 'bg-gray-100 dark:bg-gray-800' : `bg-gradient-to-br ${gradientFor(displayName)}`}`}>
+                    {/* Image (real photo when available; quiet neutral placeholder otherwise) */}
+                    <div className="relative w-full h-44 flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-800">
                       {specialist.avatar ? (
                         <img
                           src={specialist.avatar as string}
@@ -808,12 +816,12 @@ const HomePage: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       ) : (
-                        <span className="text-5xl font-bold text-white/90 tracking-tight transition-transform duration-300 group-hover:scale-110">
+                        <span className="text-5xl font-semibold text-gray-300 dark:text-gray-600 tracking-tight">
                           {initialsOf(displayName)}
                         </span>
                       )}
-                      {/* Bottom gradient overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
+                      {/* Bottom gradient overlay only over real photos */}
+                      {specialist.avatar && <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />}
                       {/* Rating badge overlay */}
                       {specialist.averageRating && (
                         <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white" style={{
