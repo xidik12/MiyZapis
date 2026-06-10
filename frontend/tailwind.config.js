@@ -21,20 +21,21 @@ module.exports = {
           800: '#1e40af',
           900: '#1e3a8a',
         },
-        // Warm-tinted neutral scale (overrides Tailwind's cool gray platform-wide
-        // so the whole UI reads a touch warmer / more premium, not clinical).
+        // Neutral scale: subtly WARM in the light shades (premium, not clinical)
+        // but CLEAN NEUTRAL in the dark shades so dark mode reads as a crisp
+        // near-black, not brown. Mids are neutral for legible text/icons.
         gray: {
           50: '#faf9f7',
           100: '#f4f3f0',
-          200: '#e9e6e1',
-          300: '#d8d4cd',
-          400: '#a8a39a',
-          500: '#79746b',
-          600: '#57534c',
-          700: '#423f39',
-          800: '#272420',
-          900: '#1a1714',
-          950: '#100e0c',
+          200: '#e9e6e2',
+          300: '#d7d3cd',
+          400: '#a3a19d',
+          500: '#747270',
+          600: '#525150',
+          700: '#3b3b3c',
+          800: '#222325',
+          900: '#161618',
+          950: '#0b0b0d',
         },
         // Bright Yellow secondary colors
         secondary: {

@@ -79,14 +79,14 @@
   .dark {
     /* Dark theme variables — one consistent gray elevation scale:
        body = gray-950, surface = gray-900, elevated = gray-800. */
-    --bg-primary: 17 24 39;     /* surface  (gray-900) */
-    --bg-secondary: 3 7 18;     /* body bg  (gray-950) */
-    --bg-tertiary: 31 41 55;    /* elevated (gray-800) */
-    --text-primary: 243 244 246;   /* gray-100 */
-    --text-secondary: 209 213 219; /* gray-300 */
-    --text-tertiary: 156 163 175;  /* gray-400 */
-    --border-primary: 31 41 55;    /* gray-800 */
-    --border-secondary: 17 24 39;  /* gray-900 */
+    --bg-primary: 22 22 24;     /* surface  (gray-900) */
+    --bg-secondary: 11 11 13;   /* body bg  (gray-950) */
+    --bg-tertiary: 34 35 37;    /* elevated (gray-800) */
+    --text-primary: 244 243 240;   /* gray-100 */
+    --text-secondary: 215 211 205; /* gray-300 */
+    --text-tertiary: 163 161 157;  /* gray-400 */
+    --border-primary: 34 35 37;    /* gray-800 */
+    --border-secondary: 22 22 24;  /* gray-900 */
     
     /* Dark theme shadows */
     --shadow-primary: 0 4px 14px 0 rgb(59 151 242 / 0.25);
