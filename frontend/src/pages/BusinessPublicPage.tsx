@@ -100,7 +100,7 @@ const BusinessPublicPage: React.FC = () => {
 };
 
 const Pill: React.FC<{ icon: string; children: React.ReactNode }> = ({ icon, children }) => (
-  <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur px-3 py-1 rounded-full">
+  <span className="inline-flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full">
     <span>{icon}</span>
     <span>{children}</span>
   </span>

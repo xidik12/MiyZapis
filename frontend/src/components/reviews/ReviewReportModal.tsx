@@ -98,7 +98,7 @@ export const ReviewReportModal: React.FC<ReviewReportModalProps> = ({
               <button
                 onClick={handleClose}
                 disabled={isSubmitting}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
               >
                 <XIcon className="w-5 h-5" />
               </button>

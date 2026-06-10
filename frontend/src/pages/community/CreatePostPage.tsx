@@ -379,7 +379,7 @@ const CreatePostPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
-                        className="p-1 text-gray-400 hover:text-red-500"
+                        className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-500"
                       >
                         <XMarkIcon className="w-4 h-4" />
                       </button>

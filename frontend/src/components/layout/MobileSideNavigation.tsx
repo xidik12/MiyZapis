@@ -168,7 +168,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
         onClick={onClose}
       />
       
@@ -394,7 +394,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                     className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
-                  <UserCircleIcon className="w-12 h-12 text-gray-400 flex-shrink-0" />
+                  <UserCircleIcon className="w-12 h-12 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
@@ -427,7 +427,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
 
               <Link
                 to="/auth/register"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 mobile-touch-target transition-all duration-300"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary-600 text-white hover:bg-primary-700 mobile-touch-target transition-all duration-300"
               >
                 <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
                 <span className="font-semibold text-base">{t('nav.getStarted')}</span>

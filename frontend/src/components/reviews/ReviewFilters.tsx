@@ -57,7 +57,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200/50 dark:border-gray-700/50 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200 dark:border-gray-800 mb-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <FunnelIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />

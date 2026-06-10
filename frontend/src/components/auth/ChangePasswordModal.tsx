@@ -131,7 +131,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 </p>
               </div>
             </div>
-            <button onClick={handleFullClose} disabled={isLoading} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors">
+            <button onClick={handleFullClose} disabled={isLoading} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors">
               <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
@@ -249,7 +249,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                     autoFocus
                   />
                   <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    {showNewPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-400" />}
+                    {showNewPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />}
                   </button>
                 </div>
                 {errors.newPassword && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.newPassword.message}</p>}
@@ -275,7 +275,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                     placeholder={t('auth.changePasswordModal.confirmPlaceholder')}
                   />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-400" />}
+                    {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />}
                   </button>
                 </div>
                 {errors.confirmPassword && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>}

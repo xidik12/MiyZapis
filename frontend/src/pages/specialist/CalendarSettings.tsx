@@ -198,7 +198,7 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Connect iCloud Calendar</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4 text-sm text-blue-900 dark:text-blue-200">

@@ -311,7 +311,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="w-full px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
+          className="w-full px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           {saving
             ? t('common.loading') || 'Saving...'

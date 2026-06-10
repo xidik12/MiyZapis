@@ -1316,7 +1316,7 @@ const SpecialistProfile: React.FC = () => {
                           {language === 'uk' ? 'Електронна пошта *' : language === 'ru' ? 'Электронная почта *' : 'Email *'}
                         </label>
                         <div className="relative">
-                          <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
                           <input
                             id="email"
                             name="email"
@@ -1350,7 +1350,7 @@ const SpecialistProfile: React.FC = () => {
                           {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
                         </label>
                         <div className="relative">
-                          <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
                           <input
                             id="phone"
                             name="phone"
@@ -1415,7 +1415,7 @@ const SpecialistProfile: React.FC = () => {
                       ) : (
                         <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                           <div className="flex items-center space-x-2">
-                            <MapPinIcon className="h-5 w-5 text-gray-400" />
+                            <MapPinIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                             <span>
                               {profile.location?.address || profile.location?.city ? 
                                 [profile.location.address, profile.location.city, profile.location.region, profile.location.country]
@@ -1457,7 +1457,7 @@ const SpecialistProfile: React.FC = () => {
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
-                              <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
+                              <BuildingOfficeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                               <span>{profile.preciseAddress || (t('specialist.professionNotSpecified') || 'Not specified')}</span>
                             </div>
                           </div>
@@ -1491,7 +1491,7 @@ const SpecialistProfile: React.FC = () => {
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
-                              <PhoneIcon className="h-5 w-5 text-gray-400" />
+                              <PhoneIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                               <span>{profile.businessPhone || (t('specialist.professionNotSpecified') || 'Not specified')}</span>
                             </div>
                           </div>
@@ -1627,7 +1627,7 @@ const SpecialistProfile: React.FC = () => {
                         />
                       ) : (
                         <div className="relative">
-                          <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
                           <input
                             id="profession"
                             name="profession"
@@ -1679,7 +1679,7 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Освіта' : language === 'ru' ? 'Образование' : 'Education'}
                       </label>
                       <div className="relative">
-                        <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                        <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
                         <textarea
                           id="education"
                           name="education"
@@ -2181,7 +2181,7 @@ const SpecialistProfile: React.FC = () => {
                               className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
                             />
                           ) : (
-                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
+                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
                               {language === 'uk' ? 'Немає QR' : language === 'ru' ? 'Нет QR' : 'No QR'}
                             </div>
                           )}
@@ -2327,7 +2327,7 @@ const SpecialistProfile: React.FC = () => {
                     </div>
                   ) : (
                     <div className="text-center py-16">
-                      <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <PhotoIcon className="h-16 w-16 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {language === 'uk' ? 'Портфоліо поки порожнє' : language === 'ru' ? 'Портфолио пока пустое' : 'Portfolio is empty'}
                       </h3>

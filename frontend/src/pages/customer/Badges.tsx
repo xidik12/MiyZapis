@@ -59,7 +59,7 @@ const CustomerBadges: React.FC = () => {
   };
 
   const getBadgeIcon = (category: string, isEarned: boolean) => {
-    const iconClass = `h-8 w-8 ${isEarned ? 'text-yellow-500' : 'text-gray-400'}`;
+    const iconClass = `h-8 w-8 ${isEarned ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'}`;
 
     switch (category.toLowerCase()) {
       case 'achievement':
@@ -265,7 +265,7 @@ const CustomerBadges: React.FC = () => {
                     {badge.isEarned ? (
                       <CheckCircleIcon className="h-5 w-5 text-green-500" active />
                     ) : (
-                      <LockClosedIcon className="h-5 w-5 text-gray-400" />
+                      <LockClosedIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     )}
                   </div>
                 </div>
@@ -333,7 +333,7 @@ const CustomerBadges: React.FC = () => {
                   {/* Criteria */}
                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                     <div className="flex items-start space-x-2">
-                      <InformationCircleIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <InformationCircleIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {badge.criteria}
                       </p>
@@ -348,7 +348,7 @@ const CustomerBadges: React.FC = () => {
         {/* Empty State */}
         {filteredBadges.length === 0 && (
           <div className="text-center py-12">
-            <TrophyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" active />
+            <TrophyIcon className="h-16 w-16 text-gray-500 dark:text-gray-400 mx-auto mb-4" active />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No badges found
             </h3>

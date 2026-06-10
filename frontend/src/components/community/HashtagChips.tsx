@@ -32,14 +32,14 @@ export const HashtagChips: React.FC<HashtagChipsProps> = ({ tags, activeSlug, on
               'shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all',
               'border',
               active
-                ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/30'
+                ? 'bg-primary-500 border-primary-500 text-white'
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400',
             ].join(' ')}
           >
             <HashtagIcon className="w-3.5 h-3.5" />
             <span className="font-medium">{tag.display}</span>
             {typeof tag.count === 'number' && tag.count > 1 && (
-              <span className={active ? 'text-white/80' : 'text-gray-400 dark:text-gray-500'}>
+              <span className={active ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}>
                 {tag.count}
               </span>
             )}

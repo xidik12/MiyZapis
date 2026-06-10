@@ -241,7 +241,7 @@ const SpecialistNotifications: React.FC = () => {
           <button
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
-            className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-200 active:scale-95 flex items-center space-x-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 active:scale-95 flex items-center space-x-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckIcon className="w-4 h-4" />
             <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
@@ -252,7 +252,7 @@ const SpecialistNotifications: React.FC = () => {
 
       {/* Filter tabs */}
       <div className="mb-8 animate-slide-in-up">
-        <nav className="flex flex-wrap gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl p-2 shadow-glass border border-gray-200/50 dark:border-gray-700/50">
+        <nav className="flex flex-wrap gap-2 bg-white dark:bg-gray-800 rounded-2xl p-2 border border-gray-200 dark:border-gray-800">
           {[
             { key: 'all', label: t('notifications.filter.all') },
             { key: 'unread', label: t('notifications.filter.unread') },
@@ -266,7 +266,7 @@ const SpecialistNotifications: React.FC = () => {
               onClick={() => setFilter(tab.key as any)}
               className={`flex-1 min-w-fit py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
                 filter === tab.key
-                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                  ? 'bg-primary-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
@@ -321,8 +321,8 @@ const SpecialistNotifications: React.FC = () => {
       {!loading && !error && (
         <div className="space-y-3">
           {filteredNotifications.length === 0 ? (
-          <div className="text-center py-16 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-glass animate-scale-in">
-            <BellIcon className="w-20 h-20 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-800 animate-scale-in">
+            <BellIcon className="w-20 h-20 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {t('notifications.noNotifications')}
             </h3>
@@ -337,7 +337,7 @@ const SpecialistNotifications: React.FC = () => {
               <div
                 key={notification.id}
                 className={`
-                  group border-l-4 p-5 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-xl
+                  group border-l-4 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-700
                   ${getPriorityColor(notification.priority)}
                   ${!notification.isRead ? 'ring-2 ring-primary-500/30' : ''}
                   ${deletingIds.has(notification.id) ? 'opacity-0 translate-x-full scale-90' : 'opacity-100 translate-x-0 scale-100'}
@@ -382,7 +382,7 @@ const SpecialistNotifications: React.FC = () => {
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="p-2 rounded-xl text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
+                        className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
                         title={t('notifications.markAsRead')}
                       >
                         <EyeIcon className="w-5 h-5" />
@@ -390,7 +390,7 @@ const SpecialistNotifications: React.FC = () => {
                     )}
                     <button
                       onClick={() => deleteNotification(notification.id)}
-                      className="p-2 rounded-xl text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
+                      className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
                       title={t('notifications.delete')}
                     >
                       <XMarkIcon className="w-5 h-5" />

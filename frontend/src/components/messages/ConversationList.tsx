@@ -92,7 +92,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
         {/* Search */}
         <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             value={searchQuery}
@@ -112,7 +112,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <InboxIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <InboxIcon className="w-16 h-16 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 {emptyTitle}
               </h3>
@@ -137,7 +137,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   onClick={() => onSelectConversation(conversation)}
                   className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-all duration-200 ${
                     isSelected
-                      ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-l-primary-500'
+                      ? 'bg-primary-50 dark:bg-primary-900/20'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-l-4 border-l-transparent'
                   }`}
                 >

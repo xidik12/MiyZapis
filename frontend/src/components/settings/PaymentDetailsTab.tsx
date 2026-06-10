@@ -331,7 +331,7 @@ const PaymentDetailsTab: React.FC<PaymentDetailsTabProps> = ({
               className="w-28 h-28 rounded-xl border border-gray-200 dark:border-gray-700 object-cover"
             />
           ) : (
-            <div className="w-28 h-28 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
+            <div className="w-28 h-28 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
               {language === 'uk' ? 'Немає QR' : language === 'ru' ? 'Нет QR' : 'No QR'}
             </div>
           )}

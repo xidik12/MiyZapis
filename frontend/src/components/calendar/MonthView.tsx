@@ -93,7 +93,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-800 overflow-hidden">
       {/* Header - Day names */}
       <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
         {weekDays.map((day) => (

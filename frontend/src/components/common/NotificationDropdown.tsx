@@ -107,13 +107,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className={`absolute right-0 mt-2 w-96 max-w-[90vw] bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 z-50 overflow-hidden transform transition-all duration-300 ease-out ${
+      className={`absolute right-0 mt-2 w-96 max-w-[90vw] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 z-50 overflow-hidden transform transition-all duration-300 ease-out ${
         isAnimating ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95'
       }`}
       style={{ transformOrigin: 'top right' }}
     >
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between bg-gradient-to-r from-gray-50/80 to-transparent dark:from-gray-700/30">
+      <div className="px-4 py-3.5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-gray-50/80 to-transparent dark:from-gray-700/30">
         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('notifications.title')}</h3>
         <div className="flex items-center gap-2">
           {unreadNotifications.length > 0 && (
@@ -141,8 +141,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       <div className="max-h-[450px] overflow-y-auto custom-scrollbar">
         {recentNotifications.length === 0 ? (
           <div className="px-4 py-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm mb-3">
-              <BellIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100/80 dark:bg-gray-700 mb-3">
+              <BellIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{t('notifications.noNotifications')}</p>
           </div>
@@ -170,8 +170,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   <div className="flex-shrink-0 mt-0.5">
                     <div className={`p-2 rounded-xl transition-all duration-200 group-hover:scale-110 ${
                       notification.isRead
-                        ? 'bg-gray-100/80 dark:bg-gray-700/80'
-                        : 'bg-white/80 dark:bg-gray-800/80 shadow-sm'
+                        ? 'bg-gray-100/80 dark:bg-gray-700'
+                        : 'bg-white dark:bg-gray-800 shadow-sm'
                     }`}>
                       {getNotificationIcon(notification.type)}
                     </div>
@@ -192,7 +192,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                     {!notification.isRead && (
                       <button
                         onClick={(e) => handleMarkAsRead(notification.id, e)}
-                        className="p-2 rounded-xl hover:bg-green-100/80 dark:hover:bg-green-900/30 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200 hover:scale-110 active:scale-90"
+                        className="p-2 rounded-xl hover:bg-green-100/80 dark:hover:bg-green-900/30 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200 hover:scale-110 active:scale-90"
                         title="Mark as read"
                       >
                         <CheckIcon className="w-4 h-4" />
@@ -200,7 +200,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                     )}
                     <button
                       onClick={(e) => handleDelete(notification.id, e)}
-                      className="p-2 rounded-xl hover:bg-red-100/80 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:scale-110 active:scale-90"
+                      className="p-2 rounded-xl hover:bg-red-100/80 dark:hover:bg-red-900/30 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:scale-110 active:scale-90"
                       title="Delete"
                     >
                       <TrashIcon className="w-4 h-4" />
@@ -215,7 +215,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
       {/* Footer */}
       {recentNotifications.length > 0 && (
-        <div className="px-4 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30">
           <Link
             to="/notifications"
             onClick={() => {

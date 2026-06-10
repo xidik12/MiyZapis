@@ -340,7 +340,7 @@ const SpecialistSettings: React.FC = () => {
               <div className="lg:col-span-1">
                 <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4">
                   {/* Profile & Business Group */}
-                  <p className="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  <p className="px-3 pt-2 pb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {language === 'uk' ? 'Профіль' : language === 'ru' ? 'Профиль' : 'Profile & Business'}
                   </p>
                   {([
@@ -366,7 +366,7 @@ const SpecialistSettings: React.FC = () => {
                   ))}
 
                   {/* App Settings Group */}
-                  <p className="px-3 pt-4 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  <p className="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {language === 'uk' ? 'Налаштування' : language === 'ru' ? 'Настройки' : 'App Settings'}
                   </p>
                   {([

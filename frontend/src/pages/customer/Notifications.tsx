@@ -274,7 +274,7 @@ const CustomerNotifications: React.FC = () => {
                 <div
                   key={notification.id}
                   className={`
-                    group border-l-4 p-4 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300
+                    group border-l-4 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300
                     ${getPriorityColor(notification.priority)}
                     ${!notification.isRead ? 'ring-1 ring-primary-500/20' : ''}
                     ${deletingIds.has(notification.id) ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
@@ -315,7 +315,7 @@ const CustomerNotifications: React.FC = () => {
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
                           title={t('notifications.markAsRead') || 'Mark as read'}
                         >
                           <EyeIcon className="w-4 h-4" />
@@ -323,7 +323,7 @@ const CustomerNotifications: React.FC = () => {
                       )}
                       <button
                         onClick={() => deleteNotification(notification.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                         title={t('notifications.delete') || 'Delete'}
                       >
                         <XMarkIcon className="w-4 h-4" />

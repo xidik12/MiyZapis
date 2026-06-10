@@ -107,7 +107,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -153,9 +153,9 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                    <EyeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
               </div>
@@ -203,9 +203,9 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                    <EyeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
               </div>

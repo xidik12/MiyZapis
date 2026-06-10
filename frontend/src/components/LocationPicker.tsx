@@ -369,7 +369,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         className={`w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 ${className}`}
       >
         <div className="flex items-center space-x-2">
-          <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+          <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           <span className={location.address ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>
             {displayAddress()}
           </span>
@@ -397,7 +397,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Search className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   </div>
                   <input
                     ref={searchInputRef}
@@ -424,7 +424,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                         className="w-full px-4 py-4 sm:py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20"
                       >
                         <div className="flex items-start space-x-3">
-                          <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
+                          <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-base sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {place.name}
@@ -447,7 +447,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 {mapError ? (
                   <div className="h-full w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex flex-col justify-center space-y-3">
                     <div className="text-center mb-2">
-                      <MapPin className="h-8 w-8 mx-auto text-gray-400 dark:text-gray-500 mb-1" />
+                      <MapPin className="h-8 w-8 mx-auto text-gray-500 dark:text-gray-400 mb-1" />
                       <p className="text-sm text-gray-500 dark:text-gray-400">{t('location.enterManually') || 'Enter your address manually'}</p>
                     </div>
                     <input

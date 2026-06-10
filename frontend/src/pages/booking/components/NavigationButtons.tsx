@@ -63,7 +63,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           disabled={currentStep === 0 || paymentLoading}
           className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-all duration-200 flex-shrink-0 mobile-touch-target ${
             currentStep === 0 || paymentLoading
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-gray-100 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-sm active:scale-95'
           }`}
         >

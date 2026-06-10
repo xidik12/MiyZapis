@@ -130,7 +130,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   };
 
   return (
-    <aside className={`hidden lg:flex fixed left-0 top-0 h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200/20 dark:border-gray-700/20 z-30 transition-all duration-300 flex-col ${
+    <aside className={`hidden lg:flex fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200/20 dark:border-gray-700/20 z-30 transition-all duration-300 flex-col ${
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       {/* Header */}
@@ -232,7 +232,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {isAuthenticated ? (
           <div className="space-y-2">
             {!isCollapsed && (
-              <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm">
+              <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
@@ -240,7 +240,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                  <UserCircleIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -275,7 +275,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             </Link>
             <Link
               to="/auth/register"
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >

@@ -282,7 +282,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return (
       <div className={`bg-gray-200 animate-pulse ${className}`} {...props}>
         <div className="w-full h-full flex items-center justify-center">
-          <div className="text-gray-400 text-sm">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400 text-sm">Loading...</div>
         </div>
       </div>
     );
@@ -292,7 +292,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   if (hasError) {
     return (
       <div className={`bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center ${className}`} {...props}>
-        <div className="text-gray-400 text-sm text-center p-4">
+        <div className="text-gray-500 dark:text-gray-400 text-sm text-center p-4">
           {(() => {
             const isBackendUpload = src.includes('api.miyzapis.com/uploads/');
             const isPortfolioImage = src.includes('portfolio_');

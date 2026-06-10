@@ -75,7 +75,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.3 }}
-            className={`bg-gradient-to-br ${stat.color} backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200/50 dark:border-gray-700/50`}
+            className={`bg-gradient-to-br ${stat.color} bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-800`}
           >
             <div className="flex items-start justify-between mb-3">
               <div className="p-2.5 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
@@ -100,7 +100,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.3 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200/50 dark:border-gray-700/50"
+        className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200 dark:border-gray-800"
       >
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
           {t('reviews.stats.distribution')}

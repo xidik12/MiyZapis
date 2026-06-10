@@ -151,7 +151,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 
       {/* Loading overlay with blur effect (only when placeholder exists) */}
       {placeholder && !isLoaded && !skeleton && (
-        <div className="absolute inset-0 backdrop-blur-sm bg-white/20 dark:bg-gray-900/20 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 transition-opacity duration-300" />
       )}
     </div>
   );

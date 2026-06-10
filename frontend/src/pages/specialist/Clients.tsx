@@ -206,7 +206,7 @@ const StatsBar: React.FC<{
             key={stat.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`${stat.bg} rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 cursor-pointer hover:shadow-md transition-all duration-200`}
+            className={`${stat.bg} rounded-2xl p-4 border border-gray-200 dark:border-gray-800 cursor-pointer hover:shadow-md transition-all duration-200`}
           >
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-xl ${stat.bg}`}>
@@ -242,7 +242,7 @@ const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: any
   const statusLabel = booking.status.replace(/_/g, ' ');
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
       <div className="flex-1 min-w-0 mb-2 sm:mb-0">
         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
           {booking.serviceName}
@@ -357,7 +357,7 @@ const ClientCard: React.FC<{
           {/* Right: expand toggle (mobile / desktop) */}
           <button
             onClick={onToggle}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2"
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2"
             aria-label="Toggle details"
           >
             {isExpanded ? (
@@ -428,7 +428,7 @@ const ClientCard: React.FC<{
                 {t('clients.bookingHistory') || 'Booking History'}
               </h4>
               {client.bookings.length === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {t('clients.noBookings') || 'No bookings found.'}
                 </p>
               ) : (
@@ -486,11 +486,11 @@ const ClientCard: React.FC<{
 
                 {/* Notes list */}
                 {loadingNotes ? (
-                  <div className="text-sm text-gray-400 animate-pulse">{t('common.loading') || 'Loading notes...'}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">{t('common.loading') || 'Loading notes...'}</div>
                 ) : notes.length > 0 ? (
                   <div className="space-y-2">
                     {notes.map((note) => (
-                      <div key={note.id} className="flex items-start justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
+                      <div key={note.id} className="flex items-start justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-0.5">
                             <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
@@ -501,13 +501,13 @@ const ClientCard: React.FC<{
                             }`}>
                               {note.category}
                             </span>
-                            <span className="text-[10px] text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
                           </div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">{note.content}</p>
                         </div>
                         <button
                           onClick={() => onDeleteNote(note.id)}
-                          className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          className="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
                         >
                           <XIcon className="w-3.5 h-3.5" />
                         </button>
@@ -515,7 +515,7 @@ const ClientCard: React.FC<{
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400">{t('clients.noNotes') || 'No notes yet'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('clients.noNotes') || 'No notes yet'}</p>
                 )}
               </div>
             </div>
@@ -536,7 +536,7 @@ const EmptyState: React.FC = () => {
       className="flex flex-col items-center justify-center py-20 px-6"
     >
       <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5">
-        <UserGroupIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+        <UserGroupIcon className="w-10 h-10 text-gray-500 dark:text-gray-400" />
       </div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         {t('clients.empty.title') || 'No clients yet'}
@@ -842,7 +842,7 @@ const SpecialistClients: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
                   {/* Search */}
                   <div className="relative flex-1">
-                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <input
                       type="text"
                       placeholder={t('clients.searchPlaceholder') || 'Search clients by name, email, or phone...'}
@@ -853,7 +853,7 @@ const SpecialistClients: React.FC = () => {
                     {searchTerm && (
                       <button
                         onClick={() => setSearchTerm('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <XIcon className="w-4 h-4" />
                       </button>

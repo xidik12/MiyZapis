@@ -31,7 +31,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
         return (
           <div
             key={booking.id}
-            className="group bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
+            className="group bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 transition-all duration-300 hover:scale-[1.02]"
             style={{
               animationDelay: `${index * 50}ms`,
               animation: isAnimating ? 'scaleIn 0.4s ease-out forwards' : 'none'
@@ -75,7 +75,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 font-medium">
                 <CalendarIcon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
                 <span>{scheduledDate.toLocaleDateString()}</span>

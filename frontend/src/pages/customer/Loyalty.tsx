@@ -803,7 +803,7 @@ const CustomerLoyalty: React.FC = () => {
 
                       {availableRewards.length === 0 ? (
                         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                          <GiftIcon className="h-12 w-12 text-gray-500 dark:text-gray-400 mx-auto mb-3" />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {t('loyalty.noRewardsAvailable') || 'No rewards available right now.'}
                           </p>
@@ -898,7 +898,7 @@ const CustomerLoyalty: React.FC = () => {
 
                       {myRedemptions.length === 0 ? (
                         <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <TrophyIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" active />
+                          <TrophyIcon className="h-10 w-10 text-gray-500 dark:text-gray-400 mx-auto mb-2" active />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {t('loyalty.noRedemptionsYet') || 'You haven\'t redeemed any rewards yet.'}
                           </p>

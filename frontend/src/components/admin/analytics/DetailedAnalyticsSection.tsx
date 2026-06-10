@@ -78,7 +78,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
                     ${
                       isActive
                         ? 'text-primary-500 dark:text-primary-400'
-                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
+                        : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                     }
                   `}
                   aria-hidden="true"

@@ -533,7 +533,7 @@ const SpecialistOnboarding: React.FC = () => {
             className={`text-xs font-medium ${
               i <= step
                 ? 'text-primary-600 dark:text-primary-400'
-                : 'text-gray-400 dark:text-gray-500'
+                : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             {label}
@@ -924,7 +924,7 @@ const SpecialistOnboarding: React.FC = () => {
                 className="w-full h-full object-cover rounded-full"
               />
             ) : (
-              <svg className="w-16 h-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-16 h-16 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
               </svg>
             )}
@@ -1000,7 +1000,7 @@ const SpecialistOnboarding: React.FC = () => {
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
         <div className={`p-4 rounded-xl border ${profileSaved ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
-          <div className={`text-2xl mb-1 ${profileSaved ? 'text-green-600' : 'text-gray-400'}`}>
+          <div className={`text-2xl mb-1 ${profileSaved ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'}`}>
             {profileSaved ? (
               <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             ) : (
@@ -1010,7 +1010,7 @@ const SpecialistOnboarding: React.FC = () => {
           <p className="text-xs font-medium text-gray-700 dark:text-gray-300">{t('onboarding.profileLabel') || 'Profile'}</p>
         </div>
         <div className={`p-4 rounded-xl border ${serviceSaved ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
-          <div className={`text-2xl mb-1 ${serviceSaved ? 'text-green-600' : 'text-gray-400'}`}>
+          <div className={`text-2xl mb-1 ${serviceSaved ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'}`}>
             {serviceSaved ? (
               <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             ) : (
@@ -1020,7 +1020,7 @@ const SpecialistOnboarding: React.FC = () => {
           <p className="text-xs font-medium text-gray-700 dark:text-gray-300">{t('onboarding.serviceLabel') || 'Service'}</p>
         </div>
         <div className={`p-4 rounded-xl border ${scheduleSaved ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
-          <div className={`text-2xl mb-1 ${scheduleSaved ? 'text-green-600' : 'text-gray-400'}`}>
+          <div className={`text-2xl mb-1 ${scheduleSaved ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'}`}>
             {scheduleSaved ? (
               <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             ) : (
@@ -1069,7 +1069,7 @@ const SpecialistOnboarding: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-start sm:items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-2xl">
         {/* Card */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 sm:p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 sm:p-8">
           {/* Progress */}
           {renderProgressBar()}
 

@@ -77,15 +77,16 @@
   }
 
   .dark {
-    /* Dark theme variables */
-    --bg-primary: 17 24 39;
-    --bg-secondary: 30 41 59;
-    --bg-tertiary: 51 65 85;
-    --text-primary: 248 250 252;
-    --text-secondary: 203 213 225;
-    --text-tertiary: 148 163 184;
-    --border-primary: 71 85 105;
-    --border-secondary: 51 65 85;
+    /* Dark theme variables — one consistent gray elevation scale:
+       body = gray-950, surface = gray-900, elevated = gray-800. */
+    --bg-primary: 17 24 39;     /* surface  (gray-900) */
+    --bg-secondary: 3 7 18;     /* body bg  (gray-950) */
+    --bg-tertiary: 31 41 55;    /* elevated (gray-800) */
+    --text-primary: 243 244 246;   /* gray-100 */
+    --text-secondary: 209 213 219; /* gray-300 */
+    --text-tertiary: 156 163 175;  /* gray-400 */
+    --border-primary: 31 41 55;    /* gray-800 */
+    --border-secondary: 17 24 39;  /* gray-900 */
     
     /* Dark theme shadows */
     --shadow-primary: 0 4px 14px 0 rgb(59 151 242 / 0.25);
@@ -103,13 +104,23 @@
   }
 
   * {
-    @apply border-gray-200;
+    /* Default border colour follows the theme token, so elements that set
+       only `border` (no explicit colour) stay correct in dark mode too.
+       Explicit border-* utilities still override this. */
+    border-color: rgb(var(--border-primary));
   }
 
   html {
     @apply scroll-smooth;
     /* Prevent horizontal scroll on mobile */
     overflow-x: hidden;
+    /* Always render the vertical scrollbar track so the layout width is constant
+       whether or not the page overflows. Without this, the scrollbar appearing
+       can shrink the width across a responsive breakpoint (e.g. the hero photo
+       toggling at lg), changing the height, toggling the scrollbar again — a
+       reflow "jitter" loop that pins the main thread and freezes scrolling. */
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
     /* Force mobile viewport to use device width */
     width: 100%;
     height: 100%;
@@ -175,7 +186,7 @@
   }
 
   /* Sticky controls helper */
-  .sticky-controls { position: sticky; top: 64px; z-index: var(--z-sticky); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid rgb(var(--border-primary) / 0.6); background-color: rgb(var(--bg-primary) / 0.8); }
+  .sticky-controls { position: sticky; top: 64px; z-index: var(--z-sticky); border-bottom: 1px solid rgb(var(--border-primary)); background-color: rgb(var(--bg-primary)); }
 
   /* Loading animation */
   @keyframes shimmer {
@@ -228,37 +239,30 @@
   .density-comfortable { --control-px: 16px; --control-py: 10px; }
   .density-compact { --control-px: 12px; --control-py: 6px; }
 
-  /* Button Components - Modern Glass Morphism Style */
+  /* Button Components — outline language: solid primary, bordered secondary */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500 disabled:pointer-events-none disabled:opacity-50;
     padding: var(--control-py) var(--control-px);
   }
 
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 active:bg-primary-800;
-    box-shadow: 0 4px 14px 0 rgba(59, 151, 242, 0.3);
-  }
-
-  .btn-primary:hover {
-    box-shadow: 0 6px 20px 0 rgba(59, 151, 242, 0.4);
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
   }
 
   .btn-secondary {
-    @apply btn bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-primary-500 backdrop-blur-sm;
+    @apply btn bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:border-gray-300 hover:bg-gray-50 dark:hover:border-gray-700 dark:hover:bg-gray-800;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100 focus:ring-2 focus:ring-gray-500;
+    @apply btn bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100;
   }
 
   .btn-success {
-    @apply btn bg-success-500 text-white hover:bg-success-600 focus:ring-2 focus:ring-success-500;
-    box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.3);
+    @apply btn bg-success-600 text-white hover:bg-success-700;
   }
 
   .btn-error {
-    @apply btn bg-error-500 text-white hover:bg-error-600 focus:ring-2 focus:ring-error-500;
-    box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.3);
+    @apply btn bg-error-600 text-white hover:bg-error-700;
   }
 
   /* Button Sizes */
@@ -266,45 +270,39 @@
   .btn-lg { @apply text-base; height: var(--control-h-lg); }
   .btn-xl { @apply text-lg font-semibold; height: calc(var(--control-h-lg) + 8px); }
 
-  /* Input Components */
+  /* Input Components — flat, bordered */
   .input {
-    @apply w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 text-sm font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 backdrop-blur-sm transition-all duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:bg-white dark:hover:bg-gray-800;
-    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100/50 dark:disabled:bg-gray-900/50;
+    @apply w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors duration-150;
+    @apply focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-900;
     padding: var(--control-py) var(--control-px);
     height: var(--control-h-md);
   }
 
   .input-error {
-    @apply border-error-500 focus:border-transparent focus:ring-error-500;
+    @apply border-error-500 focus:border-error-500 focus:ring-error-500/30;
   }
 
   .input-with-icon {
     @apply pl-10;
   }
 
-  /* Card Components */
+  /* Card Components — solid surface, 1px border, no resting shadow */
   .card {
-    @apply bg-white/80 dark:bg-gray-800/80 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-200;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+    @apply bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 transition-colors duration-150;
   }
 
   .card:hover {
-    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
-    @apply -translate-y-0.5;
+    @apply border-gray-300 dark:border-gray-700;
   }
 
   .card-interactive {
-    @apply cursor-pointer hover:scale-[1.02] hover:-translate-y-1;
-    transition: all 0.2s ease-in-out;
-  }
-
-  .card-interactive:hover {
-    box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.15);
+    @apply cursor-pointer hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50;
+    @apply px-6 py-4 border-b border-gray-200 dark:border-gray-800;
   }
 
   .card-body {
@@ -312,7 +310,7 @@
   }
 
   .card-footer {
-    @apply px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-200/50 dark:border-gray-700/50 rounded-b-xl backdrop-blur-sm;
+    @apply px-6 py-4 bg-gray-50 dark:bg-gray-900/60 border-t border-gray-200 dark:border-gray-800 rounded-b-xl;
   }
 
   /* Badge Components */
@@ -346,14 +344,12 @@
 
   /* Modal Components */
   .modal-overlay {
-    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-gray-900/40 z-50 flex items-center justify-center p-4;
   }
 
   .modal-content {
-    @apply bg-white/95 dark:bg-gray-900/95 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 max-w-md w-full max-h-[90vh] overflow-y-auto;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 max-w-md w-full max-h-[90vh] overflow-y-auto;
+    box-shadow: 0 16px 48px -12px rgba(15, 23, 42, 0.25);
     animation: scale-in 0.2s ease-out;
   }
 
@@ -375,8 +371,8 @@
 
   /* Toast Components */
   .toast {
-    @apply bg-white/90 dark:bg-gray-800/90 border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-gray-100 rounded-xl p-4 flex items-start gap-3 max-w-sm backdrop-blur-md;
-    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 rounded-xl p-4 flex items-start gap-3 max-w-sm;
+    box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.2);
     animation: slide-in 0.3s ease-out;
   }
 
@@ -524,32 +520,27 @@
     @apply text-primary-600;
   }
 
-  /* Modern Glass Effects */
+  /* Legacy "glass" utilities — redefined SOLID for the outline language.
+     (Real glass now lives only on .glass-card-float; see glass.css.) */
   .glass-effect {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    background: #ffffff;
+    border: 1px solid rgb(226 232 240);
   }
 
   .dark .glass-effect {
-    background: rgba(17, 25, 40, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    background: rgb(17 24 39);
+    border: 1px solid rgb(31 41 55);
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.75rem;
   }
 
   .dark .glass-card {
-    background: rgba(31, 41, 55, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgb(17 24 39);
+    border: 1px solid rgb(31 41 55);
   }
 
   /* Removed gradient backgrounds - now using solid colors from theme */
@@ -754,19 +745,19 @@
   }
 
   .bg-surface {
-    @apply bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-white/20 dark:border-gray-700/50;
+    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800;
   }
 
   .bg-surface-hover {
-    @apply bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100/70 dark:hover:bg-gray-700/50;
+    @apply bg-gray-50 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-800;
   }
 
   .bg-surface-secondary {
-    @apply bg-gray-50 dark:bg-gray-800/50 backdrop-blur-sm;
+    @apply bg-gray-50 dark:bg-gray-800/60;
   }
 
   .bg-surface-tertiary {
-    @apply bg-gray-100/50 dark:bg-gray-800/30;
+    @apply bg-gray-100 dark:bg-gray-800/40;
   }
 
   .text-primary-content {
@@ -1075,21 +1066,21 @@
     animation: fadeIn 0.2s ease-out;
   }
 
-  /* Smooth micro-interactions for specialist pages */
+  /* Smooth micro-interactions for specialist pages — outline-friendly */
   .smooth-hover {
-    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+    @apply transition-colors duration-150 ease-out hover:bg-gray-50 dark:hover:bg-gray-800/50;
   }
 
   .smooth-press {
-    @apply transition-transform duration-100 active:scale-95;
+    @apply transition-transform duration-100 active:scale-[0.98];
   }
 
   .smooth-button {
-    @apply transition-all duration-200 ease-out hover:shadow-md active:scale-95;
+    @apply transition-colors duration-150 ease-out active:scale-[0.98];
   }
 
   .smooth-card {
-    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+    @apply transition-colors duration-150 ease-out hover:border-gray-300 dark:hover:border-gray-700;
   }
 
   .smooth-fade-in-up {
@@ -1162,7 +1153,7 @@
 
   /* Smooth stat counters */
   .stat-card {
-    @apply smooth-card bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200/50 dark:border-gray-700/50;
+    @apply bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-700;
   }
 
   /* Better focus states */

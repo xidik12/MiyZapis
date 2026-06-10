@@ -283,7 +283,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
                 placeholder={t('admin.users.searchPlaceholder')}
@@ -297,7 +297,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
           {/* Filters */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-5 h-5 text-gray-400" />
+              <FunnelIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               <select
                 value={userTypeFilter}
                 onChange={(e) => setUserTypeFilter(e.target.value as any)}

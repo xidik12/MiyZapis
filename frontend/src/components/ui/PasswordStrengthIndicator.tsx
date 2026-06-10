@@ -77,7 +77,7 @@ const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
                 {req.met ? (
                   <CheckIcon className="h-4 w-4 text-green-500" />
                 ) : (
-                  <XMarkIcon className="h-4 w-4 text-gray-400" />
+                  <XMarkIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 )}
                 <span
                   className={`text-xs ${

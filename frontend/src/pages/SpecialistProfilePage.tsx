@@ -282,7 +282,7 @@ const SpecialistProfilePage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sticky compact header */}
       {specialist && (
-        <div className="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200/60 dark:border-gray-700/60 px-2 sm:px-6 lg:px-8 py-2">
+        <div className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200/60 dark:border-gray-800 px-2 sm:px-6 lg:px-8 py-2">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <Avatar src={specialist.user?.avatar || specialist.avatar} alt={specialist.user?.firstName} size="sm" />
@@ -626,7 +626,7 @@ const SpecialistProfilePage: React.FC = () => {
 
             {/* Lightbox */}
             {lightbox.open && lightbox.images.length > 0 && (
-              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
+              <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
                 <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
                   <button className="absolute -top-10 right-0 text-white/80 hover:text-white" onClick={() => setLightbox({ ...lightbox, open: false })}>✕</button>
                   <img src={getAbsoluteImageUrl(lightbox.images[lightbox.index])} alt="Portfolio" className="w-full h-auto rounded-xl shadow-2xl" />
@@ -773,7 +773,7 @@ const SpecialistProfilePage: React.FC = () => {
                   <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="break-words">{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic flex items-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic flex items-center">
                       <InformationCircleIcon className="w-3 h-3 mr-1 flex-shrink-0" />
                       {t('location.exactAddressAfterBooking') || 'Exact address provided after booking confirmation'}
                     </p>

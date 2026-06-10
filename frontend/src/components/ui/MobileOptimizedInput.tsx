@@ -41,7 +41,7 @@ export const MobileOptimizedInput = forwardRef<HTMLInputElement, MobileOptimized
           {/* Left Icon */}
           {leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-gray-400">
+              <div className="h-5 w-5 text-gray-500 dark:text-gray-400">
                 {leftIcon}
               </div>
             </div>
@@ -55,7 +55,7 @@ export const MobileOptimizedInput = forwardRef<HTMLInputElement, MobileOptimized
             className={clsx(
               // Base styles
               'w-full border border-gray-200 dark:border-gray-700 rounded-xl',
-              'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-900 dark:text-gray-100',
+              'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
               'placeholder:text-gray-500 dark:placeholder:text-gray-400',
               'hover:bg-white dark:hover:bg-gray-800 transition-all duration-200',
 
@@ -106,7 +106,7 @@ export const MobileOptimizedInput = forwardRef<HTMLInputElement, MobileOptimized
           {/* Right Icon */}
           {rightIcon && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-gray-400">
+              <div className="h-5 w-5 text-gray-500 dark:text-gray-400">
                 {rightIcon}
               </div>
             </div>

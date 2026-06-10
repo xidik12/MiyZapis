@@ -239,14 +239,15 @@ const HomePage: React.FC = () => {
         .mz-heading {
           font-family: 'Outfit', 'Inter', system-ui, sans-serif;
         }
-        .reveal-up {
-          opacity: 0;
-          transform: translateY(32px);
-          transition: opacity 0.7s cubic-bezier(.22,.61,.36,1), transform 0.7s cubic-bezier(.22,.61,.36,1);
+        /* Content is visible by default; the scroll reveal only ENHANCES it,
+           so sections never ship blank in a headless render or hidden tab. */
+        .reveal-up { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: no-preference) {
+          .reveal-up.visible { animation: reveal-rise 0.6s cubic-bezier(.22,.61,.36,1); }
         }
-        .reveal-up.visible {
-          opacity: 1;
-          transform: translateY(0);
+        @keyframes reveal-rise {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .hero-gradient-text {
           background: linear-gradient(135deg, #ffffff 0%, #bae6fd 40%, #7dd3fc 70%, #ffffff 100%);
@@ -313,105 +314,114 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  HERO SECTION — Aurora mesh gradient background               */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden min-h-[92vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
-        {/* Aurora mesh background */}
-        <div className="absolute inset-0" style={{
-          background: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 30%, #0284C7 50%, #0ea5e9 75%, #0c4a6e 100%)',
-        }}>
-          {/* Animated gradient orbs */}
-          <div className="absolute w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] rounded-full pointer-events-none"
-            style={{
-              top: '-10%', right: '-5%',
-              background: 'radial-gradient(circle, rgba(14,165,233,0.6) 0%, transparent 70%)',
-              animation: 'aurora-drift 12s ease-in-out infinite',
-              filter: 'blur(60px)',
-            }}
-          />
-          <div className="absolute w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full pointer-events-none"
-            style={{
-              bottom: '-10%', left: '-5%',
-              background: 'radial-gradient(circle, rgba(5,150,105,0.4) 0%, transparent 70%)',
-              animation: 'aurora-drift-2 15s ease-in-out infinite',
-              filter: 'blur(60px)',
-            }}
-          />
-          <div className="absolute w-[350px] h-[350px] rounded-full pointer-events-none hidden lg:block"
-            style={{
-              top: '30%', left: '40%',
-              background: 'radial-gradient(circle, rgba(56,189,248,0.35) 0%, transparent 70%)',
-              animation: 'aurora-drift-3 18s ease-in-out infinite',
-              filter: 'blur(50px)',
-            }}
-          />
-          {/* Subtle noise overlay for texture */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
-          }} />
-        </div>
+      <section className="relative w-full overflow-hidden bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900">
+        <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 sm:py-16 lg:py-20 prevent-overflow">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            {/* Left: copy + search */}
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-800 px-3.5 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 mb-6">
+                <span aria-hidden="true">🇺🇦</span>
+                <span className="text-primary-700 dark:text-primary-300">{t('hero.badge')}</span>
+              </span>
 
-        <div className="relative w-full max-w-7xl mx-auto mobile-container py-16 sm:py-20 lg:py-24 prevent-overflow">
-          <div className="text-center w-full prevent-overflow">
-            {/* Main heading */}
-            <h1 className="mz-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 leading-tight animate-fade-in px-2 sm:px-0 text-white">
-              {t('hero.title1')}
-              <br />
-              <span className="hero-gradient-text">{t('hero.title2')}</span>
-            </h1>
+              <h1 className="mz-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-gray-900 dark:text-white mb-5 text-balance">
+                {t('hero.title1')}.
+                <span className="block text-primary-600 dark:text-primary-400">{t('hero.title2')}.</span>
+              </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-sky-100/90 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
-              {t('hero.subtitle')}
-            </p>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-8 max-w-lg">
+                {t('hero.subtitle')}
+              </p>
 
-            {/* Search Bar */}
-            <div className="w-full max-w-2xl mx-auto mb-8 px-4 sm:px-0">
-              <div className="relative">
+              <div className="w-full max-w-xl mb-7">
                 <SearchBar
                   placeholder={t('hero.searchPlaceholder')}
                   onSearch={handleSearch}
-                  className="text-base sm:text-lg"
+                  className="text-base"
                 />
+              </div>
+
+              {/* Trust row */}
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2.5">
+                  {[
+                    { i: 'А', c: 'bg-primary-100 text-primary-700' },
+                    { i: 'О', c: 'bg-amber-100 text-amber-700' },
+                    { i: 'М', c: 'bg-emerald-100 text-emerald-700' },
+                    { i: 'Д', c: 'bg-rose-100 text-rose-700' },
+                  ].map((a, idx) => (
+                    <span
+                      key={idx}
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-white dark:ring-gray-950 text-xs font-semibold ${a.c}`}
+                    >
+                      {a.i}
+                    </span>
+                  ))}
+                </div>
+                <div>
+                  <div className="flex items-center gap-0.5 text-amber-400" aria-hidden="true">
+                    {[0, 1, 2, 3, 4].map((s) => (
+                      <StarIcon key={s} className="w-4 h-4" active />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('hero.trustedBy')}</p>
+                </div>
               </div>
             </div>
 
-            {/* Quick category pills */}
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4 sm:px-0">
-              <Link
-                to="/search?category=beauty-wellness"
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-250 text-sm sm:text-base whitespace-nowrap text-white/90 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/10"
-                style={{ backdropFilter: 'blur(12px)' }}
-              >
-                {t('category.beautyWellness')}
-              </Link>
-              <Link
-                to="/search?category=health-fitness"
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-250 text-sm sm:text-base whitespace-nowrap text-white/90 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/10"
-                style={{ backdropFilter: 'blur(12px)' }}
-              >
-                {t('category.healthFitness')}
-              </Link>
-              <Link
-                to="/search?category=home-services"
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-250 text-sm sm:text-base whitespace-nowrap text-white/90 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/10"
-                style={{ backdropFilter: 'blur(12px)' }}
-              >
-                {t('category.homeServices')}
-              </Link>
+            {/* Right: photo + floating specialist card */}
+            <div className="relative hidden lg:block">
+              <div className="relative aspect-[4/5] max-h-[560px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
+                <img
+                  src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80"
+                  alt={t('hero.title1')}
+                  loading="eager"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://picsum.photos/seed/miyzapis-professional/900/1120'; }}
+                />
+              </div>
+
+              {topSpecialists.length > 0 && (() => {
+                const sp: any = topSpecialists[0];
+                const name = getSpecialistName(sp);
+                return (
+                  <div className="absolute -bottom-5 left-5 right-5 max-w-[340px] rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.25)] p-3 flex items-center gap-3">
+                    {sp.avatar ? (
+                      <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <span className="h-11 w-11 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-semibold flex-shrink-0">
+                        {name?.charAt(0) || 'M'}
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{name}</p>
+                      {sp.specialties && (sp.specialties as string[])[0] && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{(sp.specialties as string[])[0]}</p>
+                      )}
+                      {sp.averageRating != null && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <StarIcon className="w-3.5 h-3.5 text-amber-400" active />
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                            {(sp.averageRating as number).toFixed(1)}
+                          </span>
+                          {sp.reviewCount != null && (
+                            <span className="text-xs text-gray-400">({sp.reviewCount as number})</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
-        </div>
-
-        {/* Wave divider at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto" preserveAspectRatio="none">
-            <path d="M0 40C240 70 480 80 720 60C960 40 1200 10 1440 30V80H0V40Z" className="fill-[#F0F9FF] dark:fill-gray-900" />
-          </svg>
         </div>
       </section>
 
       {/* ============================================================ */}
       {/*  CATEGORIES SECTION                                           */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-900">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
         <div>
           <div
             ref={catReveal.ref}
@@ -448,7 +458,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 border-l-4 border-l-sky-500/50 p-4 min-[400px]:p-5 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-0.5"
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                       >
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-sky-100 dark:bg-sky-900/30">
                           <CategoryIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
@@ -481,7 +491,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/60 border-l-4 border-l-sky-500/50 p-6 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/8 hover:-translate-y-1"
+                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-800 p-6 transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                         style={{ transitionDelay: `${idx * 50}ms` }}
                       >
                         <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 bg-sky-100 dark:bg-sky-900/30">
@@ -514,7 +524,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  HOW IT WORKS — Connected timeline                            */}
       {/* ============================================================ */}
-      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900/80 w-full prevent-overflow">
+      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
         <div
           ref={howReveal.ref}
           className={`max-w-7xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
@@ -611,7 +621,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  POPULAR SERVICES                                             */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
         <div>
           <div
             ref={servicesReveal.ref}
@@ -645,12 +655,12 @@ const HomePage: React.FC = () => {
                   <Link
                     key={service.id}
                     to={`/booking/${service.id}`}
-                    className="group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700/60 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/6 hover:-translate-y-0.5"
+                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-600"
                   >
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                       {service.name}
                     </h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mb-3 truncate">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate">
                       {service.specialist?.user?.firstName} {service.specialist?.user?.lastName}
                       {service.specialist?.isVerified && (
                         <CheckBadgeIcon className="w-3.5 h-3.5 inline ml-1 text-sky-500" />
@@ -663,7 +673,7 @@ const HomePage: React.FC = () => {
                           {(service.specialist?.rating ?? service.rating ?? 0).toFixed(1)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
+                      <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                         <span className="flex items-center text-xs">
                           <ClockIcon className="w-3.5 h-3.5 mr-1" />
                           {service.duration} {t('time.minutes')}
@@ -739,7 +749,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={specialist.id as string}
                     to={`/specialist/${specialist.id}`}
-                    className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60 rounded-xl overflow-hidden transition-all duration-250 hover:shadow-xl hover:shadow-sky-500/8 hover:-translate-y-1"
+                    className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                   >
                     {/* Image + overlay gradient */}
                     <div className="relative w-full h-44 bg-gradient-to-br from-sky-100 to-sky-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center overflow-hidden">
@@ -778,13 +788,13 @@ const HomePage: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {specialist.reviewCount != null && (
-                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               ({specialist.reviewCount as number} {t('community.comments') || 'reviews'})
                             </span>
                           )}
                         </div>
                         {specialist.city && (
-                          <span className="text-xs text-gray-400 dark:text-gray-500">{specialist.city as string}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{specialist.city as string}</span>
                         )}
                       </div>
                     </div>
@@ -793,7 +803,7 @@ const HomePage: React.FC = () => {
               })}
             </div>
           ) : (
-            <p className="text-center text-gray-400 dark:text-gray-500 py-8">
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
               {t('featuredSpecialists.noSpecialists') || 'No specialists found yet. Be the first to join!'}
             </p>
           )}
@@ -801,7 +811,7 @@ const HomePage: React.FC = () => {
           <div className="text-center mt-10">
             <Link
               to="/search"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/25 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white transition-all duration-250"
               style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
             >
               {t('featuredSpecialists.viewAll')}
@@ -814,7 +824,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  BROWSE BY CITY                                               */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
         <div>
           <div
             ref={citiesReveal.ref}
@@ -849,9 +859,9 @@ const HomePage: React.FC = () => {
                     <Link
                       key={`${city.city}-${city.state}`}
                       to={`/search?location=${encodeURIComponent(city.city)}`}
-                      className={`group flex-none w-[160px] snap-start rounded-xl border p-4 transition-all duration-250 hover:shadow-lg hover:-translate-y-0.5 ${
+                      className={`group flex-none w-[160px] snap-start rounded-xl border p-4 transition-all duration-250 hover:border-gray-300 dark:hover:border-gray-700 ${
                         hasSpecialists
-                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/60 hover:shadow-sky-500/8'
+                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-800'
                           : 'bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/40 opacity-75 hover:opacity-100'
                       }`}
                     >
@@ -863,7 +873,7 @@ const HomePage: React.FC = () => {
                         <MapPinIcon className={`w-5 h-5 ${
                           hasSpecialists
                             ? 'text-sky-600 dark:text-sky-400'
-                            : 'text-gray-400 dark:text-gray-500'
+                            : 'text-gray-500 dark:text-gray-400'
                         }`} />
                       </div>
                       <h3 className={`text-sm font-semibold mb-1 group-hover:text-sky-600 transition-colors truncate ${
@@ -874,12 +884,12 @@ const HomePage: React.FC = () => {
                         {city.city}
                       </h3>
                       {city.state && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 truncate">{city.state}{city.country ? `, ${city.country}` : ''}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">{city.state}{city.country ? `, ${city.country}` : ''}</p>
                       )}
                       <span className={`text-xs font-medium ${
                         hasSpecialists
                           ? 'text-sky-600 dark:text-sky-400'
-                          : 'text-gray-400 dark:text-gray-500'
+                          : 'text-gray-500 dark:text-gray-400'
                       }`}>
                         {city.specialistsCount} {t('browseByCities.specialists')}
                       </span>
@@ -896,9 +906,9 @@ const HomePage: React.FC = () => {
                     <Link
                       key={`${city.city}-${city.state}`}
                       to={`/search?location=${encodeURIComponent(city.city)}`}
-                      className={`group rounded-xl border p-5 transition-all duration-250 hover:shadow-lg hover:-translate-y-1 ${
+                      className={`group rounded-xl border p-5 transition-all duration-250 hover:border-gray-300 dark:hover:border-gray-700 ${
                         hasSpecialists
-                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/60 hover:shadow-sky-500/8'
+                          ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-800'
                           : 'bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/40 opacity-75 hover:opacity-100'
                       }`}
                       style={{ transitionDelay: `${idx * 40}ms` }}
@@ -912,7 +922,7 @@ const HomePage: React.FC = () => {
                           <MapPinIcon className={`w-5 h-5 ${
                             hasSpecialists
                               ? 'text-sky-600 dark:text-sky-400'
-                              : 'text-gray-400 dark:text-gray-500'
+                              : 'text-gray-500 dark:text-gray-400'
                           }`} />
                         </div>
                         <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 transition-all duration-200 group-hover:translate-x-0.5 mt-1" />
@@ -925,12 +935,12 @@ const HomePage: React.FC = () => {
                         {city.city}
                       </h3>
                       {city.state && (
-                        <p className="text-sm text-gray-400 dark:text-gray-500 mb-2">{city.state}{city.country ? `, ${city.country}` : ''}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{city.state}{city.country ? `, ${city.country}` : ''}</p>
                       )}
                       <span className={`font-semibold text-xs px-2.5 py-0.5 rounded-full ${
                         hasSpecialists
                           ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20'
-                          : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/20'
+                          : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/20'
                       }`}>
                         {city.specialistsCount} {t('browseByCities.specialists')}
                       </span>
@@ -971,7 +981,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  COMMUNITY PREVIEW                                            */}
       {/* ============================================================ */}
-      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-[#F0F9FF] dark:bg-gray-800">
+      <section className="py-12 sm:py-16 lg:py-20 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
         <div>
           <div
             ref={commReveal.ref}
@@ -988,7 +998,7 @@ const HomePage: React.FC = () => {
               </div>
               <Link
                 to="/community"
-                className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/20 self-start sm:self-auto"
+                className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all duration-250 hover:shadow-lg self-start sm:self-auto"
                 style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
               >
                 {t('community.viewAll')}
@@ -1016,7 +1026,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={post.id}
                     to={`/community/post/${post.id}`}
-                    className="group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700/60 transition-all duration-250 hover:shadow-lg hover:shadow-sky-500/6 hover:-translate-y-0.5"
+                    className="group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-800 transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                   >
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -1036,7 +1046,7 @@ const HomePage: React.FC = () => {
                     <h3 className="font-semibold text-gray-900 dark:text-white mt-3 line-clamp-2 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
                       {post.excerpt}
                     </p>
                     {post.type === 'SALE' && post.price != null && (
@@ -1044,7 +1054,7 @@ const HomePage: React.FC = () => {
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
                       </p>
                     )}
-                    <div className="flex justify-between mt-4 text-xs text-gray-400 dark:text-gray-500">
+                    <div className="flex justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
                       <span>{post.author.firstName}</span>
                       <span>
                         {post.likeCount} {t('community.likes')} &middot; {post.commentCount} {t('community.comments')}
@@ -1076,7 +1086,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       <section id="for-specialists" className="relative py-14 sm:py-16 lg:py-24 w-full prevent-overflow overflow-hidden">
         {/* Gradient background */}
-        <div className="absolute inset-0" style={{
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{
           background: 'linear-gradient(135deg, #0c4a6e 0%, #0284C7 40%, #0369a1 70%, #0c4a6e 100%)',
         }}>
           <div className="absolute w-[200px] sm:w-[300px] md:w-[400px] h-[200px] sm:h-[300px] md:h-[400px] rounded-full pointer-events-none"
@@ -1127,7 +1137,7 @@ const HomePage: React.FC = () => {
 
               <Link
                 to="/auth/register?type=specialist"
-                className="inline-flex items-center gap-2 bg-white text-sky-700 px-7 py-3 rounded-xl font-semibold transition-all duration-250 hover:bg-sky-50 hover:shadow-lg hover:shadow-white/15 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 bg-white text-sky-700 px-7 py-3 rounded-xl font-semibold transition-all duration-250 hover:bg-sky-50 hover:shadow-lg"
               >
                 {t('forSpecialists.joinButton')}
                 <ArrowRightIcon className="w-4 h-4" />
@@ -1266,7 +1276,7 @@ const HomePage: React.FC = () => {
               {user ? (
                 <Link
                   to="/search"
-                  className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250 hover:shadow-xl hover:shadow-sky-500/25 hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250"
                   style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
                 >
                   {t('cta.browseServices')}
@@ -1276,14 +1286,14 @@ const HomePage: React.FC = () => {
                 <>
                   <Link
                     to="/auth/register"
-                    className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250 hover:shadow-xl hover:shadow-sky-500/25 hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center gap-2 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all duration-250"
                     style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)' }}
                   >
                     {t('cta.signUpCustomer')}
                   </Link>
                   <Link
                     to="/auth/register?type=specialist"
-                    className="inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold border-2 border-sky-200 dark:border-sky-700 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-all duration-250 hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold border-2 border-sky-200 dark:border-sky-700 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-all duration-250"
                   >
                     {t('cta.joinSpecialist')}
                   </Link>

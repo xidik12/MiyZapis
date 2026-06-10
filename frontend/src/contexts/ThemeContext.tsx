@@ -15,30 +15,21 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
-
-  // Initialize theme on mount
-  useEffect(() => {
-    const initializeTheme = () => {
-      try {
-        // Check if theme is stored in localStorage
-        const stored = localStorage.getItem('booking-theme');
-        if (stored === 'light' || stored === 'dark') {
-          setTheme(stored);
-          return;
-        }
-        
-        // Check system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          setTheme('dark');
-        }
-      } catch (error) {
-        console.warn('Failed to initialize theme:', error);
+  // Initialize synchronously from storage / system so a saved preference
+  // survives reloads and navigation. (The previous mount-effect approach
+  // raced with the apply effect and reverted to light under StrictMode.)
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem('booking-theme');
+      if (stored === 'light' || stored === 'dark') return stored;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
       }
-    };
-
-    initializeTheme();
-  }, []);
+    } catch {
+      /* localStorage unavailable — fall through to light */
+    }
+    return 'light';
+  });
 
   useEffect(() => {
     try {
@@ -49,7 +40,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       
       // Add current theme class
       root.classList.add(theme);
-      
+
+      // Native form controls, scrollbars, etc. follow the theme
+      root.style.colorScheme = theme;
+
       // Store theme preference
       localStorage.setItem('booking-theme', theme);
       

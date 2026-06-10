@@ -146,7 +146,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl touch-manipulation"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl touch-manipulation"
               aria-label="Close modal"
             >
               <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -1062,9 +1062,9 @@ const SpecialistSchedule: React.FC = () => {
                         </div>
                         <div className="ml-2">
                           {expanded ? (
-                            <ChevronUpIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                            <ChevronUpIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                           ) : (
-                            <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                            <ChevronDownIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                           )}
                         </div>
                       </button>

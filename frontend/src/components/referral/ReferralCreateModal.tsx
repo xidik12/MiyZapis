@@ -122,7 +122,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>

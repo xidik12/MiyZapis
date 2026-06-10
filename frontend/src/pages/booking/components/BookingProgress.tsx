@@ -35,7 +35,7 @@ const BookingProgress: React.FC<BookingProgressProps> = ({ steps, currentStep })
                     ? 'text-green-600 dark:text-green-400 font-medium'
                     : index === currentStep
                     ? 'text-primary-600 dark:text-primary-400 font-bold'
-                    : 'text-gray-400 dark:text-gray-500 font-medium'
+                    : 'text-gray-500 dark:text-gray-400 font-medium'
                 }`}
               >
                 {step.title}

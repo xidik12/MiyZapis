@@ -93,7 +93,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             <p className="text-gray-500 dark:text-gray-400 mb-2">
               {t('booking.noAvailableDates')}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {t('booking.noSlotsInNext30Days')}
             </p>
           </div>

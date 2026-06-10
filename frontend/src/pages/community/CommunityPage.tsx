@@ -529,7 +529,7 @@ const CommunityPage: React.FC = () => {
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -636,7 +636,7 @@ const CommunityPage: React.FC = () => {
               onChange={(e) => setMinPrice(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePriceRangeApply()}
             />
-            <span className="text-gray-400">&mdash;</span>
+            <span className="text-gray-500 dark:text-gray-400">&mdash;</span>
             <input
               type="number"
               min="0"
@@ -676,9 +676,9 @@ const CommunityPage: React.FC = () => {
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               {activeFilter === 'SAVED' ? (
-                <BookmarkIcon className="w-8 h-8 text-gray-400" />
+                <BookmarkIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               ) : (
-                <ChatBubbleLeftIcon className="w-8 h-8 text-gray-400" />
+                <ChatBubbleLeftIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               )}
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -877,7 +877,7 @@ const CommunityPage: React.FC = () => {
                         }}
                       />
                       {post.images.length > 1 && (
-                        <span className="block text-center text-xs text-gray-400 mt-1">
+                        <span className="block text-center text-xs text-gray-500 dark:text-gray-400 mt-1">
                           +{post.images.length - 1}
                         </span>
                       )}

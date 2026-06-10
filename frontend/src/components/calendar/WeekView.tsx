@@ -205,7 +205,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       : 'hover:border-primary-300 hover:bg-primary-50/50 dark:hover:border-primary-700 dark:hover:bg-primary-900/10 cursor-pointer'
                   }`}
                 >
-                  <div className="text-[10px] text-gray-400 dark:text-gray-500">
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400">
                     {dayIsPast ? 'No activity' : 'Add availability'}
                   </div>
                 </button>
@@ -215,7 +215,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
               {!dayIsPast && (available.length > 0 || blocked.length > 0) && (
                 <button
                   onClick={() => onTimeSlotClick?.(day, '09:00')}
-                  className="w-full py-1 text-center text-[10px] text-gray-400 dark:text-gray-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                  className="w-full py-1 text-center text-[10px] text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
                 >
                   + Add slot
                 </button>

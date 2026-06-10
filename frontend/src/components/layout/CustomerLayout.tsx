@@ -164,7 +164,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         ${isCollapsed ? 'w-16' : 'w-72'}
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         transition-all duration-300 ease-in-out
-        bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200/20 dark:border-gray-700/20
+        bg-white dark:bg-gray-900 border-r border-gray-200/20 dark:border-gray-700/20
         shadow-xl lg:shadow-none
       `}>
         {/* Logo section */}
@@ -240,7 +240,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 className={`
                   flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
                   ${isActive
-                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                    ? 'bg-primary-600 text-white'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
@@ -284,7 +284,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm hover:text-primary-500 dark:hover:text-primary-400 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
@@ -312,7 +312,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                   </option>
                 ))}
               </select>
-              <ChevronDownIcon className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+              <ChevronDownIcon className="absolute right-3 top-2.5 w-4 h-4 text-gray-500 dark:text-gray-400 pointer-events-none" />
             </div>
           )}
 

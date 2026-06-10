@@ -83,17 +83,11 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="glass-effect sticky top-0 z-50 transition-all duration-300 w-full"
-      style={{
-        backgroundColor: 'rgb(var(--bg-primary) / 0.8)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgb(var(--border-primary) / 0.2)',
-      }}
-    >
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
-        <div className="flex justify-between items-center h-14 xs:h-16 sm:h-16">
+        <div className="flex justify-between items-center gap-3 h-14 xs:h-16 sm:h-16">
           {/* Logo and brand */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-shrink-0">
             <Link 
               to="/" 
               className="flex items-center space-x-2 group hover:opacity-90 transition-all duration-300"
@@ -102,9 +96,9 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <Logo size="md" className="group-hover:scale-110 transition-all duration-300" />
+              <Logo size="md" className="transition-transform duration-200 group-hover:scale-105" />
               <div className="flex items-center space-x-2">
-                <span className="text-lg xs:text-xl font-bold text-primary-600 dark:text-primary-400 hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
+                <span className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white hidden xs:block transition-colors duration-200">
                   {environment.APP_NAME}
                 </span>
                 {/* <UkrainianFlag className="hidden sm:block" animated /> */}
@@ -113,7 +107,7 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Desktop navigation */}
-          <nav className="hidden sm:flex space-x-8">
+          <nav className="hidden sm:flex items-center gap-1 lg:gap-2">
             {navigationItems.map((item) => {
               if (item.isHashLink) {
                 return (
@@ -136,10 +130,10 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl transition-colors duration-150 ${
                       item.current
-                        ? 'text-primary-600 glass-card shadow-lg'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
+                        ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
+                        : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
                     } cursor-pointer`}
                   >
                     {(item as any).icon && (() => { const Icon = (item as any).icon; return <Icon className="w-4 h-4" />; })()}
@@ -152,10 +146,10 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl transition-colors duration-150 ${
                     item.current
-                      ? 'text-primary-600 glass-card shadow-lg'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
+                      ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
                   {item.icon && <item.icon className="w-4 h-4" />}
@@ -167,9 +161,9 @@ export const Header: React.FC = () => {
 
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3">
-            {/* Hide currency/language toggles on mobile and small tablets */}
-            <div className="hidden lg:flex items-center space-x-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* Currency/language toggles only on wide screens to keep the bar from overflowing */}
+            <div className="hidden xl:flex items-center space-x-2">
               <CurrencyToggle />
               <LanguageToggle />
             </div>
@@ -232,13 +226,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="hidden sm:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-xl transition-all duration-300 hover:glass-effect"
+                  className="hidden sm:flex text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 whitespace-nowrap"
+                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold hover:bg-primary-700 transition-colors duration-150 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
@@ -248,7 +242,7 @@ export const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-xl hover:glass-effect mobile-touch"
+              className="sm:hidden mobile-touch-target p-2 text-gray-500 hover:text-primary-600 transition-colors duration-150 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 mobile-touch"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-7 h-7" />
@@ -263,12 +257,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden glass-card border-t border-gray-200/20 dark:border-gray-700/20 w-full"
-          style={{
-            backgroundColor: 'rgb(var(--bg-primary) / 0.9)',
-            backdropFilter: 'blur(16px)',
-          }}
-        >
+        <div className="sm:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 w-full">
           <div className="mobile-container py-4 space-y-3 mobile-scroll">
             {navigationItems.map((item) => {
               if (item.isHashLink) {
@@ -310,8 +299,8 @@ export const Header: React.FC = () => {
                   to={item.href}
                   className={`block px-4 py-3 text-base font-semibold rounded-xl mobile-touch-target transition-colors duration-200 ${
                     item.current
-                      ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+                      ? 'text-primary-700 bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
                   {item.name}
@@ -343,7 +332,7 @@ export const Header: React.FC = () => {
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-xl text-base font-semibold hover:bg-primary-700 shadow-lg shadow-primary-500/30 mobile-touch-target transition-colors duration-200"
+                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-xl text-base font-semibold hover:bg-primary-700 mobile-touch-target transition-colors duration-200"
                 >
                   {t('nav.getStarted')}
                 </Link>

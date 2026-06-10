@@ -232,7 +232,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
             </div>
             <button
               onClick={onToggle}
-              className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -269,7 +269,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   <Icon
                     className={`
                       mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                      ${isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
                     `}
                     active={isActive}
                   />
@@ -323,7 +323,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   <Icon
                     className={`
                       mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                      ${isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
                     `}
                     active={isActive}
                   />
@@ -350,7 +350,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
               onClick={handleLogout}
               className="w-full group flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
             >
-              <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-red-500" />
+              <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500" />
               <span>Logout</span>
             </button>
           </div>
@@ -361,7 +361,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
               <p className="text-xs text-gray-500 dark:text-gray-400 cursor-default select-none transition-all duration-300 hover:text-primary-500 hover:scale-110 hover:drop-shadow-[0_0_6px_rgba(102,126,234,0.5)]">
                 {t('brand.name')} Specialist
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 v2.0.0
               </p>
             </div>

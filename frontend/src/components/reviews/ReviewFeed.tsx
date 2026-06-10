@@ -85,10 +85,10 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow-md border border-gray-200/50 dark:border-gray-700/50"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow-md border border-gray-200 dark:border-gray-800"
           >
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-              <StarIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" active />
+              <StarIcon className="w-10 h-10 text-gray-500 dark:text-gray-400" active />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {resolvedEmptyTitle}

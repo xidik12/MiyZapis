@@ -180,7 +180,7 @@ const CustomerHelpSupport: React.FC = () => {
               <div className="p-6">
                 {filteredFAQs.length === 0 ? (
                   <div className="text-center py-8">
-                    <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {t('help.noFAQsAvailable')}
                     </h3>
@@ -276,7 +276,7 @@ const CustomerHelpSupport: React.FC = () => {
 
                 {contactMethods.length === 0 ? (
                   <div className="text-center py-8">
-                    <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {t('help.noContactMethodsAvailable')}
                     </h3>

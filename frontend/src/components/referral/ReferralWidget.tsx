@@ -71,7 +71,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
     return (
       <Card className={clsx('p-6', className)}>
         <div className="text-center">
-          <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+          <GiftIcon className="h-12 w-12 text-gray-500 dark:text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {t('referral.widget.noReferrals')}
           </p>

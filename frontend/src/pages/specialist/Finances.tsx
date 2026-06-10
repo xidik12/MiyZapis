@@ -462,7 +462,7 @@ const SpecialistFinances: React.FC = () => {
           {expenses.length === 0 ? (
             <div className="p-8 text-center">
               <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                <CurrencyDollarIcon className="h-8 w-8 text-gray-400" />
+                <CurrencyDollarIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
               </div>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 {t('finances.noExpenses') || 'No expenses recorded yet'}
@@ -516,14 +516,14 @@ const SpecialistFinances: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEditExpense(expense)}
-                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                           >
                             <PencilIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleDelete(expense.id)}
                             disabled={deleting === expense.id}
-                            className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
                           >
                             {deleting === expense.id ? (
                               <ArrowPathIcon className="h-5 w-5 animate-spin" />
@@ -559,7 +559,7 @@ const SpecialistFinances: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>

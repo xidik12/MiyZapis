@@ -664,7 +664,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
-            <EyeIcon className="w-5 h-5 text-gray-400" />
+            <EyeIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -685,7 +685,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
-            <ChartBarIcon className="w-5 h-5 text-gray-400" />
+            <ChartBarIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -768,7 +768,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {booking.date}
                     </p>
                   </div>
@@ -809,7 +809,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{appointment.customerName}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{appointment.serviceName}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-400">
+                    <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                       <span>{appointment.time}</span>
                       <span>•</span>
                       <span>{appointment.duration}</span>
@@ -827,7 +827,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-all duration-200">
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200">
+                  <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200">
                     <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>

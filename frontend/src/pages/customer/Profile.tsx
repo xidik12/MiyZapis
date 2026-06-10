@@ -328,7 +328,7 @@ const CustomerProfile: React.FC = () => {
                     {language === 'uk' ? 'Електронна пошта' : language === 'ru' ? 'Электронная почта' : 'Email'}
                   </label>
                   <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+                    <EnvelopeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     <span className="font-medium text-gray-900 dark:text-gray-100">{currentUser?.email}</span>
                   </div>
                 </div>
@@ -338,7 +338,7 @@ const CustomerProfile: React.FC = () => {
                     {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
                   </label>
                   <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <PhoneIcon className="h-5 w-5 text-gray-400" />
+                    <PhoneIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {currentUser?.phoneNumber || (
                         <span className="text-gray-500 dark:text-gray-400 italic">
@@ -354,7 +354,7 @@ const CustomerProfile: React.FC = () => {
                     {language === 'uk' ? 'Дата реєстрації' : language === 'ru' ? 'Дата регистрации' : 'Registration Date'}
                   </label>
                   <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
+                    <CalendarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {formatMemberDate(currentUser?.createdAt || '')}
                     </span>
@@ -366,7 +366,7 @@ const CustomerProfile: React.FC = () => {
                     {language === 'uk' ? 'Тип акаунту' : language === 'ru' ? 'Тип аккаунта' : 'Account Type'}
                   </label>
                   <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                    <UserCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {language === 'uk' ? 'Клієнт' : language === 'ru' ? 'Клиент' : 'Customer'}
                     </span>
@@ -399,7 +399,7 @@ const CustomerProfile: React.FC = () => {
                 {addresses.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <MapPinIcon className="h-8 w-8 text-gray-400" />
+                      <MapPinIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       {language === 'uk' ? 'Немає адрес' : language === 'ru' ? 'Нет адресов' : 'No addresses yet'}

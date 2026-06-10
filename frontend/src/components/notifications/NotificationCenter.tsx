@@ -357,7 +357,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   return (
     <div className={`fixed inset-0 z-50 ${className}`}>
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/40 to-black/20 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/40 to-black/20" onClick={onClose} />
       
       {/* Notification Panel */}
       <div
@@ -365,7 +365,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Notifications"
-        className="absolute right-0 top-0 h-full w-full max-w-md bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-white/60 dark:border-gray-700/70 ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-2xl transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right will-change-transform overscroll-contain relative overflow-hidden flex flex-col"
+        className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-white/60 dark:border-gray-700/70 ring-1 ring-black/5 dark:ring-white/10 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right will-change-transform overscroll-contain relative overflow-hidden flex flex-col"
         style={{ transform: `translateX(${translateX}px)` }}
         onTouchStart={(e) => {
           const t = e.touches[0];
@@ -423,7 +423,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 active:scale-95"
+                className="p-2 rounded-xl bg-white dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 active:scale-95"
                 aria-label={t('notifications.close') || 'Close notifications'}
               >
                 <XMarkIcon className="h-5 w-5 text-gray-600 dark:text-gray-200" />
@@ -434,17 +434,17 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           {/* Service Status removed per UX request */}
 
           {/* Controls */}
-          <div className="px-4 pt-3 pb-4 border-b border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl">
+          <div className="px-4 pt-3 pb-4 border-b border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-900/60">
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-1.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800/80 p-1 ring-1 ring-gray-200/70 dark:ring-gray-700/60 mb-3">
+            <div className="flex flex-wrap gap-1.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800 p-1 ring-1 ring-gray-200/70 dark:ring-gray-700/60 mb-3">
               {['all', 'booking', 'payment', 'review', 'system'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setSelectedFilter(filter as NotificationType | 'all')}
-                  className={`px-3 py-1.5 text-xs rounded-xl font-semibold capitalize transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                  className={`px-3 py-1.5 text-xs rounded-xl font-semibold capitalize transition-all duration-200 active:scale-95 ${
                     selectedFilter === filter
                       ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/70 dark:bg-gray-900 dark:text-white dark:ring-gray-700/70'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/70'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700/70'
                   }`}
                 >
                   {filter === 'all' ? (t('notifications.filter.all') || 'All')
@@ -502,8 +502,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             <LoadingSkeleton />
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              <div className="mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100/80 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60">
-                <BellIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+              <div className="mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100/80 dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60">
+                <BellIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
               </div>
               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('notifications.empty') || 'No notifications'}</p>
               <p className="text-sm">{t('notifications.caughtUp') || "You're all caught up!"}</p>
@@ -524,9 +524,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     key={notification.id}
                     className={`group relative px-4 py-4 transition-all duration-200 ${
                       !notification.isRead
-                        ? 'bg-white/80 dark:bg-gray-900/70 shadow-sm'
+                        ? 'bg-white dark:bg-gray-900 shadow-sm'
                         : 'bg-white/50 dark:bg-gray-900/40'
-                    } hover:bg-white/90 dark:hover:bg-gray-900/80 hover:-translate-y-0.5 hover:shadow-md`}
+                    } hover:bg-white dark:hover:bg-gray-900/80 hover:shadow-md`}
                     style={isFiltering ? { animation: 'pageEnter 0.25s ease-out both', animationDelay: `${index * 20}ms` } : undefined}
                   >
                     <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary-500/10 via-transparent to-transparent" />
@@ -554,7 +554,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {localizeNotification(notification).message}
                         </p>
-                        <p className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mt-2">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mt-2">
                           {formatTime(notification.createdAt)}
                         </p>
                       </div>
@@ -564,7 +564,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         {!notification.isRead && (
                           <button
                             onClick={() => markAsRead(notification.id)}
-                            className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 active:scale-95"
+                            className="p-2 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 active:scale-95"
                             title={t('notifications.markRead') || 'Mark as read'}
                           >
                             <CheckIcon className="h-4 w-4" />
@@ -572,7 +572,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         )}
                         <button
                           onClick={() => deleteNotification(notification.id)}
-                          className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition-all duration-200 active:scale-95"
+                          className="p-2 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition-all duration-200 active:scale-95"
                           title={t('notifications.delete') || 'Delete'}
                         >
                           <TrashIcon className="h-4 w-4" />

@@ -20,15 +20,15 @@ const sizes: Record<Size, string> = {
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 disabled:bg-gray-400 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
+    'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 disabled:bg-gray-400',
   secondary:
-    'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 backdrop-blur-sm',
+    'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:border-gray-300 hover:bg-gray-50 dark:hover:border-gray-700 dark:hover:bg-gray-800',
   ghost:
-    'bg-transparent text-gray-700 hover:bg-gray-100/80 dark:text-gray-300 dark:hover:bg-gray-800/80',
+    'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
   destructive:
-    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40',
+    'bg-error-600 text-white hover:bg-error-700 active:bg-error-800',
   subtle:
-    'bg-primary-50/80 text-primary-700 hover:bg-primary-100/80 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/40 backdrop-blur-sm',
+    'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50',
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={clsx(
-        'btn inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'btn inline-flex items-center justify-center font-semibold transition-colors duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         sizes[size],
         variants[variant],
         className

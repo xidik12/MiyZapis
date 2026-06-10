@@ -124,16 +124,16 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('professionForm.searchProfessions') || 'Search professions...'}
-            className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
+            className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
             autoFocus
           />
-          <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
         
         {searchTerm && filteredProfessions.length > 0 && (
-          <div className="max-h-64 overflow-y-auto border border-gray-200/20 dark:border-gray-700/20 rounded-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-glass">
+          <div className="max-h-64 overflow-y-auto border border-gray-200/20 dark:border-gray-700/20 rounded-xl bg-white dark:bg-gray-800">
             {filteredProfessions.map((profession) => (
               <button
                 key={profession.id}
@@ -190,14 +190,14 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t('professionForm.enterCustomProfession') || 'Enter custom profession'}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
+            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
             autoFocus
           />
           <button
             type="button"
             onClick={handleCustomSubmit}
             disabled={!customValue.trim()}
-            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200"
           >
             {t('common.add') || 'Add'}
           </button>
@@ -263,7 +263,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
       
       {/* Custom dropdown arrow */}
       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>

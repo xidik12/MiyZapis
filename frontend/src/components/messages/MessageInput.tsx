@@ -142,8 +142,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           disabled={!value.trim() || disabled}
           className={`flex-shrink-0 p-2.5 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 ${
             value.trim() && !disabled
-              ? 'bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/30'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              ? 'bg-primary-500 text-white hover:bg-primary-600'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
           }`}
         >
           <PaperAirplaneIcon className="w-5 h-5" />

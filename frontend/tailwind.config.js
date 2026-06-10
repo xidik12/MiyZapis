@@ -10,16 +10,16 @@ module.exports = {
       colors: {
         // Sky Blue primary colors
         primary: {
-          50: '#eff8ff',
-          100: '#dbeffe',
-          200: '#bee3fd',
-          300: '#91d1fc',
-          400: '#5db7f8',
-          500: '#3b97f2',  // Sky Blue
-          600: '#2678e7',
-          700: '#1d61d4',
-          800: '#1e4eab',
-          900: '#1e4387',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#5ba3f0',
+          500: '#3a87e0',  // Sky Blue — calmed a touch
+          600: '#2069cf',  // primary CTA — deepened
+          700: '#1a55b3',
+          800: '#1b478f',
+          900: '#1b3d75',
         },
         // Bright Yellow secondary colors
         secondary: {

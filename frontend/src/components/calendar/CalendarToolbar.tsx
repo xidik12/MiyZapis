@@ -38,7 +38,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200/50 dark:border-gray-700/50 p-4 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-800 p-4 mb-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* Date Range and Navigation */}
         <div className="flex items-center gap-4">

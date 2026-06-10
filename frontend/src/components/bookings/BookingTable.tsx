@@ -24,7 +24,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
   return (
     <div className="hidden lg:block overflow-x-auto custom-scrollbar">
       <table className="w-full min-w-[600px]">
-        <thead className="bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
+        <thead className="bg-gray-50/80 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600/50">
           <tr>
             <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
               {t('bookings.service')}
@@ -46,7 +46,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm divide-y divide-gray-200/50 dark:divide-gray-700/50">
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200/50 dark:divide-gray-700/50">
           {bookings.map((booking, index) => {
             const scheduledDate = new Date(booking.scheduledAt || '');
             const specialistName = getSpecialistName(booking);
@@ -55,7 +55,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
             return (
               <tr
                 key={booking.id}
-                className="group hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                className="group hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-700"
                 style={{
                   animationDelay: `${index * 50}ms`,
                   animation: isAnimating ? 'slideInUp 0.4s ease-out forwards' : 'none'

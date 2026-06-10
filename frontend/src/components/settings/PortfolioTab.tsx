@@ -95,7 +95,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
             inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
             transition-colors cursor-pointer
             ${isUploading
-              ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
             }
           `}
@@ -166,7 +166,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
                   absolute top-2 right-2
                   opacity-0 group-hover:opacity-100
                   transition-opacity duration-200
-                  bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm
+                  bg-white dark:bg-gray-900
                   rounded-full p-1
                   text-red-500 hover:text-red-600
                   hover:bg-white dark:hover:bg-gray-900
@@ -218,7 +218,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
             inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium
             transition-colors
             ${saving
-              ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
             }
           `}

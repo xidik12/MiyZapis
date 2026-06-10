@@ -635,7 +635,7 @@ const CustomerDashboard: React.FC = () => {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{booking.specialistName}</p>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{booking.serviceName}</p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
                         </p>
                       </div>
@@ -711,7 +711,7 @@ const CustomerDashboard: React.FC = () => {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{specialist.name}</p>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{specialist.service}</p>
-                        <div className="flex items-center space-x-2 text-xs text-gray-400">
+                        <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                           <span className="flex items-center">
                             <StarIcon className="w-3 h-3 mr-1 text-warning-500" />
                             {specialist.rating}
@@ -730,7 +730,7 @@ const CustomerDashboard: React.FC = () => {
                       </Link>
                       <button
                         onClick={() => handleMessageFavorite(specialist)}
-                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+                        className="p-1 sm:p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
                         title={t('specialistProfile.sendMessage')}
                       >
                         <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />

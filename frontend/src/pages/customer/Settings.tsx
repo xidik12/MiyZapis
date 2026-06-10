@@ -393,7 +393,7 @@ const CustomerSettings: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* Sidebar */}
           <div className="lg:w-1/4">
-            <nav className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-700/50">
+            <nav className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-800">
               {sections.map((section) => {
                 const Icon = section.icon;
                 return (
@@ -416,7 +416,7 @@ const CustomerSettings: React.FC = () => {
 
           {/* Main Content */}
           <div className="lg:w-3/4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-700/50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-800">
               {/* Account Settings */}
               {activeSection === 'account' && (
                 <div className="p-6">
@@ -1054,7 +1054,7 @@ const CustomerSettings: React.FC = () => {
               {activeSection === 'payments' && (
                 <div className="p-6">
                   <div className="text-center py-12">
-                    <CreditCardIcon className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                    <CreditCardIcon className="h-16 w-16 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {t('customer.settings.payments')}
                     </h2>
@@ -1096,7 +1096,7 @@ const CustomerSettings: React.FC = () => {
                   <div className="space-y-4">
                     {addresses.length === 0 ? (
                       <div className="text-center py-8">
-                        <MapPinIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                        <MapPinIcon className="h-12 w-12 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noAddresses')}</p>
                         <button
                           onClick={handleAddAddress}
@@ -1151,7 +1151,7 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Address Modal */}
       {showAddAddressModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />

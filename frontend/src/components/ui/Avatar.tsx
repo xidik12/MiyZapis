@@ -65,7 +65,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   if (!absoluteSrc || imageError) {
     return (
       <UserCircleIcon
-        className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
+        className={`${sizeClasses[size]} text-gray-500 dark:text-gray-400 ${className}`}
       />
     );
   }

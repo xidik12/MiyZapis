@@ -83,7 +83,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {getStatusIcon()}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               {isExpanded ? (
                 <ChevronUpIcon className="h-5 w-5" />
@@ -98,7 +98,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <EyeIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <EyeIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {referral.viewCount}
               </span>
@@ -107,7 +107,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <CursorArrowRaysIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <CursorArrowRaysIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {referral.clickCount}
               </span>
@@ -116,7 +116,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {daysUntilExpiry}
               </span>
@@ -125,7 +125,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <GiftIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <GiftIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {referralService.getRewardDisplayText(referral.referrerRewardType, referral.referrerRewardValue || 0)}
               </span>

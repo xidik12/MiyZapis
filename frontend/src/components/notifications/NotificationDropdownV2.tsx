@@ -152,11 +152,11 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[420px] max-h-[600px] rounded-2xl shadow-2xl backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 z-50 overflow-hidden"
+          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[420px] max-h-[600px] rounded-2xl shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 z-50 overflow-hidden"
           style={{ transformOrigin: 'top right' }}
         >
           {/* Header */}
-          <div className="px-4 py-3.5 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between bg-gradient-to-r from-gray-50/80 to-transparent dark:from-gray-700/30 sticky top-0 z-20 backdrop-blur-sm">
+          <div className="px-4 py-3.5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-gray-50/80 to-transparent dark:from-gray-700/30 sticky top-0 z-20">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 {t('notifications.title')}
@@ -196,9 +196,9 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm mb-3"
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100/80 dark:bg-gray-700 mb-3"
                 >
-                  <BellIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                  <BellIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                 </motion.div>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
                   {t('notifications.noNotifications')}
@@ -259,7 +259,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
 
           {/* Footer */}
           {hasNotifications && (
-            <div className="px-4 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30 sticky bottom-0 backdrop-blur-sm">
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30 sticky bottom-0">
               <Link
                 to="/notifications"
                 onClick={onClose}

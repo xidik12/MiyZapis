@@ -62,7 +62,7 @@ const ResetPasswordPage: React.FC = () => {
     return (
       <div className="text-center space-y-6">
         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
-          theme === 'dark' ? 'bg-green-900/30 backdrop-blur-sm' : 'bg-green-100/80 backdrop-blur-sm'
+          theme === 'dark' ? 'bg-green-900/30' : 'bg-green-100/80'
         }`}>
           <CheckCircleIcon className={`w-8 h-8 ${
             theme === 'dark' ? 'text-green-400' : 'text-green-600'
@@ -82,7 +82,7 @@ const ResetPasswordPage: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/auth/login')}
-          className={`inline-flex items-center px-4 py-3 border border-transparent rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 ${
+          className={`inline-flex items-center px-4 py-3 border border-transparent rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 ${
             theme === 'dark' ? 'focus:ring-offset-gray-900' : 'focus:ring-offset-white'
           }`}
         >
@@ -128,7 +128,7 @@ const ResetPasswordPage: React.FC = () => {
           to="/auth/login"
           className={`inline-flex items-center text-sm mb-4 font-semibold px-2 py-1 rounded-xl transition-all duration-200 ${
             theme === 'dark'
-              ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+              ? 'text-gray-500 dark:text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80'
           }`}
         >
@@ -149,7 +149,7 @@ const ResetPasswordPage: React.FC = () => {
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
-          <div className={`rounded-xl p-4 border backdrop-blur-sm ${
+          <div className={`rounded-xl p-4 border ${
             theme === 'dark'
               ? 'bg-red-900/30 border-red-800/50'
               : 'bg-red-50/80 border-red-200/50'
@@ -170,10 +170,10 @@ const ResetPasswordPage: React.FC = () => {
             {...register('password', getPasswordValidationRules(t))}
             type="password"
             autoComplete="new-password"
-            className={`mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 font-medium ${
+            className={`mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 font-medium ${
               theme === 'dark'
                 ? 'bg-gray-800/80 text-gray-100 border-gray-700 focus:ring-offset-gray-900'
-                : 'bg-white/80 text-gray-900 border-gray-200'
+                : 'bg-white text-gray-900 border-gray-200'
             } ${
               errors.password
                 ? theme === 'dark' ? 'border-red-500' : 'border-red-300'
@@ -208,10 +208,10 @@ const ResetPasswordPage: React.FC = () => {
             {...register('confirmPassword', getConfirmPasswordValidationRules(watchedPassword, t))}
             type="password"
             autoComplete="new-password"
-            className={`mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 font-medium ${
+            className={`mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 font-medium ${
               theme === 'dark'
                 ? 'bg-gray-800/80 text-gray-100 border-gray-700 focus:ring-offset-gray-900'
-                : 'bg-white/80 text-gray-900 border-gray-200'
+                : 'bg-white text-gray-900 border-gray-200'
             } ${
               errors.confirmPassword
                 ? theme === 'dark' ? 'border-red-500' : 'border-red-300'
@@ -230,7 +230,7 @@ const ResetPasswordPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
               theme === 'dark' ? 'focus:ring-offset-gray-900' : 'focus:ring-offset-white'
             }`}
           >

@@ -57,13 +57,13 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({
             {/* Date confirmation */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 mb-4">
               <div className="flex items-center text-sm">
-                <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
+                <CalendarIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                 <span className="text-gray-700 dark:text-gray-300 font-medium">
                   {selectedDate?.toLocaleDateString(language || 'en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
               </div>
               <div className="flex items-center text-sm mt-1">
-                <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
+                <ClockIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                 <span className="text-gray-600 dark:text-gray-400">
                   {String(service?.name ?? '')} ({String(service?.duration ?? '')} {t('time.minutes') || 'min'})
                 </span>

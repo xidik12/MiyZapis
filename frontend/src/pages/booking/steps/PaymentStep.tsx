@@ -586,7 +586,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                         </p>
                       )}
                       <p>You'll receive confirmation once payment is verified.</p>
-                      <p className="text-xs text-gray-400 mt-1">Your booking slot is temporarily reserved during payment.</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Your booking slot is temporarily reserved during payment.</p>
                     </div>
                   </>
                 )}

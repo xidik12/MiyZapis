@@ -74,7 +74,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
         onClick={handleShare}
         className={
           isIcon
-            ? `p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full transition-colors ${className}`
+            ? `p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full transition-colors ${className}`
             : `flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap ${className}`
         }
         title={t('share.shareProfile') || 'Share'}
@@ -89,7 +89,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
             onClick={copyLink}
             className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
           >
-            <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+            <svg className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
             {t('share.copyLink') || 'Copy Link'}
           </button>
           <button

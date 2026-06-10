@@ -44,10 +44,10 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="border-b border-gray-100/50 dark:border-gray-700/50 last:border-b-0">
+    <div className="border-b border-gray-200 dark:border-gray-800 last:border-b-0">
       {/* Group Header */}
       <div
-        className="sticky top-0 z-10 px-4 py-2.5 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-sm flex items-center justify-between cursor-pointer hover:bg-gray-100/95 dark:hover:bg-gray-700/95 transition-colors duration-200"
+        className="sticky top-0 z-10 px-4 py-2.5 bg-gray-50/95 dark:bg-gray-800 flex items-center justify-between cursor-pointer hover:bg-gray-100/95 dark:hover:bg-gray-700/95 transition-colors duration-200"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">

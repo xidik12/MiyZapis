@@ -1,54 +1,30 @@
 /* ──────────────────────────────────────────────────────────────────────
- * 3D depth system
+ * Interaction layer (formerly the "3D depth system")
  * ──────────────────────────────────────────────────────────────────────
- * Layered shadows + subtle gradients + lift-on-hover + depress-on-press
- * applied to standard elements (button, input, select, textarea, links
- * styled as buttons) and to common card / tab / banner patterns via
- * attribute selectors that match the existing Tailwind classes used
- * across the codebase. Opt out per-element with .no-3d.
+ * Redesigned to the outline language: NO bevels, NO inset/sunken inputs,
+ * NO auto drop-shadows on cards. Structure is carried by 1px borders
+ * (set in globals.css / Tailwind classes), not by shadow.
  *
- * Dark mode: shadows shift to use coloured glows instead of soft drops
- * (white-tinted shadows look wrong on dark surfaces).
- *
- * Respects prefers-reduced-motion: skips the hover/press transitions.
+ * All that remains here is restrained, motivated feedback:
+ *   • a quick colour/transform transition on interactive elements
+ *   • a subtle press (scale 0.98) so taps feel physical
+ * Opt out per-element with .no-3d. Respects prefers-reduced-motion.
  * ──────────────────────────────────────────────────────────────────────*/
 
-/* ── Buttons — restrained, no chunky bevel ──────────────────────────── */
-/* User feedback: the heavy multi-layer bevel looked too "3D" / clay-like.
-   Reverted to a default Tailwind feel: no inset highlights, no thick
-   bottom bevel, only a tiny drop shadow that's barely there. Hover gives
-   a subtle 1px lift on devices with a real cursor. Touch devices stay
-   flat (no sticky :hover state after tap). */
-
+/* ── Buttons / clickable roles — transition + press only ─────────────── */
 button:not(.no-3d):not(:disabled),
-a[class*="bg-primary-6"]:not(.no-3d),
-a[class*="bg-primary-7"]:not(.no-3d),
-a[class*="bg-sky-"]:not(.no-3d),
 [role="button"]:not(.no-3d):not(:disabled) {
   transition:
-    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.18s ease,
     background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-@media (hover: hover) {
-  button:not(.no-3d):not(:disabled):hover,
-  a[class*="bg-primary-6"]:not(.no-3d):hover,
-  a[class*="bg-primary-7"]:not(.no-3d):hover,
-  a[class*="bg-sky-"]:not(.no-3d):hover,
-  [role="button"]:not(.no-3d):not(:disabled):hover {
-    transform: translateY(-1px);
-  }
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
 }
 
 button:not(.no-3d):not(:disabled):active,
-a[class*="bg-primary-6"]:not(.no-3d):active,
-a[class*="bg-primary-7"]:not(.no-3d):active,
-a[class*="bg-sky-"]:not(.no-3d):active,
 [role="button"]:not(.no-3d):not(:disabled):active {
-  transform: translateY(0) scale(0.98);
-  transition-duration: 0.06s;
+  transform: scale(0.98);
+  transition-duration: 0.05s;
 }
 
 button:disabled,
@@ -57,141 +33,27 @@ button[aria-disabled="true"],
   transform: none;
 }
 
-/* ── Inputs / textarea / select — clearly sunken into the page ──────── */
+/* ── Inputs / textarea / select — flat, just a colour transition ─────── */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.no-3d),
 select:not(.no-3d),
 textarea:not(.no-3d) {
-  box-shadow:
-    /* deeper top inner shadow — looks like the field is pushed inward */
-    0 2px 4px rgba(0, 0, 0, 0.12) inset,
-    0 1px 2px rgba(0, 0, 0, 0.08) inset,
-    /* bottom inner highlight — the bottom-front edge catches light */
-    0 -1px 0 0 rgba(255, 255, 255, 0.9) inset;
-  transition:
-    box-shadow 0.18s ease,
-    border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.no-3d):focus,
-select:not(.no-3d):focus,
-textarea:not(.no-3d):focus {
-  box-shadow:
-    0 0 0 3px rgba(59, 151, 242, 0.18),
-    0 1px 2px rgba(0, 0, 0, 0.08) inset;
-  outline: none;
-}
-
-/* ── Cards: any white/dark/surface variant with rounded corners ───────
-   bg-surface is a custom utility used by the dashboards — match it
-   explicitly so StatCards get visible depth too. */
-[class*="bg-white"][class*="rounded-"]:not(.no-3d),
-[class*="bg-surface"][class*="rounded-"]:not(.no-3d),
-[class*="dark:bg-gray-800"][class*="rounded-"]:not(.no-3d),
-[class*="bg-gray-50"][class*="rounded-"]:not(.no-3d),
-[class*="bg-gray-900"][class*="rounded-"]:not(.no-3d) {
-  /* Subtle lift only — let Tailwind's own shadow utilities (shadow-sm/md/lg)
-     drive the actual surface depth on a per-component basis. */
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-/* Cards inside other cards shouldn't double-shadow */
-[class*="bg-white"][class*="rounded-"] [class*="bg-white"][class*="rounded-"],
-[class*="bg-surface"][class*="rounded-"] [class*="bg-surface"][class*="rounded-"],
-[class*="dark:bg-gray-800"][class*="rounded-"] [class*="dark:bg-gray-800"][class*="rounded-"],
-[class*="bg-gray-50"][class*="rounded-"] [class*="bg-gray-50"][class*="rounded-"] {
-  box-shadow: none !important;
-}
-
-/* Hoverable cards (have group + hover:shadow already in Tailwind)
-   get the enhanced lift on hover — only on hover-capable devices. */
-@media (hover: hover) {
-  [class*="hover:shadow-"][class*="rounded-"]:hover,
-  [class*="bg-surface"][class*="rounded-"]:not(.no-3d):hover {
-    transform: translateY(-1px);
-  }
-}
-
-/* ── Tabs — active tab pops, inactive sinks slightly ────────────────── */
-[role="tab"][aria-selected="true"],
-button[class*="border-primary-600"][class*="border-b-2"],
-button[class*="text-primary-600"][class*="border-b-2"] {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.5) inset,
-    0 4px 8px -2px rgba(59, 151, 242, 0.25),
-    0 8px 16px -4px rgba(59, 151, 242, 0.15);
-}
-
-/* ── Toggle / pill / chip in pressed state ──────────────────────────── */
-.pill-pressed, [aria-pressed="true"][class*="rounded"] {
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12) inset,
-    0 -1px 0 rgba(255, 255, 255, 0.4) !important;
-}
-
-/* ── Banner-grade depth (hero blocks, callouts) — opt-in only ──────── */
-.banner-3d {
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.08),
-    0 12px 24px rgba(0, 0, 0, 0.08);
-}
-
-/* ── Dark mode: no extra button shadows (default Tailwind look) ─────── */
-
-.dark [class*="bg-white"][class*="rounded-"]:not(.no-3d),
-.dark [class*="dark:bg-gray-800"][class*="rounded-"]:not(.no-3d) {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.30),
-    0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.no-3d),
-.dark select:not(.no-3d),
-.dark textarea:not(.no-3d) {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.40) inset,
-    0 -1px 0 0 rgba(255, 255, 255, 0.04) inset;
-}
-
-/* ── Explicit utility classes for opt-in 3D when the auto-selectors miss ── */
-.btn-3d {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.4) inset,
-    0 -2px 0 0 rgba(0, 0, 0, 0.15) inset,
-    0 2px 4px -1px rgba(0, 0, 0, 0.18),
-    0 4px 12px -2px rgba(0, 0, 0, 0.10);
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-}
-.btn-3d:hover { transform: translateY(-1px); }
-.btn-3d:active { transform: translateY(1px); transition-duration: 0.05s; }
-
-.card-3d {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 12px 24px rgba(0, 0, 0, 0.04);
-}
-
-.input-3d {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.08) inset,
-    0 -1px 0 0 rgba(255, 255, 255, 0.8) inset;
-}
-
-/* ── Reduced motion: keep the depth, drop the animation ─────────────── */
+/* ── Reduced motion: drop the press transform ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   button:not(.no-3d),
-  a[class*="bg-primary-"]:not(.no-3d),
-  [role="button"]:not(.no-3d),
-  [class*="bg-white"][class*="rounded-"]:not(.no-3d),
-  .btn-3d, .card-3d {
+  [role="button"]:not(.no-3d) {
     transition: none !important;
     transform: none !important;
   }
-  button:not(.no-3d):hover,
-  a[class*="bg-primary-"]:not(.no-3d):hover {
-    transform: none !important;
-  }
+}
+
+/* ── Legacy opt-in utility classes neutralised to flat outline ──────────
+ * Some components still reference these names. Keep them harmless so the
+ * old skeuomorphic look never reappears. */
+.btn-3d,
+.card-3d,
+.input-3d {
+  box-shadow: none;
 }
