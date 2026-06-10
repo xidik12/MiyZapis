@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { locationService, CityData } from '@/services/location.service';
-import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
+import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   'beauty-wellness': SparklesIcon,
@@ -20,6 +20,21 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
 
 // Per-category accent palette — a service directory benefits from colour-coded
 // types (meaningful, not decorative). Full class strings so Tailwind JIT keeps them.
+// Avatar fallback gradients — photoless specialists get colourful initials
+// (conventional for avatars; keyed by name so each person is stable).
+const avatarGradients = [
+  'from-sky-400 to-blue-600',
+  'from-violet-400 to-purple-600',
+  'from-emerald-400 to-teal-600',
+  'from-amber-400 to-orange-600',
+  'from-rose-400 to-pink-600',
+  'from-cyan-400 to-sky-600',
+];
+const initialsOf = (name: string) =>
+  (name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '★';
+const gradientFor = (name: string) =>
+  avatarGradients[((name || '').charCodeAt(0) || 0) % avatarGradients.length];
+
 const categoryAccents = [
   { chip: 'bg-sky-100 dark:bg-sky-900/30', icon: 'text-sky-600 dark:text-sky-400', hoverBorder: 'hover:border-sky-300 dark:hover:border-sky-700', hoverText: 'group-hover:text-sky-600', glow: 'from-sky-50' },
   { chip: 'bg-violet-100 dark:bg-violet-900/30', icon: 'text-violet-600 dark:text-violet-400', hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-700', hoverText: 'group-hover:text-violet-600', glow: 'from-violet-50' },
@@ -767,7 +782,7 @@ const HomePage: React.FC = () => {
                     className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
                   >
                     {/* Image + overlay gradient */}
-                    <div className="relative w-full h-44 bg-gradient-to-br from-sky-100 to-sky-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center overflow-hidden">
+                    <div className={`relative w-full h-44 flex items-center justify-center overflow-hidden ${specialist.avatar ? 'bg-gray-100 dark:bg-gray-800' : `bg-gradient-to-br ${gradientFor(displayName)}`}`}>
                       {specialist.avatar ? (
                         <img
                           src={specialist.avatar as string}
@@ -775,9 +790,9 @@ const HomePage: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       ) : (
-                        <div className="w-20 h-20 rounded-full bg-sky-100 dark:bg-gray-600 flex items-center justify-center">
-                          <UserGroupIcon className="w-10 h-10 text-sky-400 dark:text-gray-400" />
-                        </div>
+                        <span className="text-5xl font-bold text-white/90 tracking-tight transition-transform duration-300 group-hover:scale-110">
+                          {initialsOf(displayName)}
+                        </span>
                       )}
                       {/* Bottom gradient overlay */}
                       <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
