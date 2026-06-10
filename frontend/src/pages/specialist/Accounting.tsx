@@ -127,6 +127,7 @@ const Tabs: React.FC<{ current: Tab; onChange: (t: Tab) => void }> = ({ current,
 
 // ────────────────────────────────────────────────────────────────────────
 const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
+  const { t } = useLanguage();
   const [data, setData] = useState<ProfitLoss | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -134,36 +135,36 @@ const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
     setLoading(true);
     accountingService.getProfitLoss(from, to)
       .then(setData)
-      .catch((err) => toast.error(err?.message || 'Failed to load P&L'))
+      .catch((err) => toast.error(err?.message || t('accounting.pnl.failedLoad')))
       .finally(() => setLoading(false));
   }, [from.getTime(), to.getTime()]);
 
   if (loading) return <PageLoader />;
-  if (!data) return <p className="text-gray-500">No data.</p>;
+  if (!data) return <p className="text-gray-500">{t('accounting.noData')}</p>;
   const c = data.currency;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat label="Gross income" value={fmtMoney(data.totals.grossIncome, c)} hint={`${data.income.completedBookings} bookings · ${data.income.invoicesPaid} invoices`} />
-        <Stat label="Expenses" value={fmtMoney(data.expenses.total, c)} hint={`${fmtMoney(data.totals.deductibleExpenses, c)} deductible`} />
-        <Stat label="Gross profit" value={fmtMoney(data.totals.grossProfit, c)} positive={data.totals.grossProfit >= 0} />
-        <Stat label="Net before tax" value={fmtMoney(data.totals.netBeforeTax, c)} positive={data.totals.netBeforeTax >= 0} />
+        <Stat label={t('accounting.pnl.grossIncome')} value={fmtMoney(data.totals.grossIncome, c)} hint={`${data.income.completedBookings} ${t('accounting.pnl.bookings')} · ${data.income.invoicesPaid} ${t('accounting.pnl.invoices')}`} />
+        <Stat label={t('accounting.pnl.expenses')} value={fmtMoney(data.expenses.total, c)} hint={`${fmtMoney(data.totals.deductibleExpenses, c)} ${t('accounting.pnl.deductible')}`} />
+        <Stat label={t('accounting.pnl.grossProfit')} value={fmtMoney(data.totals.grossProfit, c)} positive={data.totals.grossProfit >= 0} />
+        <Stat label={t('accounting.pnl.netBeforeTax')} value={fmtMoney(data.totals.netBeforeTax, c)} positive={data.totals.netBeforeTax >= 0} />
       </div>
 
-      <Section title="Income">
-        <RowKV k="Completed bookings revenue" v={fmtMoney(data.income.completedBookingsRevenue, c)} />
-        <RowKV k="Paid invoices revenue" v={fmtMoney(data.income.invoicesPaidRevenue, c)} />
-        <RowKV k="Pending bookings (not yet recognised)" v={fmtMoney(data.income.pendingBookingsRevenue, c)} muted />
+      <Section title={t('accounting.pnl.income')}>
+        <RowKV k={t('accounting.pnl.completedBookings')} v={fmtMoney(data.income.completedBookingsRevenue, c)} />
+        <RowKV k={t('accounting.pnl.paidInvoices')} v={fmtMoney(data.income.invoicesPaidRevenue, c)} />
+        <RowKV k={t('accounting.pnl.pendingBookings')} v={fmtMoney(data.income.pendingBookingsRevenue, c)} muted />
       </Section>
 
-      <Section title="Expenses by category">
-        {data.expenses.byCategory.length === 0 && <p className="text-sm text-gray-500">No expenses in this period.</p>}
+      <Section title={t('accounting.pnl.byCategory')}>
+        {data.expenses.byCategory.length === 0 && <p className="text-sm text-gray-500">{t('accounting.pnl.noExpenses')}</p>}
         <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {data.expenses.byCategory.map((row) => (
             <div key={row.category} className="flex justify-between py-2 text-sm">
               <div>
                 <div className="font-medium text-gray-900 dark:text-gray-100">{row.category}</div>
-                <div className="text-xs text-gray-500">{row.count} entries · {fmtMoney(row.deductible, c)} deductible</div>
+                <div className="text-xs text-gray-500">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}</div>
               </div>
               <div className="font-mono text-gray-900 dark:text-gray-100">{fmtMoney(row.total, c)}</div>
             </div>
@@ -176,6 +177,7 @@ const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
 
 // ────────────────────────────────────────────────────────────────────────
 const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
+  const { t } = useLanguage();
   const [regimes, setRegimes] = useState<TaxRegime[]>([]);
   const [regime, setRegime] = useState<string>('');
   const [data, setData] = useState<TaxComputation | null>(null);
@@ -189,17 +191,17 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
     setLoading(true);
     accountingService.getTaxEstimate(from, to, regime || undefined)
       .then((d) => { setData(d); if (!regime) setRegime(d.regime); })
-      .catch((err) => toast.error(err?.message || 'Failed to load tax estimate'))
+      .catch((err) => toast.error(err?.message || t('accounting.tax.failedLoad')))
       .finally(() => setLoading(false));
   }, [from.getTime(), to.getTime(), regime]);
 
   if (loading && !data) return <PageLoader />;
-  if (!data) return <p className="text-gray-500">No data.</p>;
+  if (!data) return <p className="text-gray-500">{t('accounting.noData')}</p>;
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-3 items-end">
         <label className="text-sm text-gray-700 dark:text-gray-200">
-          Tax regime
+          {t('accounting.tax.regime')}
           <select
             value={regime}
             onChange={(e) => setRegime(e.target.value)}
@@ -211,14 +213,14 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Stat label="Total estimated tax" value={fmtMoney(data.totalTax)} negative={data.totalTax > 0} />
-        <Stat label="Taxable base" value={fmtMoney(data.taxableBase)} />
-        <Stat label="Net after tax" value={fmtMoney(data.netIncome)} positive={data.netIncome >= 0} />
+        <Stat label={t('accounting.tax.totalTax')} value={fmtMoney(data.totalTax)} negative={data.totalTax > 0} />
+        <Stat label={t('accounting.tax.taxableBase')} value={fmtMoney(data.taxableBase)} />
+        <Stat label={t('accounting.tax.netAfterTax')} value={fmtMoney(data.netIncome)} positive={data.netIncome >= 0} />
       </div>
 
       <Section title={data.regimeLabel}>
         {data.lines.length === 0
-          ? <p className="text-sm text-gray-500">No tax components for this regime.</p>
+          ? <p className="text-sm text-gray-500">{t('accounting.tax.noLines')}</p>
           : <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {data.lines.map((l, i) => (
                 <div key={i} className="py-3">
@@ -234,7 +236,7 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
 
       {data.notes.length > 0 && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-          <div className="text-xs font-semibold text-amber-900 dark:text-amber-200 uppercase mb-2">Notes</div>
+          <div className="text-xs font-semibold text-amber-900 dark:text-amber-200 uppercase mb-2">{t('accounting.tax.notes')}</div>
           <ul className="text-sm text-amber-900 dark:text-amber-200 list-disc list-inside space-y-1">
             {data.notes.map((n, i) => <li key={i}>{n}</li>)}
           </ul>
@@ -246,6 +248,7 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
 
 // ────────────────────────────────────────────────────────────────────────
 const InvoicesPanel: React.FC = () => {
+  const { t } = useLanguage();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -254,7 +257,7 @@ const InvoicesPanel: React.FC = () => {
     setLoading(true);
     accountingService.listInvoices()
       .then(setInvoices)
-      .catch((err) => toast.error(err?.message || 'Failed to load invoices'))
+      .catch((err) => toast.error(err?.message || t('accounting.invoices.failedLoad')))
       .finally(() => setLoading(false));
   };
   useEffect(reload, []);
@@ -272,16 +275,16 @@ const InvoicesPanel: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Invoices</h2>
-        <button onClick={() => setCreating(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">+ New invoice</button>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('accounting.invoices.title')}</h2>
+        <button onClick={() => setCreating(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('accounting.invoices.new')}</button>
       </div>
 
       {loading ? <PageLoader /> : invoices.length === 0
-        ? <p className="text-sm text-gray-500 py-8 text-center">No invoices yet.</p>
+        ? <p className="text-sm text-gray-500 py-8 text-center">{t('accounting.invoices.empty')}</p>
         : <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                <tr><th className="py-2">Number</th><th>Client</th><th>Issued</th><th>Due</th><th className="text-right">Total</th><th>Status</th><th></th></tr>
+                <tr><th className="py-2">{t('accounting.invoices.col.number')}</th><th>{t('accounting.invoices.col.client')}</th><th>{t('accounting.invoices.col.issued')}</th><th>{t('accounting.invoices.col.due')}</th><th className="text-right">{t('accounting.invoices.col.total')}</th><th>{t('accounting.invoices.col.status')}</th><th></th></tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {invoices.map((inv) => (
@@ -307,29 +310,31 @@ const InvoicesPanel: React.FC = () => {
 };
 
 const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({ invoice, onChanged }) => {
+  const { t } = useLanguage();
   const mark = async (status: InvoiceStatus) => {
     try {
       await accountingService.updateInvoiceStatus(invoice.id, status);
       onChanged();
     } catch (err: any) {
-      toast.error(err?.message || 'Update failed');
+      toast.error(err?.message || t('accounting.invoices.updateFailed'));
     }
   };
   const del = async () => {
-    if (!confirm('Delete this draft invoice?')) return;
+    if (!confirm(t('accounting.invoices.confirmDelete'))) return;
     try { await accountingService.deleteInvoice(invoice.id); onChanged(); }
-    catch (err: any) { toast.error(err?.message || 'Delete failed'); }
+    catch (err: any) { toast.error(err?.message || t('accounting.invoices.deleteFailed')); }
   };
   return (
     <div className="flex gap-1 text-xs">
-      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Mark sent</button>}
-      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200">Mark paid</button>}
-      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Delete</button>}
+      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">{t('accounting.invoices.markSent')}</button>}
+      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200">{t('accounting.invoices.markPaid')}</button>}
+      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">{t('accounting.invoices.delete')}</button>}
     </div>
   );
 };
 
 const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useLanguage();
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [currency, setCurrency] = useState('UAH');
@@ -346,8 +351,8 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [lines, taxRatePct]);
 
   const submit = async () => {
-    if (!clientName.trim()) { toast.error('Client name is required'); return; }
-    if (lines.length === 0 || lines.some((l) => !l.description.trim())) { toast.error('Each line needs a description'); return; }
+    if (!clientName.trim()) { toast.error(t('accounting.invoices.clientNameRequired')); return; }
+    if (lines.length === 0 || lines.some((l) => !l.description.trim())) { toast.error(t('accounting.invoices.lineDescriptionRequired')); return; }
     setSaving(true);
     try {
       const input: CreateInvoiceInput = {
@@ -356,10 +361,10 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         taxRatePct, dueDate: dueDate ? new Date(dueDate).toISOString() : undefined, notes: notes || undefined,
       };
       await accountingService.createInvoice(input);
-      toast.success('Invoice created');
+      toast.success(t('accounting.invoices.created'));
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to create invoice');
+      toast.error(err?.message || t('accounting.invoices.createFailed'));
     } finally {
       setSaving(false);
     }
@@ -369,48 +374,48 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">New invoice</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('accounting.invoices.modal.title')}</h3>
           <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
 
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Client name *" value={clientName} onChange={setClientName} />
-            <Input label="Client email" value={clientEmail} onChange={setClientEmail} type="email" />
-            <Input label="Currency" value={currency} onChange={setCurrency} />
-            <Input label="Tax rate (%)" value={String(taxRatePct)} onChange={(v) => setTaxRatePct(Number(v) || 0)} type="number" />
-            <Input label="Due date" value={dueDate} onChange={setDueDate} type="date" />
+            <Input label={t('accounting.invoices.modal.clientName')} value={clientName} onChange={setClientName} />
+            <Input label={t('accounting.invoices.modal.clientEmail')} value={clientEmail} onChange={setClientEmail} type="email" />
+            <Input label={t('accounting.invoices.modal.currency')} value={currency} onChange={setCurrency} />
+            <Input label={t('accounting.invoices.modal.taxRate')} value={String(taxRatePct)} onChange={(v) => setTaxRatePct(Number(v) || 0)} type="number" />
+            <Input label={t('accounting.invoices.modal.dueDate')} value={dueDate} onChange={setDueDate} type="date" />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Line items</label>
-              <button onClick={() => setLines([...lines, { description: '', quantity: 1, unitPrice: 0 }])} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded">+ Add line</button>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('accounting.invoices.modal.lineItems')}</label>
+              <button onClick={() => setLines([...lines, { description: '', quantity: 1, unitPrice: 0 }])} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded">{t('accounting.invoices.modal.addLine')}</button>
             </div>
             {lines.map((l, i) => (
               <div key={i} className="grid grid-cols-12 gap-2 mb-2">
-                <input className="col-span-6 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" placeholder="Description" value={l.description} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], description: e.target.value }; setLines(c); }} />
-                <input className="col-span-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder="Qty" value={l.quantity} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], quantity: Number(e.target.value) }; setLines(c); }} />
-                <input className="col-span-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder="Unit price" value={l.unitPrice} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], unitPrice: Number(e.target.value) }; setLines(c); }} />
+                <input className="col-span-6 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" placeholder={t('accounting.invoices.modal.description')} value={l.description} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], description: e.target.value }; setLines(c); }} />
+                <input className="col-span-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.qty')} value={l.quantity} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], quantity: Number(e.target.value) }; setLines(c); }} />
+                <input className="col-span-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.unitPrice')} value={l.unitPrice} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], unitPrice: Number(e.target.value) }; setLines(c); }} />
                 <button onClick={() => setLines(lines.filter((_, j) => j !== i))} className="col-span-1 text-red-500 hover:text-red-700">×</button>
               </div>
             ))}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('accounting.invoices.modal.notes')}</label>
             <textarea className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-3 text-sm space-y-1">
-            <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{fmtMoney(totals.subtotal, currency)}</span></div>
-            <div className="flex justify-between text-gray-500"><span>Tax ({taxRatePct}%)</span><span className="font-mono">{fmtMoney(totals.tax, currency)}</span></div>
-            <div className="flex justify-between font-semibold text-base"><span>Total</span><span className="font-mono">{fmtMoney(totals.total, currency)}</span></div>
+            <div className="flex justify-between"><span>{t('accounting.invoices.modal.subtotal')}</span><span className="font-mono">{fmtMoney(totals.subtotal, currency)}</span></div>
+            <div className="flex justify-between text-gray-500"><span>{t('accounting.invoices.modal.tax')} ({taxRatePct}%)</span><span className="font-mono">{fmtMoney(totals.tax, currency)}</span></div>
+            <div className="flex justify-between font-semibold text-base"><span>{t('accounting.invoices.modal.total')}</span><span className="font-mono">{fmtMoney(totals.total, currency)}</span></div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded">Cancel</button>
-            <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50">{saving ? 'Saving…' : 'Create invoice'}</button>
+            <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded">{t('common.cancel')}</button>
+            <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50">{saving ? t('accounting.invoices.modal.saving') : t('accounting.invoices.modal.create')}</button>
           </div>
         </div>
       </div>
@@ -420,6 +425,7 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 // ────────────────────────────────────────────────────────────────────────
 const ExportPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
+  const { t } = useLanguage();
   const [includeIncome, setIncludeIncome] = useState(true);
   const [includeExpenses, setIncludeExpenses] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -429,7 +435,7 @@ const ExportPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
     try {
       await accountingService.downloadCsv(from, to, { income: includeIncome, expenses: includeExpenses });
     } catch (err: any) {
-      toast.error(err?.message || 'CSV download failed');
+      toast.error(err?.message || t('accounting.export.downloadFailed'));
     } finally {
       setBusy(false);
     }
@@ -438,20 +444,20 @@ const ExportPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Download a single CSV with all transactions in the selected period. Hand it to your accountant or import into spreadsheets.
+        {t('accounting.export.description')}
       </p>
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
           <input type="checkbox" checked={includeIncome} onChange={(e) => setIncludeIncome(e.target.checked)} />
-          Income (completed bookings + paid invoices)
+          {t('accounting.export.income')}
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
           <input type="checkbox" checked={includeExpenses} onChange={(e) => setIncludeExpenses(e.target.checked)} />
-          Expenses
+          {t('accounting.export.expenses')}
         </label>
       </div>
       <button onClick={download} disabled={busy || (!includeIncome && !includeExpenses)} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">
-        {busy ? 'Downloading…' : 'Download CSV'}
+        {busy ? t('accounting.export.downloading') : t('accounting.export.download')}
       </button>
     </div>
   );
@@ -482,9 +488,9 @@ const SettingsPanel: React.FC = () => {
       });
       // Keep auth-store user in sync so other tabs immediately reflect the new regime.
       dispatch(updateUserProfile(updated as any));
-      toast.success('Saved');
+      toast.success(t('accounting.settings.saved'));
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to save tax settings');
+      toast.error(err?.message || t('accounting.settings.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -493,8 +499,7 @@ const SettingsPanel: React.FC = () => {
   return (
     <div className="space-y-5 max-w-xl">
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Set your default tax regime and tax ID. The tax estimator uses these by default;
-        you can override per-calculation on the Tax estimate tab.
+        {t('accounting.settings.description')}
       </p>
 
       <label className="block">

@@ -32,7 +32,7 @@ const BusinessList: React.FC = () => {
   useEffect(() => {
     businessService.listMine()
       .then(setMemberships)
-      .catch((err) => toast.error(err?.message || 'Failed to load businesses'))
+      .catch((err) => toast.error(err?.message || t('businesses.error.loadList')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -83,6 +83,7 @@ const BusinessList: React.FC = () => {
 // ────────────────────────────────────────────────────────────────────────
 const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCreated }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: '', slug: '', description: '', email: '', phone: '', address: '', websiteUrl: '', currency: 'UAH', timezone: 'UTC',
   });
@@ -90,7 +91,7 @@ const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCrea
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.name.trim()) { toast.error(t('businesses.create.nameRequired')); return; }
     setSaving(true);
     try {
       const b = await businessService.create({
@@ -104,10 +105,10 @@ const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCrea
         currency: form.currency,
         timezone: form.timezone,
       });
-      toast.success('Business created');
+      toast.success(t('businesses.create.success'));
       onCreated(b);
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to create business');
+      toast.error(err?.message || t('businesses.create.errorCreate'));
     } finally {
       setSaving(false);
     }
@@ -116,28 +117,28 @@ const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCrea
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-2xl mx-auto px-4">
-        <button onClick={() => navigate('/specialist/businesses')} className="text-sm text-gray-500 hover:text-gray-700 mb-3">← Back</button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">New business</h1>
+        <button onClick={() => navigate('/specialist/businesses')} className="text-sm text-gray-500 hover:text-gray-700 mb-3">{t('businesses.create.back')}</button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('businesses.create.title')}</h1>
 
         <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-          <FormField label="Name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-          <FormField label="URL slug (optional, auto-generated)" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} placeholder="my-salon" />
-          <FormField label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
+          <FormField label={t('businesses.create.name')} value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+          <FormField label={t('businesses.create.slug')} value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} placeholder="my-salon" />
+          <FormField label={t('businesses.create.description')} value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
-            <FormField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
+            <FormField label={t('businesses.create.email')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
+            <FormField label={t('businesses.create.phone')} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
           </div>
-          <FormField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
-          <FormField label="Website" value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" placeholder="https://" />
+          <FormField label={t('businesses.create.address')} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+          <FormField label={t('businesses.create.website')} value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" placeholder="https://" />
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Currency" value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
-            <FormField label="Timezone" value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
+            <FormField label={t('businesses.create.currency')} value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
+            <FormField label={t('businesses.create.timezone')} value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => navigate('/specialist/businesses')} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">Cancel</button>
+            <button type="button" onClick={() => navigate('/specialist/businesses')} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
             <button type="submit" disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">
-              {saving ? 'Creating…' : 'Create business'}
+              {saving ? t('businesses.create.submitting') : t('businesses.create.submit')}
             </button>
           </div>
         </form>
@@ -148,6 +149,7 @@ const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCrea
 
 // ────────────────────────────────────────────────────────────────────────
 const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBack }) => {
+  const { t } = useLanguage();
   const [business, setBusiness] = useState<Business | null>(null);
   const [dashboard, setDashboard] = useState<BusinessDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +165,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
       setBusiness(b);
       setDashboard(d);
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to load business');
+      toast.error(err?.message || t('businesses.error.loadDetail'));
     } finally {
       setLoading(false);
     }
@@ -172,7 +174,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
   useEffect(() => { reload(); }, [id]);
 
   if (loading) return <PageLoader />;
-  if (!business) return <p className="p-8 text-gray-500">Business not found.</p>;
+  if (!business) return <p className="p-8 text-gray-500">{t('businesses.notFound')}</p>;
 
   // myMember unused but kept for future use
   void (business.members ?? []).find((m: any) => m.user?.id === undefined);
@@ -181,7 +183,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-5xl mx-auto px-4">
-        <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-700 mb-3">← Back to businesses</button>
+        <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-700 mb-3">{t('businesses.back')}</button>
 
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -191,15 +193,15 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
         </div>
 
         <div className="flex gap-1 mb-4 border-b border-gray-200 dark:border-gray-700">
-          {(['overview', 'members', 'settings'] as const).map((t) => (
+          {(['overview', 'members', 'settings'] as const).map((tabKey) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
-                tab === t ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                tab === tabKey ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              {t}
+              {t(`businesses.tab.${tabKey}`)}
             </button>
           ))}
         </div>
@@ -215,10 +217,11 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
 };
 
 const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Business }> = ({ dashboard, business }) => {
+  const { t } = useLanguage();
   if (!dashboard) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 text-sm">Only OWNER and MANAGER can see the dashboard.</p>
+        <p className="text-gray-500 text-sm">{t('businesses.overview.onlyManagers')}</p>
       </div>
     );
   }
@@ -234,18 +237,18 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat label="Members" value={String(dashboard.members)} />
-        <Stat label="Active services" value={String(dashboard.services)} />
-        <Stat label="Bookings (30d)" value={String(dashboard.bookings.total)} hint={`${dashboard.bookings.completed} completed`} />
-        <Stat label="Revenue (30d)" value={fmtMoney(dashboard.bookings.completedRevenue)} />
+        <Stat label={t('businesses.overview.members')} value={String(dashboard.members)} />
+        <Stat label={t('businesses.overview.activeServices')} value={String(dashboard.services)} />
+        <Stat label={t('businesses.overview.bookings30d')} value={String(dashboard.bookings.total)} hint={`${dashboard.bookings.completed} ${t('businesses.overview.completed')}`} />
+        <Stat label={t('businesses.overview.revenue30d')} value={fmtMoney(dashboard.bookings.completedRevenue)} />
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">Recent bookings</h3>
-        {dashboard.recentBookings.length === 0 ? <p className="text-sm text-gray-500">None in this period.</p> : (
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('businesses.overview.recent')}</h3>
+        {dashboard.recentBookings.length === 0 ? <p className="text-sm text-gray-500">{t('businesses.overview.recentEmpty')}</p> : (
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
-              <tr><th className="py-2">When</th><th>Service</th><th>Customer</th><th>Specialist</th><th className="text-right">Amount</th><th>Status</th></tr>
+              <tr><th className="py-2">{t('businesses.overview.colWhen')}</th><th>{t('businesses.overview.colService')}</th><th>{t('businesses.overview.colCustomer')}</th><th>{t('businesses.overview.colSpecialist')}</th><th className="text-right">{t('businesses.overview.colAmount')}</th><th>{t('businesses.overview.colStatus')}</th></tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {dashboard.recentBookings.map((b) => (
@@ -267,14 +270,15 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
 };
 
 const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
+  const { t } = useLanguage();
   const [inviteOpen, setInviteOpen] = useState(false);
   const members = business.members ?? [];
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{members.length} member{members.length === 1 ? '' : 's'}</h2>
-        {canManage && <button onClick={() => setInviteOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">+ Invite member</button>}
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{members.length} {t('businesses.members.memberCount')}</h2>
+        {canManage && <button onClick={() => setInviteOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('businesses.members.invite')}</button>}
       </div>
 
       <ul className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -305,16 +309,17 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
 };
 
 const MemberActions: React.FC<{ businessId: string; member: any; onReload: () => void }> = ({ businessId, member, onReload }) => {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const change = async (role: BusinessRole) => {
-    try { await businessService.setRole(businessId, member.user.id, role); toast.success('Role updated'); onReload(); }
-    catch (err: any) { toast.error(err?.message || 'Failed'); }
+    try { await businessService.setRole(businessId, member.user.id, role); toast.success(t('businesses.members.roleUpdated')); onReload(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
     setOpen(false);
   };
   const remove = async () => {
-    if (!confirm(`Remove ${member.user.firstName} from this business?`)) return;
-    try { await businessService.removeMember(businessId, member.user.id); toast.success('Removed'); onReload(); }
-    catch (err: any) { toast.error(err?.message || 'Failed'); }
+    if (!confirm(t('businesses.members.removeConfirm'))) return;
+    try { await businessService.removeMember(businessId, member.user.id); toast.success(t('businesses.members.removedSuccess')); onReload(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
     setOpen(false);
   };
   return (
@@ -322,12 +327,10 @@ const MemberActions: React.FC<{ businessId: string; member: any; onReload: () =>
       <button onClick={() => setOpen(!open)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 px-2">⋯</button>
       {open && (
         <div className="absolute right-0 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 min-w-[160px]">
-          {(['OWNER', 'MANAGER', 'SPECIALIST'] as BusinessRole[]).map((r) => (
-            <button key={r} onClick={() => change(r)} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-              Make {r.toLowerCase()}
-            </button>
-          ))}
-          <button onClick={remove} className="block w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Remove</button>
+          <button onClick={() => change('OWNER')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeOwner')}</button>
+          <button onClick={() => change('MANAGER')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeManager')}</button>
+          <button onClick={() => change('SPECIALIST')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeSpecialist')}</button>
+          <button onClick={remove} className="block w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">{t('businesses.members.remove')}</button>
         </div>
       )}
     </div>
@@ -335,6 +338,7 @@ const MemberActions: React.FC<{ businessId: string; member: any; onReload: () =>
 };
 
 const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited: () => void }> = ({ businessId, onClose, onInvited }) => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<BusinessRole>('SPECIALIST');
   const [saving, setSaving] = useState(false);
@@ -344,13 +348,13 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
     setSaving(true);
     try {
       await businessService.invite(businessId, email, role);
-      toast.success('Member invited');
+      toast.success(t('businesses.invite.success'));
       onInvited();
     } catch (err: any) {
       const msg = err?.message || '';
-      if (msg.includes('USER_NOT_FOUND')) toast.error('No user with that email — they need an account first');
-      else if (msg.includes('ALREADY_MEMBER')) toast.error('Already a member');
-      else toast.error(msg || 'Failed to invite');
+      if (msg.includes('USER_NOT_FOUND')) toast.error(t('businesses.invite.error.notFound'));
+      else if (msg.includes('ALREADY_MEMBER')) toast.error(t('businesses.invite.error.alreadyMember'));
+      else toast.error(msg || t('businesses.invite.error.generic'));
     } finally { setSaving(false); }
   };
 
@@ -358,21 +362,21 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Invite member</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('businesses.invite.modal.title')}</h3>
           <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
-        <p className="text-sm text-gray-500 mb-4">User must already have a MiyZapis account.</p>
-        <FormField label="Email *" value={email} onChange={setEmail} type="email" />
+        <p className="text-sm text-gray-500 mb-4">{t('businesses.invite.modal.intro')}</p>
+        <FormField label={t('businesses.invite.modal.email')} value={email} onChange={setEmail} type="email" />
         <label className="block mt-3">
-          <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Role</span>
+          <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('businesses.members.role')}</span>
           <select value={role} onChange={(e) => setRole(e.target.value as BusinessRole)} className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm">
-            <option value="SPECIALIST">Specialist</option>
-            <option value="MANAGER">Manager</option>
+            <option value="SPECIALIST">{t('businesses.invite.modal.specialist')}</option>
+            <option value="MANAGER">{t('businesses.invite.modal.manager')}</option>
           </select>
         </label>
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">Cancel</button>
-          <button onClick={submit} disabled={saving || !email} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? 'Inviting…' : 'Invite'}</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
+          <button onClick={submit} disabled={saving || !email} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.invite.modal.submitting') : t('businesses.invite.modal.submit')}</button>
         </div>
       </div>
     </div>
@@ -380,6 +384,7 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
 };
 
 const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: business.name,
     description: business.description ?? '',
@@ -393,35 +398,35 @@ const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: 
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
-    try { await businessService.update(business.id, form); toast.success('Saved'); onReload(); }
-    catch (err: any) { toast.error(err?.message || 'Save failed'); }
+    try { await businessService.update(business.id, form); toast.success(t('businesses.settings.savedSuccess')); onReload(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.settings.saveError')); }
     finally { setSaving(false); }
   };
   const deactivate = async () => {
-    if (!confirm(`Deactivate "${business.name}"? This hides it from the directory; data is preserved.`)) return;
-    try { await businessService.deactivate(business.id); toast.success('Deactivated'); onReload(); }
-    catch (err: any) { toast.error(err?.message || 'Failed'); }
+    if (!confirm(t('businesses.settings.deactivateConfirm'))) return;
+    try { await businessService.deactivate(business.id); toast.success(t('businesses.settings.deactivatedSuccess')); onReload(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
   };
 
-  if (!canManage) return <p className="text-sm text-gray-500">Only OWNER or MANAGER can edit settings.</p>;
+  if (!canManage) return <p className="text-sm text-gray-500">{t('businesses.settings.onlyManagers')}</p>;
   return (
     <div className="space-y-4">
-      <FormField label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-      <FormField label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
+      <FormField label={t('businesses.create.name').replace(' *', '')} value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+      <FormField label={t('businesses.create.description')} value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
       <div className="grid grid-cols-2 gap-3">
-        <FormField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
-        <FormField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
+        <FormField label={t('businesses.create.email')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
+        <FormField label={t('businesses.create.phone')} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
       </div>
-      <FormField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
-      <FormField label="Website" value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" />
+      <FormField label={t('businesses.create.address')} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+      <FormField label={t('businesses.create.website')} value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" />
       <div className="grid grid-cols-2 gap-3">
-        <FormField label="Currency" value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
-        <FormField label="Timezone" value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
+        <FormField label={t('businesses.create.currency')} value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
+        <FormField label={t('businesses.create.timezone')} value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
       </div>
 
       <div className="flex justify-between pt-3">
-        <button onClick={deactivate} className="text-sm text-red-600 hover:text-red-800">Deactivate business</button>
-        <button onClick={save} disabled={saving} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
+        <button onClick={deactivate} className="text-sm text-red-600 hover:text-red-800">{t('businesses.settings.deactivate')}</button>
+        <button onClick={save} disabled={saving} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">{saving ? t('businesses.settings.saving') : t('businesses.settings.save')}</button>
       </div>
     </div>
   );

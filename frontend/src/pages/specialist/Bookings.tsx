@@ -179,7 +179,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Close modal"
+            aria-label={t('common.close')}
             type="button"
           >
             <XMarkIcon className="w-5 h-5" />
@@ -1101,10 +1101,10 @@ const SpecialistBookings: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Kanban View"
+              title={t('bookings.kanbanView')}
             >
               <SquaresFourIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Kanban</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('booking.toggle.kanban')}</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -1113,10 +1113,10 @@ const SpecialistBookings: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="List View"
+              title={t('bookings.listView')}
             >
               <ListBulletsIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">List</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('booking.toggle.list')}</span>
             </button>
           </div>
         </div>
@@ -1587,7 +1587,7 @@ const SpecialistBookings: React.FC = () => {
                               >
                                 <StarIcon className="w-4 h-4 mr-1" />
                                 <span className="hidden sm:inline">{t('bookings.leaveReview')}</span>
-                                <span className="sm:hidden">Review</span>
+                                <span className="sm:hidden">{t('bookings.reviewShort')}</span>
                               </button>
                             )}
                           </>

@@ -920,7 +920,7 @@ const SpecialistOnboarding: React.FC = () => {
             {avatarPreview ? (
               <img
                 src={avatarPreview}
-                alt="Avatar preview"
+                alt={t('onboarding.avatarPreview')}
                 className="w-full h-full object-cover rounded-full"
               />
             ) : (

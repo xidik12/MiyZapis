@@ -358,7 +358,7 @@ const ClientCard: React.FC<{
           <button
             onClick={onToggle}
             className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2"
-            aria-label="Toggle details"
+            aria-label={t('clients.toggleDetails')}
           >
             {isExpanded ? (
               <ChevronUpIcon className="w-5 h-5" />

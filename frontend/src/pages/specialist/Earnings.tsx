@@ -326,7 +326,7 @@ const SpecialistEarnings: React.FC = () => {
         if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {
           setErrors(prev => ({ 
             ...prev, 
-            earnings: 'Some data may be unavailable. Please try refreshing the page.',
+            earnings: t('earnings.someDataUnavailable'),
             analytics: null // Don't duplicate error messages
           }));
         }
@@ -370,7 +370,7 @@ const SpecialistEarnings: React.FC = () => {
         console.error('Error loading recent completed bookings:', error);
         
         setPayoutHistory([]);
-        setErrors(prev => ({ ...prev, payments: 'Recent earnings temporarily unavailable.' }));
+        setErrors(prev => ({ ...prev, payments: t('earnings.recentEarningsUnavailable') }));
         setLoading(prev => ({ ...prev, payments: false }));
       }
     };
@@ -498,7 +498,7 @@ const SpecialistEarnings: React.FC = () => {
       }
     } catch (error) {
       console.error('Export failed:', error);
-      setErrors(prev => ({ ...prev, analytics: 'Failed to export report' }));
+      setErrors(prev => ({ ...prev, analytics: t('earnings.exportFailed') }));
     } finally {
       setIsExporting(false);
     }
@@ -871,7 +871,7 @@ const SpecialistEarnings: React.FC = () => {
 
         {/* Recent Earnings */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">Recent Completed Services</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('earnings.recentCompletedServices')}</h3>
           <div className="space-y-4">
             {loading.payments ? (
               Array.from({ length: 5 }, (_, index) => (
@@ -908,7 +908,7 @@ const SpecialistEarnings: React.FC = () => {
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CurrencyDollarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No recent completed services</p>
+                <p>{t('earnings.noRecentCompletedServices')}</p>
               </div>
             )}
           </div>

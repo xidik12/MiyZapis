@@ -110,10 +110,10 @@ const CalendarSettings: React.FC = () => {
         {(google?.connected || apple?.connected) && (
           <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">Force resync</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Re-push all your upcoming bookings to every connected calendar.</div>
+              <div className="font-semibold text-gray-900 dark:text-white">{t('calendarSync.forceResync')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('calendarSync.forceResyncDesc')}</div>
             </div>
-            <button onClick={resync} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">Resync</button>
+            <button onClick={resync} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">{t('calendarSync.resync')}</button>
           </div>
         )}
 
@@ -134,7 +134,9 @@ const ProviderCard: React.FC<{
   onConnect: () => void;
   onDisconnect: () => void;
   icon: React.ReactNode;
-}> = (p) => (
+}> = (p) => {
+  const { t } = useLanguage();
+  return (
   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-4">
     <div className="flex items-start gap-4">
       <div className="flex-shrink-0 w-12 h-12 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center">{p.icon}</div>
@@ -145,33 +147,35 @@ const ProviderCard: React.FC<{
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{p.subtitle}</p>
           </div>
           {p.connected ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">Connected</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">{t('calendarSync.connected')}</span>
           ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">Not connected</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">{t('calendarSync.notConnected')}</span>
           )}
         </div>
 
         {p.connected && (
           <div className="mt-3 space-y-1 text-sm">
-            {p.calendarName && <div className="text-gray-600 dark:text-gray-300">Calendar: <span className="font-medium">{p.calendarName}</span></div>}
-            {p.lastSyncAt && <div className="text-gray-500 text-xs">Last sync: {new Date(p.lastSyncAt).toLocaleString()}</div>}
-            {p.lastSyncError && <div className="text-red-600 text-xs">Last error: {p.lastSyncError}</div>}
+            {p.calendarName && <div className="text-gray-600 dark:text-gray-300">{t('calendarSync.calendar')}: <span className="font-medium">{p.calendarName}</span></div>}
+            {p.lastSyncAt && <div className="text-gray-500 text-xs">{t('calendarSync.lastSync')}: {new Date(p.lastSyncAt).toLocaleString()}</div>}
+            {p.lastSyncError && <div className="text-red-600 text-xs">{t('calendarSync.lastError')}: {p.lastSyncError}</div>}
           </div>
         )}
 
         <div className="mt-4 flex gap-2">
           {p.connected ? (
-            <button onClick={p.onDisconnect} className="px-3 py-1.5 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg">Disconnect</button>
+            <button onClick={p.onDisconnect} className="px-3 py-1.5 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg">{t('calendarSync.disconnect')}</button>
           ) : (
-            <button onClick={p.onConnect} className="px-3 py-1.5 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg">Connect</button>
+            <button onClick={p.onConnect} className="px-3 py-1.5 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg">{t('calendarSync.connect')}</button>
           )}
         </div>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void }> = ({ onClose, onConnected }) => {
+  const { t } = useLanguage();
   const [appleId, setAppleId] = useState('');
   const [appPassword, setAppPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -197,8 +201,8 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Connect iCloud Calendar</h3>
-          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('calendarSync.apple.modal.title')}</h3>
+          <button onClick={onClose} aria-label={t('common.close')} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4 text-sm text-blue-900 dark:text-blue-200">
@@ -213,19 +217,19 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
 
         <div className="space-y-3">
           <label className="block">
-            <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Apple ID</span>
+            <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('calendarSync.apple.modal.appleId')}</span>
             <input type="email" value={appleId} onChange={(e) => setAppleId(e.target.value)} placeholder="you@icloud.com" className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm" />
           </label>
           <label className="block">
-            <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">App-specific password</span>
+            <span className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('calendarSync.apple.modal.password')}</span>
             <input type="password" value={appPassword} onChange={(e) => setAppPassword(e.target.value)} placeholder="xxxx-xxxx-xxxx-xxxx" autoComplete="off" className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 text-sm font-mono" />
           </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('common.cancel')}</button>
           <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">
-            {saving ? 'Connecting…' : 'Connect'}
+            {saving ? t('calendarSync.apple.modal.connecting') : t('calendarSync.apple.modal.connect')}
           </button>
         </div>
       </div>

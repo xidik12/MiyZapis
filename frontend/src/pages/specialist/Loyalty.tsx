@@ -922,7 +922,7 @@ const SpecialistLoyalty: React.FC = () => {
                               </div>
                               <div className="flex items-center">
                                 <UsersIcon className="h-4 w-4 mr-1 text-blue-600" />
-                                {reward.currentRedemptions} / {reward.maxRedemptions || '∞'} redeemed
+                                {reward.currentRedemptions} / {reward.maxRedemptions || '∞'} {t('loyalty.redemptions')}
                               </div>
                             </div>
 
@@ -937,7 +937,7 @@ const SpecialistLoyalty: React.FC = () => {
                               )}
                               {reward.validUntil && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
-                                  Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                  {t('loyalty.rewards.expires')} {new Date(reward.validUntil).toLocaleDateString()}
                                 </span>
                               )}
                             </div>
@@ -948,7 +948,7 @@ const SpecialistLoyalty: React.FC = () => {
                             <button
                               onClick={() => setEditingReward(reward)}
                               className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
-                              title="Edit reward"
+                              title={t('loyalty.editReward')}
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
@@ -959,7 +959,7 @@ const SpecialistLoyalty: React.FC = () => {
                                   ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/20'
                                   : 'text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/20'
                               }`}
-                              title={reward.isActive ? 'Deactivate reward' : 'Activate reward'}
+                              title={reward.isActive ? t('loyalty.deactivateReward') : t('loyalty.activateReward')}
                             >
                               {reward.isActive ? (
                                 <XMarkIcon className="h-4 w-4" />
@@ -970,7 +970,7 @@ const SpecialistLoyalty: React.FC = () => {
                             <button
                               onClick={() => handleDeleteReward(reward.id)}
                               className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors"
-                              title="Delete reward"
+                              title={t('loyalty.deleteReward')}
                             >
                               <TrashIcon className="h-4 w-4" />
                             </button>
@@ -1012,7 +1012,7 @@ const SpecialistLoyalty: React.FC = () => {
                                 </span>
                                 {reward.validUntil && (
                                   <span className="inline-flex items-center px-2 py-1 rounded-xl bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
-                                    Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                    {t('loyalty.rewards.expires')} {new Date(reward.validUntil).toLocaleDateString()}
                                   </span>
                                 )}
                               </div>
@@ -1457,7 +1457,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Expiration Date (optional)
+                      {t('loyalty.rewards.expirationOptional')}
                     </label>
                     <input
                       type="date"
@@ -1477,14 +1477,14 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                 disabled={isSubmitting}
                 className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
-                {isSubmitting ? 'Updating...' : 'Update Reward'}
+                {isSubmitting ? t('loyalty.rewards.updating') : t('loyalty.rewards.updateReward')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
                 className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
               >
-                Cancel
+                {t('actions.cancel')}
               </button>
             </div>
           </form>
