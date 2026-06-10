@@ -8,18 +8,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Sky Blue primary colors
+        // Primary — richer azure/royal blue (more characterful than generic sky)
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#5ba3f0',
-          500: '#3a87e0',  // Sky Blue — calmed a touch
-          600: '#2069cf',  // primary CTA — deepened
-          700: '#1a55b3',
-          800: '#1b478f',
-          900: '#1b3d75',
+          50: '#eff5ff',
+          100: '#dbe8fe',
+          200: '#bfd7fe',
+          300: '#93bbfd',
+          400: '#609afa',
+          500: '#3b76f6',
+          600: '#2563eb',  // primary CTA — azure
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+        // Warm-tinted neutral scale (overrides Tailwind's cool gray platform-wide
+        // so the whole UI reads a touch warmer / more premium, not clinical).
+        gray: {
+          50: '#faf9f7',
+          100: '#f4f3f0',
+          200: '#e9e6e1',
+          300: '#d8d4cd',
+          400: '#a8a39a',
+          500: '#79746b',
+          600: '#57534c',
+          700: '#423f39',
+          800: '#272420',
+          900: '#1a1714',
+          950: '#100e0c',
         },
         // Bright Yellow secondary colors
         secondary: {
