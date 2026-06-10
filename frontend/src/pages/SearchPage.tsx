@@ -604,28 +604,20 @@ const SearchPage: React.FC = () => {
               <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
-              {!isOwnService && service.isAvailable && (
-                <Link
-                  to={`/booking/${service.id}`}
-                  className="cursor-pointer mt-1 px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-all duration-200 inline-block"
-                >
-                  {t('actions.quickBook') || 'Quick Book'}
-                </Link>
-              )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-row gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
+              className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
+                className="flex-1 text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -633,7 +625,7 @@ const SearchPage: React.FC = () => {
             ) : (
               <Link
                 to={`/booking/${service.id}`}
-                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
+                className={`flex-1 text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
                   service.isAvailable
                     ? 'bg-primary-600 hover:bg-primary-700'
                     : 'bg-gray-400 cursor-not-allowed'

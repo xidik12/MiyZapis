@@ -18,6 +18,17 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   'technology': RobotIcon,
 };
 
+// Per-category accent palette — a service directory benefits from colour-coded
+// types (meaningful, not decorative). Full class strings so Tailwind JIT keeps them.
+const categoryAccents = [
+  { chip: 'bg-sky-100 dark:bg-sky-900/30', icon: 'text-sky-600 dark:text-sky-400', hoverBorder: 'hover:border-sky-300 dark:hover:border-sky-700', hoverText: 'group-hover:text-sky-600', glow: 'from-sky-50' },
+  { chip: 'bg-violet-100 dark:bg-violet-900/30', icon: 'text-violet-600 dark:text-violet-400', hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-700', hoverText: 'group-hover:text-violet-600', glow: 'from-violet-50' },
+  { chip: 'bg-emerald-100 dark:bg-emerald-900/30', icon: 'text-emerald-600 dark:text-emerald-400', hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-700', hoverText: 'group-hover:text-emerald-600', glow: 'from-emerald-50' },
+  { chip: 'bg-amber-100 dark:bg-amber-900/30', icon: 'text-amber-600 dark:text-amber-400', hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-700', hoverText: 'group-hover:text-amber-600', glow: 'from-amber-50' },
+  { chip: 'bg-rose-100 dark:bg-rose-900/30', icon: 'text-rose-600 dark:text-rose-400', hoverBorder: 'hover:border-rose-300 dark:hover:border-rose-700', hoverText: 'group-hover:text-rose-600', glow: 'from-rose-50' },
+  { chip: 'bg-teal-100 dark:bg-teal-900/30', icon: 'text-teal-600 dark:text-teal-400', hoverBorder: 'hover:border-teal-300 dark:hover:border-teal-700', hoverText: 'group-hover:text-teal-600', glow: 'from-teal-50' },
+];
+
 const getHowItWorksSteps = (t: (key: string) => string) => [
   {
     step: 1,
@@ -451,31 +462,32 @@ const HomePage: React.FC = () => {
               <>
                 {/* Mobile: horizontal scroll; Desktop: grid */}
                 <div className="sm:hidden flex overflow-x-auto gap-3 pb-4 px-1 scrollbar-hide snap-x snap-mandatory -mx-3">
-                  {categories.slice(0, 6).map((category: Record<string, unknown>) => {
+                  {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
                     const CategoryIcon = categoryIcons[slug] || SparklesIcon;
+                    const accent = categoryAccents[idx % categoryAccents.length];
                     return (
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
+                        className={`group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-all duration-250 ${accent.hoverBorder}`}
                       >
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-sky-100 dark:bg-sky-900/30">
-                          <CategoryIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${accent.chip}`}>
+                          <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
                         </div>
-                        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-sky-600 transition-colors duration-200">
+                        <h3 className={`text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 transition-colors duration-200 ${accent.hoverText}`}>
                           {category.name as string}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
-                          {(category.description || '') as string}
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed min-h-[2.5rem]">
+                          {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
                         <div className="flex items-center justify-between text-sm">
-                          {category.serviceCount != null && (
-                            <span className="text-sky-600 font-semibold px-2.5 py-0.5 bg-sky-50 dark:bg-sky-900/20 rounded-full text-xs">
+                          {category.serviceCount != null ? (
+                            <span className={`font-semibold px-2.5 py-0.5 rounded-full text-xs ${accent.chip} ${accent.icon}`}>
                               {category.serviceCount as number} {t('services.count')}
                             </span>
-                          )}
-                          <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 transition-all duration-200 group-hover:translate-x-0.5" />
+                          ) : <span />}
+                          <ArrowRightIcon className={`w-4 h-4 text-gray-300 transition-all duration-200 group-hover:translate-x-0.5 ${accent.icon.replace('text-', 'group-hover:text-')}`} />
                         </div>
                       </Link>
                     );
@@ -487,29 +499,32 @@ const HomePage: React.FC = () => {
                   {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
                     const CategoryIcon = categoryIcons[slug] || SparklesIcon;
+                    const accent = categoryAccents[idx % categoryAccents.length];
                     return (
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-800 p-6 transition-all duration-250 hover:border-sky-300 dark:hover:border-sky-700"
+                        className={`group relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 transition-all duration-300 hover:-translate-y-0.5 ${accent.hoverBorder}`}
                         style={{ transitionDelay: `${idx * 50}ms` }}
                       >
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 bg-sky-100 dark:bg-sky-900/30">
-                          <CategoryIcon className="w-7 h-7 text-sky-600 dark:text-sky-400" />
+                        {/* soft corner glow on hover */}
+                        <div className={`pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br ${accent.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:opacity-0`} />
+                        <div className={`relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${accent.chip}`}>
+                          <CategoryIcon className={`w-7 h-7 ${accent.icon}`} />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-sky-600 transition-colors duration-200">
+                        <h3 className={`relative text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 transition-colors duration-200 ${accent.hoverText}`}>
                           {category.name as string}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed line-clamp-2">
-                          {(category.description || '') as string}
+                        <p className="relative text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                          {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
-                        <div className="flex items-center justify-between text-sm">
-                          {category.serviceCount != null && (
-                            <span className="text-sky-600 font-semibold px-3 py-1 bg-sky-50 dark:bg-sky-900/20 rounded-full text-xs">
+                        <div className="relative flex items-center justify-between text-sm">
+                          {category.serviceCount != null ? (
+                            <span className={`font-semibold px-3 py-1 rounded-full text-xs ${accent.chip} ${accent.icon}`}>
                               {category.serviceCount as number} {t('services.count')}
                             </span>
-                          )}
-                          <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-sky-500 transition-all duration-200 group-hover:translate-x-1" />
+                          ) : <span />}
+                          <ArrowRightIcon className={`w-5 h-5 text-gray-300 transition-all duration-200 group-hover:translate-x-1 ${accent.icon.replace('text-', 'group-hover:text-')}`} />
                         </div>
                       </Link>
                     );
