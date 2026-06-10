@@ -311,13 +311,15 @@ export const requireOwnership = (resourceIdParam: string) => {
       if (resourceIdParam === 'reviewId') {
         const review = await prisma.review.findUnique({
           where: { id: resourceId },
-          select: { customerId: true, specialistId: true },
+          // review.specialistId references Specialist.id (profile), not User.id —
+          // resolve to the owning userId for the ownership comparison.
+          select: { customerId: true, specialist: { select: { userId: true } } },
         });
 
         if (review) {
-          hasAccess = 
+          hasAccess =
             review.customerId === req.user.id ||
-            review.specialistId === req.user.id ||
+            review.specialist?.userId === req.user.id ||
             req.user.userType === 'ADMIN';
         }
       }

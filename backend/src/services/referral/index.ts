@@ -361,14 +361,17 @@ export class ReferralService {
             },
           });
         } else if (referral.referrerRewardType === 'CREDIT' && referral.referrerRewardValue) {
-          // Add wallet credit
+          // Add wallet credit (read balance, then set — keeps balanceBefore/After accurate)
+          const referrer = await tx.user.findUnique({
+            where: { id: referral.referrerId },
+            select: { walletBalance: true },
+          });
+          const balanceBefore = Number(referrer?.walletBalance || 0);
+          const balanceAfter = balanceBefore + Number(referral.referrerRewardValue);
+
           await tx.user.update({
             where: { id: referral.referrerId },
-            data: {
-              walletBalance: {
-                increment: referral.referrerRewardValue,
-              },
-            },
+            data: { walletBalance: balanceAfter },
           });
 
           // Create wallet transaction
@@ -377,6 +380,9 @@ export class ReferralService {
               userId: referral.referrerId,
               type: 'CREDIT',
               amount: referral.referrerRewardValue,
+              balanceBefore,
+              balanceAfter,
+              reason: 'REFERRAL_REWARD',
               description: `Referral reward: ${referral.referralType}`,
               status: 'COMPLETED',
               referenceId: referral.referralCode,
@@ -407,14 +413,17 @@ export class ReferralService {
             },
           });
         } else if (referral.referredRewardType === 'CREDIT' && referral.referredRewardValue) {
-          // Add wallet credit
+          // Add wallet credit (read balance, then set — keeps balanceBefore/After accurate)
+          const referredUser = await tx.user.findUnique({
+            where: { id: data.referredUserId },
+            select: { walletBalance: true },
+          });
+          const balanceBefore = Number(referredUser?.walletBalance || 0);
+          const balanceAfter = balanceBefore + Number(referral.referredRewardValue);
+
           await tx.user.update({
             where: { id: data.referredUserId },
-            data: {
-              walletBalance: {
-                increment: referral.referredRewardValue,
-              },
-            },
+            data: { walletBalance: balanceAfter },
           });
 
           // Create wallet transaction
@@ -423,6 +432,9 @@ export class ReferralService {
               userId: data.referredUserId,
               type: 'CREDIT',
               amount: referral.referredRewardValue,
+              balanceBefore,
+              balanceAfter,
+              reason: 'REFERRAL_REWARD',
               description: `Welcome bonus: ${referral.referralType}`,
               status: 'COMPLETED',
               referenceId: referral.referralCode,

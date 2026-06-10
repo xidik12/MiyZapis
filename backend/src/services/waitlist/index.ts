@@ -59,12 +59,18 @@ export class WaitlistService {
         throw new Error('CANNOT_JOIN_OWN_WAITLIST');
       }
 
+      // The client sends a Specialist profile id, but the read/notify paths
+      // (getWaitlistForSpecialist, checkAndNotifyWaitlist via booking.specialistId)
+      // operate on the specialist's User id. Derive it server-side from the service
+      // so write/read/notify all share one id-space (mirrors booking creation).
+      const specialistUserId = service.specialist.userId;
+
       // Check if user already has a WAITING entry for the same specialist/service/date
       const existingEntry = await prisma.waitlist.findFirst({
         where: {
           userId: data.userId,
           serviceId: data.serviceId,
-          specialistId: data.specialistId,
+          specialistId: specialistUserId,
           preferredDate: data.preferredDate,
           status: 'WAITING',
         },
@@ -89,7 +95,7 @@ export class WaitlistService {
         data: {
           userId: data.userId,
           serviceId: data.serviceId,
-          specialistId: data.specialistId,
+          specialistId: specialistUserId,
           preferredDate: data.preferredDate,
           preferredTime: data.preferredTime || null,
           notes: data.notes || null,
@@ -121,7 +127,7 @@ export class WaitlistService {
         waitlistId: waitlistEntry.id,
         userId: data.userId,
         serviceId: data.serviceId,
-        specialistId: data.specialistId,
+        specialistId: specialistUserId,
         preferredDate: data.preferredDate,
       });
 

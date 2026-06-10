@@ -573,19 +573,20 @@ export class LoyaltyService {
       ];
 
       for (const tier of defaultTiers) {
+        // Only persist columns that exist on the LoyaltyTier model. The
+        // discount/priority/exclusive flags are response-shaping metadata
+        // (see routes/loyalty.ts), not stored columns.
+        const persisted = {
+          minPoints: tier.minPoints,
+          maxPoints: tier.maxPoints,
+          color: tier.color,
+          icon: tier.icon,
+          benefits: tier.benefits,
+        };
         await dbClient.loyaltyTier.upsert({
           where: { name: tier.name },
-          update: {
-            minPoints: tier.minPoints,
-            maxPoints: tier.maxPoints,
-            color: tier.color,
-            icon: tier.icon,
-            benefits: tier.benefits,
-            discountPercentage: tier.discountPercentage,
-            prioritySupport: tier.prioritySupport,
-            exclusiveOffers: tier.exclusiveOffers
-          },
-          create: tier
+          update: persisted,
+          create: { name: tier.name, ...persisted },
         });
       }
 

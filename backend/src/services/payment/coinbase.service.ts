@@ -441,7 +441,9 @@ export class CoinbaseCommerceService {
           const booking = await prisma.booking.create({
             data: {
               customerId: cryptoPayment.userId,
-              specialistId: service.specialistId,
+              // bookings.specialistId references User.id, but service.specialistId
+              // is the Specialist profile id — use the specialist's userId.
+              specialistId: service.specialist.userId,
               serviceId: metadata.serviceId,
               scheduledAt: new Date(metadata.scheduledAt),
               duration: metadata.duration || 60, // default 1 hour
@@ -449,10 +451,10 @@ export class CoinbaseCommerceService {
               depositStatus: 'PAID',
               depositPaidAt: new Date(),
               totalAmount: cryptoPayment.amount, // Use deposit amount for now
-              amountPaid: cryptoPayment.amount,
-              paymentStatus: 'PAID',
+              depositAmount: cryptoPayment.amount,
+              remainingAmount: 0,
+              deliverables: '[]',
               customerNotes: metadata.customerNotes || null,
-              bookingType: 'REGULAR',
             },
           });
 

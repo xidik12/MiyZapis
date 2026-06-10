@@ -26,7 +26,12 @@ function endOfMonth(d = new Date()) { return new Date(d.getFullYear(), d.getMont
 function toInputDate(d: Date) { return d.toISOString().slice(0, 10); }
 function fromInputDate(s: string) { return new Date(s + 'T00:00:00'); }
 function fmtMoney(n: number, currency = 'UAH') {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(n || 0);
+  // currency can be a user-entered/invalid ISO code — Intl throws RangeError on bad codes.
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(n || 0);
+  } catch {
+    return `${(n || 0).toFixed(2)} ${currency || ''}`.trim();
+  }
 }
 
 const Accounting: React.FC = () => {
@@ -365,7 +370,7 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">New invoice</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
 
         <div className="space-y-3">

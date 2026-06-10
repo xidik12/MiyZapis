@@ -56,8 +56,11 @@ const PERFORMANCE_THRESHOLDS = {
 
 // Helper function to calculate growth percentage
 const calculateGrowthPercentage = (current: number, previous: number): number => {
-  if (previous === 0) return current > 0 ? 100 : 0;
-  return ((current - previous) / previous) * 100;
+  const c = Number(current) || 0;
+  const p = Number(previous) || 0;
+  if (p === 0) return c > 0 ? 100 : 0;
+  const growth = ((c - p) / p) * 100;
+  return Number.isFinite(growth) ? growth : 0;
 };
 
 // Helper function to format time periods for chart labels

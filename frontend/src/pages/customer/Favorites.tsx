@@ -122,9 +122,21 @@ const CustomerFavorites: React.FC = () => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     const specialist = favorite.specialist;
-    const userName = `${specialist.user.firstName} ${specialist.user.lastName}`.toLowerCase();
+    const userName = `${specialist.user?.firstName || ''} ${specialist.user?.lastName || ''}`.toLowerCase();
     const businessName = specialist.businessName?.toLowerCase() || '';
-    const specialties = specialist.specialties.join(' ').toLowerCase();
+    // specialties may arrive as an array OR a JSON string OR null (Prisma stores it as String)
+    const rawSpecs: unknown = specialist.specialties;
+    let specialties = '';
+    if (Array.isArray(rawSpecs)) {
+      specialties = rawSpecs.join(' ').toLowerCase();
+    } else if (typeof rawSpecs === 'string') {
+      try {
+        const parsed = JSON.parse(rawSpecs);
+        specialties = (Array.isArray(parsed) ? parsed.join(' ') : rawSpecs).toLowerCase();
+      } catch {
+        specialties = rawSpecs.toLowerCase();
+      }
+    }
     const description = specialist.description?.toLowerCase() || '';
     
     return userName.includes(query) || 
@@ -241,7 +253,7 @@ const CustomerFavorites: React.FC = () => {
         <div className="mb-6">
           <div className="relative max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             </div>
             <input
               type="text"
@@ -255,7 +267,7 @@ const CustomerFavorites: React.FC = () => {
                 onClick={handleClearSearch}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 hover:text-gray-600" />
               </button>
             )}
           </div>
@@ -296,7 +308,7 @@ const CustomerFavorites: React.FC = () => {
           <>
             {filteredSpecialists.length === 0 && !isLoading ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 md:p-8 text-center">
-                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
+                <HeartIcon className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400 mb-4" active />
                 <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ?
                     `No specialists found for "${searchQuery}"` :
@@ -339,7 +351,7 @@ const CustomerFavorites: React.FC = () => {
                   {filteredSpecialists.map((favorite) => {
                     const specialist = favorite.specialist;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200">
                         <div className="p-4 sm:p-6">
                           {/* Header with favorite button */}
                           <div className="flex items-start justify-between mb-4">
@@ -455,7 +467,7 @@ const CustomerFavorites: React.FC = () => {
           <>
             {filteredServices.length === 0 && !isLoading ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 md:p-8 text-center">
-                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
+                <HeartIcon className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400 mb-4" active />
                 <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ?
                     `No services found for "${searchQuery}"` :
@@ -498,11 +510,11 @@ const CustomerFavorites: React.FC = () => {
                   {filteredServices.map((favorite) => {
                     const service = favorite.service;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow cursor-pointer hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200 overflow-hidden">
                         {/* Service Image */}
                         <div className="relative">
                           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-sm">No image</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-sm">No image</span>
                           </div>
                           <button
                             onClick={() => handleRemoveService(service.id)}

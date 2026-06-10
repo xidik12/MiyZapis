@@ -223,13 +223,21 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
     );
   }
   const c = business.currency;
+  // currency may be a user-entered/invalid ISO code — Intl throws RangeError on bad codes.
+  const fmtMoney = (n: number) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency: c }).format(n || 0);
+    } catch {
+      return `${(n || 0).toFixed(2)} ${c || ''}`.trim();
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Members" value={String(dashboard.members)} />
         <Stat label="Active services" value={String(dashboard.services)} />
         <Stat label="Bookings (30d)" value={String(dashboard.bookings.total)} hint={`${dashboard.bookings.completed} completed`} />
-        <Stat label="Revenue (30d)" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: c }).format(dashboard.bookings.completedRevenue)} />
+        <Stat label="Revenue (30d)" value={fmtMoney(dashboard.bookings.completedRevenue)} />
       </div>
 
       <div>
@@ -246,7 +254,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
                   <td>{b.service?.name ?? '—'}</td>
                   <td>{b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : '—'}</td>
                   <td>{b.specialist ? `${b.specialist.firstName} ${b.specialist.lastName}` : '—'}</td>
-                  <td className="text-right font-mono">{new Intl.NumberFormat(undefined, { style: 'currency', currency: c }).format(b.totalAmount)}</td>
+                  <td className="text-right font-mono">{fmtMoney(b.totalAmount)}</td>
                   <td className="text-xs">{b.status}</td>
                 </tr>
               ))}
@@ -311,7 +319,7 @@ const MemberActions: React.FC<{ businessId: string; member: any; onReload: () =>
   };
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="text-gray-400 hover:text-gray-700 px-2">⋯</button>
+      <button onClick={() => setOpen(!open)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 px-2">⋯</button>
       {open && (
         <div className="absolute right-0 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 min-w-[160px]">
           {(['OWNER', 'MANAGER', 'SPECIALIST'] as BusinessRole[]).map((r) => (
@@ -351,7 +359,7 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Invite member</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
         <p className="text-sm text-gray-500 mb-4">User must already have a MiyZapis account.</p>
         <FormField label="Email *" value={email} onChange={setEmail} type="email" />
