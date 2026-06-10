@@ -425,8 +425,10 @@ const SpecialistProfilePage: React.FC = () => {
                 </button>
               )}
 
-              {/* Share Button */}
+              {/* Share Button (icon-only, declutters the hero) */}
               <ShareButton
+                variant="icon"
+                className="border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                 url={`${window.location.origin}/s/${specialist.slug || specialist.id}`}
                 title={`${specialist.user?.firstName} ${specialist.user?.lastName} — MiyZapys`}
                 text={`${t('share.tellFriend')}: ${specialist.user?.firstName} ${specialist.user?.lastName}`}

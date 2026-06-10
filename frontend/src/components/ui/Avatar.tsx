@@ -61,12 +61,33 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     [src]
   );
 
-  // If no valid src or loading failed, show fallback
+  // If no valid src or loading failed, show a quiet initials placeholder
+  // (clean and intentional — not a generic icon). Falls back to the icon only
+  // when no usable initials can be derived from `alt`.
   if (!absoluteSrc || imageError) {
+    const initials = (alt || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase();
+    const textSize = { sm: 'text-xs', md: 'text-sm', lg: 'text-lg', xl: 'text-2xl' }[size];
+    if (!initials) {
+      return (
+        <UserCircleIcon
+          className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
+        />
+      );
+    }
     return (
-      <UserCircleIcon
-        className={`${sizeClasses[size]} text-gray-500 dark:text-gray-400 ${className}`}
-      />
+      <span
+        className={`${sizeClasses[size]} ${textSize} inline-flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-semibold select-none ${className}`}
+        aria-label={alt}
+      >
+        {initials}
+      </span>
     );
   }
 
