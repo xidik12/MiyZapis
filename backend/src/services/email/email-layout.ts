@@ -1,26 +1,28 @@
 // Shared branded layout for all MiyZapis transactional emails.
 // One place to change brand colors, logo, header/footer.
 //
-// Brand palette mirrors the frontend Tailwind config:
-//   primary  #3b97f2 (Sky Blue 500)  / #2678e7 (600) / #1d61d4 (700)
+// Brand palette mirrors the frontend Tailwind config exactly so emails read as
+// an extension of the website (azure accent + warm neutrals):
+//   primary   #2563eb (azure 600, the CTA color) / #1d4ed8 (700)
 //   secondary #ffc41f (Bright Yellow 500)
-//   page bg  #f4f7fb
-//   card     #ffffff with 1px border #e5edf6 + soft sky-blue shadow
+//   page bg   #f7f6f3 (warm neutral, like the site's light background)
+//   card      #ffffff with 1px warm border #e9e6e2
+//   heading   #1a1714 (warm near-black, == site --text-primary)
 
 export type EmailLanguage = 'en' | 'uk' | 'ru';
 
 const BRAND = {
-  primary: '#3b97f2',
-  primaryDark: '#2678e7',
+  primary: '#2563eb',
+  primaryDark: '#1d4ed8',
   secondary: '#ffc41f',
-  pageBg: '#f4f7fb',
+  pageBg: '#f7f6f3',
   card: '#ffffff',
-  cardBorder: '#e5edf6',
-  heading: '#0f172a',
-  body: '#374151',
-  muted: '#6b7280',
-  faint: '#9ca3af',
-  infoBg: '#eef5ff',
+  cardBorder: '#e9e6e2',
+  heading: '#1a1714',
+  body: '#44423e',
+  muted: '#747270',
+  faint: '#a3a19d',
+  infoBg: '#eff5ff',
   successBg: '#ecfdf5',
   successBorder: '#10b981',
   warnBg: '#fffaeb',
