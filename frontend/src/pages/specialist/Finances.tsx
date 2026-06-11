@@ -476,72 +476,117 @@ const SpecialistFinances: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {expenses.map((expense) => {
-                const Icon = getCategoryIcon(expense.category);
-                const config = CATEGORY_CONFIG[expense.category];
-                return (
-                  <div
-                    key={expense.id}
-                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className={`p-2 rounded-lg flex-shrink-0 ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'}`}>
-                          <Icon className={`h-5 w-5 ${config?.color || 'text-gray-600'}`} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 dark:text-white truncate">
-                            {expense.description}
-                          </p>
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span>{getCategoryLabel(expense.category)}</span>
-                            <span>•</span>
-                            <span>{formatDate(expense.date)}</span>
-                            {expense.isRecurring && expense.recurringFrequency && (
-                              <>
-                                <span>•</span>
-                                <span className="text-primary-600 dark:text-primary-400">
-                                  {getRecurringLabel(expense.recurringFrequency)}
-                                </span>
-                              </>
-                            )}
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    <th scope="col" className="px-6 py-3 font-medium">{t('finances.date') || 'Date'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium">{t('finances.description') || 'Description'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium">{t('finances.category') || 'Category'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium">{t('finances.vendorName') || 'Vendor'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium">{t('finances.frequency') || 'Recurring'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium text-right">{t('finances.amount') || 'Amount'}</th>
+                    <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {expenses.map((expense) => {
+                    const Icon = getCategoryIcon(expense.category);
+                    const config = CATEGORY_CONFIG[expense.category];
+                    return (
+                      <tr
+                        key={expense.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                          {formatDate(expense.date)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`p-1.5 rounded-lg flex-shrink-0 ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'}`}>
+                              <Icon className={`h-4 w-4 ${config?.color || 'text-gray-600'}`} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 dark:text-white truncate">
+                                {expense.description}
+                              </p>
+                              {expense.notes && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[16rem]">
+                                  {expense.notes}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold text-red-600 dark:text-red-400">
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'} ${config?.color || 'text-gray-600'}`}>
+                            {getCategoryLabel(expense.category)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                          {expense.vendorName || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {expense.isRecurring && expense.recurringFrequency ? (
+                            <span className="text-primary-600 dark:text-primary-400">
+                              {getRecurringLabel(expense.recurringFrequency)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-600">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-red-600 dark:text-red-400">
                           -{formatPrice(Number(expense.amount) || 0, (expense.currency || 'UAH') as 'USD' | 'EUR' | 'UAH')}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEditExpense(expense)}
-                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                          >
-                            <PencilIcon className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(expense.id)}
-                            disabled={deleting === expense.id}
-                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                          >
-                            {deleting === expense.id ? (
-                              <ArrowPathIcon className="h-5 w-5 animate-spin" />
-                            ) : (
-                              <TrashIcon className="h-5 w-5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    {expense.notes && (
-                      <p className="mt-2 ml-14 text-sm text-gray-500 dark:text-gray-400">
-                        {expense.notes}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              onClick={() => handleEditExpense(expense)}
+                              aria-label={t('finances.editExpense') || 'Edit expense'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(expense.id)}
+                              disabled={deleting === expense.id}
+                              aria-label={t('common.delete') || 'Delete'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                            >
+                              {deleting === expense.id ? (
+                                <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <TrashIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                {(() => {
+                  // Footer total — only when every listed expense shares one currency
+                  // (summing mixed currencies would be meaningless).
+                  const currencies = Array.from(new Set(expenses.map((e) => e.currency || 'UAH')));
+                  if (currencies.length !== 1) return null;
+                  const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                  return (
+                    <tfoot>
+                      <tr className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+                        <td colSpan={5} className="px-6 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">
+                          {t('finances.totalExpenses') || 'Total'}
+                          <span className="ml-2 text-gray-400 dark:text-gray-500 font-normal">({expenses.length})</span>
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-right text-sm font-bold text-red-600 dark:text-red-400">
+                          -{formatPrice(total, currencies[0] as 'USD' | 'EUR' | 'UAH')}
+                        </td>
+                        <td />
+                      </tr>
+                    </tfoot>
+                  );
+                })()}
+              </table>
             </div>
           )}
         </div>

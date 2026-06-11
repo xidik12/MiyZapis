@@ -8,8 +8,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
-  ListIcon as Bars3Icon,
-  XIcon as XMarkIcon,
   BellIcon,
   UserCircleIcon,
   ChevronDownIcon,
