@@ -86,9 +86,8 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: isDragging ? 1 : 1.02 }}
       onClick={onClick}
-      className={`bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover-lift ${
         isDragging ? 'opacity-50 rotate-2' : ''
       }`}
     >

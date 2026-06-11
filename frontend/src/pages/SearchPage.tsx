@@ -468,7 +468,7 @@ const SearchPage: React.FC = () => {
     return (
     <div
       key={service.id}
-      className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
+      className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover-lift"
     >
       {/* Portfolio lives on the specialist profile — search cards stay clean (ProfiHub-style) */}
       <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
@@ -1493,7 +1493,7 @@ const SearchPage: React.FC = () => {
             ))}
           </div>
         ) : getFilteredServices().length > 0 ? (
-          <div className={`grid gap-4 sm:gap-6 ${
+          <div className={`grid gap-4 sm:gap-6 reveal-stagger ${
             viewMode === 'grid'
               ? 'grid-cols-1 lg:grid-cols-2'
               : 'grid-cols-1'

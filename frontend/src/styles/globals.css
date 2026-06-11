@@ -1156,25 +1156,70 @@
     );
   }
 
-  /* Smooth page transitions */
+  /* Smooth page transitions — fade + lift on every route change. */
   .page-enter {
-    animation: pageEnter 0.3s ease-out;
+    animation: pageEnter 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    will-change: opacity, transform;
   }
 
   @keyframes pageEnter {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(16px) scale(0.992);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
+  }
+
+  /* Hover-lift — cards/tiles float up with a soft shadow on hover.
+     Gated on a real pointer + motion preference so touch/reduced-motion
+     users get the clean static card. */
+  .hover-lift {
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1),
+                box-shadow 0.22s ease,
+                border-color 0.18s ease;
+  }
+  .hover-lift-sm {
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s ease;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .hover-lift:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 30px -12px rgba(15, 23, 42, 0.18), 0 6px 14px -10px rgba(15, 23, 42, 0.12);
+    }
+    .dark .hover-lift:hover {
+      box-shadow: 0 16px 34px -12px rgba(0, 0, 0, 0.6), 0 6px 16px -10px rgba(0, 0, 0, 0.5);
+    }
+    .hover-lift-sm:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px -10px rgba(15, 23, 42, 0.16);
+    }
+    .dark .hover-lift-sm:hover {
+      box-shadow: 0 10px 22px -10px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  /* Staggered reveal for grids/lists — children rise in sequence.
+     Add .reveal-stagger to a container; it animates its direct children. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-stagger > * {
+      animation: pageEnter 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    .reveal-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+    .reveal-stagger > *:nth-child(2) { animation-delay: 0.06s; }
+    .reveal-stagger > *:nth-child(3) { animation-delay: 0.10s; }
+    .reveal-stagger > *:nth-child(4) { animation-delay: 0.14s; }
+    .reveal-stagger > *:nth-child(5) { animation-delay: 0.18s; }
+    .reveal-stagger > *:nth-child(6) { animation-delay: 0.22s; }
+    .reveal-stagger > *:nth-child(7) { animation-delay: 0.26s; }
+    .reveal-stagger > *:nth-child(8) { animation-delay: 0.30s; }
   }
 
   /* Smooth stat counters */
   .stat-card {
-    @apply bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-700;
+    @apply bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover-lift hover:border-gray-300 dark:hover:border-gray-700;
   }
 
   /* Better focus states */

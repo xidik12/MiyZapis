@@ -657,7 +657,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {services.map((service: any) => (
                     <div
                       key={service.id}
-                      className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 hover:shadow-lg transition-all duration-200"
+                      className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-all duration-200 hover-lift"
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="flex-1">

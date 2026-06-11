@@ -501,7 +501,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-600"
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer"
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${accent.chip}`}>
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
@@ -523,7 +523,7 @@ const HomePage: React.FC = () => {
                 </div>
 
                 {/* Desktop grid */}
-                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 reveal-stagger">
                   {categories.slice(0, 6).map((category: Record<string, unknown>, idx: number) => {
                     const slug = (category.slug || category.id) as string;
                     const CategoryIcon = resolveCategoryIcon(slug, category.name as string);
@@ -532,7 +532,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 p-6 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-700"
+                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 p-6 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-700 hover-lift cursor-pointer"
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${accent.chip}`}>
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
@@ -675,12 +675,12 @@ const HomePage: React.FC = () => {
                 ))}
               </div>
             ) : popularServices.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 reveal-stagger">
                 {popularServices.map((service: any) => (
                   <Link
                     key={service.id}
                     to={`/booking/${service.id}`}
-                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-600"
+                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer"
                   >
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                       {service.name}
@@ -766,7 +766,7 @@ const HomePage: React.FC = () => {
               ))}
             </div>
           ) : topSpecialists.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 reveal-stagger">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {topSpecialists.map((specialist: any) => {
                 const displayName = getSpecialistName(specialist);
@@ -774,7 +774,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={specialist.id as string}
                     to={`/specialist/${specialist.id}`}
-                    className="group flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors duration-200 hover:border-sky-300 dark:hover:border-sky-700"
+                    className="group flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors duration-200 hover:border-sky-300 dark:hover:border-sky-700 hover-lift cursor-pointer"
                   >
                     {/* Avatar + identity (compact — looks intentional with or without a photo) */}
                     <div className="flex items-center gap-4">
