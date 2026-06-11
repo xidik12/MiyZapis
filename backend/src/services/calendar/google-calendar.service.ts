@@ -20,12 +20,23 @@ export class GoogleCalendarService {
     return Boolean(config.google.clientId && config.google.clientSecret);
   }
 
+  /**
+   * The OAuth redirect URI. This MUST point at the BACKEND (api.miyzapis.com),
+   * not the SPA domain, and must exactly match the URI registered in Google
+   * Cloud Console. Prefer the explicit GOOGLE_REDIRECT_URI env; fall back to the
+   * backend's own base URL. (The previous code derived it from the frontend
+   * domain, which does not route /api/v1/* to the backend — OAuth would 404.)
+   */
+  static get redirectUri(): string {
+    if (config.google.redirectUri) return config.google.redirectUri;
+    return `${config.baseUrl.replace(/\/$/, '')}/api/v1/calendar/google/callback`;
+  }
+
   /** OAuth client for user-facing consent flow (Calendar-only redirect URI). */
   static async makeOAuthClient() {
     if (!this.oauthConfigured) throw new Error('GOOGLE_OAUTH_NOT_CONFIGURED');
     const { google } = await getGoogleApis();
-    const redirectUri = `${config.frontend.url.replace(/\/$/, '')}/api/v1/calendar/google/callback`;
-    return new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, redirectUri);
+    return new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, this.redirectUri);
   }
 
   /** Returns the URL the user should be redirected to in order to grant calendar access. */
@@ -90,8 +101,7 @@ export class GoogleCalendarService {
     });
     if (!conn || !conn.syncEnabled) return null;
     const { google } = await getGoogleApis();
-    const redirectUri = `${config.frontend.url.replace(/\/$/, '')}/api/v1/calendar/google/callback`;
-    const client = new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, redirectUri);
+    const client = new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, this.redirectUri);
     client.setCredentials({
       access_token: conn.accessToken,
       refresh_token: conn.refreshToken ?? undefined,
