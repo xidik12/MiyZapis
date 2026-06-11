@@ -99,8 +99,20 @@
       ]
     }
     </script>
+    <script>
+      // Apply the saved/system theme before first paint so colors are correct
+      // immediately (no flash, and no hard-coded body colour overriding dark mode).
+      (function () {
+        try {
+          var t = localStorage.getItem('booking-theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body style="margin:0;background:#f8fafc;color:#0f172a;font-family:Inter,system-ui,sans-serif">
+  <body style="margin:0;font-family:Inter,system-ui,sans-serif">
     <div id="root"></div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem">

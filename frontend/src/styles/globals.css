@@ -126,6 +126,20 @@
     height: 100%;
   }
 
+  /* Icons should follow their (themed) text color. Many of our icon SVGs have no
+     `fill` attribute and their paths don't use currentColor, so they default to
+     solid BLACK — fine on a light surface, invisible in dark mode. Make any SVG
+     without an explicit fill inherit currentColor. Outline icons (fill="none")
+     and chart SVGs (recharts, which set their own fills) are excluded. */
+  svg:not([fill]):not([class*="recharts"]) {
+    fill: currentColor;
+  }
+  .recharts-wrapper svg:not([fill]),
+  .recharts-surface,
+  .recharts-surface * {
+    fill: revert;
+  }
+
   body {
     background-color: rgb(var(--bg-secondary));
     color: rgb(var(--text-primary));
