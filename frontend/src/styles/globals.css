@@ -79,14 +79,14 @@
   .dark {
     /* Dark theme variables — one consistent gray elevation scale:
        body = gray-950, surface = gray-900, elevated = gray-800. */
-    --bg-primary: 22 22 24;     /* surface  (gray-900) */
-    --bg-secondary: 11 11 13;   /* body bg  (gray-950) */
-    --bg-tertiary: 34 35 37;    /* elevated (gray-800) */
-    --text-primary: 244 243 240;   /* gray-100 */
-    --text-secondary: 215 211 205; /* gray-300 */
-    --text-tertiary: 163 161 157;  /* gray-400 */
-    --border-primary: 34 35 37;    /* gray-800 */
-    --border-secondary: 22 22 24;  /* gray-900 */
+    --bg-primary: 20 24 29;     /* surface  (gray-900 #14181d) */
+    --bg-secondary: 11 14 18;   /* body bg  (gray-950 #0b0e12) */
+    --bg-tertiary: 30 36 43;    /* elevated (gray-800 #1e242b) */
+    --text-primary: 241 243 245;   /* cool near-white */
+    --text-secondary: 196 202 209; /* cool light gray */
+    --text-tertiary: 140 147 155;  /* cool mid gray */
+    --border-primary: 37 43 50;    /* cool charcoal border */
+    --border-secondary: 26 31 37;  /* deeper cool border */
     
     /* Dark theme shadows */
     --shadow-primary: 0 4px 14px 0 rgb(59 151 242 / 0.25);
@@ -549,8 +549,8 @@
   }
 
   .dark .glass-effect {
-    background: rgb(17 24 39);
-    border: 1px solid rgb(31 41 55);
+    background: rgb(var(--bg-primary));
+    border: 1px solid rgb(var(--border-primary));
   }
 
   .glass-card {
@@ -560,8 +560,8 @@
   }
 
   .dark .glass-card {
-    background: rgb(17 24 39);
-    border: 1px solid rgb(31 41 55);
+    background: rgb(var(--bg-primary));
+    border: 1px solid rgb(var(--border-primary));
   }
 
   /* Removed gradient backgrounds - now using solid colors from theme */

@@ -24,18 +24,22 @@ module.exports = {
         // Neutral scale: subtly WARM in the light shades (premium, not clinical)
         // but CLEAN NEUTRAL in the dark shades so dark mode reads as a crisp
         // near-black, not brown. Mids are neutral for legible text/icons.
+        // Light shades (50–300) stay subtly WARM for a premium light mode.
+        // Mid + dark shades (400–950) are COOL-NEUTRAL graphite so dark mode
+        // reads as a crisp charcoal — never grayish-brown. (Warm mids were the
+        // cause of the muddy/brown dark mode.)
         gray: {
           50: '#faf9f7',
           100: '#f4f3f0',
           200: '#e9e6e2',
           300: '#d7d3cd',
-          400: '#a3a19d',
-          500: '#747270',
-          600: '#525150',
-          700: '#3b3b3c',
-          800: '#222325',
-          900: '#161618',
-          950: '#0b0b0d',
+          400: '#9aa1a9',
+          500: '#69707a',
+          600: '#474d56',
+          700: '#333941',
+          800: '#1e242b',
+          900: '#14181d',
+          950: '#0b0e12',
         },
         // Bright Yellow secondary colors
         secondary: {
