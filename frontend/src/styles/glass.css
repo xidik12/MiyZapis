@@ -31,8 +31,8 @@
 .dark .glass-card-float {
   background: linear-gradient(
     135deg,
-    rgba(42, 41, 56, 0.62) 0%,
-    rgba(33, 32, 46, 0.48) 100%
+    rgba(40, 46, 58, 0.62) 0%,
+    rgba(30, 35, 47, 0.48) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
