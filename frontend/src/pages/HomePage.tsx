@@ -380,32 +380,6 @@ const HomePage: React.FC = () => {
                 />
               </div>
 
-              {/* Trust row */}
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2.5">
-                  {[
-                    { i: 'А', c: 'bg-primary-100 text-primary-700' },
-                    { i: 'О', c: 'bg-amber-100 text-amber-700' },
-                    { i: 'М', c: 'bg-emerald-100 text-emerald-700' },
-                    { i: 'Д', c: 'bg-rose-100 text-rose-700' },
-                  ].map((a, idx) => (
-                    <span
-                      key={idx}
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-white dark:ring-gray-950 text-xs font-semibold ${a.c}`}
-                    >
-                      {a.i}
-                    </span>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center gap-0.5 text-amber-400" aria-hidden="true">
-                    {[0, 1, 2, 3, 4].map((s) => (
-                      <StarIcon key={s} className="w-4 h-4" active />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('hero.trustedBy')}</p>
-                </div>
-              </div>
             </div>
 
             {/* Right: photo + floating specialist card */}

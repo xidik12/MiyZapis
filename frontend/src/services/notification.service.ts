@@ -62,13 +62,7 @@ export class NotificationService {
         });
         
         this.useLocalFallback = true;
-        
-        // Generate sample data if no local notifications exist
-        const localNotifications = localNotificationService.getNotifications();
-        if (localNotifications.length === 0) {
-          console.log('📧 No local notifications found, generating samples...');
-          localNotificationService.generateSampleNotifications();
-        }
+        // On API failure, show no notifications (never inject sample/demo data).
       }
     }
 
@@ -307,12 +301,7 @@ export class NotificationService {
   forceLocalMode(): void {
     console.log('💾 Forcing local notification mode');
     this.useLocalFallback = true;
-    
-    // Generate sample data if none exists
-    const localNotifications = localNotificationService.getNotifications();
-    if (localNotifications.length === 0) {
-      localNotificationService.generateSampleNotifications();
-    }
+    // Never inject sample/demo notifications in production.
   }
 
   // Get service status
