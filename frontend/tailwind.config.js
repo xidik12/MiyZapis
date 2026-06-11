@@ -34,12 +34,12 @@ module.exports = {
           200: '#e9e6e2',
           300: '#d7d3cd',
           400: '#9aa1a9',
-          500: '#69707a',
-          600: '#474d56',
-          700: '#333941',
-          800: '#1e242b',
-          900: '#14181d',
-          950: '#0b0e12',
+          500: '#6a707d',
+          600: '#474d59',
+          700: '#39384c',  /* dark border — navy w/ faint violet */
+          800: '#2a2938',  /* dark elevated (modals, inputs) */
+          900: '#21202e',  /* dark surface (cards) */
+          950: '#181722',  /* dark body bg — soft dark blue-indigo, faint purple */
         },
         // Secondary — refined Ukrainian GOLD (was neon yellow #ffc41f, which
         // buzzed against the charcoal dark mode). Azure + this gold = the

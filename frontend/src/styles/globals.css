@@ -79,14 +79,14 @@
   .dark {
     /* Dark theme variables — one consistent gray elevation scale:
        body = gray-950, surface = gray-900, elevated = gray-800. */
-    --bg-primary: 20 24 29;     /* surface  (gray-900 #14181d) */
-    --bg-secondary: 11 14 18;   /* body bg  (gray-950 #0b0e12) */
-    --bg-tertiary: 30 36 43;    /* elevated (gray-800 #1e242b) */
-    --text-primary: 241 243 245;   /* cool near-white */
-    --text-secondary: 196 202 209; /* cool light gray */
-    --text-tertiary: 140 147 155;  /* cool mid gray */
-    --border-primary: 37 43 50;    /* cool charcoal border */
-    --border-secondary: 26 31 37;  /* deeper cool border */
+    --bg-primary: 33 32 46;     /* surface  (gray-900 #21202e) — dark blue-indigo */
+    --bg-secondary: 24 23 34;   /* body bg  (gray-950 #181722) — soft navy, faint violet */
+    --bg-tertiary: 42 41 56;    /* elevated (gray-800 #2a2938) */
+    --text-primary: 242 243 248;   /* cool near-white, faint blue */
+    --text-secondary: 197 201 212; /* cool light gray-blue */
+    --text-tertiary: 141 146 161;  /* cool mid blue-gray */
+    --border-primary: 57 56 76;    /* navy-violet border (gray-700) */
+    --border-secondary: 42 41 56;  /* deeper navy border */
     
     /* Dark theme shadows */
     --shadow-primary: 0 4px 14px 0 rgb(37 99 235 / 0.25);
