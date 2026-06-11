@@ -169,14 +169,14 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                           <div className={clsx(
                             'p-2 rounded-xl mr-3',
                             type === 'CUSTOMER_TO_SPECIALIST'
-                              ? 'bg-purple-100 dark:bg-purple-900/20'
+                              ? 'bg-indigo-100 dark:bg-indigo-900/20'
                               : 'bg-blue-100 dark:bg-blue-900/20'
                           )}>
                             {type === 'CUSTOMER_TO_SPECIALIST' ? (
                               <BriefcaseIcon className={clsx(
                                 'h-5 w-5',
                                 type === 'CUSTOMER_TO_SPECIALIST'
-                                  ? 'text-purple-600 dark:text-purple-400'
+                                  ? 'text-indigo-600 dark:text-indigo-400'
                                   : 'text-blue-600 dark:text-blue-400'
                               )} />
                             ) : (

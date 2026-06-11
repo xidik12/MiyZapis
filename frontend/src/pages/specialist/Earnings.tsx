@@ -646,7 +646,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
               <CheckCircleIcon className="w-6 h-6 text-white" />
             </div>
           </div>

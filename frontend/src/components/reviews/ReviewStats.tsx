@@ -57,11 +57,11 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
       color: 'from-green-500/10 to-green-600/5'
     },
     {
-      icon: <ChatBubbleLeftIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />,
+      icon: <ChatBubbleLeftIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />,
       label: t('reviews.stats.responseRate'),
       value: responseCount.toString(),
       unit: '',
-      color: 'from-purple-500/10 to-purple-600/5'
+      color: 'from-indigo-500/10 to-indigo-600/5'
     }
   ];
 

@@ -82,7 +82,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
       pending: 'bg-yellow-500',
       completed: 'bg-green-500',
       cancelled: 'bg-gray-400',
-      in_progress: 'bg-purple-500'
+      in_progress: 'bg-indigo-500'
     };
     return colors[status.toLowerCase()] || 'bg-blue-500';
   };
@@ -230,7 +230,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
           <span className="text-xs text-gray-600 dark:text-gray-400">Confirmed</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-purple-500"></div>
+          <div className="w-3 h-3 rounded bg-indigo-500"></div>
           <span className="text-xs text-gray-600 dark:text-gray-400">In Progress</span>
         </div>
       </div>

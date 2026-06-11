@@ -5,6 +5,7 @@ import { ReviewCard, ReviewCardData } from './ReviewCard';
 import { ReviewStats, ReviewStatsData } from './ReviewStats';
 import { ReviewFilters, ReviewFiltersData } from './ReviewFilters';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { InlineLoader } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ReviewFeedProps {
@@ -123,7 +124,7 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  <InlineLoader size="sm" color="white" />
                   {t('reviews.feed.title')}
                 </span>
               ) : (
@@ -136,7 +137,7 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
         {/* Loading indicator for pagination */}
         {loading && reviews.length > 0 && (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary-600 border-t-transparent" />
+            <InlineLoader size="md" color="primary" />
           </div>
         )}
       </div>

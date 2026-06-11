@@ -44,7 +44,7 @@ const initialsOf = (name: string) =>
 
 const categoryAccents = [
   { chip: 'bg-sky-100 dark:bg-sky-900/30', icon: 'text-sky-600 dark:text-sky-400', hoverBorder: 'hover:border-sky-300 dark:hover:border-sky-700', hoverText: 'group-hover:text-sky-600', glow: 'from-sky-50' },
-  { chip: 'bg-violet-100 dark:bg-violet-900/30', icon: 'text-violet-600 dark:text-violet-400', hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-700', hoverText: 'group-hover:text-violet-600', glow: 'from-violet-50' },
+  { chip: 'bg-indigo-100 dark:bg-indigo-900/30', icon: 'text-indigo-600 dark:text-indigo-400', hoverBorder: 'hover:border-indigo-300 dark:hover:border-indigo-700', hoverText: 'group-hover:text-indigo-600', glow: 'from-indigo-50' },
   { chip: 'bg-emerald-100 dark:bg-emerald-900/30', icon: 'text-emerald-600 dark:text-emerald-400', hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-700', hoverText: 'group-hover:text-emerald-600', glow: 'from-emerald-50' },
   { chip: 'bg-amber-100 dark:bg-amber-900/30', icon: 'text-amber-600 dark:text-amber-400', hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-700', hoverText: 'group-hover:text-amber-600', glow: 'from-amber-50' },
   { chip: 'bg-rose-100 dark:bg-rose-900/30', icon: 'text-rose-600 dark:text-rose-400', hoverBorder: 'hover:border-rose-300 dark:hover:border-rose-700', hoverText: 'group-hover:text-rose-600', glow: 'from-rose-50' },

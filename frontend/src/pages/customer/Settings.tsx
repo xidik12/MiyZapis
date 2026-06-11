@@ -11,6 +11,7 @@ import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
+import { InlineLoader } from '@/components/ui';
 import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
@@ -439,7 +440,7 @@ const CustomerSettings: React.FC = () => {
                         />
                         {isUploadingImage && (
                           <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                            <InlineLoader size="md" color="white" />
                           </div>
                         )}
                       </div>

@@ -143,9 +143,9 @@ export const CATEGORY_CONFIG: Record<ExpenseCategory, {
   },
   EQUIPMENT: {
     labelKey: 'finances.category.equipment',
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-100',
-    darkBgColor: 'dark:bg-purple-900/30',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-100',
+    darkBgColor: 'dark:bg-indigo-900/30',
     icon: 'wrench'
   },
   INSURANCE: {

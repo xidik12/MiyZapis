@@ -121,7 +121,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.pending')}</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {analytics.overview.totalPointsEarned}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalEarned')}</div>

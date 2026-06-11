@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LocationPicker } from '@/components/LocationPicker';
+import { InlineLoader } from '@/components/ui';
 import {
   UserCircleIcon,
   EnvelopeIcon,
@@ -397,7 +398,7 @@ export const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             className="px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {saving && (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+              <InlineLoader size="sm" color="white" />
             )}
             {saving
               ? language === 'uk'

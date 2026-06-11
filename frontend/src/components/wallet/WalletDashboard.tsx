@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Wallet, History, CreditCard, Gift, Users, TrendingUp } from 'lucide-react';
+import { InlineLoader } from '@/components/ui';
 import WalletBalance from './WalletBalance';
 import WalletTransactionHistory from './WalletTransactionHistory';
 import { referralService } from '../../services/referral.service';
@@ -290,7 +291,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
             {/* Recent Earnings Transactions */}
             {loadingTransactions ? (
               <div className="h-32 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                <InlineLoader size="md" color="primary" />
               </div>
             ) : walletTransactions.length > 0 ? (
               <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -300,7 +301,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
                         transaction.reason === 'REFERRAL_REWARD' ? 'bg-blue-500' :
-                        transaction.reason === 'LOYALTY_POINTS_CONVERTED' ? 'bg-green-500' : 'bg-purple-500'
+                        transaction.reason === 'LOYALTY_POINTS_CONVERTED' ? 'bg-green-500' : 'bg-indigo-500'
                       }`}></div>
                       <span className="text-sm text-gray-700 dark:text-gray-300">{transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
                     </div>
@@ -332,7 +333,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               </div>
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700 sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
+                  <div className="w-3 h-3 bg-indigo-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.forfeitureShare')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.forfeitureEarnings)}</span>

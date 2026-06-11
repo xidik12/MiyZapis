@@ -18,7 +18,7 @@ import {
 import { selectUser } from '../store/slices/authSlice';
 import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, HeartIcon, InformationCircleIcon } from '@/components/icons';
 ;
-import { Avatar, PageLoader } from '../components/ui';
+import { Avatar, PageLoader, InlineLoader } from '../components/ui';
 import { ShareButton } from '../components/common/ShareButton';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
@@ -414,7 +414,7 @@ const SpecialistProfilePage: React.FC = () => {
                   }`}
                 >
                   {favoriteLoading ? (
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-current"></div>
+                    <InlineLoader size="sm" color="current" className="mr-1.5 sm:mr-2" />
                   ) : isFavorite ? (
                     <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" active />
                   ) : (

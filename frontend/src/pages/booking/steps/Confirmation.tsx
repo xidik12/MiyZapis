@@ -177,13 +177,13 @@ const Confirmation: React.FC<ConfirmationProps> = ({
 
         {/* Loyalty Points Earned Notification — only when payments are enabled */}
         {environment.PAYMENTS_ENABLED && loyaltyData && pointsToEarn > 0 && isAutoBooked && (
-          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-center space-x-3 mb-2">
-              <div className="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center">
+              <div className="h-10 w-10 bg-indigo-500 rounded-full flex items-center justify-center">
                 <GiftIcon className="h-5 w-5 text-white" />
               </div>
               <div className="text-center">
-                <p className="font-semibold text-purple-600 dark:text-purple-400">
+                <p className="font-semibold text-indigo-600 dark:text-indigo-400">
                   You earned {pointsToEarn} loyalty points!
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -194,7 +194,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
             <div className="text-center">
               <button
                 onClick={() => navigate('/customer/loyalty')}
-                className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-xl transition-colors"
               >
                 <StarIcon className="h-4 w-4 mr-1" />
                 View Loyalty Dashboard

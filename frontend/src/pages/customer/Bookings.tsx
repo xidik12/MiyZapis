@@ -14,6 +14,7 @@ import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { ContentLoader } from '@/components/ui';
 import { getTranslatedServiceName, getTranslatedDuration, statusColors, getBookingCurrency } from '../../utils/bookingUtils';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { reviewsService } from '../../services/reviews.service';
@@ -562,7 +563,7 @@ const CustomerBookings: React.FC = () => {
                     {/* Header with specialist and status */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                           {booking.specialist
                             ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
                             : (booking.specialistName?.split(' ').map((n: string) => n[0]).join('') || 'S')
@@ -672,7 +673,7 @@ const CustomerBookings: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 flex items-center justify-center">
                                   <span className="text-white font-medium text-sm">
                                     {booking.specialist
                                       ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
@@ -845,12 +846,7 @@ const CustomerBookings: React.FC = () => {
       {activeTab === 'waitlist' && (
         <div>
           {waitlistLoading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('waitlist.loading') || 'Loading waitlist...'}
-              </p>
-            </div>
+            <ContentLoader text={t('waitlist.loading') || 'Loading waitlist...'} />
           ) : waitlistEntries.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-8 md:p-12 text-center">
               <ClockIcon className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400 mb-3" />

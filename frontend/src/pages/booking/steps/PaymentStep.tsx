@@ -1,5 +1,6 @@
 import React from 'react';
 import { CreditCardIcon, GiftIcon, ArrowPathIcon } from '@/components/icons';
+import { InlineLoader } from '@/components/ui';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import type { UserLoyalty } from '@/services/loyalty.service';
@@ -206,9 +207,9 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
         {/* Loyalty Benefits */}
         {loyaltyData && (
-          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl p-4 mb-6">
             <div className="flex items-center space-x-3 mb-3">
-              <div className="h-8 w-8 bg-purple-500 rounded-xl flex items-center justify-center">
+              <div className="h-8 w-8 bg-indigo-500 rounded-xl flex items-center justify-center">
                 <GiftIcon className="h-4 w-4 text-white" />
               </div>
               <div>
@@ -221,20 +222,20 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                   +{pointsToEarn}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Points to earn</p>
               </div>
               <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                   {loyaltyData?.currentPoints?.toLocaleString() || '0'}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Current points</p>
               </div>
             </div>
 
-            <p className="text-xs text-purple-600 dark:text-purple-400 text-center mt-3">
+            <p className="text-xs text-indigo-600 dark:text-indigo-400 text-center mt-3">
               After this booking: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
             </p>
           </div>
@@ -244,7 +245,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         {redemptions.length > 0 && (
           <div className="mb-6">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
-              <GiftIcon className="w-5 h-5 mr-2 text-purple-600" />
+              <GiftIcon className="w-5 h-5 mr-2 text-indigo-600" />
               {t('booking.applyReward') || 'Apply a reward'}
             </h4>
             <select
@@ -430,7 +431,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             >
               {paymentLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <InlineLoader size="sm" color="white" className="mr-2" />
                   {t('booking.processing') || 'Processing...'}
                 </>
               ) : (
@@ -618,7 +619,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           >
             {paymentLoading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                <InlineLoader size="sm" color="white" className="mr-2" />
                 Processing...
               </>
             ) : (

@@ -55,7 +55,7 @@ interface ContentLoaderProps {
  * ```
  */
 export const ContentLoader: React.FC<ContentLoaderProps> = ({
-  type = 'dots',
+  type = 'spinner',
   text,
   size = 'md',
   minHeight = '200px',

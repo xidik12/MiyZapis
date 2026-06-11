@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClockIcon, CheckCircleIcon } from '@/components/icons';
+import { ContentLoader } from '@/components/ui';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { calculateEndTime } from '../../../utils/timeSlotUtils';
 import type { AvailableDateInfo, ConflictHint } from '../types';
@@ -54,12 +55,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         </h3>
 
         {datesLoading ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('booking.loadingDates') || 'Loading available dates...'}
-            </p>
-          </div>
+          <ContentLoader text={t('booking.loadingDates') || 'Loading available dates...'} />
         ) : getDisplayDates().length > 0 ? (
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
             {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (

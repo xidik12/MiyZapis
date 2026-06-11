@@ -520,7 +520,7 @@ const SearchPage: React.FC = () => {
                 </span>
               )}
               {(service as any).groupSession && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
                   {t('search.badges.groupSession').replace('{{max}}', String((service as any).maxGroupSize))}
                 </span>
               )}
@@ -1046,9 +1046,9 @@ const SearchPage: React.FC = () => {
               </span>
             )}
             {(priceRange.min > 0 || priceRange.max < 1000) && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 text-xs font-medium">
                 ₴{priceRange.min}–₴{priceRange.max}
-                <button onClick={() => setPriceRange({ min: 0, max: 1000 })} className="ml-1 hover:text-purple-600">×</button>
+                <button onClick={() => setPriceRange({ min: 0, max: 1000 })} className="ml-1 hover:text-indigo-600">×</button>
               </span>
             )}
 

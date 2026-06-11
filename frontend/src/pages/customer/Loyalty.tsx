@@ -8,7 +8,7 @@ import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { formatDate as sharedFormatDate } from '@/utils/dateUtils';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
-import { PageLoader } from '@/components/ui';
+import { PageLoader, ContentLoader } from '@/components/ui';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -202,7 +202,7 @@ const CustomerLoyalty: React.FC = () => {
       case 'REDEEMED':
         return <ArrowDownIcon className="h-5 w-5 text-red-500" />;
       case 'BONUS':
-        return <GiftIcon className="h-5 w-5 text-purple-500" />;
+        return <GiftIcon className="h-5 w-5 text-indigo-500" />;
       case 'REFERRAL':
         return <UsersIcon className="h-5 w-5 text-blue-500" />;
       case 'CAMPAIGN':
@@ -287,13 +287,13 @@ const CustomerLoyalty: React.FC = () => {
         };
       case 'PLATINUM':
         return {
-          summaryGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20',
+          summaryGradient: 'from-indigo-50 to-indigo-50 dark:from-indigo-900/20 dark:to-indigo-900/20',
           donutStroke: 'stroke-indigo-500',
           accentText: 'text-indigo-700 dark:text-indigo-300',
           chipBg: 'bg-indigo-600 text-white',
           benefitCheck: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
           currentCard: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20',
-          nextCard: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20',
+          nextCard: 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20',
         };
       case 'BRONZE':
       default:
@@ -348,12 +348,12 @@ const CustomerLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
-                <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" active />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 dark:text-indigo-400" active />
               </div>
             </div>
           </div>
@@ -444,8 +444,8 @@ const CustomerLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
-                <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.referrals') || 'Referrals'}</h4>
@@ -518,9 +518,9 @@ const CustomerLoyalty: React.FC = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.totalReferrals') || 'Total Referrals'}</p>
                   </div>
 
-                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                    <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" active />
-                    <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  <div className="text-center p-3 sm:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                    <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mx-auto mb-2" active />
+                    <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                       {loyaltyStats?.totalBadges || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.badgesEarned') || 'Badges Earned'}</p>
@@ -572,7 +572,7 @@ const CustomerLoyalty: React.FC = () => {
                             <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium ${
                               transaction.type === 'EARNED' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
                               transaction.type === 'REDEEMED' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-                              transaction.type === 'BONUS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' :
+                              transaction.type === 'BONUS' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
                               transaction.type === 'REFERRAL' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
                               (transaction.type as string) === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' :
                               (transaction.type as string) === 'BOOKING_COMPLETION' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
@@ -785,9 +785,7 @@ const CustomerLoyalty: React.FC = () => {
                 </h4>
 
                 {rewardsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
-                  </div>
+                  <ContentLoader />
                 ) : (
                   <div className="grid gap-4 sm:gap-6">
                     {/* Available Rewards Section */}
@@ -837,7 +835,7 @@ const CustomerLoyalty: React.FC = () => {
                                         <StarIcon className="h-4 w-4 mr-1" active />
                                         {formatPoints(reward.pointsRequired)} points
                                       </div>
-                                      <div className="flex items-center text-purple-600 dark:text-purple-400">
+                                      <div className="flex items-center text-indigo-600 dark:text-indigo-400">
                                         <GiftIcon className="h-4 w-4 mr-1" />
                                         {RewardsService.getRewardValue(reward)}
                                       </div>

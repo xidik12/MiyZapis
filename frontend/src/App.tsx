@@ -6,7 +6,7 @@ import { getAuthToken } from './services/api';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
-import { FullScreenHandshakeLoader } from './components/ui/FullScreenHandshakeLoader';
+import { FullScreenLoader } from './components/ui/FullScreenLoader';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AdminRoute } from './components/admin/AdminRoute';
 import { MainLayout } from './components/layout/MainLayout';
@@ -90,7 +90,7 @@ const TrialInfoPage = React.lazy(() => import('./pages/TrialInfoPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader title="Loading..." subtitle="Preparing your workspace" />
+  <FullScreenLoader isOpen title="Loading..." subtitle="Preparing your workspace" />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId

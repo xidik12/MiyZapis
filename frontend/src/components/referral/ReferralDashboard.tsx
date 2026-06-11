@@ -156,8 +156,8 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
 
         <Card className="p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-xl">
-              <ChartBarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl">
+              <ChartBarIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">

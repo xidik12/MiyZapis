@@ -43,7 +43,7 @@ interface PageLoaderProps {
  * ```
  */
 export const PageLoader: React.FC<PageLoaderProps> = ({
-  type = 'pulse',
+  type = 'spinner',
   text,
   size = 'xl',
   minHeight = 'min-h-screen',

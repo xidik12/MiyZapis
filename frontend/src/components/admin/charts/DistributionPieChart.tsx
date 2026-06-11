@@ -27,7 +27,7 @@ const DEFAULT_COLORS = [
   '#10B981', // Green
   '#F59E0B', // Yellow
   '#EF4444', // Red
-  '#8B5CF6', // Purple
+  '#6366f1', // Purple
   '#06B6D4', // Cyan
   '#EC4899', // Pink
   '#F97316'  // Orange

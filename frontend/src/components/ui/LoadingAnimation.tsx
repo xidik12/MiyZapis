@@ -72,28 +72,22 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
   );
 };
 
-// Modern Spinner Animation
+// Canonical spinner — azure ring (faint track + leading arc) with a small
+// gold leading dot. Azure + gold = the Ukrainian signature, used on every
+// page/content/full-screen loader so they all read as the same mark.
 const SpinnerAnimation: React.FC<{ size: string; color: string }> = ({ size, color }) => (
   <motion.div
-    className={clsx('relative', size)}
+    className={clsx('relative', size, color)}
     animate={{ rotate: 360 }}
-    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+    transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
   >
-    <svg className="w-full h-full" viewBox="0 0 50 50">
-      <motion.circle
-        cx="25"
-        cy="25"
-        r="20"
-        fill="none"
-        strokeWidth="4"
-        className={color}
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeDasharray="31.4 31.4"
-        initial={{ strokeDashoffset: 0 }}
-        animate={{ strokeDashoffset: [0, -62.8] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-      />
+    <svg className="w-full h-full" viewBox="0 0 50 50" fill="none">
+      {/* faint full-circle track */}
+      <circle cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="4" opacity="0.18" />
+      {/* solid leading arc (≈ quarter turn) */}
+      <path d="M25 5 a20 20 0 0 1 20 20" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+      {/* gold leading dot — Ukrainian accent */}
+      <circle cx="45" cy="25" r="2.6" fill="#d99a25" />
     </svg>
   </motion.div>
 );

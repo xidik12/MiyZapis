@@ -1,5 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { List, RowComponentProps } from 'react-window';
+import { InlineLoader } from './InlineLoader';
 
 /**
  * Props for VirtualList component
@@ -191,7 +192,7 @@ export const InfiniteVirtualList = <T,>({
       {isLoading && (
         <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-center">
           {loadingComponent || (
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
+            <InlineLoader size="md" color="primary" />
           )}
         </div>
       )}

@@ -202,7 +202,7 @@ export class WalletService {
       CREDIT: 'text-green-600',
       DEBIT: 'text-red-600',
       REFUND: 'text-blue-600',
-      FORFEITURE_SPLIT: 'text-purple-600',
+      FORFEITURE_SPLIT: 'text-indigo-600',
     };
     return colors[type] || 'text-gray-600';
   }

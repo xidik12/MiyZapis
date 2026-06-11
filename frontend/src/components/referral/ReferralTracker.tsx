@@ -106,7 +106,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.performance.pending')}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
               {analytics.overview.totalPointsEarned}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.stats.pointsEarned')}</div>

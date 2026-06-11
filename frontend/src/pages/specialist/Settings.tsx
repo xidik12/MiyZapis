@@ -7,6 +7,7 @@ import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { specialistService } from '../../services/specialist.service';
 import { Avatar } from '../../components/ui/Avatar';
+import { InlineLoader, ContentLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
@@ -424,7 +425,7 @@ const SpecialistSettings: React.FC = () => {
                           />
                           {isUploadingImage && (
                             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                              <InlineLoader size="md" color="white" />
                             </div>
                           )}
                         </div>
@@ -542,7 +543,7 @@ const SpecialistSettings: React.FC = () => {
                 {/* Loading state for profile tabs */}
                 {['personal', 'professional', 'working-hours', 'payment-details', 'portfolio'].includes(activeTab) && specialistProfile.loading && (
                   <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-12 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                    <ContentLoader />
                   </div>
                 )}
 

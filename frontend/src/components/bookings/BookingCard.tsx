@@ -74,7 +74,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
     CONFIRMED: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300',
     COMPLETED: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300',
     CANCELLED: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300',
-    IN_PROGRESS: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300',
+    IN_PROGRESS: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 border-indigo-300',
     NO_SHOW: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border-gray-300'
   };
 

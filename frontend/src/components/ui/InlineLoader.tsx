@@ -37,25 +37,18 @@ export const InlineLoader: React.FC<InlineLoaderProps> = ({
       fill="none"
       aria-label="Loading"
       role="status"
+      animate={{ rotate: 360 }}
+      transition={{ rotate: { duration: 0.9, repeat: Infinity, ease: 'linear' } }}
+      style={{ transformOrigin: 'center' }}
     >
-      <motion.circle
-        cx="12"
-        cy="12"
-        r="10"
+      {/* faint full-circle track */}
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2" />
+      {/* solid leading arc (≈ quarter turn) */}
+      <path
+        d="M12 2 a10 10 0 0 1 10 10"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
-        strokeDasharray="31.4 31.4"
-        initial={{ strokeDashoffset: 0, rotate: 0 }}
-        animate={{
-          strokeDashoffset: -62.8,
-          rotate: 360,
-        }}
-        transition={{
-          strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: 'linear' },
-          rotate: { duration: 1.5, repeat: Infinity, ease: 'linear' },
-        }}
-        style={{ transformOrigin: 'center' }}
       />
     </motion.svg>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect} from 'react';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { InlineLoader } from '@/components/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
@@ -1058,7 +1059,7 @@ const SpecialistProfile: React.FC = () => {
                 )}
                 {isUploadingAvatar && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    <InlineLoader size="md" color="white" />
                   </div>
                 )}
                 {isEditing && (
@@ -2258,7 +2259,7 @@ const SpecialistProfile: React.FC = () => {
                         >
                           {isUploadingPortfolio ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <InlineLoader size="sm" color="white" />
                               {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
                             </>
                           ) : (
@@ -2355,7 +2356,7 @@ const SpecialistProfile: React.FC = () => {
                       className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {saving && (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <InlineLoader size="sm" color="white" />
                       )}
                       {saving 
                         ? (language === 'uk' ? 'Збереження...' : language === 'ru' ? 'Сохранение...' : 'Saving...')

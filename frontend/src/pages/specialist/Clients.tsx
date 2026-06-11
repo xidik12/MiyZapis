@@ -192,8 +192,8 @@ const StatsBar: React.FC<{
       label: t('clients.stats.repeatRate') || 'Repeat Rate',
       value: `${repeatRate}%`,
       icon: ArrowPathIcon,
-      color: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-purple-50 dark:bg-purple-900/30',
+      color: 'text-indigo-600 dark:text-indigo-400',
+      bg: 'bg-indigo-50 dark:bg-indigo-900/30',
     },
   ];
 
@@ -235,7 +235,7 @@ const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: any
     CONFIRMED: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
     PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
     CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    IN_PROGRESS: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+    IN_PROGRESS: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
     NO_SHOW: 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300',
   };
 
@@ -496,7 +496,7 @@ const ClientCard: React.FC<{
                             <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
                               note.category === 'allergy' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
                               note.category === 'preference' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
-                              note.category === 'formula' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' :
+                              note.category === 'formula' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
                               'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                             }`}>
                               {note.category}

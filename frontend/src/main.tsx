@@ -30,12 +30,18 @@ import 'react-toastify/dist/ReactToastify.css';
 // Platform is currently free — no payments, no Stripe Elements bootstrap.
 // Re-add @stripe/react-stripe-js + Elements wrapper if/when paid features ship.
 
-// Loading component for PersistGate
+// Loading component for PersistGate — the canonical azure-ring + gold-dot mark,
+// CSS-animated (no framer dependency in the bootstrap path) so it matches every
+// other loader in the app.
 const LoadingComponent = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading МійЗапис...</p>
+      <svg className="animate-spin h-12 w-12 mx-auto text-primary-600 dark:text-primary-400" viewBox="0 0 50 50" fill="none">
+        <circle cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="4" opacity="0.18" />
+        <path d="M25 5 a20 20 0 0 1 20 20" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+        <circle cx="45" cy="25" r="2.6" fill="#d99a25" />
+      </svg>
+      <p className="mt-4 text-gray-600 dark:text-gray-400">Loading МійЗапис...</p>
     </div>
   </div>
 );

@@ -88,7 +88,7 @@ const CustomerBadges: React.FC = () => {
       case 'RARE':
         return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300';
       case 'EPIC':
-        return 'text-purple-600 bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300';
+        return 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-300';
       case 'LEGENDARY':
         return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-300';
       default:
@@ -103,7 +103,7 @@ const CustomerBadges: React.FC = () => {
       case 'RARE':
         return 'border-blue-200 dark:border-blue-700';
       case 'EPIC':
-        return 'border-purple-200 dark:border-purple-700';
+        return 'border-indigo-200 dark:border-indigo-700';
       case 'LEGENDARY':
         return 'border-yellow-200 dark:border-yellow-700';
       default:
@@ -162,12 +162,12 @@ const CustomerBadges: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Badge Points</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                   {totalPoints.toLocaleString()}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
-                <StarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" active />
+              <div className="h-12 w-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                <StarIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" active />
               </div>
             </div>
           </div>
@@ -241,7 +241,7 @@ const CustomerBadges: React.FC = () => {
                   badge.isEarned 
                     ? `${rarityBorderClass} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ${
                         badge.rarity === 'LEGENDARY' ? 'ring-yellow-200 dark:ring-yellow-800' :
-                        badge.rarity === 'EPIC' ? 'ring-purple-200 dark:ring-purple-800' :
+                        badge.rarity === 'EPIC' ? 'ring-indigo-200 dark:ring-indigo-800' :
                         badge.rarity === 'RARE' ? 'ring-blue-200 dark:ring-blue-800' :
                         'ring-gray-200 dark:ring-gray-700'
                       }` 
@@ -253,7 +253,7 @@ const CustomerBadges: React.FC = () => {
                   <div className={`p-3 rounded-full ${
                     badge.isEarned 
                       ? badge.rarity === 'LEGENDARY' ? 'bg-yellow-100 dark:bg-yellow-900/20' :
-                        badge.rarity === 'EPIC' ? 'bg-purple-100 dark:bg-purple-900/20' :
+                        badge.rarity === 'EPIC' ? 'bg-indigo-100 dark:bg-indigo-900/20' :
                         badge.rarity === 'RARE' ? 'bg-blue-100 dark:bg-blue-900/20' :
                         'bg-gray-100 dark:bg-gray-700'
                       : 'bg-gray-100 dark:bg-gray-700'

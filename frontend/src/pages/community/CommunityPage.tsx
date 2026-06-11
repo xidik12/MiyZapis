@@ -514,7 +514,7 @@ const CommunityPage: React.FC = () => {
                 onClick={() => handleFilterChange('SAVED')}
                 className={`${filterButtonBase} ${
                   activeFilter === 'SAVED'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-indigo-500 text-white'
                     : filterButtonInactive
                 }`}
               >
@@ -849,8 +849,8 @@ const CommunityPage: React.FC = () => {
                           }}
                           className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${
                             post.isBookmarked
-                              ? 'text-purple-500'
-                              : 'text-gray-500 dark:text-gray-400 hover:text-purple-500'
+                              ? 'text-indigo-500'
+                              : 'text-gray-500 dark:text-gray-400 hover:text-indigo-500'
                           }`}
                           title={post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
                         >

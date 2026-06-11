@@ -207,7 +207,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
       {environment.PAYMENTS_ENABLED && redemptions.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-            <GiftIcon className="w-6 h-6 mr-3 text-purple-600" />
+            <GiftIcon className="w-6 h-6 mr-3 text-indigo-600" />
             {t('booking.applyReward') || 'Apply a Reward'}
           </h4>
 
@@ -332,12 +332,12 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
             {environment.PAYMENTS_ENABLED && loyaltyData && pointsToEarn > 0 && (
               <div className="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex items-center space-x-2">
-                  <GiftIcon className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                  <GiftIcon className="h-4 w-4 text-indigo-500" />
+                  <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">
                     Points you'll earn
                   </span>
                 </div>
-                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                   +{pointsToEarn} points
                 </span>
               </div>

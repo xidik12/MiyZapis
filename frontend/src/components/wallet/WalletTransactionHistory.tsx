@@ -68,7 +68,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       case 'REFUND':
         return <RotateCcw className="h-4 w-4 text-blue-500" />;
       case 'FORFEITURE_SPLIT':
-        return <Coins className="h-4 w-4 text-purple-500" />;
+        return <Coins className="h-4 w-4 text-indigo-500" />;
       default:
         return <ArrowUpRight className="h-4 w-4 text-gray-500" />;
     }
@@ -83,7 +83,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       case 'REFUND':
         return 'text-blue-600 dark:text-blue-400';
       case 'FORFEITURE_SPLIT':
-        return 'text-purple-600 dark:text-purple-400';
+        return 'text-indigo-600 dark:text-indigo-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
     }

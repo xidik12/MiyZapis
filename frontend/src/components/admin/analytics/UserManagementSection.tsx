@@ -213,7 +213,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
         <span
           className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
             user.userType === 'ADMIN'
-              ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400'
+              ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-400'
               : user.userType === 'SPECIALIST'
               ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400'
               : 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400'

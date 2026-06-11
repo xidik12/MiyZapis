@@ -291,7 +291,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       method.paymentMethodType === 'card' ? '#3B82F6' :
       method.paymentMethodType === 'telegram_payment' ? '#10B981' :
       method.paymentMethodType === 'wallet' ? '#F59E0B' :
-      method.paymentMethodType === 'crypto' ? '#8B5CF6' : '#6B7280'
+      method.paymentMethodType === 'crypto' ? '#6366f1' : '#6B7280'
   }));
 
   // Prepare top earners table data - map backend property names

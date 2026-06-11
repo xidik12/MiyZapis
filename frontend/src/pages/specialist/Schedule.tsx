@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { InlineLoader } from '@/components/ui';
 import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, ListBulletsIcon, FunnelIcon, WarningIcon, ArrowDownTrayIcon, CalendarDaysIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -796,7 +797,7 @@ const SpecialistSchedule: React.FC = () => {
             } text-white whitespace-nowrap`}
           >
             {operationInProgress && (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+              <InlineLoader size="sm" color="white" className="mr-1" />
             )}
             <PlusIcon className="w-5 h-5" />
             <span className="hidden sm:inline">{t('schedule.addTime')}</span>

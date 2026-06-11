@@ -96,7 +96,7 @@ const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', da
   'Індивідуальна терапія': '#10B981',
   'Сімейна консультація': '#F59E0B',
   'Групова терапія': '#EF4444',
-  'Експрес-консультація': '#8B5CF6',
+  'Експрес-консультація': '#6366f1',
   'Підліткова психологія': '#06B6D4',
   'Терапія пар': '#EC4899',
   'Психологічна діагностика': '#84CC16',
@@ -867,7 +867,7 @@ Performance:
   const serviceData = analyticsData.services?.topServices?.map((service, index) => ({
     label: getTranslatedServiceName(service.serviceName),
     value: service.bookings,
-    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'][index] || '#6B7280'
+    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366f1', '#06B6D4'][index] || '#6B7280'
   })) || [];
   
   // Revenue by service for bar chart
@@ -1027,8 +1027,8 @@ Performance:
                   <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('analytics.vsAverage')}</span>
                 </div>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-xl">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl">
+                <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -1242,8 +1242,8 @@ Performance:
                   {profileViewGrowth >= 0 ? '+' : ''}{profileViewGrowth.toFixed(1)}% {t('analytics.thisMonth')}
                 </p>
               </div>
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-xl">
-                <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
@@ -1298,7 +1298,7 @@ Performance:
           </button>
           <button 
             onClick={handleShareAnalytics}
-            className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-md flex items-center justify-center"
+            className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-md flex items-center justify-center"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />

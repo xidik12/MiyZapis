@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, X, Search } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { InlineLoader, ContentLoader } from '@/components/ui';
 
 interface Location {
   address: string;
@@ -409,7 +410,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   />
                   {isSearching && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <InlineLoader size="sm" color="current" />
                     </div>
                   )}
                 </div>
@@ -485,10 +486,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   <div ref={mapRef} className="h-full w-full" />
                 ) : (
                   <div className="h-full w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-                      <p className="text-gray-600 dark:text-gray-300">{t('location.loading')}</p>
-                    </div>
+                    <ContentLoader text={t('location.loading')} />
                   </div>
                 )}
               </div>

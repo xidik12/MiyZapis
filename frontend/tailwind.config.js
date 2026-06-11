@@ -41,18 +41,20 @@ module.exports = {
           900: '#14181d',
           950: '#0b0e12',
         },
-        // Bright Yellow secondary colors
+        // Secondary — refined Ukrainian GOLD (was neon yellow #ffc41f, which
+        // buzzed against the charcoal dark mode). Azure + this gold = the
+        // Ukrainian flag palette, kept premium rather than flashy.
         secondary: {
-          50: '#fffef0',
-          100: '#fffce0',
-          200: '#fff4b3',
-          300: '#ffe680',
-          400: '#ffd44d',
-          500: '#ffc41f',  // Bright Yellow
-          600: '#f0aa00',
-          700: '#d48c00',
-          800: '#b37000',
-          900: '#8f5a00',
+          50: '#fcf8ee',
+          100: '#f8efd2',
+          200: '#f0dca0',
+          300: '#e7c46c',
+          400: '#ddac3f',
+          500: '#d99a25',  // muted gold
+          600: '#bd7d18',
+          700: '#97601a',
+          800: '#7c4f1c',
+          900: '#67421b',
         },
         success: {
           50: '#f0fdf4',
@@ -137,13 +139,13 @@ module.exports = {
         'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
         '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-        'primary': '0 4px 14px 0 rgb(59 151 242 / 0.3)',
-        'secondary': '0 4px 14px 0 rgb(255 196 31 / 0.3)',
+        'primary': '0 4px 14px 0 rgb(37 99 235 / 0.3)',
+        'secondary': '0 4px 14px 0 rgb(217 154 37 / 0.3)',
         'success': '0 4px 14px 0 rgb(34 197 94 / 0.15)',
         'error': '0 4px 14px 0 rgb(239 68 68 / 0.15)',
         'glass': '0 8px 32px 0 rgb(31 38 135 / 0.15)',
-        'glow': '0 0 20px rgb(59 151 242 / 0.3)',
-        'glow-secondary': '0 0 20px rgb(255 196 31 / 0.3)',
+        'glow': '0 0 20px rgb(37 99 235 / 0.3)',
+        'glow-secondary': '0 0 20px rgb(217 154 37 / 0.3)',
         'neumorphism': '20px 20px 60px #d1d1e0, -20px -20px 60px #ffffff',
         'neumorphism-inset': 'inset 20px 20px 60px #d1d1e0, inset -20px -20px 60px #ffffff',
 
@@ -157,7 +159,7 @@ module.exports = {
         '3d-card-hover':  '0 1px 0 0 rgba(255,255,255,0.8) inset, 0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.10), 0 20px 40px rgba(0,0,0,0.08)',
         // Inputs: sunken into the page (inset on top + sides, light bottom edge)
         '3d-input':       '0 1px 2px rgba(0,0,0,0.08) inset, 0 -1px 0 0 rgba(255,255,255,0.8) inset',
-        '3d-input-focus': '0 0 0 3px rgba(59,151,242,0.18), 0 1px 2px rgba(0,0,0,0.08) inset',
+        '3d-input-focus': '0 0 0 3px rgba(37,99,235,0.18), 0 1px 2px rgba(0,0,0,0.08) inset',
         // Banners & hero: more dramatic lift
         '3d-banner':      '0 1px 0 0 rgba(255,255,255,0.4) inset, 0 4px 8px rgba(0,0,0,0.08), 0 16px 32px rgba(0,0,0,0.10), 0 32px 64px rgba(0,0,0,0.06)',
         // Tabs: active tab pops, inactive sinks
@@ -214,8 +216,8 @@ module.exports = {
           '100%': { transform: 'translateX(100%)' },
         },
         'glow-pulse': {
-          '0%': { boxShadow: '0 0 5px rgb(135 206 235 / 0.5)' },
-          '100%': { boxShadow: '0 0 20px rgb(135 206 235 / 0.8), 0 0 30px rgb(135 206 235 / 0.4)' },
+          '0%': { boxShadow: '0 0 5px rgb(37 99 235 / 0.5)' },
+          '100%': { boxShadow: '0 0 20px rgb(37 99 235 / 0.8), 0 0 30px rgb(37 99 235 / 0.4)' },
         },
         'tilt': {
           '0%, 50%, 100%': { transform: 'rotate(0deg)' },

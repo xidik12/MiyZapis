@@ -47,8 +47,8 @@ export const UkrainianOrnament: React.FC<{ className?: string }> = ({ className 
     <div className={`flex items-center justify-center ${className}`}>
       <svg viewBox="0 0 100 20" className="w-32 h-4 text-primary-600 dark:text-primary-400">
         <pattern id="ukrainian-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-          <rect width="20" height="20" fill="#3b97f2" opacity="0.1"/>
-          <path d="M10 5 L15 10 L10 15 L5 10 Z" fill="#ffc41f" opacity="0.3"/>
+          <rect width="20" height="20" fill="#2563eb" opacity="0.1"/>
+          <path d="M10 5 L15 10 L10 15 L5 10 Z" fill="#d99a25" opacity="0.3"/>
         </pattern>
         <rect width="100" height="20" fill="url(#ukrainian-pattern)"/>
         <path d="M10 5 L15 10 L10 15 L5 10 Z M30 5 L35 10 L30 15 L25 10 Z M50 5 L55 10 L50 15 L45 10 Z M70 5 L75 10 L70 15 L65 10 Z M90 5 L95 10 L90 15 L85 10 Z" 

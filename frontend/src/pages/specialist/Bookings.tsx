@@ -12,6 +12,7 @@ import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { InlineLoader } from '@/components/ui';
 import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
 import { BookingKanban } from '@/components/bookings/BookingKanban';
@@ -23,14 +24,14 @@ const statusColors = {
   CONFIRMED: 'bg-blue-100 text-blue-800 border-blue-200',
   COMPLETED: 'bg-green-100 text-green-800 border-green-200',
   CANCELLED: 'bg-red-100 text-red-800 border-red-200',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800 border-purple-200',
+  IN_PROGRESS: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   NO_SHOW: 'bg-gray-100 text-gray-800 border-gray-200',
   // Legacy lowercase support for compatibility
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
   completed: 'bg-green-100 text-green-800 border-green-200',
   cancelled: 'bg-red-100 text-red-800 border-red-200',
-  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
+  inProgress: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
 
@@ -421,7 +422,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {activeTab === 'provider' && (
             <>
               {/* Status Management */}
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4">
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
                 <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                   {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
@@ -446,7 +447,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
                 <button
                   onClick={handleStatusChange}
-                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-xl transition-colors"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white py-2 px-4 rounded-xl transition-colors"
                 >
                   {t('bookingDetails.updateStatus')}
                 </button>
@@ -644,7 +645,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
             >
               {isSubmitting ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                <InlineLoader size="sm" color="white" className="mr-2" />
               ) : (
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -1319,7 +1320,7 @@ const SpecialistBookings: React.FC = () => {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
                       {booking.customer 
                         ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}`
                         : (booking.customerName?.split(' ').map(n => n[0]).join('') || 'U')
@@ -1461,7 +1462,7 @@ const SpecialistBookings: React.FC = () => {
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
                               {activeTab === 'provider' 
                                 ? (booking.customer 

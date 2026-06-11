@@ -190,7 +190,7 @@ export const LoadingShowcase: React.FC = () => {
           </button>
           <button
             onClick={() => handleShowFullScreen('pulse')}
-            className="px-6 py-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+            className="px-6 py-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
           >
             Show Pulse
           </button>

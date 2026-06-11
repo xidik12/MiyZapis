@@ -12,13 +12,13 @@ const statusColors = {
   CONFIRMED: 'bg-blue-100 text-blue-800 border-blue-200',
   COMPLETED: 'bg-green-100 text-green-800 border-green-200',
   CANCELLED: 'bg-red-100 text-red-800 border-red-200',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800 border-purple-200',
+  IN_PROGRESS: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   NO_SHOW: 'bg-gray-100 text-gray-800 border-gray-200',
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
   completed: 'bg-green-100 text-green-800 border-green-200',
   cancelled: 'bg-red-100 text-red-800 border-red-200',
-  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
+  inProgress: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
 
@@ -461,7 +461,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onBookAgain(booking);
                   onClose();
                 }}
-                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-colors border border-purple-200 dark:border-purple-800 whitespace-nowrap justify-center flex items-center"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors border border-indigo-200 dark:border-indigo-800 whitespace-nowrap justify-center flex items-center"
               >
                 <ArrowPathIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                 <span>{t('actions.bookAgain')}</span>

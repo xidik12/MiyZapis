@@ -38,7 +38,7 @@ const COLUMN_DEFS = [
 const columnColors = {
   yellow: 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800',
   blue: 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800',
-  purple: 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800',
+  purple: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-800',
   green: 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800',
   red: 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
 };
@@ -46,7 +46,7 @@ const columnColors = {
 const columnHeaderColors = {
   yellow: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300',
   blue: 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300',
-  purple: 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-300',
+  purple: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300',
   green: 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300',
   red: 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
 };

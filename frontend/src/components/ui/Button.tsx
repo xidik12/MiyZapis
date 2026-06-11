@@ -1,5 +1,6 @@
 import React from 'react';
 import { clsx } from 'clsx';
+import { InlineLoader } from './InlineLoader';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'subtle';
 type Size = 'sm' | 'md' | 'lg';
@@ -57,7 +58,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {leftIcon && <span className="mr-2 -ml-1">{leftIcon}</span>}
       {loading && (
-        <span className="mr-2 inline-block h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <InlineLoader size="sm" color="current" className="mr-2" />
       )}
       {children}
       {rightIcon && <span className="ml-2 -mr-1">{rightIcon}</span>}

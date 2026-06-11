@@ -20,7 +20,7 @@ const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   cancelled: 'bg-red-100 text-red-800 border-red-200',
   completed: 'bg-green-100 text-green-800 border-green-200',
-  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
+  inProgress: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
 import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
@@ -748,10 +748,10 @@ const CustomerDashboard: React.FC = () => {
 
           {/* Loyalty Progress */}
           {loyaltyData && loyaltyStats && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-200 dark:border-purple-700">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-indigo-200 dark:border-indigo-700">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
                     <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" active />
                   </div>
                   <div>
@@ -763,7 +763,7 @@ const CustomerDashboard: React.FC = () => {
                 </div>
                 <Link
                   to="/loyalty"
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-xs sm:text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
@@ -771,7 +771,7 @@ const CustomerDashboard: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
-                  <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.currentPoints')}</p>
@@ -802,7 +802,7 @@ const CustomerDashboard: React.FC = () => {
                       {loyaltyStats.pointsToNextTier} {t('dashboard.loyalty.pointsNeeded')}
                     </span>
                   </div>
-                  <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">
+                  <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-indigo-200 dark:bg-indigo-800">
                     <div
                       style={{
                         width: `${(() => {
@@ -813,7 +813,7 @@ const CustomerDashboard: React.FC = () => {
                           return range > 0 ? Math.min(100, Math.max(0, ((pts - curMin) / range) * 100)) : 0;
                         })()}%`
                       }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
                     ></div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">

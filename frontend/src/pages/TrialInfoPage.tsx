@@ -94,7 +94,7 @@ const TrialInfoPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Trial Status Card (if authenticated and in trial) */}
         {isAuthenticated && trialInfo && trialInfo.daysRemaining > 0 && (
-          <Card className="mb-8 sm:mb-12 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
+          <Card className="mb-8 sm:mb-12 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700">
             <div className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
