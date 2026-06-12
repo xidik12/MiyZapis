@@ -21,6 +21,7 @@ model User {
   // directly (no login). They are bookable but can't sign in until claimed.
   isManaged    Boolean  @default(false)
   managedById  String?  // the owner user who manages this profile
+  dateOfBirth  DateTime? // for birthday marketing automation + greetings
   firstName String
   lastName  String
   avatar    String?
@@ -167,6 +168,13 @@ model Specialist {
   experience   Int      @default(0) // Years of experience
   isVerified   Boolean  @default(false)
   languages    String? // JSON string of supported languages
+
+  // Reputation: external review profile links (for "leave us a review" requests)
+  googleReviewUrl   String?
+  facebookReviewUrl String?
+  // Marketplace acquisition: featured/boosted placement in search
+  isFeatured        Boolean  @default(false)
+  featuredUntil     DateTime?
   
   // Location
   address      String?
@@ -427,6 +435,9 @@ model Booking {
   noShowFeeAmount   Decimal  @default(0)
   noShowFeeStatus   String   @default("NONE") // NONE | CHARGED | WAIVED
   consumablesDeducted Boolean @default(false) // guard so stock is written off once
+  source            String   @default("DIRECT") // DIRECT | DISCOVERY | EMBED | MARKETPLACE — acquisition channel
+  isFirstVisit      Boolean  @default(false)     // customer's first-ever booking with this specialist
+  reviewRequestedAt DateTime?                    // when the post-visit review request was sent
 
   // Crypto Payment Relations
   cryptoPayments    CryptoPayment[]
@@ -2321,6 +2332,8 @@ model CommissionRule {
   ownerId     String                          // employer
   businessId  String?
   staffUserId String
+  mode        String   @default("FLAT")        // FLAT | TIERED
+  tiers       String?                          // JSON: [{minRevenue, percent}] applied by period revenue (TIERED mode)
   percent     Decimal  @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -2525,4 +2538,44 @@ model MarketingLog {
   @@index([automationId])
   @@index([customerUserId])
   @@map("marketing_logs")
+}
+
+// Retail store — a customer orders RETAIL products from a specialist/business.
+// Collection happens in-store or via payments later; status tracks fulfilment.
+model ProductOrder {
+  id            String   @id @default(cuid())
+  ownerId       String                          // the seller (specialist/business owner)
+  businessId    String?
+  customerUserId String?                        // null for walk-in / guest
+  customerName  String?
+  customerEmail String?
+  orderNumber   String
+  status        String   @default("PENDING")    // PENDING | PAID | FULFILLED | CANCELLED
+  fulfilment    String   @default("PICKUP")      // PICKUP | DELIVERY
+  currency      String   @default("UAH")
+  subtotal      Decimal  @default(0)
+  total         Decimal  @default(0)
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         ProductOrderItem[]
+
+  @@index([ownerId])
+  @@index([customerUserId])
+  @@map("product_orders")
+}
+
+model ProductOrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  name         String
+  quantity     Decimal
+  unitPrice    Decimal
+
+  order        ProductOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("product_order_items")
 }
