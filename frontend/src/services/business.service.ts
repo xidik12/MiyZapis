@@ -85,6 +85,50 @@ export interface BusinessDashboard {
   }>;
 }
 
+// ── Owner-managed staff (employees) ───────────────────────────────────────
+export interface StaffService {
+  id: string;
+  name: string;
+  basePrice: number;
+  currency: string;
+  duration: number;
+}
+
+export interface StaffServiceInput {
+  name: string;
+  description?: string;
+  category?: string;
+  basePrice: number;
+  currency?: string;
+  duration: number;
+}
+
+export interface Staff {
+  memberId: string;
+  role: BusinessRole;
+  user: { id: string; firstName: string; lastName: string; isManaged: boolean };
+  specialist: {
+    id: string;
+    workingHours: Record<string, { isWorking: boolean; start: string; end: string }> | null;
+    specialties: string[];
+    city?: string | null;
+    bio?: string | null;
+    experience?: number | null;
+  } | null;
+  services: StaffService[];
+}
+
+export interface CreateStaffInput {
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  specialties?: string[];
+  experience?: number;
+  city?: string;
+  workingHours?: Record<string, { isWorking: boolean; start: string; end: string }>;
+  services?: StaffServiceInput[];
+}
+
 class BusinessService {
   async listMine(): Promise<BusinessMember[]> {
     const res = await apiClient.get<{ memberships: BusinessMember[] }>('/businesses/mine');
@@ -146,6 +190,38 @@ class BusinessService {
     if (to) params.to = to.toISOString();
     const res = await apiClient.get<BusinessDashboard>(`/businesses/${businessId}/dashboard`, { params });
     return res.data!;
+  }
+
+  // ── Staff / Employees ────────────────────────────────────────────────────
+  async listStaff(businessId: string): Promise<Staff[]> {
+    const res = await apiClient.get<{ staff: Staff[] }>(`/businesses/${businessId}/staff`);
+    return res.data!.staff;
+  }
+
+  async createStaff(businessId: string, input: CreateStaffInput): Promise<{ userId: string; specialistId: string }> {
+    const res = await apiClient.post<{ staff: { userId: string; specialistId: string } }>(`/businesses/${businessId}/staff`, input);
+    return res.data!.staff;
+  }
+
+  async updateStaff(businessId: string, staffUserId: string, patch: Partial<CreateStaffInput>): Promise<void> {
+    await apiClient.put(`/businesses/${businessId}/staff/${staffUserId}`, patch);
+  }
+
+  async deleteStaff(businessId: string, staffUserId: string): Promise<void> {
+    await apiClient.delete(`/businesses/${businessId}/staff/${staffUserId}`);
+  }
+
+  async cloneStaff(businessId: string, staffUserId: string, firstName: string, lastName: string): Promise<{ userId: string; specialistId: string }> {
+    const res = await apiClient.post<{ staff: { userId: string; specialistId: string } }>(`/businesses/${businessId}/staff/${staffUserId}/clone`, { firstName, lastName });
+    return res.data!.staff;
+  }
+
+  async setSchedule(businessId: string, staffUserId: string, workingHours: Record<string, { isWorking: boolean; start: string; end: string }>): Promise<void> {
+    await apiClient.put(`/businesses/${businessId}/staff/${staffUserId}/schedule`, { workingHours });
+  }
+
+  async setServices(businessId: string, staffUserId: string, services: StaffServiceInput[]): Promise<void> {
+    await apiClient.put(`/businesses/${businessId}/staff/${staffUserId}/services`, { services });
   }
 }
 

@@ -17,6 +17,10 @@ model User {
   password  String?
   passwordLastChanged DateTime?
   authProvider String? // "google", "telegram", "email" - tracks how user registered/authenticated
+  // Owner-managed staff: a salon owner created this professional's profile
+  // directly (no login). They are bookable but can't sign in until claimed.
+  isManaged    Boolean  @default(false)
+  managedById  String?  // the owner user who manages this profile
   firstName String
   lastName  String
   avatar    String?

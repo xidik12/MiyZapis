@@ -14,6 +14,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { BusinessService, type BusinessRole } from '@/services/business/business.service';
+import { StaffService } from '@/services/business/staff.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
@@ -35,6 +36,9 @@ function handleErr(req: Request, res: Response, err: unknown) {
     INVITE_NOT_FOUND: 404,
     NOT_A_MEMBER: 403,
     INSUFFICIENT_ROLE: 403,
+    NOT_AUTHORIZED: 403,
+    NOT_FOUND: 404,
+    NOT_MANAGED: 400,
   };
   const status = map[code] ?? 500;
   if (status === 500) logger.error('Business route error', { error: code });
@@ -141,6 +145,63 @@ router.get('/:id/dashboard', async (req: Request, res: Response) => {
       : undefined;
     const dashboard = await BusinessService.dashboard(req.params.id, userId(req), range);
     return res.json(createSuccessResponse(dashboard));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+// Staff / Employees (owner-managed) ---------------------------------------
+//   GET    /:id/staff                          list staff (OWNER/MANAGER)
+//   POST   /:id/staff                          create managed employee
+//   PUT    /:id/staff/:staffUserId             update name / specialist fields
+//   DELETE /:id/staff/:staffUserId             remove (delete managed / unlink invited)
+//   POST   /:id/staff/:staffUserId/clone       clone employee, new name
+//   PUT    /:id/staff/:staffUserId/schedule    replace working hours
+//   PUT    /:id/staff/:staffUserId/services    replace services
+router.get('/:id/staff', async (req: Request, res: Response) => {
+  try {
+    const staff = await StaffService.listStaff(req.params.id, userId(req));
+    return res.json(createSuccessResponse({ staff }));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.post('/:id/staff', async (req: Request, res: Response) => {
+  try {
+    const staff = await StaffService.createStaff(req.params.id, userId(req), req.body ?? {});
+    return res.status(201).json(createSuccessResponse({ staff }));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.put('/:id/staff/:staffUserId', async (req: Request, res: Response) => {
+  try {
+    const result = await StaffService.updateStaff(req.params.id, userId(req), req.params.staffUserId, req.body ?? {});
+    return res.json(createSuccessResponse(result));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.delete('/:id/staff/:staffUserId', async (req: Request, res: Response) => {
+  try {
+    const result = await StaffService.removeStaff(req.params.id, userId(req), req.params.staffUserId);
+    return res.json(createSuccessResponse(result));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.post('/:id/staff/:staffUserId/clone', async (req: Request, res: Response) => {
+  try {
+    const staff = await StaffService.cloneStaff(req.params.id, userId(req), req.params.staffUserId, req.body ?? {});
+    return res.status(201).json(createSuccessResponse({ staff }));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.put('/:id/staff/:staffUserId/schedule', async (req: Request, res: Response) => {
+  try {
+    const result = await StaffService.setSchedule(req.params.id, userId(req), req.params.staffUserId, req.body?.workingHours ?? req.body ?? {});
+    return res.json(createSuccessResponse(result));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+router.put('/:id/staff/:staffUserId/services', async (req: Request, res: Response) => {
+  try {
+    const result = await StaffService.setServices(req.params.id, userId(req), req.params.staffUserId, req.body?.services ?? []);
+    return res.json(createSuccessResponse(result));
   } catch (err) { return handleErr(req, res, err); }
 });
 

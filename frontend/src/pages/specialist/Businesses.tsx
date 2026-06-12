@@ -11,6 +11,9 @@ import {
   type BusinessInvite,
   type BusinessRole,
   type BusinessDashboard,
+  type Staff,
+  type StaffServiceInput,
+  type CreateStaffInput,
 } from '../../services/business.service';
 import { PageLoader } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -154,7 +157,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
   const [business, setBusiness] = useState<Business | null>(null);
   const [dashboard, setDashboard] = useState<BusinessDashboard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'overview' | 'members' | 'settings'>('overview');
+  const [tab, setTab] = useState<'overview' | 'members' | 'staff' | 'settings'>('overview');
 
   const reload = async () => {
     setLoading(true);
@@ -194,7 +197,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
         </div>
 
         <div className="flex gap-1 mb-4 border-b border-gray-200 dark:border-gray-700">
-          {(['overview', 'members', 'settings'] as const).map((tabKey) => (
+          {(['overview', 'members', 'staff', 'settings'] as const).map((tabKey) => (
             <button
               key={tabKey}
               onClick={() => setTab(tabKey)}
@@ -210,6 +213,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           {tab === 'overview' && <OverviewTab dashboard={dashboard} business={business} />}
           {tab === 'members' && <MembersTab business={business} canManage={canManage} onReload={reload} />}
+          {tab === 'staff' && <StaffTab business={business} canManage={canManage} />}
           {tab === 'settings' && <SettingsTab business={business} canManage={canManage} onReload={reload} />}
         </div>
       </div>
@@ -471,6 +475,328 @@ const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: 
         <button onClick={save} disabled={saving} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">{saving ? t('businesses.settings.saving') : t('businesses.settings.save')}</button>
       </div>
     </div>
+  );
+};
+
+// ── Staff / Employees ─────────────────────────────────────────────────────
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+type DayKey = (typeof DAYS)[number];
+type WorkingHours = Record<string, { isWorking: boolean; start: string; end: string }>;
+
+const emptyHours = (): WorkingHours =>
+  DAYS.reduce((acc, d) => { acc[d] = { isWorking: false, start: '09:00', end: '17:00' }; return acc; }, {} as WorkingHours);
+
+const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ business, canManage }) => {
+  const { t } = useLanguage();
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<Staff | null>(null);
+  const [scheduling, setScheduling] = useState<Staff | null>(null);
+  const [servicing, setServicing] = useState<Staff | null>(null);
+
+  const reload = () => {
+    setLoading(true);
+    businessService.listStaff(business.id)
+      .then(setStaff)
+      .catch((err) => toast.error(err?.message || t('businesses.error.generic')))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { reload(); }, [business.id]);
+
+  const clone = async (s: Staff) => {
+    const name = prompt(t('businesses.staff.cloneNamePrompt'), `${s.user.firstName} ${s.user.lastName}`);
+    if (!name?.trim()) return;
+    const parts = name.trim().split(/\s+/);
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(' ') || '-';
+    try {
+      await businessService.cloneStaff(business.id, s.user.id, firstName, lastName);
+      toast.success(t('businesses.staff.cloned'));
+      reload();
+    } catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+  };
+
+  const remove = async (s: Staff) => {
+    if (!confirm(t('businesses.staff.removeConfirm'))) return;
+    try {
+      await businessService.deleteStaff(business.id, s.user.id);
+      toast.success(t('businesses.staff.removed'));
+      reload();
+    } catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+  };
+
+  if (!canManage) return <p className="text-sm text-gray-500">{t('businesses.staff.onlyManagers')}</p>;
+  if (loading) return <div className="py-10 text-center text-sm text-gray-500">{t('businesses.staff.loading')}</div>;
+
+  const scheduledDays = (s: Staff) => Object.values(s.specialist?.workingHours ?? {}).filter((d) => d?.isWorking).length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('businesses.staff.title')}</h2>
+        <button onClick={() => setAddOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('businesses.staff.addEmployee')}</button>
+      </div>
+
+      {staff.length === 0 ? (
+        <p className="text-sm text-gray-500">{t('businesses.staff.empty')}</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {staff.map((s) => (
+            <div key={s.memberId} className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 transition-transform hover:-translate-y-0.5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium">
+                    {(s.user.firstName?.[0] ?? '?') + (s.user.lastName?.[0] ?? '')}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-gray-900 dark:text-white truncate">{s.user.firstName} {s.user.lastName}</div>
+                    <ManagedBadge managed={s.user.isManaged} />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                <span>{s.services.length} {t('businesses.staff.servicesCount')}</span>
+                <span>{scheduledDays(s)}/7 {t('businesses.staff.daysScheduled')}</span>
+                {s.specialist?.city ? <span>{s.specialist.city}</span> : null}
+              </div>
+              {s.user.isManaged && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <ActionBtn onClick={() => setEditing(s)}>{t('businesses.staff.edit')}</ActionBtn>
+                  <ActionBtn onClick={() => setScheduling(s)}>{t('businesses.staff.schedule')}</ActionBtn>
+                  <ActionBtn onClick={() => setServicing(s)}>{t('businesses.staff.servicesPrices')}</ActionBtn>
+                  <ActionBtn onClick={() => clone(s)}>{t('businesses.staff.clone')}</ActionBtn>
+                  <button onClick={() => remove(s)} className="text-xs px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">{t('businesses.staff.remove')}</button>
+                </div>
+              )}
+              {!s.user.isManaged && (
+                <div className="mt-3">
+                  <button onClick={() => remove(s)} className="text-xs px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">{t('businesses.staff.removeMembership')}</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {addOpen && <StaffFormModal businessId={business.id} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); reload(); }} />}
+      {editing && <EditStaffModal businessId={business.id} staff={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />}
+      {scheduling && <ScheduleModal businessId={business.id} staff={scheduling} onClose={() => setScheduling(null)} onSaved={() => { setScheduling(null); reload(); }} />}
+      {servicing && <ServicesModal businessId={business.id} staff={servicing} onClose={() => setServicing(null)} onSaved={() => { setServicing(null); reload(); }} />}
+    </div>
+  );
+};
+
+const ActionBtn: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => (
+  <button onClick={onClick} className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary-500">{children}</button>
+);
+
+const ManagedBadge: React.FC<{ managed: boolean }> = ({ managed }) => {
+  const { t } = useLanguage();
+  const cls = managed ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cls}`}>{managed ? t('businesses.staff.managed') : t('businesses.staff.invited')}</span>;
+};
+
+// Modal shell -------------------------------------------------------------
+const Modal: React.FC<{ title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }> = ({ title, onClose, children, wide }) => (
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div className={`bg-white dark:bg-gray-800 rounded-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+        <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+// Weekly schedule editor --------------------------------------------------
+const ScheduleEditor: React.FC<{ hours: WorkingHours; onChange: (h: WorkingHours) => void }> = ({ hours, onChange }) => {
+  const { t } = useLanguage();
+  const setDay = (day: DayKey, patch: Partial<WorkingHours[string]>) =>
+    onChange({ ...hours, [day]: { ...hours[day], ...patch } });
+  return (
+    <div className="space-y-2">
+      {DAYS.map((day) => {
+        const d = hours[day] ?? { isWorking: false, start: '09:00', end: '17:00' };
+        return (
+          <div key={day} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+              <input type="checkbox" checked={d.isWorking} onChange={(e) => setDay(day, { isWorking: e.target.checked })} className="rounded" />
+              <span className="capitalize">{t(`businesses.staff.day.${day}`)}</span>
+            </label>
+            <input type="time" value={d.start} disabled={!d.isWorking} onChange={(e) => setDay(day, { start: e.target.value })} className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm disabled:opacity-40" />
+            <input type="time" value={d.end} disabled={!d.isWorking} onChange={(e) => setDay(day, { end: e.target.value })} className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm disabled:opacity-40" />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Repeatable services editor ----------------------------------------------
+const ServicesEditor: React.FC<{ rows: StaffServiceInput[]; onChange: (r: StaffServiceInput[]) => void; currency: string }> = ({ rows, onChange, currency }) => {
+  const { t } = useLanguage();
+  const set = (i: number, patch: Partial<StaffServiceInput>) => onChange(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const add = () => onChange([...rows, { name: '', basePrice: 0, currency, duration: 30 }]);
+  const del = (i: number) => onChange(rows.filter((_, idx) => idx !== i));
+  return (
+    <div className="space-y-2">
+      {rows.map((r, i) => (
+        <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+          <input value={r.name} onChange={(e) => set(i, { name: e.target.value })} placeholder={t('businesses.staff.serviceName')} className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1.5 text-sm" />
+          <input type="number" min={0} value={r.basePrice} onChange={(e) => set(i, { basePrice: Number(e.target.value) })} placeholder={t('businesses.staff.price')} className="w-24 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1.5 text-sm" />
+          <input type="number" min={0} value={r.duration} onChange={(e) => set(i, { duration: Number(e.target.value) })} placeholder={t('businesses.staff.duration')} className="w-20 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1.5 text-sm" />
+          <button onClick={() => del(i)} className="text-red-600 hover:text-red-800 px-2 text-lg leading-none">×</button>
+        </div>
+      ))}
+      <button onClick={add} className="text-sm text-primary-600 hover:text-primary-700">+ {t('businesses.staff.addService')}</button>
+    </div>
+  );
+};
+
+const StaffFormModal: React.FC<{ businessId: string; onClose: () => void; onSaved: () => void }> = ({ businessId, onClose, onSaved }) => {
+  const { t } = useLanguage();
+  const [form, setForm] = useState({ firstName: '', lastName: '', bio: '', city: '' });
+  const [hours, setHours] = useState<WorkingHours>(emptyHours());
+  const [services, setServices] = useState<StaffServiceInput[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!form.firstName.trim() || !form.lastName.trim()) { toast.error(t('businesses.staff.nameRequired')); return; }
+    setSaving(true);
+    try {
+      const payload: CreateStaffInput = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        bio: form.bio || undefined,
+        city: form.city || undefined,
+        workingHours: hours,
+        services: services.filter((s) => s.name.trim()),
+      };
+      await businessService.createStaff(businessId, payload);
+      toast.success(t('businesses.staff.created'));
+      onSaved();
+    } catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <Modal title={t('businesses.staff.addEmployee')} onClose={onClose} wide>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label={t('businesses.staff.firstName')} value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} />
+          <FormField label={t('businesses.staff.lastName')} value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label={t('businesses.staff.city')} value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
+        </div>
+        <FormField label={t('businesses.staff.bio')} value={form.bio} onChange={(v) => setForm({ ...form, bio: v })} multiline />
+        <div>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('businesses.staff.services')}</h4>
+          <ServicesEditor rows={services} onChange={setServices} currency="UAH" />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('businesses.staff.schedule')}</h4>
+          <ScheduleEditor hours={hours} onChange={setHours} />
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
+          <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.staff.saving') : t('businesses.staff.save')}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+const EditStaffModal: React.FC<{ businessId: string; staff: Staff; onClose: () => void; onSaved: () => void }> = ({ businessId, staff, onClose, onSaved }) => {
+  const { t } = useLanguage();
+  const [form, setForm] = useState({
+    firstName: staff.user.firstName,
+    lastName: staff.user.lastName,
+    bio: staff.specialist?.bio ?? '',
+    city: staff.specialist?.city ?? '',
+    experience: String(staff.specialist?.experience ?? 0),
+  });
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    if (!form.firstName.trim() || !form.lastName.trim()) { toast.error(t('businesses.staff.nameRequired')); return; }
+    setSaving(true);
+    try {
+      await businessService.updateStaff(businessId, staff.user.id, {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        bio: form.bio,
+        city: form.city,
+        experience: Number(form.experience) || 0,
+      });
+      toast.success(t('businesses.staff.updated'));
+      onSaved();
+    } catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={t('businesses.staff.edit')} onClose={onClose}>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label={t('businesses.staff.firstName')} value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} />
+          <FormField label={t('businesses.staff.lastName')} value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label={t('businesses.staff.city')} value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
+          <FormField label={t('businesses.staff.experience')} value={form.experience} onChange={(v) => setForm({ ...form, experience: v })} type="number" />
+        </div>
+        <FormField label={t('businesses.staff.bio')} value={form.bio} onChange={(v) => setForm({ ...form, bio: v })} multiline />
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
+          <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.staff.saving') : t('businesses.staff.save')}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+const ScheduleModal: React.FC<{ businessId: string; staff: Staff; onClose: () => void; onSaved: () => void }> = ({ businessId, staff, onClose, onSaved }) => {
+  const { t } = useLanguage();
+  const [hours, setHours] = useState<WorkingHours>(() => ({ ...emptyHours(), ...(staff.specialist?.workingHours ?? {}) }));
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await businessService.setSchedule(businessId, staff.user.id, hours); toast.success(t('businesses.staff.scheduleSaved')); onSaved(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={`${t('businesses.staff.schedule')} — ${staff.user.firstName} ${staff.user.lastName}`} onClose={onClose}>
+      <ScheduleEditor hours={hours} onChange={setHours} />
+      <div className="flex justify-end gap-2 pt-4">
+        <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
+        <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.staff.saving') : t('businesses.staff.save')}</button>
+      </div>
+    </Modal>
+  );
+};
+
+const ServicesModal: React.FC<{ businessId: string; staff: Staff; onClose: () => void; onSaved: () => void }> = ({ businessId, staff, onClose, onSaved }) => {
+  const { t } = useLanguage();
+  const [rows, setRows] = useState<StaffServiceInput[]>(
+    staff.services.map((s) => ({ name: s.name, basePrice: s.basePrice, currency: s.currency, duration: s.duration })),
+  );
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    setSaving(true);
+    try { await businessService.setServices(businessId, staff.user.id, rows.filter((r) => r.name.trim())); toast.success(t('businesses.staff.servicesSaved')); onSaved(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Modal title={`${t('businesses.staff.servicesPrices')} — ${staff.user.firstName} ${staff.user.lastName}`} onClose={onClose} wide>
+      <ServicesEditor rows={rows} onChange={setRows} currency={staff.services[0]?.currency ?? 'UAH'} />
+      <div className="flex justify-end gap-2 pt-4">
+        <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
+        <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.staff.saving') : t('businesses.staff.save')}</button>
+      </div>
+    </Modal>
   );
 };
 
