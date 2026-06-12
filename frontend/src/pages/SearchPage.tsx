@@ -43,6 +43,8 @@ interface ServiceWithSpecialist {
     completedBookings: number;
     experience: string;
     rating: number;
+    // Marketplace acquisition: active featured/boosted placement.
+    isFeatured?: boolean;
   };
   _count?: { bookings: number };
   distance?: number;
@@ -267,6 +269,9 @@ const SearchPage: React.FC = () => {
             experience: '', // Not available in backend response
             rating: service.specialist?.rating || 0,
             autoBooking: service.specialist?.autoBooking || false,
+            // Marketplace acquisition: active featured/boosted placement (backend
+            // already sorts these first + sets the active flag).
+            isFeatured: service.specialist?.isFeatured || false,
           },
           _count: service._count,
           distance: undefined, // Not available in backend response
@@ -499,6 +504,14 @@ const SearchPage: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
                 {service.name}
               </h3>
+              {/* Marketplace acquisition: featured/boosted placement badge.
+                  Backend already sorts active-featured first + sets the flag. */}
+              {(service as any).specialist?.isFeatured && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 ring-1 ring-amber-300/60 dark:ring-amber-500/30 whitespace-nowrap">
+                  <StarIcon className="w-3 h-3" active />
+                  {t('promote.featured') || 'Featured'}
+                </span>
+              )}
               {(service as any).specialist?.autoBooking && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 whitespace-nowrap">
                   {t('search.badges.instantBooking') || 'Instant Booking'}
@@ -605,7 +618,8 @@ const SearchPage: React.FC = () => {
               </button>
             ) : (
               <Link
-                to={`/booking/${service.id}`}
+                /* Marketplace acquisition: booked from search = DISCOVERY source */
+                to={`/booking/${service.id}?source=DISCOVERY`}
                 className={`flex-1 text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
                   service.isAvailable
                     ? 'bg-primary-600 hover:bg-primary-700'

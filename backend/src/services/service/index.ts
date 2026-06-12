@@ -738,26 +738,37 @@ export class ServiceService {
         };
       }
 
-      let orderBy: Record<string, string> | Record<string, Record<string, string>> = {};
+      // ── Marketplace acquisition: featured/boosted placement ───────────────
+      // Services whose specialist has an active boost are surfaced FIRST in every
+      // sort mode. `specialist: { isFeatured: 'desc' }` is the PRIMARY orderBy key.
+      // The "still-active" guard (featuredUntil > now OR null) can't live in
+      // orderBy, so a re-sort + active flag is applied in memory after the query
+      // (see below). Self-serve toggle today; becomes a paid boost once live
+      // billing lands (see promote.service.ts).
+      const featuredFirst = { specialist: { isFeatured: 'desc' as const } };
+      let orderBy:
+        | Record<string, string>
+        | Record<string, Record<string, string>>
+        | Array<Record<string, Record<string, string>> | Record<string, string>> = {};
       switch (sortBy) {
         case 'price':
-          orderBy = { basePrice: 'asc' };
+          orderBy = [featuredFirst, { basePrice: 'asc' }];
           break;
         case 'priceDesc':
-          orderBy = { basePrice: 'desc' };
+          orderBy = [featuredFirst, { basePrice: 'desc' }];
           break;
         case 'rating':
-          orderBy = { specialist: { rating: 'desc' } };
+          orderBy = [featuredFirst, { specialist: { rating: 'desc' } }];
           break;
         case 'popular':
           // Popular = highest review count from the specialist (proxy for traction).
-          orderBy = { specialist: { reviewCount: 'desc' } };
+          orderBy = [featuredFirst, { specialist: { reviewCount: 'desc' } }];
           break;
         case 'newest':
-          orderBy = { createdAt: 'desc' };
+          orderBy = [featuredFirst, { createdAt: 'desc' }];
           break;
         default:
-          orderBy = { createdAt: 'desc' };
+          orderBy = [featuredFirst, { createdAt: 'desc' }];
       }
 
       const [services, total] = await Promise.all([
@@ -798,8 +809,28 @@ export class ServiceService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // ── Marketplace acquisition: active-featured flag + re-sort ───────────
+      // Overwrite specialist.isFeatured with the ACTIVE flag (boost not expired)
+      // so the frontend never badges a lapsed boost, then stable-sort active
+      // featured services to the front of the page (corrects for the DB-level
+      // `isFeatured desc` keeping expired boosts floating at the top).
+      const nowTs = Date.now();
+      const withFeatured = (services as any[]).map((svc) => {
+        const sp = svc.specialist;
+        const activeFeatured = !!sp?.isFeatured &&
+          (sp.featuredUntil == null || new Date(sp.featuredUntil).getTime() > nowTs);
+        return sp
+          ? { ...svc, specialist: { ...sp, isFeatured: activeFeatured } }
+          : svc;
+      });
+      withFeatured.sort((a, b) => {
+        const af = a.specialist?.isFeatured ? 1 : 0;
+        const bf = b.specialist?.isFeatured ? 1 : 0;
+        return bf - af; // active-featured first; stable for equal keys
+      });
+
       return {
-        services: services as ServiceWithDetails[],
+        services: withFeatured as ServiceWithDetails[],
         total,
         page,
         totalPages,

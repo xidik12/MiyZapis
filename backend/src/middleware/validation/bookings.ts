@@ -66,6 +66,12 @@ export const validateCreateBooking = [
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Reward redemption ID must be a valid ID if provided'),
+
+  // Marketplace acquisition channel — optional, defaults to DIRECT server-side.
+  body('source')
+    .optional()
+    .isIn(['DIRECT', 'DISCOVERY', 'EMBED', 'MARKETPLACE'])
+    .withMessage('Source must be one of DIRECT, DISCOVERY, EMBED, MARKETPLACE'),
 ];
 
 // Update booking status validation

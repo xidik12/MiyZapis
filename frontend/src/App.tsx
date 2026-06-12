@@ -60,6 +60,7 @@ const SpecialistAccounting = React.lazy(() => import('./pages/specialist/Account
 const SpecialistInventory = React.lazy(() => import('./pages/specialist/Inventory'));
 const SpecialistSales = React.lazy(() => import('./pages/specialist/Sales'));
 const SpecialistMarketing = React.lazy(() => import('./pages/specialist/Marketing'));
+const SpecialistPromote = React.lazy(() => import('./pages/specialist/Promote'));
 const SpecialistPurchasing = React.lazy(() => import('./pages/specialist/Purchasing'));
 const SpecialistPayroll = React.lazy(() => import('./pages/specialist/Payroll'));
 const SpecialistCalendarSettings = React.lazy(() => import('./pages/specialist/CalendarSettings'));
@@ -128,6 +129,7 @@ const usePageTitle = () => {
       '/specialist/inventory': 'Inventory - МійЗапис',
       '/specialist/sales': 'Sales - МійЗапис',
       '/specialist/marketing': 'Marketing - МійЗапис',
+      '/specialist/promote': 'Promote - МійЗапис',
       '/specialist/purchasing': 'Purchasing - МійЗапис',
       '/specialist/payroll': 'Payroll - МійЗапис',
       '/specialist/reviews': 'Reviews - МійЗапис',
@@ -344,6 +346,18 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistMarketing />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/promote"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistPromote />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>

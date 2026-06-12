@@ -5,6 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { businessService, type Business } from '../services/business.service';
 import { PageLoader } from '@/components/ui';
+import PublicSeo from '../components/common/PublicSeo';
+import { buildBusinessJsonLd } from '../utils/structuredData';
 
 const BusinessPublicPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -35,8 +37,22 @@ const BusinessPublicPage: React.FC = () => {
 
   const members = (business.members ?? []).filter((m: any) => m.role === 'OWNER' || m.role === 'SPECIALIST');
 
+  const seoUrl = `${window.location.origin}/biz/${business.slug}`;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PublicSeo
+        title={`${business.name} | МійЗапис`}
+        description={
+          business.description ||
+          [business.name, business.address].filter(Boolean).join(' · ') ||
+          `Book with ${business.name} on МійЗапис.`
+        }
+        image={business.logoUrl || undefined}
+        url={seoUrl}
+        type="business.business"
+        jsonLd={buildBusinessJsonLd({ business })}
+      />
       {/* Header */}
       <header className="bg-gradient-to-br from-primary-500 to-primary-700 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">

@@ -38,6 +38,15 @@ const BookingFlow: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryServiceId = searchParams.get('service');
 
+  // Marketplace acquisition: where this booking originated. Threaded from the
+  // entry point via ?source= (search results = DISCOVERY, embed widget = EMBED);
+  // defaults to DIRECT. Persisted on the Booking for new-client attribution.
+  const ALLOWED_SOURCES = ['DIRECT', 'DISCOVERY', 'EMBED', 'MARKETPLACE'] as const;
+  const rawSource = (searchParams.get('source') || '').toUpperCase();
+  const bookingSource = (ALLOWED_SOURCES as readonly string[]).includes(rawSource)
+    ? (rawSource as (typeof ALLOWED_SOURCES)[number])
+    : 'DIRECT';
+
   // Always prioritize service ID from URL params, then query params, then specialist route
   const serviceId = paramServiceId || queryServiceId;
   const navigate = useNavigate();
@@ -449,7 +458,8 @@ const BookingFlow: React.FC = () => {
           customerNotes: state.bookingNotes || undefined,
           participantCount: state.participantCount,
           loyaltyPointsUsed: 0,
-          rewardRedemptionId: state.selectedRedemptionId || undefined
+          rewardRedemptionId: state.selectedRedemptionId || undefined,
+          source: bookingSource, // marketplace acquisition attribution
         };
 
         logger.debug('BookingFlow: Creating free booking (payments disabled)', bookingData);
@@ -580,6 +590,7 @@ const BookingFlow: React.FC = () => {
           loyaltyPointsUsed: 0,
           rewardRedemptionId: state.selectedRedemptionId || undefined,
           paymentMethod: 'PAY_AT_VENUE',
+          source: bookingSource, // marketplace acquisition attribution
         };
 
         logger.debug('BookingFlow: Creating pay-at-venue booking', bookingData);
@@ -654,7 +665,8 @@ const BookingFlow: React.FC = () => {
             servicePrice: state.service.price,
             serviceCurrency: state.service.currency || 'USD',
             loyaltyPointsUsed: 0,
-            rewardRedemptionId: state.selectedRedemptionId || undefined
+            rewardRedemptionId: state.selectedRedemptionId || undefined,
+            source: bookingSource, // marketplace acquisition attribution
           }
         };
 
@@ -828,7 +840,8 @@ const BookingFlow: React.FC = () => {
           duration: state.service.duration || 60,
           customerNotes: state.bookingNotes || undefined,
           loyaltyPointsUsed: 0,
-          rewardRedemptionId: state.selectedRedemptionId
+          rewardRedemptionId: state.selectedRedemptionId,
+          source: bookingSource, // marketplace acquisition attribution
         };
 
         const bookingResult = await bookingService.createBookingWithPayment({

@@ -21,6 +21,11 @@ export interface Specialist extends BaseEntity {
   isVerified: boolean;
   isActive?: boolean;
   responseTime?: string;
+  // Marketplace acquisition: active featured/boosted placement. When true the
+  // search UI badges the result. The backend overwrites this with the ACTIVE
+  // flag (boost not expired) before returning search results.
+  isFeatured?: boolean;
+  featuredUntil?: string | null;
   // Frontend format
   availability?: SpecialistAvailability;
   pricing?: SpecialistPricing;

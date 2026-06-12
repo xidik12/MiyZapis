@@ -21,6 +21,8 @@ import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, Calen
 ;
 import { Avatar, PageLoader, InlineLoader } from '../components/ui';
 import { ShareButton } from '../components/common/ShareButton';
+import PublicSeo from '../components/common/PublicSeo';
+import { buildSpecialistJsonLd } from '../utils/structuredData';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
 // Note: Use active prop for filled icons: <Icon active />
@@ -370,8 +372,27 @@ const SpecialistProfilePage: React.FC = () => {
     ));
   };
 
+  const seoName = `${specialist.user?.firstName || ''} ${specialist.user?.lastName || ''}`.trim() || specialist.businessName || 'Specialist';
+  const seoProfession = translateProfession(specialist.businessName, t);
+  const seoLocation = getFormattedLocation(specialist);
+  const seoTitle = `${seoName}${seoProfession ? ` — ${seoProfession}` : ''} | МійЗапис`;
+  const seoDescription =
+    getLocalizedDescription(specialist) ||
+    [seoProfession, seoLocation].filter(Boolean).join(' · ') ||
+    `Book ${seoName} on МійЗапис.`;
+  const seoImage = getAbsoluteImageUrl(specialist.user?.avatar || specialist.avatar) || undefined;
+  const seoUrl = `${window.location.origin}/s/${specialist.slug || specialist.id}`;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PublicSeo
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        url={seoUrl}
+        type="profile"
+        jsonLd={buildSpecialistJsonLd({ specialist, services })}
+      />
       {/* Sticky compact header */}
       {specialist && (
         <div className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200/60 dark:border-gray-800 px-2 sm:px-6 lg:px-8 py-2">

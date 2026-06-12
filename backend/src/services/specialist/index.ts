@@ -687,32 +687,44 @@ export class SpecialistService {
         };
       }
 
+      // ── Marketplace acquisition: featured/boosted placement ───────────────
+      // Featured specialists are surfaced FIRST in every sort mode. We push
+      // `isFeatured desc` as the PRIMARY orderBy key, then the normal ordering.
+      // Note: Prisma can't express the "still-active" guard (featuredUntil > now
+      // OR null) inside orderBy, so a specialist whose boost has EXPIRED still
+      // has isFeatured=true here and would sort high. We correct for that with a
+      // stable in-memory re-sort below (activeFeatured-first) using the computed
+      // `isFeatured` active flag. Self-serve toggle today; becomes a paid boost
+      // once live billing lands (see promote.service.ts).
+      const featuredFirst = { isFeatured: 'desc' as const };
       let orderBy: Record<string, string> | Record<string, string>[] = {};
       switch (sortBy) {
         case 'rating':
           orderBy = [
+            featuredFirst,
             { rating: 'desc' },
             { reviewCount: 'desc' }, // Secondary sort by review count
           ];
           break;
         case 'reviews':
           orderBy = [
+            featuredFirst,
             { reviewCount: 'desc' },
             { rating: 'desc' }, // Secondary sort by rating
           ];
           break;
         case 'newest':
-          orderBy = { createdAt: 'desc' };
+          orderBy = [featuredFirst, { createdAt: 'desc' }];
           break;
         case 'priceAsc':
         case 'priceDesc':
           // Prisma can't order by aggregate of related rows directly via simple
           // orderBy here. Apply rating sort at DB level then re-sort by min
           // service price in memory after the listing-card enrichment step.
-          orderBy = { rating: 'desc' };
+          orderBy = [featuredFirst, { rating: 'desc' }];
           break;
         default:
-          orderBy = { rating: 'desc' };
+          orderBy = [featuredFirst, { rating: 'desc' }];
       }
 
       const [rawSpecialists, total] = await Promise.all([
@@ -790,9 +802,17 @@ export class SpecialistService {
       const bookingByUserId = new Map<string, number>();
       for (const row of bookingAggs) bookingByUserId.set(row.specialistId, row._count._all);
 
+      // Active-featured guard: isFeatured flag AND boost not expired.
+      const nowTs = Date.now();
+      const isActiveFeatured = (s: { isFeatured: boolean; featuredUntil: Date | null }) =>
+        s.isFeatured && (s.featuredUntil == null || new Date(s.featuredUntil).getTime() > nowTs);
+
       // Parse JSON fields for each specialist in search results
       const specialists = rawSpecialists.map(specialist => ({
         ...specialist,
+        // Marketplace acquisition: expose the ACTIVE featured flag for badging.
+        // Overrides the raw column so the frontend never badges an expired boost.
+        isFeatured: isActiveFeatured(specialist),
         specialties: SpecialistService.parseJsonField(specialist.specialties, []),
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
@@ -825,6 +845,17 @@ export class SpecialistService {
           return (av - bv) * dir;
         });
       }
+
+      // Marketplace acquisition: stable re-sort so ACTIVE-featured specialists
+      // come first within the page, regardless of sort mode. This corrects for
+      // expired boosts that the DB-level `isFeatured desc` would otherwise keep
+      // floating at the top (the column is still true; the boost is just over).
+      // `.isFeatured` here is already the computed active flag from above.
+      finalList = [...finalList].sort((a: any, b: any) => {
+        const af = a.isFeatured ? 1 : 0;
+        const bf = b.isFeatured ? 1 : 0;
+        return bf - af; // active-featured first; stable for equal keys
+      });
 
       const totalPages = Math.ceil(total / limit);
 

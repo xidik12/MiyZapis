@@ -118,6 +118,9 @@ export interface RescheduleRecord {
   createdAt?: string;
 }
 
+// Marketplace acquisition channel for new-client attribution.
+export type BookingSource = 'DIRECT' | 'DISCOVERY' | 'EMBED' | 'MARKETPLACE';
+
 export interface CreateBookingRequest {
   serviceId: string;
   specialistId: string;
@@ -127,6 +130,9 @@ export interface CreateBookingRequest {
   paymentMethodId?: string;
   loyaltyPointsUsed?: number;
   rewardRedemptionId?: string;
+  // Where this booking originated (default DIRECT server-side). Drives the
+  // Promote acquisition dashboard + new-client attribution.
+  source?: BookingSource;
 }
 
 // Payment Types (from frontend)

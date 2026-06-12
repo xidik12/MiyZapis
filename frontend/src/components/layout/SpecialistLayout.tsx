@@ -8,7 +8,7 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -110,6 +110,13 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/marketing',
     icon: SparklesIcon,
     iconActive: SparklesIcon,
+  },
+  {
+    name: 'Promote',
+    nameUk: 'Просування',
+    href: '/specialist/promote',
+    icon: RocketLaunchIcon,
+    iconActive: RocketLaunchIcon,
   },
   {
     name: 'Purchasing',

@@ -16,6 +16,15 @@ import { ConsumablesService } from '@/services/inventory/consumables.service';
 import { ReputationService } from '@/services/reputation/reputation.service';
 import { computeDeposit, computeNoShowFee } from '@/services/booking/policy';
 
+// Marketplace acquisition: where this booking originated. Used for new-client
+// attribution + the Promote acquisition dashboard.
+//   DIRECT      — specialist's own link / profile / dashboard (default)
+//   DISCOVERY   — found via marketplace search results
+//   EMBED       — booked through the embeddable widget on the specialist's own site
+//   MARKETPLACE — generic marketplace surface (reserved)
+export type BookingSource = 'DIRECT' | 'DISCOVERY' | 'EMBED' | 'MARKETPLACE';
+const BOOKING_SOURCES: BookingSource[] = ['DIRECT', 'DISCOVERY', 'EMBED', 'MARKETPLACE'];
+
 interface CreateBookingData {
   customerId: string;
   serviceId: string;
@@ -25,6 +34,7 @@ interface CreateBookingData {
   loyaltyPointsUsed?: number;
   rewardRedemptionId?: string;
   participantCount?: number; // For group sessions - number of participants in this booking
+  source?: BookingSource; // Marketplace acquisition channel (default DIRECT)
 }
 
 interface UpdateBookingData {
@@ -170,6 +180,23 @@ export class BookingService {
       if (!customer.isActive) {
         throw new Error('CUSTOMER_NOT_ACTIVE');
       }
+
+      // ── Marketplace acquisition: source + new-client attribution ──────────
+      // Normalize the incoming source (default DIRECT, reject unknown values).
+      const bookingSource: BookingSource =
+        data.source && BOOKING_SOURCES.includes(data.source) ? data.source : 'DIRECT';
+
+      // isFirstVisit = this customer has NO prior booking with THIS specialist.
+      // We key on the specialist's User id (Booking.specialistId stores the User id,
+      // as used everywhere else in this service). Counting BEFORE inserting the new
+      // row, so === 0 means this is their first-ever booking with the specialist.
+      const priorBookingsWithSpecialist = await prisma.booking.count({
+        where: {
+          customerId: data.customerId,
+          specialistId: service.specialist.userId,
+        },
+      });
+      const isFirstVisit = priorBookingsWithSpecialist === 0;
 
       // Validate and handle group session logic
       const participantCount = data.participantCount || 1;
@@ -443,6 +470,9 @@ export class BookingService {
             confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
             participantCount, // Add participant count for group sessions
             groupSessionId, // Add group session ID if applicable
+            // Marketplace acquisition attribution.
+            source: bookingSource,
+            isFirstVisit,
           },
         include: {
           customer: {

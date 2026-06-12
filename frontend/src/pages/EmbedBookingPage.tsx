@@ -12,6 +12,8 @@ import { specialistService } from '../services';
 import { Avatar, InlineLoader } from '../components/ui';
 import { StarIcon, ClockIcon, CalendarIcon } from '@/components/icons';
 import { translateProfession } from '@/utils/profession';
+import PublicSeo from '../components/common/PublicSeo';
+import { getAbsoluteImageUrl } from '../utils/imageUrl';
 
 const EmbedBookingPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -119,8 +121,17 @@ const EmbedBookingPage: React.FC = () => {
     );
   }
 
+  const embedName = `${specialist.user?.firstName || ''} ${specialist.user?.lastName || ''}`.trim() || 'Specialist';
+
   return (
     <div className="min-h-[200px] w-full bg-transparent text-gray-900 dark:text-gray-100 antialiased">
+      <PublicSeo
+        title={`${embedName} — ${t('actions.bookNow') || 'Book now'} | МійЗапис`}
+        description={getLocalizedDescription(specialist) || `Book ${embedName} on МійЗапис.`}
+        image={getAbsoluteImageUrl(specialist.user?.avatar || specialist.avatar) || undefined}
+        url={profileUrl}
+        type="profile"
+      />
       <div className="mx-auto max-w-md w-full p-3 sm:p-4">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
           {/* Header */}
@@ -167,7 +178,8 @@ const EmbedBookingPage: React.FC = () => {
               services.map((service: any) => (
                 <a
                   key={service.id}
-                  href={`${origin}/booking/${service.id}`}
+                  /* Marketplace acquisition: booked from the embed widget = EMBED source */
+                  href={`${origin}/booking/${service.id}?source=EMBED`}
                   target="_top"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:border-primary-400 hover:bg-primary-50/40 dark:hover:bg-primary-900/10 transition-colors"
