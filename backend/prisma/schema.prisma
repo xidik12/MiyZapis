@@ -2169,3 +2169,172 @@ model BeforeAfterPhoto {
 
   @@index([specialistId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SALON MANAGEMENT SUITE — staff invites, inventory, purchasing, payroll
+// All additive; cross-entity refs (ownerId/businessId/staffUserId) are plain
+// indexed columns (no FK) so adding these never touches existing models.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Pending staff invitation (email may not have an account yet).
+model BusinessInvite {
+  id          String    @id @default(cuid())
+  businessId  String
+  email       String
+  role        String    // MANAGER | SPECIALIST
+  token       String    @unique
+  invitedBy   String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
+  @@index([businessId])
+  @@map("business_invites")
+}
+
+// Inventory item (retail product OR consumable). ownerId = the employer/solo user.
+model Product {
+  id            String    @id @default(cuid())
+  ownerId       String                       // user who owns the inventory (solo or business owner)
+  businessId    String?                      // null for solo specialists
+  sku           String?
+  name          String
+  description   String?
+  type          String    @default("CONSUMABLE") // CONSUMABLE | RETAIL
+  unit          String    @default("unit")        // unit | ml | g | pack
+  costPrice     Decimal   @default(0)
+  salePrice     Decimal?                     // for RETAIL items
+  stockQty      Decimal   @default(0)
+  reorderLevel  Decimal   @default(0)        // low-stock threshold
+  currency      String    @default("UAH")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  movements     StockMovement[]
+
+  @@index([ownerId])
+  @@index([businessId])
+  @@map("products")
+}
+
+// Every stock change (received, used, sold, adjusted). Sum = current stockQty.
+model StockMovement {
+  id          String   @id @default(cuid())
+  productId   String
+  delta       Decimal                       // +received / -used / -sold / ±adjust
+  reason      String                        // PURCHASE | USAGE | SALE | ADJUSTMENT | RETURN
+  reference   String?                       // PO id, booking id, free note
+  createdById String
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("stock_movements")
+}
+
+// Vendor / supplier of products.
+model Supplier {
+  id          String    @id @default(cuid())
+  ownerId     String
+  businessId  String?
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  taxId       String?
+  notes       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+
+  @@index([ownerId])
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id          String    @id @default(cuid())
+  ownerId     String
+  businessId  String?
+  supplierId  String?
+  poNumber    String
+  status      String    @default("DRAFT")   // DRAFT | ORDERED | PARTIAL | RECEIVED | CANCELLED
+  currency    String    @default("UAH")
+  subtotal    Decimal   @default(0)
+  taxAmount   Decimal   @default(0)
+  total       Decimal   @default(0)
+  notes       String?
+  orderedAt   DateTime?
+  receivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  supplier    Supplier?           @relation(fields: [supplierId], references: [id])
+  items       PurchaseOrderItem[]
+
+  @@index([ownerId])
+  @@index([businessId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  productId       String?                     // links to inventory if known
+  description     String
+  quantity        Decimal
+  unitCost        Decimal
+  receivedQty     Decimal  @default(0)
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_items")
+}
+
+// Commission rate per staff member (% of service price on completed bookings).
+model CommissionRule {
+  id          String   @id @default(cuid())
+  ownerId     String                          // employer
+  businessId  String?
+  staffUserId String
+  percent     Decimal  @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([ownerId, staffUserId])
+  @@index([staffUserId])
+  @@map("commission_rules")
+}
+
+// A pay-run line for one staff member over a period.
+model PayrollRecord {
+  id              String    @id @default(cuid())
+  ownerId         String                       // employer (business owner / solo)
+  businessId      String?
+  staffUserId     String                       // professional being paid
+  periodStart     DateTime
+  periodEnd       DateTime
+  baseSalary      Decimal   @default(0)
+  commissionTotal Decimal   @default(0)
+  bonus           Decimal   @default(0)
+  deductions      Decimal   @default(0)
+  taxAmount       Decimal   @default(0)
+  netPay          Decimal   @default(0)
+  currency        String    @default("UAH")
+  status          String    @default("DRAFT")  // DRAFT | APPROVED | PAID
+  paidAt          DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@index([businessId])
+  @@index([staffUserId])
+  @@map("payroll_records")
+}
