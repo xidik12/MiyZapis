@@ -266,7 +266,7 @@ const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
           <select
             value={regime}
             onChange={(e) => setRegime(e.target.value)}
-            className="ml-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm min-w-[280px]"
+            className="ml-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm min-w-[180px] sm:min-w-[280px] max-w-full"
           >
             {regimes.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
@@ -451,7 +451,7 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input label={t('accounting.invoices.modal.clientName')} value={clientName} onChange={setClientName} />
             <Input label={t('accounting.invoices.modal.clientEmail')} value={clientEmail} onChange={setClientEmail} type="email" />
             <Input label={t('accounting.invoices.modal.currency')} value={currency} onChange={setCurrency} />

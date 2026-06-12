@@ -1161,7 +1161,7 @@ const SearchPage: React.FC = () => {
         {isFilterTrayOpen && (
           <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
             <div className="absolute inset-0 bg-black/60" onClick={() => setIsFilterTrayOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-full max-w-[calc(100vw-2rem)] sm:max-w-md bg-white dark:bg-gray-900-[20px] border-l border-gray-200 dark:border-gray-800 shadow-2xl animate-slide-in-right flex flex-col">
+            <div className="absolute right-0 top-0 h-full w-full max-w-[calc(100vw-2rem)] sm:max-w-md bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 shadow-2xl animate-slide-in-right flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
@@ -1184,7 +1184,7 @@ const SearchPage: React.FC = () => {
                 </div>
               </div>
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+              <div className="flex-1 overflow-y-auto max-h-[calc(100vh-8rem)] px-6 py-6 space-y-6">
                 {/* Category Filter */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.category') || 'Category'}</label>

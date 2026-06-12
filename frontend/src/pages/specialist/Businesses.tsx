@@ -125,13 +125,13 @@ const CreateBusiness: React.FC<{ onCreated: (b: Business) => void }> = ({ onCrea
           <FormField label={t('businesses.create.name')} value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
           <FormField label={t('businesses.create.slug')} value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} placeholder="my-salon" />
           <FormField label={t('businesses.create.description')} value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label={t('businesses.create.email')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
             <FormField label={t('businesses.create.phone')} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
           </div>
           <FormField label={t('businesses.create.address')} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
           <FormField label={t('businesses.create.website')} value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" placeholder="https://" />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label={t('businesses.create.currency')} value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
             <FormField label={t('businesses.create.timezone')} value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
           </div>
@@ -247,6 +247,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
       <div>
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('businesses.overview.recent')}</h3>
         {dashboard.recentBookings.length === 0 ? <p className="text-sm text-gray-500">{t('businesses.overview.recentEmpty')}</p> : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
               <tr><th className="py-2">{t('businesses.overview.colWhen')}</th><th>{t('businesses.overview.colService')}</th><th>{t('businesses.overview.colCustomer')}</th><th>{t('businesses.overview.colSpecialist')}</th><th className="text-right">{t('businesses.overview.colAmount')}</th><th>{t('businesses.overview.colStatus')}</th></tr>
@@ -264,6 +265,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
@@ -366,7 +368,7 @@ const MemberActions: React.FC<{ businessId: string; member: any; onReload: () =>
     <div className="relative">
       <button onClick={() => setOpen(!open)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 px-2">⋯</button>
       {open && (
-        <div className="absolute right-0 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 min-w-[160px]">
+        <div className="absolute right-0 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 min-w-[160px] max-w-[calc(100vw-1rem)]">
           <button onClick={() => change('OWNER')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeOwner')}</button>
           <button onClick={() => change('MANAGER')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeManager')}</button>
           <button onClick={() => change('SPECIALIST')} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">{t('businesses.members.makeSpecialist')}</button>
@@ -453,13 +455,13 @@ const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: 
     <div className="space-y-4">
       <FormField label={t('businesses.create.name').replace(' *', '')} value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
       <FormField label={t('businesses.create.description')} value={form.description} onChange={(v) => setForm({ ...form, description: v })} multiline />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField label={t('businesses.create.email')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
         <FormField label={t('businesses.create.phone')} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} type="tel" />
       </div>
       <FormField label={t('businesses.create.address')} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
       <FormField label={t('businesses.create.website')} value={form.websiteUrl} onChange={(v) => setForm({ ...form, websiteUrl: v })} type="url" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField label={t('businesses.create.currency')} value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
         <FormField label={t('businesses.create.timezone')} value={form.timezone} onChange={(v) => setForm({ ...form, timezone: v })} />
       </div>
