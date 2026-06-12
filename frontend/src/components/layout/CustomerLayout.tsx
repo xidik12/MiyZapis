@@ -9,7 +9,7 @@ import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { Logo } from '@/components/ui/Logo';
 import { MobileBottomNav } from './MobileBottomNav';
-import { HouseIcon as HomeIcon, CalendarIcon, Cog6ToothIcon, StarIcon, HeartIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, Cog6ToothIcon, StarIcon, HeartIcon, GiftIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -102,7 +102,6 @@ const navigation: SidebarNavItem[] = [
 ];
 
 const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -150,19 +149,12 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
+      {/* Desktop sidebar (hidden on mobile — mobile uses the bottom nav) */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 flex flex-col
+        hidden lg:flex
+        fixed inset-y-0 left-0 z-50 flex-col
         ${isCollapsed ? 'w-16' : 'w-72'}
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        translate-x-0
         transition-all duration-300 ease-in-out
         bg-white dark:bg-gray-900 border-r border-gray-200/20 dark:border-gray-700/20
         shadow-xl lg:shadow-none
@@ -183,13 +175,6 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className="hidden lg:flex p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
           >
             <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          </button>
-
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
-          >
-            <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
@@ -337,12 +322,12 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       <div className={`flex-1 flex flex-col min-h-screen ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
-          >
-            <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-          </button>
+          {/* Mobile brand (sidebar is hidden on mobile; bottom nav handles navigation) */}
+          <Link to="/" className="flex items-center space-x-2 lg:hidden">
+            <Logo size="sm" />
+            <span className="text-base font-bold text-gray-900 dark:text-white">МійЗапис</span>
+          </Link>
+          <div className="hidden lg:block" />
 
           <div className="flex items-center space-x-4">
             {/* Notifications */}
