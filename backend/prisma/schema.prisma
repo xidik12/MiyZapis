@@ -302,12 +302,22 @@ model Service {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // No-show protection / deposit policy (per service; charging happens once
+  // a payment provider is live — until then deposits are tracked as REQUIRED).
+  requireDeposit          Boolean  @default(false)
+  depositType             String?  // PERCENT | FIXED
+  depositValue            Decimal  @default(0)
+  cancellationWindowHours Int      @default(0)   // free-cancel cutoff before start
+  noShowFeeType           String?  // PERCENT | FIXED
+  noShowFeeValue          Decimal  @default(0)
+
   // Relations
   specialist     Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
   categoryModel  Category?  @relation(fields: [categoryId], references: [id])
   bookings       Booking[]
   favorites      FavoriteService[] @relation("ServiceFavorites")
   waitlists      Waitlist[]
+  consumables    ServiceConsumable[]
 
   // Indexes for performance
   @@index([categoryId, isActive, isDeleted])
@@ -412,6 +422,11 @@ model Booking {
   pointsRedemptions PointsRedemption[]
   reviewRewards     ReviewReward[]
   rewardRedemptions RewardRedemption[] @relation("BookingRewardRedemptions")
+
+  // No-show protection state (depositStatus already exists above)
+  noShowFeeAmount   Decimal  @default(0)
+  noShowFeeStatus   String   @default("NONE") // NONE | CHARGED | WAIVED
+  consumablesDeducted Boolean @default(false) // guard so stock is written off once
 
   // Crypto Payment Relations
   cryptoPayments    CryptoPayment[]
@@ -2341,4 +2356,173 @@ model PayrollRecord {
   @@index([businessId])
   @@index([staffUserId])
   @@map("payroll_records")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROWTH SUITE — consumable auto-deduct, gift cards, packages, memberships,
+// marketing automation. All additive; cross-entity refs are plain indexed cols.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Links a service to the products it consumes, so completing a booking writes
+// the stock off automatically.
+model ServiceConsumable {
+  id         String   @id @default(cuid())
+  serviceId  String
+  productId  String
+  quantity   Decimal  @default(1)   // units consumed per booking of this service
+  createdAt  DateTime @default(now())
+
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, productId])
+  @@index([productId])
+  @@map("service_consumables")
+}
+
+// Prepaid gift card, redeemable against bookings.
+model GiftCard {
+  id              String    @id @default(cuid())
+  ownerId         String                       // issuing business owner / solo
+  businessId      String?
+  code            String    @unique
+  initialAmount   Decimal
+  balance         Decimal
+  currency        String    @default("UAH")
+  status          String    @default("ACTIVE") // ACTIVE | REDEEMED | EXPIRED | CANCELLED
+  recipientEmail  String?
+  recipientUserId String?
+  purchasedByUserId String?
+  note            String?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  transactions    GiftCardTransaction[]
+
+  @@index([ownerId])
+  @@index([code])
+  @@map("gift_cards")
+}
+
+model GiftCardTransaction {
+  id          String   @id @default(cuid())
+  giftCardId  String
+  amount      Decimal                          // negative = redeemed, positive = top-up
+  reason      String                           // ISSUE | REDEEM | REFUND | ADJUST
+  bookingId   String?
+  createdAt   DateTime @default(now())
+
+  giftCard    GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@index([giftCardId])
+  @@map("gift_card_transactions")
+}
+
+// Prepaid package of service credits (e.g. "10 haircuts").
+model ServicePackage {
+  id          String   @id @default(cuid())
+  ownerId     String
+  businessId  String?
+  name        String
+  description String?
+  serviceId   String?                          // optional: credits valid for one service
+  credits     Int      @default(1)
+  price       Decimal
+  currency    String   @default("UAH")
+  validDays   Int      @default(365)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchases   CustomerPackage[]
+
+  @@index([ownerId])
+  @@map("service_packages")
+}
+
+model CustomerPackage {
+  id               String    @id @default(cuid())
+  packageId        String
+  customerUserId   String
+  remainingCredits Int
+  status           String    @default("ACTIVE") // ACTIVE | USED | EXPIRED
+  purchasedAt      DateTime  @default(now())
+  expiresAt        DateTime?
+
+  package          ServicePackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([customerUserId])
+  @@index([packageId])
+  @@map("customer_packages")
+}
+
+// Recurring membership plan offered by a business.
+model MembershipPlan {
+  id           String   @id @default(cuid())
+  ownerId      String
+  businessId   String?
+  name         String
+  description  String?
+  price        Decimal
+  currency     String   @default("UAH")
+  billingPeriod String  @default("MONTHLY")   // MONTHLY | YEARLY
+  benefits     String?                         // JSON / free text
+  discountPercent Decimal @default(0)          // member discount on services
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  members      CustomerMembership[]
+
+  @@index([ownerId])
+  @@map("membership_plans")
+}
+
+model CustomerMembership {
+  id              String    @id @default(cuid())
+  planId          String
+  customerUserId  String
+  status          String    @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  startedAt       DateTime  @default(now())
+  currentPeriodEnd DateTime?
+  cancelledAt     DateTime?
+
+  plan            MembershipPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([customerUserId])
+  @@index([planId])
+  @@map("customer_memberships")
+}
+
+// Configurable marketing automation (win-back, rebooking nudge, birthday).
+model MarketingAutomation {
+  id            String   @id @default(cuid())
+  ownerId       String
+  businessId    String?
+  type          String                          // WINBACK | REBOOKING | BIRTHDAY
+  isEnabled     Boolean  @default(false)
+  lapsedDays    Int      @default(60)            // for WINBACK: no booking in N days
+  rebookDays    Int      @default(30)            // for REBOOKING: nudge N days after last visit
+  channel       String   @default("BOTH")        // TELEGRAM | EMAIL | BOTH
+  messageTemplate String?
+  lastRunAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([ownerId, type])
+  @@index([businessId])
+  @@map("marketing_automations")
+}
+
+// Log of automation messages sent (idempotency + reporting).
+model MarketingLog {
+  id            String   @id @default(cuid())
+  automationId  String
+  customerUserId String
+  channel       String
+  sentAt        DateTime @default(now())
+
+  @@index([automationId])
+  @@index([customerUserId])
+  @@map("marketing_logs")
 }
