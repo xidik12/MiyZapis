@@ -46,6 +46,24 @@ export const validateUpdateProfile = [
     })
     .withMessage('Valid international phone number is required'),
   
+  body('dateOfBirth')
+    .optional({ nullable: true })
+    .custom((value) => {
+      // Allow null or empty string to clear the field.
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) {
+        throw new Error('Date of birth must be a valid date');
+      }
+      if (d.getTime() > Date.now()) {
+        throw new Error('Date of birth cannot be in the future');
+      }
+      return true;
+    })
+    .withMessage('Valid date of birth is required'),
+
   body('language')
     .optional()
     .isIn(['en', 'uk', 'ru'])

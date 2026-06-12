@@ -3595,6 +3595,13 @@ const ru: Record<string, string> = {
   'payroll.name': 'Имя',
   'payroll.role': 'Роль',
   'payroll.commissionPercent': 'Комиссия %',
+  'payroll.commission.flat': 'Фиксированная',
+  'payroll.commission.tiered': 'Многоуровневая',
+  'payroll.commission.addTier': 'Добавить уровень',
+  'payroll.commission.minRevenue': 'Мин. доход',
+  'payroll.commission.tierPercent': 'Процент',
+  'payroll.commission.tieredHint': 'Процент комиссии определяется общим доходом специалиста за период выплаты.',
+  'payroll.commission.invalidTiers': 'Каждый уровень должен иметь мин. доход ≥ 0 и процент 0–100',
   'payroll.commissionSaved': 'Комиссия сохранена',
   'payroll.invalidPercent': 'Процент должен быть от 0 до 100',
   'payroll.newPayRun': 'Новая выплата',
@@ -3767,9 +3774,13 @@ const ru: Record<string, string> = {
   'marketing.rebooking.rebookDays': 'Напомнить через (дней)',
   'marketing.rebooking.rebookHint': 'Отправляется один раз, примерно через это количество дней после последнего завершённого визита клиента.',
 
+  'settings.dateOfBirth': 'Дата рождения',
+  'settings.dateOfBirthHint': 'Необязательно. Используется, чтобы отправить вам поздравление с днём рождения от ваших специалистов.',
+
   'marketing.birthday.title': 'Поздравление с днём рождения',
   'marketing.birthday.desc': 'Отправьте поздравление с днём рождения и ненавязчивое приглашение записаться',
   'marketing.birthday.comingSoon': 'Скоро — даты рождения пока не собираются, поэтому эта автоматизация недоступна.',
+  'marketing.birthday.defaultTemplate': 'С днём рождения, {{firstName}}! 🎉 {{businessName}} желает вам прекрасного дня. Побалуйте себя — запишитесь к нам!',
 };
 
 export default ru;

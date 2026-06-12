@@ -43,11 +43,19 @@ const CustomerSettings: React.FC = () => {
   // Get actual user data from Redux store
   const currentUser = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
+  // Normalize an ISO/Date string to the yyyy-MM-dd a date input expects.
+  const toDateInput = (value?: string | null): string => {
+    if (!value) return '';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+  };
+
   const [user, setUser] = useState({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
     email: currentUser?.email || '',
     phone: currentUser?.phoneNumber || '',
+    dateOfBirth: toDateInput((currentUser as any)?.dateOfBirth),
     avatar: currentUser?.avatar || '',
   });
 
@@ -159,6 +167,7 @@ const CustomerSettings: React.FC = () => {
         lastName: currentUser.lastName || '',
         email: currentUser.email || '',
         phone: currentUser.phoneNumber || '',
+        dateOfBirth: toDateInput((currentUser as any).dateOfBirth),
         avatar: currentUser.avatar || '',
       });
     }
@@ -310,6 +319,7 @@ const CustomerSettings: React.FC = () => {
         lastName: user.lastName,
         email: user.email,
         phoneNumber: user.phone,
+        dateOfBirth: user.dateOfBirth || null,
         language: language,
         currency: currency,
       } as any);
@@ -321,6 +331,7 @@ const CustomerSettings: React.FC = () => {
         lastName: user.lastName,
         email: user.email,
         phoneNumber: user.phone,
+        dateOfBirth: user.dateOfBirth || null,
         language: language,
         currency: currency,
       } as any));
@@ -540,6 +551,21 @@ const CustomerSettings: React.FC = () => {
                         onChange={(e) => setUser(prev => ({ ...prev, phone: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('settings.dateOfBirth')}
+                      </label>
+                      <input
+                        type="date"
+                        value={user.dateOfBirth}
+                        max={new Date().toISOString().slice(0, 10)}
+                        onChange={(e) => setUser(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {t('settings.dateOfBirthHint')}
+                      </p>
                     </div>
                   </div>
 

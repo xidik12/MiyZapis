@@ -3595,6 +3595,13 @@ const uk: Record<string, string> = {
   'payroll.name': "Ім'я",
   'payroll.role': 'Роль',
   'payroll.commissionPercent': 'Комісія %',
+  'payroll.commission.flat': 'Фіксована',
+  'payroll.commission.tiered': 'Багаторівнева',
+  'payroll.commission.addTier': 'Додати рівень',
+  'payroll.commission.minRevenue': 'Мін. дохід',
+  'payroll.commission.tierPercent': 'Відсоток',
+  'payroll.commission.tieredHint': 'Відсоток комісії визначається загальним доходом спеціаліста за період виплати.',
+  'payroll.commission.invalidTiers': 'Кожен рівень має мати мін. дохід ≥ 0 та відсоток 0–100',
   'payroll.commissionSaved': 'Комісію збережено',
   'payroll.invalidPercent': 'Відсоток має бути від 0 до 100',
   'payroll.newPayRun': 'Нова виплата',
@@ -3767,9 +3774,13 @@ const uk: Record<string, string> = {
   'marketing.rebooking.rebookDays': 'Нагадати через (днів)',
   'marketing.rebooking.rebookHint': 'Надсилається один раз, приблизно через цю кількість днів після останнього завершеного візиту клієнта.',
 
+  'settings.dateOfBirth': 'Дата народження',
+  'settings.dateOfBirthHint': 'Необов\'язково. Використовується, щоб надіслати вам привітання з днем народження від ваших спеціалістів.',
+
   'marketing.birthday.title': 'Привітання з днем народження',
   'marketing.birthday.desc': 'Надішліть привітання з днем народження та ненав\'язливе запрошення записатися',
   'marketing.birthday.comingSoon': 'Незабаром — дати народження поки не збираються, тож ця автоматизація недоступна.',
+  'marketing.birthday.defaultTemplate': 'З днем народження, {{firstName}}! 🎉 {{businessName}} бажає вам чудового дня. Побалуйте себе — забронюйте візит до нас!',
 };
 
 export default uk;

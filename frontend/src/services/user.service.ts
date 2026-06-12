@@ -6,6 +6,7 @@ export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  dateOfBirth?: string | null;
   avatar?: string;
   bio?: string;
   location?: {

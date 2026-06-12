@@ -11,18 +11,39 @@ const toNumber = (value: Prisma.Decimal | number | null | undefined): number => 
   return typeof value === 'number' ? value : Number(value.toString());
 };
 
+// Commission modes: FLAT = single percent; TIERED = percent by period revenue.
+export const COMMISSION_MODES = ['FLAT', 'TIERED'] as const;
+export type CommissionMode = typeof COMMISSION_MODES[number];
+
+export interface CommissionTier {
+  minRevenue: number;
+  percent: number;
+}
+
 export interface StaffMember {
   staffUserId: string;
   name: string;
   role: string;
+  // Backward-compat: for FLAT this is the flat percent; for TIERED it's the
+  // lowest tier's percent (informational only — the effective % is revenue-driven).
   commissionPercent: number;
+  mode: CommissionMode;
+  tiers: CommissionTier[];
+}
+
+export interface SetCommissionInput {
+  mode?: CommissionMode;
+  percent?: number;
+  tiers?: CommissionTier[];
 }
 
 export interface PreviewLine {
   staffUserId: string;
   name: string;
   role: string;
+  // The effective commission % actually applied for this period (post-tier resolution).
   commissionPercent: number;
+  mode: CommissionMode;
   baseSalary: number;
   commissionTotal: number;
   bonus: number;
@@ -78,6 +99,45 @@ const netPayOf = (l: {
   deductions: number;
   taxAmount: number;
 }): number => l.baseSalary + l.commissionTotal + l.bonus - l.deductions - l.taxAmount;
+
+// Parse the stored `tiers` JSON into a sorted, validated tier array.
+// Returns [] on null/garbage so callers can safely fall back to FLAT behaviour.
+const parseTiers = (raw: string | null | undefined): CommissionTier[] => {
+  if (!raw) return [];
+  let arr: unknown;
+  try {
+    arr = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(arr)) return [];
+  const tiers: CommissionTier[] = [];
+  for (const t of arr) {
+    if (!t || typeof t !== 'object') continue;
+    const minRevenue = Number((t as { minRevenue?: unknown }).minRevenue);
+    const percent = Number((t as { percent?: unknown }).percent);
+    if (!Number.isFinite(minRevenue) || !Number.isFinite(percent)) continue;
+    tiers.push({ minRevenue, percent });
+  }
+  return tiers.sort((a, b) => a.minRevenue - b.minRevenue);
+};
+
+// Validate a tier array for persistence. Throws on invalid input.
+const validateTiers = (tiers: unknown): CommissionTier[] => {
+  if (!Array.isArray(tiers) || tiers.length === 0) {
+    throw new Error('INVALID_TIERS');
+  }
+  const out: CommissionTier[] = [];
+  for (const t of tiers) {
+    if (!t || typeof t !== 'object') throw new Error('INVALID_TIERS');
+    const minRevenue = Number((t as { minRevenue?: unknown }).minRevenue);
+    const percent = Number((t as { percent?: unknown }).percent);
+    if (!Number.isFinite(minRevenue) || minRevenue < 0) throw new Error('INVALID_TIERS');
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new Error('INVALID_TIERS');
+    out.push({ minRevenue, percent });
+  }
+  return out.sort((a, b) => a.minRevenue - b.minRevenue);
+};
 
 export class PayrollService {
   // ---- Staff resolution --------------------------------------------------
@@ -135,40 +195,86 @@ export class PayrollService {
         const u = userMap.get(s.userId);
         const rule = ruleMap.get(s.userId);
         const name = u ? `${u.firstName} ${u.lastName}`.trim() : s.userId;
+        const active = !!(rule && rule.isActive);
+        const mode: CommissionMode = active && rule!.mode === 'TIERED' ? 'TIERED' : 'FLAT';
+        const tiers = active ? parseTiers(rule!.tiers) : [];
+        // For TIERED, surface the lowest tier's percent as commissionPercent (display hint).
+        const commissionPercent = active
+          ? mode === 'TIERED'
+            ? tiers[0]?.percent ?? 0
+            : toNumber(rule!.percent)
+          : 0;
         return {
           staffUserId: s.userId,
           name,
           role: s.role,
-          commissionPercent: rule && rule.isActive ? toNumber(rule.percent) : 0,
+          commissionPercent,
+          mode,
+          tiers,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // Upsert a CommissionRule for a staff member.
-  static async setCommission(ownerId: string, staffUserId: string, percent: number) {
+  // FLAT (default): persist a single `percent` (0–100).
+  // TIERED: persist a non-empty validated `tiers` JSON array; `percent` is left at 0.
+  static async setCommission(ownerId: string, staffUserId: string, input: SetCommissionInput) {
     // Validate the staff member belongs to this owner.
     const staff = await this.resolveStaffUserIds(ownerId);
     if (!staff.some((s) => s.userId === staffUserId)) {
       return null;
     }
 
+    const mode: CommissionMode = input.mode === 'TIERED' ? 'TIERED' : 'FLAT';
+
+    if (mode === 'TIERED') {
+      const tiers = validateTiers(input.tiers); // throws INVALID_TIERS if bad
+      const tiersJson = JSON.stringify(tiers);
+      return prisma.commissionRule.upsert({
+        where: { ownerId_staffUserId: { ownerId, staffUserId } },
+        create: { ownerId, staffUserId, mode, tiers: tiersJson, percent: 0, isActive: true },
+        update: { mode, tiers: tiersJson, percent: 0, isActive: true },
+      });
+    }
+
+    // FLAT
+    const percent = Number(input.percent);
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      throw new Error('INVALID_PERCENT');
+    }
     return prisma.commissionRule.upsert({
       where: { ownerId_staffUserId: { ownerId, staffUserId } },
-      create: { ownerId, staffUserId, percent, isActive: true },
-      update: { percent, isActive: true },
+      create: { ownerId, staffUserId, mode, tiers: null, percent, isActive: true },
+      update: { mode, tiers: null, percent, isActive: true },
     });
   }
 
-  // Compute commission for one staff member over a period from COMPLETED bookings.
-  private static async commissionFor(
+  // Resolve the effective commission % for a period given a rule shape + period revenue.
+  // FLAT  -> rule.percent.
+  // TIERED -> the percent of the highest tier whose minRevenue <= revenue (simple
+  //           whole-revenue tiering, NOT marginal — the chosen % applies to the entire
+  //           commission base). Returns 0 if revenue is below the lowest tier.
+  static effectivePercent(
+    rule: { mode: CommissionMode; percent: number; tiers: CommissionTier[] },
+    periodRevenue: number
+  ): number {
+    if (rule.mode !== 'TIERED') return rule.percent;
+    let pct = 0;
+    for (const tier of rule.tiers) {
+      // tiers are sorted ascending by minRevenue
+      if (periodRevenue >= tier.minRevenue) pct = tier.percent;
+      else break;
+    }
+    return pct;
+  }
+
+  // Sum a staff member's COMPLETED booking revenue over a period.
+  private static async periodRevenueFor(
     staffUserId: string,
-    percent: number,
     periodStart: Date,
     periodEnd: Date
   ): Promise<number> {
-    if (!percent || percent <= 0) return 0;
-
     const agg = await prisma.booking.aggregate({
       where: {
         specialistId: staffUserId,
@@ -177,9 +283,7 @@ export class PayrollService {
       },
       _sum: { totalAmount: true },
     });
-
-    const bookingTotal = toNumber(agg._sum.totalAmount);
-    return (bookingTotal * percent) / 100;
+    return toNumber(agg._sum.totalAmount);
   }
 
   // Build a draft preview (not persisted) for each staff member over a period.
@@ -188,12 +292,14 @@ export class PayrollService {
 
     const lines = await Promise.all(
       staff.map(async (s) => {
-        const commissionTotal = await this.commissionFor(
-          s.staffUserId,
-          s.commissionPercent,
-          periodStart,
-          periodEnd
+        const periodRevenue = await this.periodRevenueFor(s.staffUserId, periodStart, periodEnd);
+        // Resolve the effective % (flat percent, or the matching tier for this revenue),
+        // then apply it to the whole period revenue (whole-revenue tiering, not marginal).
+        const pct = this.effectivePercent(
+          { mode: s.mode, percent: s.commissionPercent, tiers: s.tiers },
+          periodRevenue
         );
+        const commissionTotal = (periodRevenue * pct) / 100;
         const baseSalary = 0;
         const bonus = 0;
         const deductions = 0;
@@ -202,7 +308,8 @@ export class PayrollService {
           staffUserId: s.staffUserId,
           name: s.name,
           role: s.role,
-          commissionPercent: s.commissionPercent,
+          commissionPercent: pct,
+          mode: s.mode,
           baseSalary,
           commissionTotal,
           bonus,

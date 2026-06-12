@@ -3597,6 +3597,13 @@ const en: Record<string, string> = {
   'payroll.name': 'Name',
   'payroll.role': 'Role',
   'payroll.commissionPercent': 'Commission %',
+  'payroll.commission.flat': 'Flat',
+  'payroll.commission.tiered': 'Tiered',
+  'payroll.commission.addTier': 'Add tier',
+  'payroll.commission.minRevenue': 'Min revenue',
+  'payroll.commission.tierPercent': 'Percent',
+  'payroll.commission.tieredHint': 'Commission % is chosen by the staff member’s total service revenue in the pay period.',
+  'payroll.commission.invalidTiers': 'Each tier needs min revenue ≥ 0 and percent 0–100',
   'payroll.commissionSaved': 'Commission saved',
   'payroll.invalidPercent': 'Percent must be between 0 and 100',
   'payroll.newPayRun': 'New Pay Run',
@@ -3769,9 +3776,13 @@ const en: Record<string, string> = {
   'marketing.rebooking.rebookDays': 'Remind after (days)',
   'marketing.rebooking.rebookHint': 'Sent once, around this many days after the customer\'s last completed visit.',
 
+  'settings.dateOfBirth': 'Date of birth',
+  'settings.dateOfBirthHint': 'Optional. Used to send you a birthday greeting from your specialists.',
+
   'marketing.birthday.title': 'Birthday greeting',
   'marketing.birthday.desc': 'Send a birthday message with a gentle invitation to book',
   'marketing.birthday.comingSoon': 'Coming soon — birthdays are not collected yet, so this automation is unavailable.',
+  'marketing.birthday.defaultTemplate': 'Happy birthday, {{firstName}}! 🎉 {{businessName}} wishes you a wonderful day. Treat yourself — book a visit with us!',
 };
 
 export default en;

@@ -10,6 +10,8 @@ import {
   PayrollStatus,
   PAYROLL_STATUSES,
   RunLineInput,
+  CommissionMode,
+  CommissionTier,
 } from '../../services/payroll.service';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
@@ -52,6 +54,7 @@ interface RunRow {
   name: string;
   role: string;
   commissionPercent: number;
+  mode: CommissionMode;
   baseSalary: string;
   commissionTotal: string;
   bonus: string;
@@ -80,8 +83,13 @@ const SpecialistPayroll: React.FC = () => {
   // Filters
   const [filterStatus, setFilterStatus] = useState<PayrollStatus | ''>('');
 
-  // Commission editing (per staff)
-  const [commissionDraft, setCommissionDraft] = useState<Record<string, string>>({});
+  // Commission editing (per staff). Each draft carries mode + flat percent + tier rows.
+  interface CommissionDraft {
+    mode: CommissionMode;
+    percent: string;
+    tiers: { minRevenue: string; percent: string }[];
+  }
+  const [commissionDraft, setCommissionDraft] = useState<Record<string, CommissionDraft>>({});
   const [savingCommission, setSavingCommission] = useState<string | null>(null);
 
   // Pay run builder
@@ -116,9 +124,17 @@ const SpecialistPayroll: React.FC = () => {
       setStaff(staffRes || []);
       setRecords(recordsRes || []);
       setSummary(summaryRes);
-      // Seed commission drafts.
-      const drafts: Record<string, string> = {};
-      (staffRes || []).forEach((s) => { drafts[s.staffUserId] = String(s.commissionPercent); });
+      // Seed commission drafts (mode + flat percent + tier rows).
+      const drafts: Record<string, CommissionDraft> = {};
+      (staffRes || []).forEach((s) => {
+        drafts[s.staffUserId] = {
+          mode: s.mode === 'TIERED' ? 'TIERED' : 'FLAT',
+          percent: String(s.commissionPercent),
+          tiers: (s.tiers && s.tiers.length > 0)
+            ? s.tiers.map((t) => ({ minRevenue: String(t.minRevenue), percent: String(t.percent) }))
+            : [{ minRevenue: '0', percent: '' }],
+        };
+      });
       setCommissionDraft(drafts);
     } catch (error: unknown) {
       console.error('Error loading payroll data:', error);
@@ -148,17 +164,69 @@ const SpecialistPayroll: React.FC = () => {
   };
 
   // ---------- Commission ----------
+  const getDraft = (staffUserId: string): CommissionDraft =>
+    commissionDraft[staffUserId] ?? { mode: 'FLAT', percent: '0', tiers: [{ minRevenue: '0', percent: '' }] };
+
+  const setDraft = (staffUserId: string, patch: Partial<CommissionDraft>) => {
+    setCommissionDraft((prev) => ({
+      ...prev,
+      [staffUserId]: { ...getDraft(staffUserId), ...patch },
+    }));
+  };
+
+  const updateTierRow = (staffUserId: string, idx: number, field: 'minRevenue' | 'percent', value: string) => {
+    const d = getDraft(staffUserId);
+    const tiers = d.tiers.map((tr, i) => (i === idx ? { ...tr, [field]: value } : tr));
+    setDraft(staffUserId, { tiers });
+  };
+
+  const addTierRow = (staffUserId: string) => {
+    const d = getDraft(staffUserId);
+    setDraft(staffUserId, { tiers: [...d.tiers, { minRevenue: '', percent: '' }] });
+  };
+
+  const removeTierRow = (staffUserId: string, idx: number) => {
+    const d = getDraft(staffUserId);
+    const tiers = d.tiers.filter((_, i) => i !== idx);
+    setDraft(staffUserId, { tiers: tiers.length > 0 ? tiers : [{ minRevenue: '0', percent: '' }] });
+  };
+
   const handleSaveCommission = async (staffUserId: string) => {
-    const pct = parseFloat(commissionDraft[staffUserId] ?? '0');
-    if (isNaN(pct) || pct < 0 || pct > 100) {
-      toast.error(t('payroll.invalidPercent') || 'Percent must be between 0 and 100');
-      return;
-    }
+    const d = getDraft(staffUserId);
     try {
       setSavingCommission(staffUserId);
-      await payrollService.setCommission(staffUserId, pct);
-      toast.success(t('payroll.commissionSaved') || 'Commission saved');
-      setStaff((prev) => prev.map((s) => (s.staffUserId === staffUserId ? { ...s, commissionPercent: pct } : s)));
+      if (d.mode === 'TIERED') {
+        const tiers: CommissionTier[] = [];
+        for (const tr of d.tiers) {
+          const minRevenue = parseFloat(tr.minRevenue);
+          const percent = parseFloat(tr.percent);
+          if (isNaN(minRevenue) || minRevenue < 0 || isNaN(percent) || percent < 0 || percent > 100) {
+            toast.error(t('payroll.commission.invalidTiers') || 'Each tier needs min revenue ≥ 0 and percent 0–100');
+            return;
+          }
+          tiers.push({ minRevenue, percent });
+        }
+        if (tiers.length === 0) {
+          toast.error(t('payroll.commission.invalidTiers') || 'Add at least one tier');
+          return;
+        }
+        await payrollService.setCommission(staffUserId, { mode: 'TIERED', tiers });
+        toast.success(t('payroll.commissionSaved') || 'Commission saved');
+        setStaff((prev) => prev.map((s) =>
+          s.staffUserId === staffUserId
+            ? { ...s, mode: 'TIERED', tiers, commissionPercent: tiers[0]?.percent ?? 0 }
+            : s));
+      } else {
+        const pct = parseFloat(d.percent);
+        if (isNaN(pct) || pct < 0 || pct > 100) {
+          toast.error(t('payroll.invalidPercent') || 'Percent must be between 0 and 100');
+          return;
+        }
+        await payrollService.setCommission(staffUserId, { mode: 'FLAT', percent: pct });
+        toast.success(t('payroll.commissionSaved') || 'Commission saved');
+        setStaff((prev) => prev.map((s) =>
+          s.staffUserId === staffUserId ? { ...s, mode: 'FLAT', commissionPercent: pct, tiers: [] } : s));
+      }
     } catch (error: unknown) {
       toast.error((error as Error).message || t('payroll.saveError') || 'Failed to save');
     } finally {
@@ -185,6 +253,7 @@ const SpecialistPayroll: React.FC = () => {
           name: l.name,
           role: l.role,
           commissionPercent: l.commissionPercent,
+          mode: l.mode === 'TIERED' ? 'TIERED' : 'FLAT',
           baseSalary: String(num(l.baseSalary)),
           commissionTotal: String(num(l.commissionTotal)),
           bonus: String(num(l.bonus)),
@@ -417,12 +486,14 @@ const SpecialistPayroll: React.FC = () => {
                     <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
                       <th scope="col" className="px-6 py-3 font-medium">{t('payroll.role') || 'Role'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('payroll.commissionPercent') || 'Commission %'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium">{t('payroll.commission') || 'Commission'}</th>
                       <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {staff.map((s) => (
+                    {staff.map((s) => {
+                      const d = getDraft(s.staffUserId);
+                      return (
                       <tr key={s.staffUserId} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
                         <td className="px-6 py-4">
                           <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
@@ -432,19 +503,92 @@ const SpecialistPayroll: React.FC = () => {
                             {getRoleLabel(s.role)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              max="100"
-                              value={commissionDraft[s.staffUserId] ?? ''}
-                              onChange={(e) => setCommissionDraft({ ...commissionDraft, [s.staffUserId]: e.target.value })}
-                              className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
-                            />
-                            <span className="text-gray-500 dark:text-gray-400">%</span>
+                        <td className="px-6 py-4 min-w-[18rem]">
+                          {/* Mode selector */}
+                          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden mb-2">
+                            {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => setDraft(s.staffUserId, { mode: m })}
+                                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                  d.mode === m
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }`}
+                              >
+                                {m === 'FLAT'
+                                  ? (t('payroll.commission.flat') || 'Flat')
+                                  : (t('payroll.commission.tiered') || 'Tiered')}
+                              </button>
+                            ))}
                           </div>
+
+                          {d.mode === 'FLAT' ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="100"
+                                value={d.percent ?? ''}
+                                onChange={(e) => setDraft(s.staffUserId, { percent: e.target.value })}
+                                className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                              />
+                              <span className="text-gray-500 dark:text-gray-400">%</span>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {t('payroll.commission.tieredHint') || 'Commission % is chosen by the staff member’s total revenue in the pay period.'}
+                              </p>
+                              {d.tiers.map((tr, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                      {t('payroll.commission.minRevenue') || 'Min revenue'}
+                                    </span>
+                                    <input
+                                      type="number"
+                                      step="1"
+                                      min="0"
+                                      value={tr.minRevenue}
+                                      onChange={(e) => updateTierRow(s.staffUserId, idx, 'minRevenue', e.target.value)}
+                                      className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="number"
+                                      step="0.1"
+                                      min="0"
+                                      max="100"
+                                      value={tr.percent}
+                                      onChange={(e) => updateTierRow(s.staffUserId, idx, 'percent', e.target.value)}
+                                      className="w-20 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                    />
+                                    <span className="text-gray-500 dark:text-gray-400">%</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeTierRow(s.staffUserId, idx)}
+                                    aria-label={t('common.delete') || 'Delete'}
+                                    className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => addTierRow(s.staffUserId)}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                              >
+                                <PlusIcon className="h-4 w-4" />
+                                {t('payroll.commission.addTier') || 'Add tier'}
+                              </button>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <button
@@ -457,7 +601,8 @@ const SpecialistPayroll: React.FC = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -543,7 +688,10 @@ const SpecialistPayroll: React.FC = () => {
                             <tr key={r.staffUserId}>
                               <td className="px-4 py-2 align-middle">
                                 <p className="font-medium text-gray-900 dark:text-white whitespace-nowrap">{r.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{getRoleLabel(r.role)} · {r.commissionPercent}%</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {getRoleLabel(r.role)} · {r.commissionPercent}%
+                                  {r.mode === 'TIERED' && ` (${t('payroll.commission.tiered') || 'Tiered'})`}
+                                </p>
                               </td>
                               {(['baseSalary', 'commissionTotal', 'bonus', 'deductions', 'taxAmount'] as const).map((field) => (
                                 <td key={field} className="px-2 py-2">

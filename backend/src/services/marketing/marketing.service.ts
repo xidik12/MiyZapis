@@ -14,8 +14,8 @@ import { logger } from '@/utils/logger';
 // templated message, and writes a MarketingLog row per send for idempotency
 // and reporting.
 //
-// BIRTHDAY is a no-op: the User model has no date-of-birth field. The config
-// row still exists so the UI can show it, but runForOwner() skips it.
+// BIRTHDAY fires for customers whose dateOfBirth month+day matches the server
+// date today; it is idempotent once per calendar year via MarketingLog.
 // ---------------------------------------------------------------------------
 
 export const MARKETING_TYPES = ['WINBACK', 'REBOOKING', 'BIRTHDAY'] as const;
@@ -24,8 +24,8 @@ export type MarketingType = (typeof MARKETING_TYPES)[number];
 export const MARKETING_CHANNELS = ['TELEGRAM', 'EMAIL', 'BOTH'] as const;
 export type MarketingChannel = (typeof MARKETING_CHANNELS)[number];
 
-// Birthday is unsupported until the User model gains a date-of-birth field.
-export const BIRTHDAY_SUPPORTED = false;
+// Birthday automation is supported now that User.dateOfBirth exists.
+export const BIRTHDAY_SUPPORTED = true;
 
 // Idempotency windows (ms).
 const WINBACK_DEDUPE_MS = 30 * 24 * 60 * 60 * 1000; // once / 30 days
@@ -55,6 +55,7 @@ interface CustomerLite {
   language: string | null;
   emailNotifications: boolean;
   telegramNotifications: boolean;
+  dateOfBirth: Date | null;
 }
 
 // Default localized message templates per type. {{firstName}} / {{businessName}}.
@@ -300,6 +301,7 @@ export class MarketingService {
     language: true,
     emailNotifications: true,
     telegramNotifications: true,
+    dateOfBirth: true,
   } as const;
 
   /** Run all enabled automations for one owner. */
@@ -320,7 +322,7 @@ export class MarketingService {
       summary.byType[type] = stat;
 
       if (!automation.isEnabled) continue;
-      if (type === 'BIRTHDAY' && !BIRTHDAY_SUPPORTED) continue; // no DOB field — no-op
+      if (type === 'BIRTHDAY' && !BIRTHDAY_SUPPORTED) continue;
 
       try {
         let candidates: CustomerLite[] = [];
@@ -329,15 +331,20 @@ export class MarketingService {
           candidates = await this.winbackCandidates(specialistIds, automation.lapsedDays);
         } else if (type === 'REBOOKING') {
           candidates = await this.rebookingCandidates(specialistIds, automation.rebookDays);
+        } else if (type === 'BIRTHDAY') {
+          candidates = await this.birthdayCandidates(specialistIds);
         }
 
         stat.eligible = candidates.length;
         if (candidates.length === 0) continue;
 
-        // Idempotency: pull recent logs for this automation in one query.
+        // Idempotency window per type. BIRTHDAY dedupes once per calendar year
+        // (from Jan 1 of the current year); the others use a rolling window.
         const dedupeSince =
           type === 'WINBACK'
             ? new Date(Date.now() - WINBACK_DEDUPE_MS)
+            : type === 'BIRTHDAY'
+            ? new Date(new Date().getFullYear(), 0, 1)
             : new Date(Date.now() - automation.rebookDays * DAY_MS);
 
         const recentLogs = await this.db.marketingLog.findMany({
@@ -493,6 +500,39 @@ export class MarketingService {
     return this.db.user.findMany({
       where: { id: { in: dueCustomerIds }, isActive: true },
       select: this.customerSelect,
+    });
+  }
+
+  /** BIRTHDAY: the owner's customers whose dateOfBirth month+day === today
+   *  (server local date). Only customers who HAVE a dateOfBirth are returned. */
+  private static async birthdayCandidates(specialistIds: string[]): Promise<CustomerLite[]> {
+    if (specialistIds.length === 0) return [];
+
+    // Distinct customers who have ever booked with these specialists.
+    const grouped = await this.db.booking.groupBy({
+      by: ['customerId'],
+      where: { specialistId: { in: specialistIds } },
+    });
+    const customerIds = grouped.map((g) => g.customerId);
+    if (customerIds.length === 0) return [];
+
+    const customers = await this.db.user.findMany({
+      where: {
+        id: { in: customerIds },
+        isActive: true,
+        dateOfBirth: { not: null },
+      },
+      select: this.customerSelect,
+    });
+
+    const now = new Date();
+    const todayMonth = now.getMonth();
+    const todayDay = now.getDate();
+
+    return customers.filter((c) => {
+      if (!c.dateOfBirth) return false;
+      const dob = new Date(c.dateOfBirth);
+      return dob.getMonth() === todayMonth && dob.getDate() === todayDay;
     });
   }
 }

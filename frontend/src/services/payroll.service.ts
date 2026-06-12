@@ -4,18 +4,30 @@ import { apiClient } from './api';
 export const PAYROLL_STATUSES = ['DRAFT', 'APPROVED', 'PAID'] as const;
 export type PayrollStatus = typeof PAYROLL_STATUSES[number];
 
+export const COMMISSION_MODES = ['FLAT', 'TIERED'] as const;
+export type CommissionMode = typeof COMMISSION_MODES[number];
+
+export interface CommissionTier {
+  minRevenue: number;
+  percent: number;
+}
+
 export interface StaffMember {
   staffUserId: string;
   name: string;
   role: string;
   commissionPercent: number;
+  mode: CommissionMode;
+  tiers: CommissionTier[];
 }
 
 export interface PreviewLine {
   staffUserId: string;
   name: string;
   role: string;
+  // Effective % applied for this period (resolved server-side from flat/tier rules).
   commissionPercent: number;
+  mode: CommissionMode;
   baseSalary: number;
   commissionTotal: number;
   bonus: number;
@@ -97,8 +109,11 @@ export class PayrollService {
     return response.data.staff;
   }
 
-  async setCommission(staffUserId: string, percent: number): Promise<void> {
-    const response = await apiClient.post('/payroll/commission', { staffUserId, percent });
+  async setCommission(
+    staffUserId: string,
+    data: { mode: CommissionMode; percent?: number; tiers?: CommissionTier[] }
+  ): Promise<void> {
+    const response = await apiClient.post('/payroll/commission', { staffUserId, ...data });
     if (!response.success) {
       throw new Error(response.error?.message || 'Failed to set commission');
     }

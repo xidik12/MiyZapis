@@ -4,6 +4,7 @@ import {
   PAYROLL_STATUSES,
   PayrollStatus,
   RunLineInput,
+  CommissionMode,
 } from '@/services/payroll/payroll.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
@@ -49,32 +50,55 @@ router.get('/staff', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// POST /commission — upsert a commission rule for a staff member
+// POST /commission — upsert a commission rule for a staff member.
+// Body: { staffUserId, mode?: 'FLAT'|'TIERED', percent?, tiers?: [{minRevenue, percent}] }
 router.post('/commission', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
-    const { staffUserId, percent } = req.body;
+    const { staffUserId, mode, percent, tiers } = req.body;
 
     if (!staffUserId || typeof staffUserId !== 'string') {
       res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'staffUserId is required', requestId(req)));
       return;
     }
-    const pct = parseNumber(percent);
-    if (pct === undefined || pct === null || pct < 0 || pct > 100) {
-      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'percent must be between 0 and 100', requestId(req)));
-      return;
+
+    const resolvedMode: CommissionMode = mode === 'TIERED' ? 'TIERED' : 'FLAT';
+
+    if (resolvedMode === 'TIERED') {
+      if (!Array.isArray(tiers) || tiers.length === 0) {
+        res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'tiers must be a non-empty array', requestId(req)));
+        return;
+      }
+    } else {
+      const pct = parseNumber(percent);
+      if (pct === undefined || pct === null || pct < 0 || pct > 100) {
+        res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'percent must be between 0 and 100', requestId(req)));
+        return;
+      }
     }
 
-    const rule = await PayrollService.setCommission(ownerId, staffUserId, pct);
+    const rule = await PayrollService.setCommission(ownerId, staffUserId, {
+      mode: resolvedMode,
+      percent: parseNumber(percent) ?? undefined,
+      tiers: Array.isArray(tiers) ? tiers : undefined,
+    });
     if (!rule) {
       res.status(404).json(createErrorResponse('NOT_FOUND', 'Staff member not found', requestId(req)));
       return;
     }
 
-    logger.info(`Commission set for staff ${staffUserId} (${pct}%) by owner ${ownerId}`);
+    logger.info(`Commission set for staff ${staffUserId} (${resolvedMode}) by owner ${ownerId}`);
     res.json(createSuccessResponse(rule));
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
+    if (err.message === 'INVALID_TIERS') {
+      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Each tier needs minRevenue >= 0 and percent 0–100', requestId(req)));
+      return;
+    }
+    if (err.message === 'INVALID_PERCENT') {
+      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'percent must be between 0 and 100', requestId(req)));
+      return;
+    }
     logger.error('Error setting commission:', error);
     res.status(500).json(createErrorResponse('PAYROLL_ERROR', err.message, requestId(req)));
   }

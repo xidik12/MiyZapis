@@ -82,6 +82,7 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
       avatar: user.avatar,
       userType: user.userType,
       phoneNumber: user.phoneNumber,
+      dateOfBirth: user.dateOfBirth,
       telegramId: user.telegramId,
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
@@ -160,6 +161,10 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
     if (req.body.firstName) updateData.firstName = req.body.firstName;
     if (req.body.lastName) updateData.lastName = req.body.lastName;
     if (req.body.phoneNumber !== undefined) updateData.phoneNumber = req.body.phoneNumber;
+    if (req.body.dateOfBirth !== undefined) {
+      const dob = req.body.dateOfBirth;
+      updateData.dateOfBirth = dob === null || dob === '' ? null : new Date(dob);
+    }
     if (req.body.avatar !== undefined) updateData.avatar = req.body.avatar;
     if (req.body.language) updateData.language = req.body.language;
     if (req.body.currency) updateData.currency = req.body.currency;
@@ -179,6 +184,7 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
         avatar: true,
         userType: true,
         phoneNumber: true,
+        dateOfBirth: true,
         language: true,
         currency: true,
         timezone: true,
