@@ -57,6 +57,8 @@ const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'
 const SpecialistFinances = React.lazy(() => import('./pages/specialist/Finances'));
 const SpecialistAccounting = React.lazy(() => import('./pages/specialist/Accounting'));
 const SpecialistInventory = React.lazy(() => import('./pages/specialist/Inventory'));
+const SpecialistSales = React.lazy(() => import('./pages/specialist/Sales'));
+const SpecialistMarketing = React.lazy(() => import('./pages/specialist/Marketing'));
 const SpecialistPurchasing = React.lazy(() => import('./pages/specialist/Purchasing'));
 const SpecialistPayroll = React.lazy(() => import('./pages/specialist/Payroll'));
 const SpecialistCalendarSettings = React.lazy(() => import('./pages/specialist/CalendarSettings'));
@@ -123,6 +125,8 @@ const usePageTitle = () => {
       '/specialist/earnings': 'Earnings - МійЗапис',
       '/specialist/finances': 'Finances - МійЗапис',
       '/specialist/inventory': 'Inventory - МійЗапис',
+      '/specialist/sales': 'Sales - МійЗапис',
+      '/specialist/marketing': 'Marketing - МійЗапис',
       '/specialist/purchasing': 'Purchasing - МійЗапис',
       '/specialist/payroll': 'Payroll - МійЗапис',
       '/specialist/reviews': 'Reviews - МійЗапис',
@@ -315,6 +319,30 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistInventory />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/sales"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistSales />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/marketing"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistMarketing />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>

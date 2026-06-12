@@ -8,7 +8,7 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -96,6 +96,20 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/inventory',
     icon: ArchiveBoxIcon,
     iconActive: ArchiveBoxIcon,
+  },
+  {
+    name: 'Sales',
+    nameUk: 'Продажі',
+    href: '/specialist/sales',
+    icon: GiftIcon,
+    iconActive: GiftIcon,
+  },
+  {
+    name: 'Marketing',
+    nameUk: 'Маркетинг',
+    href: '/specialist/marketing',
+    icon: SparklesIcon,
+    iconActive: SparklesIcon,
   },
   {
     name: 'Purchasing',
@@ -432,6 +446,8 @@ const specialistMoreNavItems = [
   { nameKey: 'dashboard.nav.earnings', fallback: 'Earnings', href: '/specialist/earnings', icon: CurrencyDollarIcon },
   { nameKey: 'dashboard.nav.finances', fallback: 'Finances', href: '/specialist/finances', icon: ChartBarIcon },
   { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
+  { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
+  { nameKey: 'dashboard.nav.marketing', fallback: 'Marketing', href: '/specialist/marketing', icon: SparklesIcon },
   { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: BuildingStorefrontIcon },
   { nameKey: 'dashboard.nav.payroll', fallback: 'Payroll', href: '/specialist/payroll', icon: WalletIcon },
   { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: CalendarIcon },

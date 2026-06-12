@@ -32,6 +32,7 @@ import apiRoutes from '@/routes';
 import { enhancedTelegramBot } from '@/services/telegram';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
+import { startMarketingWorker } from '@/workers/marketing.worker';
 import { initializeVapid } from '@/services/push';
 
 // Create Express app
@@ -482,6 +483,14 @@ const startServer = async () => {
         logger.info('💳 Subscription worker started');
       } catch (e) {
         logger.warn('Failed to start subscription worker', { error: (e as Error)?.message });
+      }
+
+      // Start marketing automation worker
+      try {
+        startMarketingWorker();
+        logger.info('📣 Marketing automation worker started');
+      } catch (e) {
+        logger.warn('Failed to start marketing worker', { error: (e as Error)?.message });
       }
     });
 
