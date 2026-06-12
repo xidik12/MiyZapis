@@ -20,6 +20,7 @@ import { SocketProvider } from './providers/SocketProvider';
 // Lazy load pages for better performance
 const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
 const SpecialistProfilePage = React.lazy(() => import('./pages/SpecialistProfilePage'));
+const EmbedBookingPage = React.lazy(() => import('./pages/EmbedBookingPage'));
 const CommunityPage = React.lazy(() => import('./pages/community/CommunityPage'));
 const PostDetailPage = React.lazy(() => import('./pages/community/PostDetailPage'));
 const CreatePostPage = React.lazy(() => import('./pages/community/CreatePostPage'));
@@ -748,6 +749,15 @@ function App() {
                   <SpecialistProfilePage />
                 </Suspense>
               </ConditionalLayout>
+            }
+          />
+          {/* Chrome-less embeddable booking widget — NO layout, public, iframe-friendly */}
+          <Route
+            path="/embed/:slug"
+            element={
+              <Suspense fallback={<SuspenseLoader />}>
+                <EmbedBookingPage />
+              </Suspense>
             }
           />
           <Route path="/privacy" element={

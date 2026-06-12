@@ -17,6 +17,7 @@ import {
 } from '../../services/business.service';
 import { PageLoader } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { BookingShareCard } from '../../components/sharing/BookingShareCard';
 
 const Businesses: React.FC = () => {
   const { businessId } = useParams<{ businessId?: string }>();
@@ -216,6 +217,18 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
           {tab === 'staff' && <StaffTab business={business} canManage={canManage} />}
           {tab === 'settings' && <SettingsTab business={business} canManage={canManage} onReload={reload} />}
         </div>
+
+        {/* Share & Embed the business's public booking page */}
+        {tab === 'overview' && (
+          <div className="mt-4">
+            <BookingShareCard
+              slug={business.slug}
+              id={business.id}
+              target="business"
+              name={business.name}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

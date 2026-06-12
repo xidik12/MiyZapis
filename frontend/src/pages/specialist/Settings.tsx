@@ -21,6 +21,7 @@ import WorkingHoursTab from '../../components/settings/WorkingHoursTab';
 import PaymentDetailsTab from '../../components/settings/PaymentDetailsTab';
 import PortfolioTab from '../../components/settings/PortfolioTab';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { BookingShareCard } from '../../components/sharing/BookingShareCard';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -484,6 +485,14 @@ const SpecialistSettings: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Share & Embed booking widget */}
+                    <BookingShareCard
+                      slug={specialist?.slug}
+                      id={specialist?.id || user?.id}
+                      target="specialist"
+                      name={[user?.firstName, user?.lastName].filter(Boolean).join(' ') || (specialist as any)?.businessName}
+                    />
                   </div>
                 </div>
                 )}
