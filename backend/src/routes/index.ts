@@ -35,6 +35,7 @@ import cronRoutes from './cron';
 import groupSessionsRoutes from './group-sessions';
 import expenseRoutes from './expenses';
 import inventoryRoutes from './inventory';
+import reputationRoutes from './reputation';
 import purchasingRoutes from './purchasing';
 import payrollRoutes from './payroll';
 import communityRoutes from './community';
@@ -48,6 +49,7 @@ import businessRoutes from './businesses';
 import searchRoutes from './search';
 import salesRoutes from './sales';
 import marketingRoutes from './marketing';
+import storeRoutes from './store';
 
 const router = Router();
 
@@ -87,6 +89,7 @@ router.use('/diagnostics', diagnosticsRoutes);
 router.use('/group-sessions', groupSessionsRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/reputation', reputationRoutes);
 router.use('/purchasing', purchasingRoutes);
 router.use('/payroll', payrollRoutes);
 router.use('/community', communityRoutes);
@@ -100,6 +103,7 @@ router.use('/businesses', businessRoutes);
 router.use('/search', searchRoutes);
 router.use('/sales', salesRoutes);
 router.use('/marketing', marketingRoutes);
+router.use('/store', storeRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);

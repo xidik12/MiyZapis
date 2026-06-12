@@ -6,6 +6,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { specialistService } from '../services';
 import { reviewsService } from '../services/reviews.service';
 import { profileViewService } from '../services/profileView.service';
+import { storeService, StorefrontProduct, FulfilmentType } from '../services/store.service';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { 
   selectIsSpecialistFavorited, 
@@ -42,6 +43,83 @@ const SpecialistProfilePage: React.FC = () => {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
   const [_activeTab, _setActiveTab] = useState<'portfolio' | 'beforeAfter'>('portfolio');
+
+  // Storefront (retail products) + cart
+  const [storeProducts, setStoreProducts] = useState<StorefrontProduct[]>([]);
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [storeFulfilment, setStoreFulfilment] = useState<FulfilmentType>('PICKUP');
+  const [storeName, setStoreName] = useState('');
+  const [storeEmail, setStoreEmail] = useState('');
+  const [storeNote, setStoreNote] = useState('');
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState<string | null>(null);
+
+  // The seller is identified by the specialist's user id.
+  const sellerUserId: string | undefined =
+    specialist?.userId || specialist?.user?.id || specialistId;
+
+  const addToCart = (product: StorefrontProduct) => {
+    setOrderPlaced(null);
+    setCart((prev) => {
+      const current = prev[product.id] || 0;
+      if (current >= product.stockQty) return prev; // don't exceed stock
+      return { ...prev, [product.id]: current + 1 };
+    });
+  };
+
+  const setCartQty = (productId: string, qty: number, max: number) => {
+    setOrderPlaced(null);
+    setCart((prev) => {
+      const next = { ...prev };
+      const clamped = Math.max(0, Math.min(qty, max));
+      if (clamped <= 0) delete next[productId];
+      else next[productId] = clamped;
+      return next;
+    });
+  };
+
+  const cartLines = storeProducts
+    .filter((p) => (cart[p.id] || 0) > 0)
+    .map((p) => ({ product: p, quantity: cart[p.id] }));
+
+  const cartCurrency = storeProducts[0]?.currency || 'UAH';
+  const cartTotal = cartLines.reduce((sum, l) => sum + l.product.salePrice * l.quantity, 0);
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sellerUserId || cartLines.length === 0) return;
+    // Require contact details for guests (no logged-in user).
+    if (!user && !storeName.trim() && !storeEmail.trim()) {
+      toast.error(t('store.contactRequired') || 'Please add your name or email');
+      return;
+    }
+    try {
+      setPlacingOrder(true);
+      const order = await storeService.placeOrder({
+        sellerUserId,
+        customerName: storeName.trim() || undefined,
+        customerEmail: storeEmail.trim() || undefined,
+        fulfilment: storeFulfilment,
+        note: storeNote.trim() || undefined,
+        items: cartLines.map((l) => ({ productId: l.product.id, quantity: l.quantity })),
+      });
+      setOrderPlaced(order.orderNumber);
+      setCart({});
+      setStoreName('');
+      setStoreEmail('');
+      setStoreNote('');
+      toast.success((t('store.orderPlaced') || 'Order placed') + `: ${order.orderNumber}`);
+      // Refresh stock after the order.
+      try {
+        const refreshed = await storeService.getStorefront(sellerUserId);
+        setStoreProducts(refreshed || []);
+      } catch { /* non-critical */ }
+    } catch (error: unknown) {
+      toast.error((error as Error).message || t('store.orderError') || 'Failed to place order');
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
 
   // Helper function to get localized description with fallbacks
   const getLocalizedDescription = (specialist: any) => {
@@ -193,6 +271,20 @@ const SpecialistProfilePage: React.FC = () => {
 
     fetchSpecialistData();
   }, [specialistId]);
+
+  // Fetch the specialist's retail storefront (non-critical).
+  useEffect(() => {
+    const fetchStorefront = async () => {
+      if (!sellerUserId) return;
+      try {
+        const products = await storeService.getStorefront(sellerUserId);
+        setStoreProducts(products || []);
+      } catch {
+        setStoreProducts([]);
+      }
+    };
+    fetchStorefront();
+  }, [sellerUserId]);
 
   // Build lightbox images when specialist changes
   useEffect(() => {
@@ -703,6 +795,147 @@ const SpecialistProfilePage: React.FC = () => {
                 </p>
               )}
             </div>
+
+            {/* Shop / Products (retail storefront) */}
+            {storeProducts.length > 0 && (
+              <div id="shop-section" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+                  {t('store.shop') || 'Shop / Products'}
+                </h2>
+
+                {/* Product grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {storeProducts.map((product) => {
+                    const inCart = cart[product.id] || 0;
+                    const soldOut = inCart >= product.stockQty;
+                    return (
+                      <div
+                        key={product.id}
+                        className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 flex flex-col"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
+                            {product.name}
+                          </h3>
+                          {product.description && (
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                              {product.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                            {formatPrice(product.salePrice || 0, (product.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => addToCart(product)}
+                            disabled={soldOut}
+                            className="px-3 py-1 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                          >
+                            {inCart > 0 ? `${t('store.addToCart') || 'Add'} (${inCart})` : (t('store.addToCart') || 'Add')}
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                          {product.stockQty} {t('store.inStock') || 'in stock'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Cart + order form */}
+                {cartLines.length > 0 && (
+                  <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+                      {t('store.cart') || 'Cart'}
+                    </h3>
+                    <div className="space-y-2 mb-4">
+                      {cartLines.map((line) => (
+                        <div key={line.product.id} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="flex-1 text-gray-700 dark:text-gray-300 truncate">{line.product.name}</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={line.product.stockQty}
+                            value={line.quantity}
+                            onChange={(e) => setCartQty(line.product.id, parseInt(e.target.value || '0', 10), line.product.stockQty)}
+                            className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                          />
+                          <span className="w-24 text-right font-medium text-gray-900 dark:text-white">
+                            {formatPrice(line.product.salePrice * line.quantity, (cartCurrency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mb-4 text-base font-bold text-gray-900 dark:text-white">
+                      <span>{t('sales.total') || 'Total'}</span>
+                      <span>{formatPrice(cartTotal, (cartCurrency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
+                    </div>
+
+                    <form onSubmit={handlePlaceOrder} className="space-y-3">
+                      {!user && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            value={storeName}
+                            onChange={(e) => setStoreName(e.target.value)}
+                            placeholder={t('store.yourName') || 'Your name'}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                          />
+                          <input
+                            type="email"
+                            value={storeEmail}
+                            onChange={(e) => setStoreEmail(e.target.value)}
+                            placeholder={t('store.yourEmail') || 'Your email'}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                          />
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        {(['PICKUP', 'DELIVERY'] as FulfilmentType[]).map((f) => (
+                          <button
+                            type="button"
+                            key={f}
+                            onClick={() => setStoreFulfilment(f)}
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                              storeFulfilment === f
+                                ? 'bg-primary-600 text-white border-primary-600'
+                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                            }`}
+                          >
+                            {f === 'PICKUP' ? (t('store.pickup') || 'Pickup') : (t('store.delivery') || 'Delivery')}
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={storeNote}
+                        onChange={(e) => setStoreNote(e.target.value)}
+                        rows={2}
+                        placeholder={t('store.notePlaceholder') || 'Note (optional)'}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('store.payInStoreHint') || 'Pay and collect in-store. The seller will confirm your order.'}
+                      </p>
+                      <button
+                        type="submit"
+                        disabled={placingOrder}
+                        className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                      >
+                        {placingOrder ? (t('common.loading') || 'Loading...') : (t('store.placeOrder') || 'Place order')}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {orderPlaced && (
+                  <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">
+                    {t('store.orderPlaced') || 'Order placed'}: <span className="font-mono font-medium">{orderPlaced}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Reviews */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">

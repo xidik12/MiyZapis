@@ -18,6 +18,13 @@ import {
   CreatePackageData,
   CreatePlanData,
 } from '../../services/sales.service';
+import {
+  storeService,
+  ProductOrder,
+  StoreSummary,
+  OrderStatus,
+  FulfilmentType,
+} from '../../services/store.service';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
 import {
@@ -32,6 +39,7 @@ import {
   TicketIcon,
   CreditCardIcon,
   NoSymbolIcon,
+  ShoppingBagIcon,
 } from '@heroicons/react/24/outline';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
@@ -45,7 +53,7 @@ const num = (v: number | string | null | undefined): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-type Tab = 'giftCards' | 'packages' | 'memberships';
+type Tab = 'giftCards' | 'packages' | 'memberships' | 'orders';
 
 // ---- form shapes ----------------------------------------------------------
 
@@ -131,6 +139,10 @@ const SpecialistSales: React.FC = () => {
   const [enrollPlan, setEnrollPlan] = useState<MembershipPlan | null>(null);
   const [enrollEmail, setEnrollEmail] = useState('');
 
+  // Store orders
+  const [orders, setOrders] = useState<ProductOrder[]>([]);
+  const [storeSummary, setStoreSummary] = useState<StoreSummary | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
 
@@ -142,13 +154,15 @@ const SpecialistSales: React.FC = () => {
   const loadAll = async () => {
     try {
       setLoading(true);
-      const [s, gc, pkg, cpkg, pl, mem] = await Promise.all([
+      const [s, gc, pkg, cpkg, pl, mem, ord, ss] = await Promise.all([
         salesService.getSummary(),
         salesService.getGiftCards(),
         salesService.getPackages(),
         salesService.getCustomerPackages(),
         salesService.getPlans(),
         salesService.getMembers(),
+        storeService.listOrders().catch(() => [] as ProductOrder[]),
+        storeService.getSummary().catch(() => null),
       ]);
       setSummary(s);
       setGiftCards(gc || []);
@@ -156,6 +170,8 @@ const SpecialistSales: React.FC = () => {
       setCustomerPackages(cpkg || []);
       setPlans(pl || []);
       setMembers(mem || []);
+      setOrders(ord || []);
+      setStoreSummary(ss);
     } catch (error: unknown) {
       console.error('Error loading sales:', error);
       toast.error(t('sales.loadError') || 'Failed to load sales data');
@@ -201,6 +217,62 @@ const SpecialistSales: React.FC = () => {
       YEARLY: { en: 'Yearly', uk: 'Щороку', ru: 'Ежегодно' },
     };
     return labels[p]?.[language] || labels[p]?.en || p;
+  };
+
+  const orderStatusLabel = (status: OrderStatus): string => {
+    const labels: Record<OrderStatus, Record<string, string>> = {
+      PENDING: { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
+      PAID: { en: 'Paid', uk: 'Оплачено', ru: 'Оплачено' },
+      FULFILLED: { en: 'Fulfilled', uk: 'Виконано', ru: 'Выполнено' },
+      CANCELLED: { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+    };
+    return labels[status]?.[language] || labels[status]?.en || status;
+  };
+
+  const fulfilmentLabel = (f: FulfilmentType): string => {
+    const labels: Record<FulfilmentType, Record<string, string>> = {
+      PICKUP: { en: 'Pickup', uk: 'Самовивіз', ru: 'Самовывоз' },
+      DELIVERY: { en: 'Delivery', uk: 'Доставка', ru: 'Доставка' },
+    };
+    return labels[f]?.[language] || labels[f]?.en || f;
+  };
+
+  // Order status badges: PENDING gray, PAID amber, FULFILLED green, CANCELLED red.
+  const orderStatusBadgeClass = (status: OrderStatus): string => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+      case 'PAID':
+        return 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
+      case 'FULFILLED':
+        return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+      case 'CANCELLED':
+        return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+      default:
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+    }
+  };
+
+  const handleSetOrderStatus = async (order: ProductOrder, status: OrderStatus) => {
+    if (
+      status === 'FULFILLED' &&
+      !confirm(t('store.confirmFulfil') || 'Mark this order fulfilled? Stock will be deducted.')
+    ) {
+      return;
+    }
+    if (status === 'CANCELLED' && !confirm(t('store.confirmCancel') || 'Cancel this order?')) {
+      return;
+    }
+    try {
+      setActing(order.id);
+      await storeService.setOrderStatus(order.id, status);
+      toast.success(t('store.orderUpdated') || 'Order updated');
+      loadAll();
+    } catch (error: unknown) {
+      toast.error((error as Error).message || t('sales.saveError') || 'Failed');
+    } finally {
+      setActing(null);
+    }
   };
 
   const statusBadgeClass = (status: string): string => {
@@ -514,6 +586,7 @@ const SpecialistSales: React.FC = () => {
     { key: 'giftCards', label: t('sales.giftCards') || 'Gift cards', icon: GiftIcon },
     { key: 'packages', label: t('sales.packages') || 'Packages', icon: TicketIcon },
     { key: 'memberships', label: t('sales.memberships') || 'Memberships', icon: CreditCardIcon },
+    { key: 'orders', label: t('store.orders') || 'Store orders', icon: ShoppingBagIcon },
   ];
 
   const inputClass =
@@ -983,6 +1056,150 @@ const SpecialistSales: React.FC = () => {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ============================ STORE ORDERS ============================ */}
+        {tab === 'orders' && (
+          <div className="space-y-6">
+            {/* Store summary cards */}
+            {storeSummary && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
+                      <ShoppingBagIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('store.pendingOrders') || 'Pending orders'}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {storeSummary.pendingOrders}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                      <CurrencyDollarIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('store.monthSales') || 'Sales this month'}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {formatPrice(storeSummary.monthSalesTotal || 0, asCurrency(storeSummary.currency))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Orders table */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {t('store.orders') || 'Store orders'}
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t('store.ordersHint') || 'Orders are paid and collected in-store. Stock is deducted when fulfilled.'}
+                </p>
+              </div>
+              {orders.length === 0 ? (
+                <div className="p-8 text-center">
+                  <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                    <ShoppingBagIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {t('store.noOrders') || 'No product orders yet'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        <th className="px-6 py-3 font-medium">{t('store.orderNumber') || 'Order #'}</th>
+                        <th className="px-6 py-3 font-medium">{t('store.customer') || 'Customer'}</th>
+                        <th className="px-6 py-3 font-medium text-right">{t('store.items') || 'Items'}</th>
+                        <th className="px-6 py-3 font-medium text-right">{t('sales.total') || 'Total'}</th>
+                        <th className="px-6 py-3 font-medium">{t('store.fulfilment') || 'Fulfilment'}</th>
+                        <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
+                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {orders.map((order) => {
+                        const cur = asCurrency(order.currency);
+                        const itemCount = order._count?.items ?? order.items?.length ?? 0;
+                        return (
+                          <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                            <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                              {order.orderNumber}
+                              <span className="block text-xs font-sans text-gray-400 dark:text-gray-500">
+                                {fmtDate(order.createdAt)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                              {order.customerName || order.customerEmail || (
+                                <span className="text-gray-400 dark:text-gray-600">{t('store.guest') || 'Guest'}</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white">{itemCount}</td>
+                            <td className="px-6 py-4 text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                              {formatPrice(num(order.total), cur)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                              {fulfilmentLabel(order.fulfilment)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${orderStatusBadgeClass(order.status)}`}>
+                                {orderStatusLabel(order.status)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <div className="inline-flex items-center gap-1">
+                                {order.status === 'PENDING' && (
+                                  <button
+                                    onClick={() => handleSetOrderStatus(order, 'PAID')}
+                                    disabled={acting === order.id}
+                                    className="px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                  >
+                                    {t('store.markPaid') || 'Mark paid'}
+                                  </button>
+                                )}
+                                {(order.status === 'PENDING' || order.status === 'PAID') && (
+                                  <button
+                                    onClick={() => handleSetOrderStatus(order, 'FULFILLED')}
+                                    disabled={acting === order.id}
+                                    className="px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                  >
+                                    {t('store.fulfil') || 'Fulfil'}
+                                  </button>
+                                )}
+                                {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
+                                  <button
+                                    onClick={() => handleSetOrderStatus(order, 'CANCELLED')}
+                                    disabled={acting === order.id}
+                                    aria-label={t('sales.cancel') || 'Cancel'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                  >
+                                    {acting === order.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <NoSymbolIcon className="h-4 w-4" />}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

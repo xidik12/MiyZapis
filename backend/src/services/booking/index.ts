@@ -13,6 +13,7 @@ import { WaitlistService } from '@/services/waitlist';
 import { stripPrivateSpecialistFields } from '@/services/specialist';
 import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 import { ConsumablesService } from '@/services/inventory/consumables.service';
+import { ReputationService } from '@/services/reputation/reputation.service';
 import { computeDeposit, computeNoShowFee } from '@/services/booking/policy';
 
 interface CreateBookingData {
@@ -1019,6 +1020,15 @@ export class BookingService {
         // inventory. Idempotent + never throws into the booking flow.
         ConsumablesService.deductForBooking(booking.id).catch((error) => {
           logger.error('Failed to deduct consumables for completed booking', {
+            bookingId: booking.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+
+        // Fire-and-forget: ask the customer to leave a review (platform +
+        // optional Google/Facebook). Idempotent + never throws into the flow.
+        ReputationService.requestReviewForBooking(booking.id).catch((error) => {
+          logger.error('Failed to request review for completed booking', {
             bookingId: booking.id,
             error: error instanceof Error ? error.message : String(error),
           });

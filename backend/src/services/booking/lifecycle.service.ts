@@ -18,6 +18,7 @@ import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
 import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 import { ConsumablesService } from '@/services/inventory/consumables.service';
+import { ReputationService } from '@/services/reputation/reputation.service';
 
 const notifier = new NotificationService(prisma);
 
@@ -85,6 +86,13 @@ export class BookingLifecycleService {
     // Fire-and-forget: write off the service's mapped consumables (idempotent, never throws).
     ConsumablesService.deductForBooking(bookingId).catch((err) => {
       logger.error('Failed to deduct consumables for completed booking', {
+        bookingId,
+        error: (err as Error).message,
+      });
+    });
+    // Fire-and-forget: post-visit review request (idempotent, never throws).
+    ReputationService.requestReviewForBooking(bookingId).catch((err) => {
+      logger.error('Failed to request review for completed booking', {
         bookingId,
         error: (err as Error).message,
       });
@@ -200,9 +208,11 @@ export class BookingLifecycleService {
     void (async () => {
       for (const id of ids) {
         await ConsumablesService.deductForBooking(id);
+        // Also send the post-visit review request (idempotent, never throws).
+        await ReputationService.requestReviewForBooking(id);
       }
     })().catch((err) => {
-      logger.error('Failed to deduct consumables for auto-finalised bookings', {
+      logger.error('Failed to deduct consumables / request reviews for auto-finalised bookings', {
         error: (err as Error).message,
       });
     });

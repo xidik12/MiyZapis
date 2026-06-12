@@ -187,6 +187,30 @@ const CustomerBookings: React.FC = () => {
     }
   };
 
+  // Deep-link from the post-visit review request (…/customer/bookings?review=<id>):
+  // once bookings are loaded, auto-open the review modal for that booking (only
+  // if it's completed and not yet reviewed), then strip the param.
+  const [reviewDeepLinkHandled, setReviewDeepLinkHandled] = useState(false);
+  useEffect(() => {
+    if (reviewDeepLinkHandled || isLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    const reviewId = params.get('review');
+    if (!reviewId) return;
+
+    const booking = bookings.find(b => b.id === reviewId);
+    if (booking) {
+      if (booking.status === 'COMPLETED' && !(booking as any).review) {
+        setBookingToReview(booking);
+        setShowReviewModal(true);
+      }
+      setReviewDeepLinkHandled(true);
+      // Remove the query param so a refresh / re-render doesn't re-trigger it.
+      const url = new URL(window.location.href);
+      url.searchParams.delete('review');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }, [bookings, isLoading, reviewDeepLinkHandled]);
+
   const handleBookAgain = async (booking: Booking) => {
     const serviceName = booking.service?.name || booking.serviceName || 'this service';
     const specialistName = booking.specialist?.firstName && booking.specialist?.lastName
