@@ -165,3 +165,13 @@ docs/
 
 # Design component reference libraries (cherry-pick from, not bundled)
 .design-refs/
+
+# Security: never commit credential/secret helper files
+*credential*
+*CREDENTIAL*
+*-with-credentials*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
