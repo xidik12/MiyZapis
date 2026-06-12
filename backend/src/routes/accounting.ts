@@ -26,6 +26,11 @@ function parseRange(req: Request): { from: Date; to: Date } | { error: string } 
   return { from, to };
 }
 
+// scope=business → roll up across the caller's owned business; anything else → self.
+function parseScope(req: Request): 'self' | 'business' {
+  return (req.query.scope as string | undefined) === 'business' ? 'business' : 'self';
+}
+
 // -------- P&L ---------------------------------------------------------------
 router.get('/profit-loss', async (req: Request, res: Response) => {
   try {
@@ -33,7 +38,7 @@ router.get('/profit-loss', async (req: Request, res: Response) => {
     if ('error' in r) return res.status(400).json(createErrorResponse('VALIDATION_ERROR', r.error, req.id));
     const userId = (req as unknown as AuthenticatedRequest).user!.id;
     const currency = (req.query.currency as string | undefined) || undefined;
-    const pl = await AccountingService.getProfitLoss(userId, r, currency);
+    const pl = await AccountingService.getProfitLoss(userId, r, currency, parseScope(req));
     return res.json(createSuccessResponse(pl));
   } catch (err) {
     logger.error('P&L endpoint failed', { error: (err as Error).message });
@@ -49,11 +54,26 @@ router.get('/tax-estimate', async (req: Request, res: Response) => {
     const userId = (req as unknown as AuthenticatedRequest).user!.id;
     const regime = (req.query.regime as string | undefined);
     const currency = (req.query.currency as string | undefined) || undefined;
-    const result = await AccountingService.estimateTax(userId, r, regime, currency);
+    const result = await AccountingService.estimateTax(userId, r, regime, currency, parseScope(req));
     return res.json(createSuccessResponse(result));
   } catch (err) {
     logger.error('Tax estimate failed', { error: (err as Error).message });
     return res.status(500).json(createErrorResponse('TAX_FAILED', 'Failed to estimate tax', req.id));
+  }
+});
+
+// -------- VAT summary -------------------------------------------------------
+router.get('/vat', async (req: Request, res: Response) => {
+  try {
+    const r = parseRange(req);
+    if ('error' in r) return res.status(400).json(createErrorResponse('VALIDATION_ERROR', r.error, req.id));
+    const userId = (req as unknown as AuthenticatedRequest).user!.id;
+    const currency = (req.query.currency as string | undefined) || undefined;
+    const result = await AccountingService.vatSummary(userId, r, currency, parseScope(req));
+    return res.json(createSuccessResponse(result));
+  } catch (err) {
+    logger.error('VAT summary failed', { error: (err as Error).message });
+    return res.status(500).json(createErrorResponse('VAT_FAILED', 'Failed to compute VAT summary', req.id));
   }
 });
 

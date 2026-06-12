@@ -8,6 +8,7 @@ import {
   businessService,
   type Business,
   type BusinessMember,
+  type BusinessInvite,
   type BusinessRole,
   type BusinessDashboard,
 } from '../../services/business.service';
@@ -272,7 +273,21 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
 const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
   const { t } = useLanguage();
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [invites, setInvites] = useState<BusinessInvite[]>([]);
   const members = business.members ?? [];
+
+  const loadInvites = () => {
+    businessService.listInvites(business.id)
+      .then(setInvites)
+      .catch(() => setInvites([])); // requires membership; OK to silently skip
+  };
+  useEffect(() => { loadInvites(); }, [business.id]);
+
+  const revoke = async (inviteId: string) => {
+    if (!confirm(t('businesses.invitePending.revokeConfirm'))) return;
+    try { await businessService.revokeInvite(business.id, inviteId); toast.success(t('businesses.invitePending.revoked')); loadInvites(); }
+    catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
+  };
 
   return (
     <div className="space-y-4">
@@ -303,7 +318,32 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
         ))}
       </ul>
 
-      {inviteOpen && <InviteModal businessId={business.id} onClose={() => setInviteOpen(false)} onInvited={() => { setInviteOpen(false); onReload(); }} />}
+      {invites.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-1">{t('businesses.invitePending.title')}</h3>
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+            {invites.map((inv) => (
+              <li key={inv.id} className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300">✉</div>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">{inv.email}</div>
+                    <div className="text-xs text-gray-500">{t('businesses.invitePending.invited')}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RoleBadge role={inv.role} />
+                  {canManage && (
+                    <button onClick={() => revoke(inv.id)} className="text-sm text-red-600 hover:text-red-800">{t('businesses.invitePending.revoke')}</button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {inviteOpen && <InviteModal businessId={business.id} onClose={() => setInviteOpen(false)} onInvited={() => { setInviteOpen(false); onReload(); loadInvites(); }} />}
     </div>
   );
 };
@@ -347,13 +387,13 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
     if (!email) return;
     setSaving(true);
     try {
-      await businessService.invite(businessId, email, role);
-      toast.success(t('businesses.invite.success'));
+      const res = await businessService.invite(businessId, email, role);
+      // Unknown email → email invite sent; existing user → joined immediately.
+      toast.success(res?.pending ? t('businesses.invite.sent') : t('businesses.invite.success'));
       onInvited();
     } catch (err: any) {
       const msg = err?.message || '';
-      if (msg.includes('USER_NOT_FOUND')) toast.error(t('businesses.invite.error.notFound'));
-      else if (msg.includes('ALREADY_MEMBER')) toast.error(t('businesses.invite.error.alreadyMember'));
+      if (msg.includes('ALREADY_MEMBER')) toast.error(t('businesses.invite.error.alreadyMember'));
       else toast.error(msg || t('businesses.invite.error.generic'));
     } finally { setSaving(false); }
   };

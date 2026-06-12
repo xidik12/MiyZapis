@@ -8,8 +8,12 @@
 //
 // businessId is denormalised onto Specialist/Service/Booking for fast scoping.
 
+import crypto from 'crypto';
 import { prisma } from '@/config/database';
 import type { Prisma } from '@prisma/client';
+import { config } from '@/config';
+import { logger } from '@/utils/logger';
+import { emailService } from '@/services/email';
 
 export type BusinessRole = 'OWNER' | 'MANAGER' | 'SPECIALIST';
 
@@ -28,7 +32,7 @@ export interface CreateBusinessInput {
 }
 
 export interface InviteMemberInput {
-  email: string;           // we look up the user by email; they must already have an account
+  email: string;           // existing user → joins immediately; unknown email → pending email invite
   role: BusinessRole;
 }
 
@@ -132,29 +136,92 @@ export class BusinessService {
   static async invite(businessId: string, callerId: string, input: InviteMemberInput) {
     await this.requireRole(businessId, callerId, ['OWNER', 'MANAGER']);
     if (!['MANAGER', 'SPECIALIST'].includes(input.role)) throw new Error('INVALID_ROLE');
-    const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() }, select: { id: true } });
-    if (!user) throw new Error('USER_NOT_FOUND');
+    const email = input.email.trim().toLowerCase();
+    if (!email) throw new Error('VALIDATION_ERROR');
 
-    const existing = await prisma.businessMember.findUnique({
-      where: { businessId_userId: { businessId, userId: user.id } },
-    });
-    if (existing) throw new Error('ALREADY_MEMBER');
+    const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
 
-    const member = await prisma.businessMember.create({
-      data: {
-        businessId,
-        userId: user.id,
-        role: input.role,
-        invitedBy: callerId,
-        joinedAt: new Date(), // auto-join for now; can switch to email-accept later
-      },
-    });
+    // ── Existing user → join immediately ─────────────────────────────────────
+    if (user) {
+      const existing = await prisma.businessMember.findUnique({
+        where: { businessId_userId: { businessId, userId: user.id } },
+      });
+      if (existing) throw new Error('ALREADY_MEMBER');
 
-    // Denormalise businessId onto the specialist profile so dashboard queries are fast.
-    if (input.role === 'SPECIALIST') {
-      await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId } });
+      const member = await prisma.businessMember.create({
+        data: {
+          businessId,
+          userId: user.id,
+          role: input.role,
+          invitedBy: callerId,
+          joinedAt: new Date(), // auto-join for now; can switch to email-accept later
+        },
+      });
+
+      // Denormalise businessId onto the specialist profile so dashboard queries are fast.
+      if (input.role === 'SPECIALIST') {
+        await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId } });
+      }
+      return member;
     }
-    return member;
+
+    // ── Unknown email → create / refresh a pending email invite ──────────────
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Dedupe: reuse an existing unaccepted, non-expired invite for [businessId,email].
+    const open = await prisma.businessInvite.findFirst({
+      where: { businessId, email, acceptedAt: null, expiresAt: { gt: new Date() } },
+    });
+
+    const invite = open
+      ? await prisma.businessInvite.update({
+          where: { id: open.id },
+          data: { role: input.role, invitedBy: callerId, token, expiresAt },
+        })
+      : await prisma.businessInvite.create({
+          data: { businessId, email, role: input.role, token, invitedBy: callerId, expiresAt },
+        });
+
+    // Send the branded invite email (non-blocking — failure must not break the invite).
+    void this.sendInviteEmail(businessId, invite.email, invite.role, invite.token);
+
+    return { pending: true, email: invite.email };
+  }
+
+  // Look up the business name + send the branded invite email.
+  private static async sendInviteEmail(businessId: string, email: string, role: string, token: string) {
+    try {
+      const business = await prisma.business.findUnique({ where: { id: businessId }, select: { name: true } });
+      const frontendUrl = config.frontend.url || 'https://miyzapis.com';
+      const inviteUrl = `${frontendUrl}/auth/register?invite=${token}`;
+      await emailService.sendTemplateEmail({
+        to: email,
+        templateKey: 'businessInvite',
+        language: 'en',
+        data: { businessName: business?.name ?? 'a business', role, inviteUrl },
+      });
+    } catch (err) {
+      logger.error('Failed to send business invite email', { businessId, email, error: err });
+    }
+  }
+
+  // ---- Invites (pending email invites) ----------------------------------
+  static async listInvites(businessId: string, callerId: string) {
+    await this.requireMember(businessId, callerId);
+    return prisma.businessInvite.findMany({
+      where: { businessId, acceptedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, email: true, role: true, expiresAt: true, createdAt: true },
+    });
+  }
+
+  static async revokeInvite(businessId: string, callerId: string, inviteId: string) {
+    await this.requireRole(businessId, callerId, ['OWNER', 'MANAGER']);
+    const invite = await prisma.businessInvite.findUnique({ where: { id: inviteId } });
+    if (!invite || invite.businessId !== businessId) throw new Error('INVITE_NOT_FOUND');
+    await prisma.businessInvite.delete({ where: { id: inviteId } });
+    return { revoked: true };
   }
 
   static async setRole(businessId: string, callerId: string, targetUserId: string, role: BusinessRole) {

@@ -21,6 +21,14 @@ export interface BusinessMember {
   };
 }
 
+export interface BusinessInvite {
+  id: string;
+  email: string;
+  role: BusinessRole;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export interface Business {
   id: string;
   slug: string;
@@ -107,9 +115,20 @@ class BusinessService {
     await apiClient.delete(`/businesses/${id}`);
   }
 
-  async invite(businessId: string, email: string, role: BusinessRole): Promise<BusinessMember> {
-    const res = await apiClient.post<{ member: BusinessMember }>(`/businesses/${businessId}/members`, { email, role });
-    return res.data!.member;
+  // Returns the created member (existing user → joined) or a pending flag
+  // (unknown email → email invite sent).
+  async invite(businessId: string, email: string, role: BusinessRole): Promise<{ member?: BusinessMember; pending?: boolean; email?: string }> {
+    const res = await apiClient.post<{ member?: BusinessMember; pending?: boolean; email?: string }>(`/businesses/${businessId}/members`, { email, role });
+    return res.data!;
+  }
+
+  async listInvites(businessId: string): Promise<BusinessInvite[]> {
+    const res = await apiClient.get<{ invites: BusinessInvite[] }>(`/businesses/${businessId}/invites`);
+    return res.data!.invites;
+  }
+
+  async revokeInvite(businessId: string, inviteId: string): Promise<void> {
+    await apiClient.delete(`/businesses/${businessId}/invites/${inviteId}`);
   }
 
   async setRole(businessId: string, userId: string, role: BusinessRole): Promise<BusinessMember> {

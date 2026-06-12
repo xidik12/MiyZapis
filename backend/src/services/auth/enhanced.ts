@@ -193,6 +193,44 @@ export class AuthService {
         }
       }
 
+      // Consume any pending business invites for this email (people invited
+      // before they had an account). Never let a failure block registration.
+      try {
+        const inviteEmail = user.email.toLowerCase();
+        const pendingInvites = await prisma.businessInvite.findMany({
+          where: { email: inviteEmail, acceptedAt: null, expiresAt: { gt: new Date() } },
+        });
+        for (const invite of pendingInvites) {
+          const now = new Date();
+          const existingMember = await prisma.businessMember.findUnique({
+            where: { businessId_userId: { businessId: invite.businessId, userId: user.id } },
+          });
+          if (!existingMember) {
+            await prisma.businessMember.create({
+              data: {
+                businessId: invite.businessId,
+                userId: user.id,
+                role: invite.role,
+                invitedBy: invite.invitedBy,
+                joinedAt: now,
+              },
+            });
+            // Mirror the invite() denormalisation so dashboard scoping is fast.
+            if (invite.role === 'SPECIALIST') {
+              await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+            }
+          }
+          await prisma.businessInvite.update({ where: { id: invite.id }, data: { acceptedAt: now } });
+          logger.info('Consumed business invite during registration', {
+            userId: user.id, businessId: invite.businessId, inviteId: invite.id,
+          });
+        }
+      } catch (inviteError) {
+        logger.error('Failed to consume business invites during registration', {
+          userId: user.id, error: inviteError instanceof Error ? inviteError.message : inviteError,
+        });
+      }
+
       // Generate verification token
       const verificationToken = this.generateVerificationToken();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours

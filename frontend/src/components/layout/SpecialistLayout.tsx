@@ -8,7 +8,7 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -89,6 +89,27 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/finances',
     icon: ChartBarIcon,
     iconActive: ChartBarIcon,
+  },
+  {
+    name: 'Inventory',
+    nameUk: 'Склад',
+    href: '/specialist/inventory',
+    icon: ArchiveBoxIcon,
+    iconActive: ArchiveBoxIcon,
+  },
+  {
+    name: 'Purchasing',
+    nameUk: 'Закупівлі',
+    href: '/specialist/purchasing',
+    icon: BuildingStorefrontIcon,
+    iconActive: BuildingStorefrontIcon,
+  },
+  {
+    name: 'Payroll',
+    nameUk: 'Зарплата',
+    href: '/specialist/payroll',
+    icon: WalletIcon,
+    iconActive: WalletIcon,
   },
   {
     name: 'Reviews',
@@ -424,6 +445,9 @@ const specialistMoreNavItems = [
   { nameKey: 'dashboard.nav.analytics', fallback: 'Analytics', href: '/specialist/analytics', icon: PresentationChartLineIcon },
   { nameKey: 'dashboard.nav.earnings', fallback: 'Earnings', href: '/specialist/earnings', icon: CurrencyDollarIcon },
   { nameKey: 'dashboard.nav.finances', fallback: 'Finances', href: '/specialist/finances', icon: ChartBarIcon },
+  { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
+  { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: BuildingStorefrontIcon },
+  { nameKey: 'dashboard.nav.payroll', fallback: 'Payroll', href: '/specialist/payroll', icon: WalletIcon },
   { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: CalendarIcon },
   { nameKey: 'dashboard.nav.businesses', fallback: 'Businesses', href: '/specialist/businesses', icon: BuildingOfficeIcon },
   { nameKey: 'dashboard.nav.reviews', fallback: 'Reviews', href: '/specialist/reviews', icon: StarIcon },

@@ -88,6 +88,49 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
     },
   },
 
+  // ── Business staff invite ─────────────────────────────────────────────────
+  businessInvite: {
+    en: {
+      subject: 'You’re invited to join {{businessName}} on MiyZapis',
+      preheader: 'Accept your invitation to join {{businessName}} as {{role}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">You’re invited to join {{businessName}}</h1>
+        <p style="${STYLES.p}"><strong>{{businessName}}</strong> invited you to join their team on MiyZapis as <strong>{{role}}</strong>.</p>
+        <p style="${STYLES.p}">Create your free account to accept the invitation — you’ll be added to the team automatically once you sign up with this email address.</p>
+        ${cta('{{inviteUrl}}', 'Accept invitation')}
+        <p style="${STYLES.small}">This invitation expires in 7 days. If you weren’t expecting it, you can safely ignore this email.</p>
+        ${fallbackLink('{{inviteUrl}}', 'Trouble with the button? Paste this link into your browser:')}
+      `,
+      text: `You’re invited to join {{businessName}} on MiyZapis\n\n{{businessName}} invited you to join their team as {{role}}.\n\nCreate your free account to accept — you’ll be added automatically once you sign up with this email:\n{{inviteUrl}}\n\nThis invitation expires in 7 days. If you weren’t expecting it, you can ignore this email.`,
+    },
+    uk: {
+      subject: 'Вас запрошують приєднатися до {{businessName}} у МійЗапис',
+      preheader: 'Прийміть запрошення приєднатися до {{businessName}} як {{role}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Вас запрошують приєднатися до {{businessName}}</h1>
+        <p style="${STYLES.p}"><strong>{{businessName}}</strong> запрошує вас приєднатися до команди у МійЗапис як <strong>{{role}}</strong>.</p>
+        <p style="${STYLES.p}">Створіть безкоштовний акаунт, щоб прийняти запрошення — вас буде додано до команди автоматично після реєстрації з цією електронною адресою.</p>
+        ${cta('{{inviteUrl}}', 'Прийняти запрошення')}
+        <p style="${STYLES.small}">Запрошення діє 7 днів. Якщо ви його не очікували, просто проігноруйте цей лист.</p>
+        ${fallbackLink('{{inviteUrl}}', 'Не працює кнопка? Скопіюйте це посилання у браузер:')}
+      `,
+      text: `Вас запрошують приєднатися до {{businessName}} у МійЗапис\n\n{{businessName}} запрошує вас приєднатися до команди як {{role}}.\n\nСтворіть безкоштовний акаунт, щоб прийняти — вас буде додано автоматично після реєстрації з цією адресою:\n{{inviteUrl}}\n\nЗапрошення діє 7 днів. Якщо ви його не очікували, проігноруйте лист.`,
+    },
+    ru: {
+      subject: 'Вас приглашают присоединиться к {{businessName}} в МойЗапись',
+      preheader: 'Примите приглашение присоединиться к {{businessName}} как {{role}}.',
+      bodyHtml: `
+        <h1 style="${STYLES.h1}">Вас приглашают присоединиться к {{businessName}}</h1>
+        <p style="${STYLES.p}"><strong>{{businessName}}</strong> приглашает вас присоединиться к команде в МойЗапись как <strong>{{role}}</strong>.</p>
+        <p style="${STYLES.p}">Создайте бесплатный аккаунт, чтобы принять приглашение — вы будете добавлены в команду автоматически после регистрации с этим адресом электронной почты.</p>
+        ${cta('{{inviteUrl}}', 'Принять приглашение')}
+        <p style="${STYLES.small}">Приглашение действует 7 дней. Если вы его не ожидали, просто проигнорируйте это письмо.</p>
+        ${fallbackLink('{{inviteUrl}}', 'Не работает кнопка? Скопируйте ссылку в браузер:')}
+      `,
+      text: `Вас приглашают присоединиться к {{businessName}} в МойЗапись\n\n{{businessName}} приглашает вас присоединиться к команде как {{role}}.\n\nСоздайте бесплатный аккаунт, чтобы принять — вы будете добавлены автоматически после регистрации с этим адресом:\n{{inviteUrl}}\n\nПриглашение действует 7 дней. Если вы его не ожидали, проигнорируйте письмо.`,
+    },
+  },
+
   // ── Email verification ────────────────────────────────────────────────────
   emailVerification: {
     en: {

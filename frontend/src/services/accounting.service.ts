@@ -52,6 +52,20 @@ export interface TaxRegime {
   label: string;
 }
 
+// Scope of an accounting query: 'self' (just me) or 'business' (all staff of an owned business).
+export type AccountingScope = 'self' | 'business';
+
+// ──────────────────────────────────────────────────────────────────────────
+// VAT
+// ──────────────────────────────────────────────────────────────────────────
+export interface VatSummary {
+  period: { from: string; to: string };
+  currency: string;
+  vatCollected: number;
+  vatPaid: number;
+  netVatDue: number;
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Invoices
 // ──────────────────────────────────────────────────────────────────────────
@@ -104,18 +118,28 @@ export interface CreateInvoiceInput {
 class AccountingService {
   private base = '/accounting';
 
-  async getProfitLoss(from: Date, to: Date, currency?: string): Promise<ProfitLoss> {
+  async getProfitLoss(from: Date, to: Date, currency?: string, scope?: AccountingScope): Promise<ProfitLoss> {
     const params: Record<string, string> = { from: from.toISOString(), to: to.toISOString() };
     if (currency) params.currency = currency;
+    if (scope) params.scope = scope;
     const res = await apiClient.get<ProfitLoss>(`${this.base}/profit-loss`, { params });
     return res.data!;
   }
 
-  async getTaxEstimate(from: Date, to: Date, regime?: string, currency?: string): Promise<TaxComputation> {
+  async getTaxEstimate(from: Date, to: Date, regime?: string, currency?: string, scope?: AccountingScope): Promise<TaxComputation> {
     const params: Record<string, string> = { from: from.toISOString(), to: to.toISOString() };
     if (regime) params.regime = regime;
     if (currency) params.currency = currency;
+    if (scope) params.scope = scope;
     const res = await apiClient.get<TaxComputation>(`${this.base}/tax-estimate`, { params });
+    return res.data!;
+  }
+
+  async getVatSummary(from: Date, to: Date, currency?: string, scope?: AccountingScope): Promise<VatSummary> {
+    const params: Record<string, string> = { from: from.toISOString(), to: to.toISOString() };
+    if (currency) params.currency = currency;
+    if (scope) params.scope = scope;
+    const res = await apiClient.get<VatSummary>(`${this.base}/vat`, { params });
     return res.data!;
   }
 

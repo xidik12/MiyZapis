@@ -56,6 +56,9 @@ const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
 const SpecialistFinances = React.lazy(() => import('./pages/specialist/Finances'));
 const SpecialistAccounting = React.lazy(() => import('./pages/specialist/Accounting'));
+const SpecialistInventory = React.lazy(() => import('./pages/specialist/Inventory'));
+const SpecialistPurchasing = React.lazy(() => import('./pages/specialist/Purchasing'));
+const SpecialistPayroll = React.lazy(() => import('./pages/specialist/Payroll'));
 const SpecialistCalendarSettings = React.lazy(() => import('./pages/specialist/CalendarSettings'));
 const SpecialistBusinesses = React.lazy(() => import('./pages/specialist/Businesses'));
 const BusinessPublicPage = React.lazy(() => import('./pages/BusinessPublicPage'));
@@ -119,6 +122,9 @@ const usePageTitle = () => {
       '/specialist/schedule': 'Schedule - МійЗапис',
       '/specialist/earnings': 'Earnings - МійЗапис',
       '/specialist/finances': 'Finances - МійЗапис',
+      '/specialist/inventory': 'Inventory - МійЗапис',
+      '/specialist/purchasing': 'Purchasing - МійЗапис',
+      '/specialist/payroll': 'Payroll - МійЗапис',
       '/specialist/reviews': 'Reviews - МійЗапис',
       '/specialist/loyalty': 'Loyalty Program - МійЗапис',
       '/specialist/messages': 'Messages - МійЗапис',
@@ -297,6 +303,42 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistFinances />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/inventory"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistInventory />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/purchasing"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistPurchasing />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/payroll"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistPayroll />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>

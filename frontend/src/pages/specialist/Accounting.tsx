@@ -8,11 +8,14 @@ import {
   type ProfitLoss,
   type TaxComputation,
   type TaxRegime,
+  type VatSummary,
+  type AccountingScope,
   type Invoice,
   type InvoiceLineItem,
   type InvoiceStatus,
   type CreateInvoiceInput,
 } from '../../services/accounting.service';
+import { businessService } from '../../services/business.service';
 import { PageLoader } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { userService } from '../../services/user.service';
@@ -34,18 +37,41 @@ function fmtMoney(n: number, currency = 'UAH') {
   }
 }
 
+// Friendly label for an expense category. PAYROLL/PURCHASES are synthetic
+// roll-up categories from the new salon-suite modules; everything else passes
+// through as-is.
+function categoryLabel(category: string, t: (k: string) => string): string {
+  if (category === 'PAYROLL') return t('accounting.pnl.payroll');
+  if (category === 'PURCHASES') return t('accounting.pnl.purchases');
+  return category;
+}
+
 const Accounting: React.FC = () => {
   const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>('pnl');
   const [from, setFrom] = useState<Date>(startOfMonth());
   const [to, setTo] = useState<Date>(endOfMonth());
+  const [scope, setScope] = useState<AccountingScope>('self');
+  // Whether the user OWNs at least one business — controls the scope toggle.
+  const [ownsBusiness, setOwnsBusiness] = useState(false);
+
+  useEffect(() => {
+    businessService.listMine()
+      .then((memberships) => {
+        setOwnsBusiness(memberships.some((m) => m.role === 'OWNER' && m.isActive));
+      })
+      .catch(() => setOwnsBusiness(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-6xl mx-auto px-4">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounting.title')}</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('accounting.subtitle')}</p>
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounting.title')}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('accounting.subtitle')}</p>
+          </div>
+          {ownsBusiness && <ScopeToggle scope={scope} onChange={setScope} />}
         </header>
 
         <PeriodPicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t); }} />
@@ -53,13 +79,41 @@ const Accounting: React.FC = () => {
         <Tabs current={tab} onChange={setTab} />
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          {tab === 'pnl' && <PnlPanel from={from} to={to} />}
-          {tab === 'tax' && <TaxPanel from={from} to={to} />}
+          {tab === 'pnl' && <PnlPanel from={from} to={to} scope={scope} />}
+          {tab === 'tax' && <TaxPanel from={from} to={to} scope={scope} />}
           {tab === 'invoices' && <InvoicesPanel />}
           {tab === 'export' && <ExportPanel from={from} to={to} />}
           {tab === 'settings' && <SettingsPanel />}
         </div>
       </div>
+    </div>
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────
+// Scope toggle — "Just me" vs "This business (all staff)". Only rendered for
+// users who own a business.
+const ScopeToggle: React.FC<{ scope: AccountingScope; onChange: (s: AccountingScope) => void }> = ({ scope, onChange }) => {
+  const { t } = useLanguage();
+  const opts: Array<[AccountingScope, string]> = [
+    ['self', t('accounting.scope.self')],
+    ['business', t('accounting.scope.business')],
+  ];
+  return (
+    <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm">
+      {opts.map(([k, label]) => (
+        <button
+          key={k}
+          onClick={() => onChange(k)}
+          className={`px-3 py-1.5 font-medium transition-colors ${
+            scope === k
+              ? 'bg-primary-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 };
@@ -126,18 +180,18 @@ const Tabs: React.FC<{ current: Tab; onChange: (t: Tab) => void }> = ({ current,
 };
 
 // ────────────────────────────────────────────────────────────────────────
-const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
+const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ from, to, scope }) => {
   const { t } = useLanguage();
   const [data, setData] = useState<ProfitLoss | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    accountingService.getProfitLoss(from, to)
+    accountingService.getProfitLoss(from, to, undefined, scope)
       .then(setData)
       .catch((err) => toast.error(err?.message || t('accounting.pnl.failedLoad')))
       .finally(() => setLoading(false));
-  }, [from.getTime(), to.getTime()]);
+  }, [from.getTime(), to.getTime(), scope]);
 
   if (loading) return <PageLoader />;
   if (!data) return <p className="text-gray-500">{t('accounting.noData')}</p>;
@@ -163,7 +217,7 @@ const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
           {data.expenses.byCategory.map((row) => (
             <div key={row.category} className="flex justify-between py-2 text-sm">
               <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{row.category}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100">{categoryLabel(row.category, t)}</div>
                 <div className="text-xs text-gray-500">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}</div>
               </div>
               <div className="font-mono text-gray-900 dark:text-gray-100">{fmtMoney(row.total, c)}</div>
@@ -176,11 +230,12 @@ const PnlPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
 };
 
 // ────────────────────────────────────────────────────────────────────────
-const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
+const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ from, to, scope }) => {
   const { t } = useLanguage();
   const [regimes, setRegimes] = useState<TaxRegime[]>([]);
   const [regime, setRegime] = useState<string>('');
   const [data, setData] = useState<TaxComputation | null>(null);
+  const [vat, setVat] = useState<VatSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -189,11 +244,17 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
 
   useEffect(() => {
     setLoading(true);
-    accountingService.getTaxEstimate(from, to, regime || undefined)
+    accountingService.getTaxEstimate(from, to, regime || undefined, undefined, scope)
       .then((d) => { setData(d); if (!regime) setRegime(d.regime); })
       .catch((err) => toast.error(err?.message || t('accounting.tax.failedLoad')))
       .finally(() => setLoading(false));
-  }, [from.getTime(), to.getTime(), regime]);
+  }, [from.getTime(), to.getTime(), regime, scope]);
+
+  useEffect(() => {
+    accountingService.getVatSummary(from, to, undefined, scope)
+      .then(setVat)
+      .catch(() => setVat(null));
+  }, [from.getTime(), to.getTime(), scope]);
 
   if (loading && !data) return <PageLoader />;
   if (!data) return <p className="text-gray-500">{t('accounting.noData')}</p>;
@@ -233,6 +294,17 @@ const TaxPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
               ))}
             </div>}
       </Section>
+
+      {vat && (
+        <Section title={t('accounting.vat.title')}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Stat label={t('accounting.vat.collected')} value={fmtMoney(vat.vatCollected, vat.currency)} />
+            <Stat label={t('accounting.vat.paid')} value={fmtMoney(vat.vatPaid, vat.currency)} />
+            <Stat label={t('accounting.vat.netDue')} value={fmtMoney(vat.netVatDue, vat.currency)} negative={vat.netVatDue > 0} positive={vat.netVatDue < 0} />
+          </div>
+          <p className="text-xs text-gray-500 mt-2">{t('accounting.vat.hint')}</p>
+        </Section>
+      )}
 
       {data.notes.length > 0 && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
