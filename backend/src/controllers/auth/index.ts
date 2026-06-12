@@ -494,8 +494,21 @@ export class AuthController {
         return;
       }
 
+      // Compute profileComplete so the frontend's session-restore path (which
+      // calls /auth/me) matches login/refresh — otherwise an onboarded
+      // specialist gets bounced back into onboarding on every reload/return.
+      let profileComplete = true;
+      if ((user.userType as string) === 'SPECIALIST') {
+        const spec = (user as { specialist?: { onboardingCompleted?: boolean } }).specialist
+          ?? await prisma.specialist.findUnique({
+            where: { userId: user.id },
+            select: { onboardingCompleted: true },
+          });
+        profileComplete = spec?.onboardingCompleted ?? false;
+      }
+
       // Add hasPassword flag so frontend knows whether to show Set vs Change password
-      const userResponse = { ...user, hasPassword: !!user.password };
+      const userResponse = { ...user, hasPassword: !!user.password, profileComplete };
       // Never send the actual password hash to the frontend
       delete (userResponse as Record<string, unknown>).password;
 
