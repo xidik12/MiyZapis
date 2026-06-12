@@ -112,6 +112,8 @@ export interface RegisterRequest {
   userType?: UserType;
   telegramId?: string;
   referralCode?: string;
+  /** When set, registers the user as a business/salon OWNER and creates the Business. */
+  businessName?: string;
 }
 
 export interface TelegramAuthRequest {

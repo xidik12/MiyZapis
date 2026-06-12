@@ -20,7 +20,8 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   phoneNumber?: string;
-  userType: UserType;
+  userType: UserType | 'business';
+  businessName?: string;
   agreeToTerms: boolean;
   referralCode?: string;
 }
@@ -101,13 +102,17 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      // "business" is a registration-time choice: the owner is created as a
+      // SPECIALIST (so they can optionally be bookable) and a Business is made.
+      const isBusiness = data.userType === 'business';
       const registerData: RegisterRequest = {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
         phoneNumber: data.phoneNumber || undefined,
-        userType: data.userType,
+        userType: isBusiness ? 'specialist' : (data.userType as UserType),
+        ...(isBusiness && data.businessName && { businessName: data.businessName.trim() }),
         ...(data.referralCode && { referralCode: data.referralCode }),
       };
 
@@ -226,7 +231,7 @@ const RegisterPage: React.FC = () => {
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             {t('auth.register.accountType')}
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <label className="relative">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
@@ -274,9 +279,59 @@ const RegisterPage: React.FC = () => {
                 </div>
               </div>
             </label>
+
+            <label className="relative">
+              <input
+                {...register('userType', { required: t('auth.error.accountTypeRequired') })}
+                type="radio"
+                value="business"
+                className="sr-only"
+              />
+              <div className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                watchUserType === 'business'
+                  ? 'border-primary-600 bg-primary-50/80 dark:bg-primary-900/30 shadow-sm'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 bg-white dark:bg-gray-800'
+              }`}>
+                <div className="flex items-center">
+                  <div className={`w-4 h-4 rounded-full mr-3 flex-shrink-0 ${
+                    watchUserType === 'business' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}></div>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.runBusiness') || 'Business / Salon'}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.runBusinessDesc') || 'Manage a team of professionals'}</div>
+                  </div>
+                </div>
+              </div>
+            </label>
           </div>
           {errors.userType && (
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.userType.message}</p>
+          )}
+
+          {/* Salon / business name — only when registering a business */}
+          {watchUserType === 'business' && (
+            <div className="mt-4">
+              <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                {t('auth.register.businessName') || 'Salon / business name'}
+              </label>
+              <input
+                id="businessName"
+                type="text"
+                {...register('businessName', {
+                  validate: (v) =>
+                    watchUserType !== 'business' || (!!v && v.trim().length >= 2) ||
+                    (t('auth.register.businessNameRequired') || 'Business name is required'),
+                })}
+                placeholder={t('auth.register.businessNamePlaceholder') || 'e.g. Lily Beauty Studio'}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition"
+              />
+              {errors.businessName && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.businessName.message}</p>
+              )}
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                {t('auth.register.businessNameHint') || 'You can invite your professionals after signing up.'}
+              </p>
+            </div>
           )}
         </div>
 

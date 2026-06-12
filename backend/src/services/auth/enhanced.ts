@@ -17,6 +17,7 @@ import {
   UserType
 } from '@/types';
 import { ReferralService } from '@/services/referral';
+import { BusinessService } from '@/services/business/business.service';
 import { User } from '@prisma/client';
 
 interface GoogleAuthData {
@@ -178,6 +179,17 @@ export class AuthService {
           logger.info('Created specialist profile for new user', { userId: user.id });
         } catch (specError) {
           logger.error('Failed to create specialist profile during registration', { userId: user.id, error: specError });
+        }
+      }
+
+      // If registering as a business/salon, create the Business with this user
+      // as OWNER. (The owner is a SPECIALIST so they can optionally be bookable.)
+      if (data.businessName && data.businessName.trim()) {
+        try {
+          const business = await BusinessService.create(user.id, { name: data.businessName.trim() });
+          logger.info('Created business for new owner', { userId: user.id, businessId: business.id });
+        } catch (bizError) {
+          logger.error('Failed to create business during registration', { userId: user.id, error: bizError });
         }
       }
 
