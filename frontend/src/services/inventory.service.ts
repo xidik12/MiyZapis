@@ -82,6 +82,23 @@ export interface AdjustStockData {
   reference?: string;
 }
 
+// A product a service consumes per booking (joined with product name/unit/stock).
+export interface ServiceConsumable {
+  id: string;
+  serviceId: string;
+  productId: string;
+  quantity: number;
+  productName: string;
+  unit: string;
+  stockQty: number;
+}
+
+// Row sent when replacing a service's consumable mapping.
+export interface ServiceConsumableInput {
+  productId: string;
+  quantity: number;
+}
+
 export class InventoryService {
   // List products with optional filters
   async getProducts(filters: InventoryFilters = {}): Promise<Product[]> {
@@ -177,6 +194,36 @@ export class InventoryService {
     }
 
     return response.data.movements;
+  }
+
+  // Get the consumable mapping for a service (what stock each booking consumes)
+  async getServiceConsumables(serviceId: string): Promise<ServiceConsumable[]> {
+    const response = await apiClient.get<{ consumables: ServiceConsumable[] }>(
+      `/inventory/services/${serviceId}/consumables`
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get service consumables');
+    }
+
+    return response.data.consumables;
+  }
+
+  // Replace the consumable mapping for a service
+  async setServiceConsumables(
+    serviceId: string,
+    items: ServiceConsumableInput[]
+  ): Promise<ServiceConsumable[]> {
+    const response = await apiClient.put<{ consumables: ServiceConsumable[] }>(
+      `/inventory/services/${serviceId}/consumables`,
+      { items }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to save service consumables');
+    }
+
+    return response.data.consumables;
   }
 }
 

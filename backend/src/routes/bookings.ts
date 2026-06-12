@@ -86,6 +86,41 @@ router.post('/:bookingId/resolve', async (req: Request, res: Response) => {
   }
 });
 
+// No-show protection: specialist explicitly marks a confirmed booking as a no-show.
+// Computes + records the service's no-show fee and forfeits any required deposit.
+// POLICY/TRACKING only — no card is charged (the platform has no live payments yet).
+// Ownership-checked: only the booking's specialist (or an ADMIN) may call this.
+router.post('/:bookingId/no-show', validateBookingId, async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.params;
+    const user = (req as unknown as AuthenticatedRequest).user;
+    if (!user?.id) {
+      return res.status(401).json(createErrorResponse('AUTHENTICATION_REQUIRED', 'Access token is required', req.id));
+    }
+    const isAdmin = user.userType === 'ADMIN';
+    if (user.userType !== 'SPECIALIST' && !isAdmin) {
+      return res.status(403).json(createErrorResponse('ACCESS_DENIED', 'Only specialists can mark a no-show', req.id));
+    }
+
+    const { BookingService } = await import('@/services/booking');
+    const updated = await BookingService.markNoShow(bookingId, user.id, {
+      isAdmin,
+      notes: typeof req.body?.notes === 'string' ? req.body.notes : undefined,
+    });
+    return res.json(createSuccessResponse({ booking: updated }));
+  } catch (err: unknown) {
+    const code = err instanceof Error ? err.message : 'NO_SHOW_FAILED';
+    const known = ['BOOKING_NOT_FOUND', 'SPECIALIST_NOT_AUTHORIZED', 'BOOKING_NOT_CONFIRMED'];
+    if (known.includes(code)) {
+      return res
+        .status(code === 'BOOKING_NOT_FOUND' ? 404 : code === 'SPECIALIST_NOT_AUTHORIZED' ? 403 : 400)
+        .json(createErrorResponse(code, code, req.id));
+    }
+    logger.error('Mark no-show failed', { error: code });
+    return res.status(500).json(createErrorResponse('NO_SHOW_FAILED', 'Failed to mark booking as no-show', req.id));
+  }
+});
+
 // Admin routes
 router.get('/admin/all', requireAdmin, BookingController.getAllBookings);
 

@@ -376,6 +376,24 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   {booking.paymentStatus || 'PENDING'}
                 </span>
               </div>
+              {/* No-show protection — deposit + no-show fee (recorded, not yet charged) */}
+              {(booking as any).depositStatus && !['NONE', 'PENDING'].includes((booking as any).depositStatus) && (
+                <div className="flex justify-between">
+                  <span>{t('deposit.deposit') || 'Deposit'}:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {Number((booking as any).depositAmount) > 0 ? `${formatPrice(Number((booking as any).depositAmount), getBookingCurrency(booking))} · ` : ''}
+                    {t(`deposit.status.${(booking as any).depositStatus}`) || (booking as any).depositStatus}
+                  </span>
+                </div>
+              )}
+              {(booking as any).noShowFeeStatus && (booking as any).noShowFeeStatus !== 'NONE' && (
+                <div className="flex justify-between">
+                  <span>{t('deposit.noShowFee') || 'No-show fee'}:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {formatPrice(Number((booking as any).noShowFeeAmount || 0), getBookingCurrency(booking))} · {t(`deposit.feeStatus.${(booking as any).noShowFeeStatus}`) || (booking as any).noShowFeeStatus}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

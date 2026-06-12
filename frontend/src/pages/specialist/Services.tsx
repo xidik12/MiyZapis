@@ -14,6 +14,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { reviewsService } from '../../services/reviews.service';
+import { inventoryService, Product, ServiceConsumable } from '../../services/inventory.service';
 
 interface Service {
   id: string;
@@ -49,6 +50,13 @@ interface Service {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // No-show protection — deposit & cancellation policy (policy layer only; no charging)
+  requireDeposit?: boolean;
+  depositType?: string; // 'PERCENT' | 'FIXED'
+  depositValue?: number;
+  cancellationWindowHours?: number;
+  noShowFeeType?: string; // 'PERCENT' | 'FIXED'
+  noShowFeeValue?: number;
   // Prep/Cleanup/Rebook
   prepTime?: number;
   cleanupTime?: number;
@@ -68,6 +76,183 @@ interface Service {
 const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   return (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
+};
+
+// Per-service consumables editor: owner declares which inventory products this
+// service consumes per booking (auto-deducted when a booking is marked completed).
+interface ConsumableRow {
+  productId: string;
+  quantity: string; // kept as string for the input; coerced on save
+}
+
+const ServiceConsumablesEditor: React.FC<{ serviceId: string }> = ({ serviceId }) => {
+  const { t } = useLanguage();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [rows, setRows] = useState<ConsumableRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const [productList, consumables] = await Promise.all([
+          inventoryService.getProducts({ type: 'CONSUMABLE' }),
+          inventoryService.getServiceConsumables(serviceId),
+        ]);
+        if (cancelled) return;
+        setProducts(productList);
+        setRows(
+          consumables.map((c: ServiceConsumable) => ({
+            productId: c.productId,
+            quantity: String(c.quantity),
+          }))
+        );
+      } catch (loadError) {
+        if (!cancelled) {
+          logger.error('Failed to load consumables', loadError);
+          setErr(t('consumables.loadError') || 'Failed to load consumables');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [serviceId, t]);
+
+  const addRow = () => {
+    setSaved(false);
+    setRows((prev) => [...prev, { productId: '', quantity: '1' }]);
+  };
+
+  const updateRow = (index: number, patch: Partial<ConsumableRow>) => {
+    setSaved(false);
+    setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  };
+
+  const removeRow = (index: number) => {
+    setSaved(false);
+    setRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setErr(null);
+    setSaved(false);
+    try {
+      const items = rows
+        .filter((row) => row.productId && Number(row.quantity) > 0)
+        .map((row) => ({ productId: row.productId, quantity: Number(row.quantity) }));
+      await inventoryService.setServiceConsumables(serviceId, items);
+      setSaved(true);
+    } catch (saveError) {
+      logger.error('Failed to save consumables', saveError);
+      setErr(saveError instanceof Error ? saveError.message : (t('consumables.saveError') || 'Failed to save'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const productLabel = (p: Product) => `${p.name}${p.unit ? ` (${p.unit})` : ''}`;
+
+  return (
+    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {t('consumables.title') || 'Consumables'}
+        </label>
+        {saved && (
+          <span className="text-xs text-green-600 dark:text-green-400">
+            {t('consumables.saved') || 'Saved'}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+        {t('consumables.perService') || 'Stock automatically deducted each time a booking for this service is completed.'}
+      </p>
+
+      {err && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-3">
+          <p className="text-sm text-red-700 dark:text-red-400">{err}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading') || 'Loading...'}</p>
+      ) : products.length === 0 ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {t('consumables.noProducts') || 'No consumable products in your inventory yet.'}
+        </p>
+      ) : (
+        <>
+          <div className="space-y-2">
+            {rows.map((row, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <select
+                  value={row.productId}
+                  onChange={(e) => updateRow(index, { productId: e.target.value })}
+                  className="flex-1 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">{t('consumables.product') || 'Product'}</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {productLabel(p)}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={row.quantity}
+                  onChange={(e) => updateRow(index, { quantity: e.target.value })}
+                  placeholder={t('consumables.quantityPerBooking') || 'Qty / booking'}
+                  className="w-28 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeRow(index)}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors duration-200"
+                  aria-label={t('consumables.remove') || 'Remove'}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between mt-3">
+            <button
+              type="button"
+              onClick={addRow}
+              className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+            >
+              + {t('consumables.addConsumable') || 'Add consumable'}
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className={`px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors duration-200 text-sm ${
+                saving ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {saving ? (t('common.saving') || 'Saving...') : (t('consumables.save') || 'Save consumables')}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 const SpecialistServices: React.FC = () => {
@@ -210,6 +395,13 @@ const SpecialistServices: React.FC = () => {
     discountValidFrom: '',
     discountValidUntil: '',
     discountDescription: '',
+    // No-show protection — deposit & cancellation policy
+    requireDeposit: false,
+    depositType: 'PERCENT',
+    depositValue: '',
+    cancellationWindowHours: '24',
+    noShowFeeType: 'PERCENT',
+    noShowFeeValue: '',
     availability: {
       monday: false,
       tuesday: false,
@@ -284,6 +476,13 @@ const SpecialistServices: React.FC = () => {
       discountValidFrom: '',
       discountValidUntil: '',
       discountDescription: '',
+      // No-show protection — deposit & cancellation policy
+      requireDeposit: false,
+      depositType: 'PERCENT',
+      depositValue: '',
+      cancellationWindowHours: '24',
+      noShowFeeType: 'PERCENT',
+      noShowFeeValue: '',
       // Group Session fields
       isGroupSession: false,
       maxParticipants: undefined,
@@ -356,6 +555,13 @@ const SpecialistServices: React.FC = () => {
       discountValidFrom: service.discountValidFrom ? service.discountValidFrom.split('T')[0] : '',
       discountValidUntil: service.discountValidUntil ? service.discountValidUntil.split('T')[0] : '',
       discountDescription: service.discountDescription || '',
+      // No-show protection — deposit & cancellation policy
+      requireDeposit: service.requireDeposit || false,
+      depositType: service.depositType || 'PERCENT',
+      depositValue: service.depositValue != null ? service.depositValue.toString() : '',
+      cancellationWindowHours: service.cancellationWindowHours != null ? service.cancellationWindowHours.toString() : '24',
+      noShowFeeType: service.noShowFeeType || 'PERCENT',
+      noShowFeeValue: service.noShowFeeValue != null ? service.noShowFeeValue.toString() : '',
       // Prep/Cleanup/Rebook
       prepTime: (service as any).prepTime || 0,
       cleanupTime: (service as any).cleanupTime || 0,
@@ -551,6 +757,13 @@ const SpecialistServices: React.FC = () => {
       discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
       discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
       discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined,
+      // No-show protection — deposit & cancellation policy (recorded only; no charging)
+      requireDeposit: formData.requireDeposit,
+      depositType: formData.requireDeposit ? formData.depositType : undefined,
+      depositValue: formData.requireDeposit ? (parseFloat(formData.depositValue) || 0) : undefined,
+      cancellationWindowHours: formData.cancellationWindowHours !== '' ? (parseInt(formData.cancellationWindowHours) || 0) : 0,
+      noShowFeeType: formData.noShowFeeValue !== '' ? formData.noShowFeeType : undefined,
+      noShowFeeValue: formData.noShowFeeValue !== '' ? (parseFloat(formData.noShowFeeValue) || 0) : undefined,
       // Group Session fields
       isGroupSession: formData.isGroupSession,
       maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
@@ -1624,7 +1837,126 @@ const SpecialistServices: React.FC = () => {
                 )}
               </div>
 
+              {/* No-show protection — Deposit & cancellation policy.
+                  NOTE: policy/tracking layer only — the platform has no live
+                  payments yet, so nothing is charged here. Amounts are recorded
+                  on the booking for a future payments module to collect. */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{t('policy.title') || 'Deposit & cancellation policy'}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('policy.subtitle') || 'Protect against no-shows. No payment is taken yet — amounts are recorded and collected later.'}</p>
+
+                {/* Require deposit */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.requireDeposit || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        requireDeposit: e.target.checked,
+                        depositValue: e.target.checked ? prev.depositValue : '',
+                      }))}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      {t('policy.requireDeposit') || 'Require a deposit to book'}
+                    </span>
+                  </label>
+                </div>
+
+                {formData.requireDeposit && (
+                  <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800 mb-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('policy.depositType') || 'Deposit type'}
+                        </label>
+                        <select
+                          value={formData.depositType}
+                          onChange={(e) => setFormData(prev => ({ ...prev, depositType: e.target.value, depositValue: '' }))}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="PERCENT">{t('policy.depositPercent') || 'Percentage (%) of total'}</option>
+                          <option value="FIXED">{t('policy.depositFixed') || 'Fixed amount'}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('policy.depositValue') || 'Deposit value'}
+                        </label>
+                        <div className="flex items-center">
+                          {formData.depositType === 'PERCENT' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
+                          )}
+                          {formData.depositType === 'FIXED' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{getCurrencySymbol(formData.currency as 'USD' | 'EUR' | 'UAH')}</span>
+                          )}
+                          <input
+                            type="number"
+                            value={formData.depositValue}
+                            onChange={(e) => setFormData(prev => ({ ...prev, depositValue: e.target.value }))}
+                            min="0"
+                            max={formData.depositType === 'PERCENT' ? '100' : undefined}
+                            step={formData.depositType === 'PERCENT' ? '1' : '0.01'}
+                            placeholder={formData.depositType === 'PERCENT' ? 'e.g., 20' : 'e.g., 10'}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Cancellation window + no-show fee */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('policy.cancellationWindow') || 'Free cancellation window (hours before)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.cancellationWindowHours}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cancellationWindowHours: e.target.value }))}
+                      min="0"
+                      step="1"
+                      placeholder="e.g., 24"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('policy.cancellationWindowHint') || 'Cancelling later than this forfeits the deposit.'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('policy.noShowFee') || 'No-show fee'}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={formData.noShowFeeType}
+                        onChange={(e) => setFormData(prev => ({ ...prev, noShowFeeType: e.target.value }))}
+                        className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="PERCENT">%</option>
+                        <option value="FIXED">{getCurrencySymbol(formData.currency as 'USD' | 'EUR' | 'UAH')}</option>
+                      </select>
+                      <input
+                        type="number"
+                        value={formData.noShowFeeValue}
+                        onChange={(e) => setFormData(prev => ({ ...prev, noShowFeeValue: e.target.value }))}
+                        min="0"
+                        max={formData.noShowFeeType === 'PERCENT' ? '100' : undefined}
+                        step={formData.noShowFeeType === 'PERCENT' ? '1' : '0.01'}
+                        placeholder={formData.noShowFeeType === 'PERCENT' ? 'e.g., 50' : 'e.g., 15'}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('policy.noShowFeeHint') || 'Charged if the customer does not show up. Leave empty for none.'}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Removed availability and timeSlots form sections as they're not part of backend schema */}
+
+              {/* Consumables — only for existing services (needs a serviceId to map against) */}
+              {editingService && <ServiceConsumablesEditor serviceId={editingService.id} />}
 
               {/* Form Actions */}
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">

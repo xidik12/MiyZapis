@@ -1016,7 +1016,32 @@ const SpecialistBookings: React.FC = () => {
     }
     setCancelTarget(null);
   };
-  
+
+  // No-show protection: specialist marks a confirmed booking as a no-show.
+  // The backend computes + records the no-show fee and forfeits any deposit
+  // (no card is charged yet). Confirms first to avoid accidental clicks.
+  const handleMarkNoShow = async (booking: Booking) => {
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: t('deposit.markNoShow') || 'Mark as no-show?',
+      message: t('deposit.noShowConfirm') || 'Record this booking as a no-show? Any no-show fee and deposit forfeiture will be recorded (no card is charged).',
+      confirmText: t('deposit.markNoShow') || 'Mark no-show',
+      cancelText: t('actions.back') || 'Back',
+      variant: 'destructive',
+    });
+    if (!ok) return;
+    try {
+      const { bookingService } = await import('../../services/booking.service');
+      await bookingService.markNoShow(booking.id);
+      toast.success(t('deposit.noShowRecorded') || 'Booking marked as no-show');
+      const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+      dispatch(fetchBookings({ filters: {}, userType }));
+    } catch (error: unknown) {
+      console.error('Failed to mark no-show:', error);
+      toast.error(`${t('specialist.bookings.toast.error')}: ${(error as any)?.message || ''}`);
+    }
+  };
+
   const getStatusBadge = (status: BookingStatus) => {
     const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800 border-gray-200';
     return (
@@ -1556,14 +1581,25 @@ const SpecialistBookings: React.FC = () => {
                               {t('bookings.confirm')}
                             </button>
                           ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
-                            <button
-                              onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                              title={t('bookings.complete')}
-                            >
-                              <CheckCircleIcon className="w-4 h-4 mr-1" />
-                              {t('bookings.complete')}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                title={t('bookings.complete')}
+                              >
+                                <CheckCircleIcon className="w-4 h-4 mr-1" />
+                                {t('bookings.complete')}
+                              </button>
+                              {/* No-show protection: mark a confirmed booking as no-show
+                                  (records fee + forfeits deposit; no card charged). */}
+                              <button
+                                onClick={() => handleMarkNoShow(booking)}
+                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-200"
+                                title={t('deposit.markNoShow') || 'Mark no-show'}
+                              >
+                                {t('deposit.markNoShow') || 'Mark no-show'}
+                              </button>
+                            </>
                           ) : null
                         ) : (
                           // Customer actions: cancel pending/confirmed bookings, leave review for completed bookings

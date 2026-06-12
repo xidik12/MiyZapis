@@ -37,6 +37,15 @@ export interface Service extends BaseEntity {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // No-show protection — deposit & cancellation policy.
+  // Policy layer only: the platform has no live payments yet, so these drive
+  // computed/recorded amounts on bookings; nothing is charged here.
+  requireDeposit?: boolean;
+  depositType?: string; // 'PERCENT' | 'FIXED'
+  depositValue?: number;
+  cancellationWindowHours?: number;
+  noShowFeeType?: string; // 'PERCENT' | 'FIXED'
+  noShowFeeValue?: number;
   // Group Session fields (frontend-specific)
   isGroupSession?: boolean;
   maxParticipants?: number;

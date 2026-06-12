@@ -219,6 +219,18 @@ export class BookingService {
     return response.data;
   }
 
+  // Specialist marks a confirmed booking as a no-show.
+  // No-show protection — POLICY/TRACKING only: the backend computes + records the
+  // no-show fee and forfeits any required deposit, but no card is charged (the
+  // platform has no live payments yet). A future payments module collects it.
+  async markNoShow(bookingId: string, notes?: string): Promise<{ booking: Booking }> {
+    const response = await apiClient.post<{ booking: Booking }>(`/bookings/${bookingId}/no-show`, { notes });
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to mark booking as no-show');
+    }
+    return response.data;
+  }
+
   // Specialist confirms booking
   async confirmBooking(bookingId: string, data: {
     meetingLink?: string;

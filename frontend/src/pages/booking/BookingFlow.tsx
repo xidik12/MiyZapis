@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socketService, subscribeToPaymentUpdates } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
@@ -79,6 +79,30 @@ const BookingFlow: React.FC = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((state.service?.price ?? state.service?.basePrice ?? 0) - discount));
   const { formatPrice } = useCurrency();
+
+  // No-show protection — compute the (informational) deposit + no-show-fee
+  // display for the summary. Mirrors backend computeDeposit/computeNoShowFee.
+  // POLICY/DISPLAY only: no payment is taken here; the booking is created with
+  // depositStatus = REQUIRED for a future payments module to collect.
+  const depositInfo = useMemo(() => {
+    const svc = state.service;
+    const ccy = (svc?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+    const total = finalPrice;
+    let amount = 0;
+    if (svc?.requireDeposit) {
+      const v = Number(svc.depositValue || 0);
+      amount = svc.depositType === 'FIXED' ? v : (total * v) / 100;
+      amount = Math.min(Math.max(0, Math.round(amount * 100) / 100), total);
+    }
+    let noShowFeeLabel = '';
+    if (svc?.noShowFeeType && Number(svc.noShowFeeValue) > 0) {
+      const fv = Number(svc.noShowFeeValue);
+      noShowFeeLabel = svc.noShowFeeType === 'FIXED'
+        ? formatPrice(Math.min(fv, total), ccy)
+        : `${fv}%`;
+    }
+    return { amount, noShowFeeLabel };
+  }, [state.service, finalPrice, formatPrice]);
 
   // Streamlined 3-step flow when service is pre-selected and not a group session
   // Full flow for complex bookings (no service pre-selected, or group sessions)
@@ -1202,6 +1226,29 @@ const BookingFlow: React.FC = () => {
                   {formatPrice(finalPrice, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                 </span>
               </div>
+
+              {/* No-show protection: deposit + cancellation policy notice.
+                  Informational only — no payment step. The booking is created
+                  with depositStatus = REQUIRED; a future payments module collects. */}
+              {state.service?.requireDeposit && depositInfo.amount > 0 && (
+                <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-3 mb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">{t('deposit.depositRequired')}</span>
+                    <span className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                      {formatPrice(depositInfo.amount, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">{t('deposit.depositNote')}</p>
+                </div>
+              )}
+              {(state.service?.cancellationWindowHours || depositInfo.noShowFeeLabel) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
+                  {state.service?.cancellationWindowHours
+                    ? (t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))
+                    : ''}
+                  {depositInfo.noShowFeeLabel ? ` ${(t('policy.noShowFeeNote') || 'No-show fee: {{fee}}.').replace('{{fee}}', depositInfo.noShowFeeLabel)}` : ''}
+                </p>
+              )}
 
               {/* Secure note */}
               <div className="flex gap-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 p-3">

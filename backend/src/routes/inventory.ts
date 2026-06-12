@@ -6,6 +6,7 @@ import {
   ProductType,
   StockReason,
 } from '@/services/inventory/inventory.service';
+import { ConsumablesService } from '@/services/inventory/consumables.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { authenticateToken, requireSpecialist } from '@/middleware/auth/jwt';
@@ -39,6 +40,103 @@ router.get('/summary', async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Error getting inventory summary:', error);
+    res.status(500).json(createErrorResponse('INVENTORY_ERROR', err.message, requestId(req)));
+  }
+});
+
+// GET /services/:serviceId/consumables — the consumable mapping for a service.
+// Registered before the generic /:id routes to keep the path unambiguous.
+router.get('/services/:serviceId/consumables', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const consumables = await ConsumablesService.list(ownerId, req.params.serviceId);
+
+    if (consumables === null) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Service not found', requestId(req)));
+      return;
+    }
+
+    res.json(createSuccessResponse({ consumables }));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error listing service consumables:', error);
+    res.status(500).json(createErrorResponse('INVENTORY_ERROR', err.message, requestId(req)));
+  }
+});
+
+// PUT /services/:serviceId/consumables — replace the consumable mapping for a service.
+// Body: { items: [{ productId, quantity }] }
+router.put('/services/:serviceId/consumables', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const { items } = req.body;
+
+    if (!Array.isArray(items)) {
+      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'items must be an array', requestId(req)));
+      return;
+    }
+
+    // Validate each row's shape before handing off to the service.
+    for (const item of items) {
+      if (!item || typeof item.productId !== 'string' || !item.productId.trim()) {
+        res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Each item requires a productId', requestId(req)));
+        return;
+      }
+      const qty = parseNumber(item.quantity);
+      if (qty === null || qty === undefined || qty <= 0) {
+        res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Each item requires a positive quantity', requestId(req)));
+        return;
+      }
+    }
+
+    let consumables;
+    try {
+      consumables = await ConsumablesService.set(
+        ownerId,
+        req.params.serviceId,
+        items.map((i: { productId: string; quantity: unknown }) => ({
+          productId: i.productId,
+          quantity: Number(i.quantity),
+        })),
+      );
+    } catch (svcError: unknown) {
+      const message = svcError instanceof Error ? svcError.message : String(svcError);
+      if (message === 'PRODUCT_NOT_OWNED') {
+        res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'One or more products do not belong to you', requestId(req)));
+        return;
+      }
+      throw svcError;
+    }
+
+    if (consumables === null) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Service not found', requestId(req)));
+      return;
+    }
+
+    logger.info(`Service consumables updated for ${req.params.serviceId} by owner ${ownerId}`);
+    res.json(createSuccessResponse({ consumables }));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error setting service consumables:', error);
+    res.status(500).json(createErrorResponse('INVENTORY_ERROR', err.message, requestId(req)));
+  }
+});
+
+// DELETE /services/:serviceId/consumables/:productId — remove one product from a service mapping.
+router.delete('/services/:serviceId/consumables/:productId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const removed = await ConsumablesService.remove(ownerId, req.params.serviceId, req.params.productId);
+
+    if (!removed) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Consumable not found', requestId(req)));
+      return;
+    }
+
+    res.json(createSuccessResponse({ message: 'Consumable removed' }));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error removing service consumable:', error);
     res.status(500).json(createErrorResponse('INVENTORY_ERROR', err.message, requestId(req)));
   }
 });

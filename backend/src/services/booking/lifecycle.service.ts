@@ -17,6 +17,7 @@ import { redis } from '@/config/redis';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
 import { BookingCalendarSync } from '@/services/calendar/booking-sync';
+import { ConsumablesService } from '@/services/inventory/consumables.service';
 
 const notifier = new NotificationService(prisma);
 
@@ -81,6 +82,13 @@ export class BookingLifecycleService {
     });
     // Remove from connected calendars (event is in the past anyway, but cleaning up is courteous).
     BookingCalendarSync.removeBookingEvents(bookingId);
+    // Fire-and-forget: write off the service's mapped consumables (idempotent, never throws).
+    ConsumablesService.deductForBooking(bookingId).catch((err) => {
+      logger.error('Failed to deduct consumables for completed booking', {
+        bookingId,
+        error: (err as Error).message,
+      });
+    });
     return updated;
   }
 
@@ -187,6 +195,17 @@ export class BookingLifecycleService {
       },
     });
     logger.info('Auto-finalised stale bookings', { count: result.count, graceDays });
+    // Fire-and-forget: write off consumables for each auto-finalised booking
+    // (idempotent, never throws). Sequential to avoid a connection-pool stampede.
+    void (async () => {
+      for (const id of ids) {
+        await ConsumablesService.deductForBooking(id);
+      }
+    })().catch((err) => {
+      logger.error('Failed to deduct consumables for auto-finalised bookings', {
+        error: (err as Error).message,
+      });
+    });
     return result.count;
   }
 
