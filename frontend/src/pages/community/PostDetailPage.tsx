@@ -10,15 +10,16 @@ import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { formatDateRelative } from '@/utils/dateUtils';
 import {
   HeartIcon,
-  ChatBubbleLeftIcon,
+  ChatCircleIcon as ChatBubbleLeftIcon,
   EyeIcon,
   ArrowLeftIcon,
-  BookmarkIcon,
+  StarIcon as BookmarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+  XIcon as XMarkIcon,
+  HeartIcon as HeartIconSolid,
+  StarIcon as BookmarkIconSolid,
+} from '@/components/icons';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 // ── Lightbox overlay ────────────────────────────────────────────────────────
@@ -319,7 +320,7 @@ const PostDetailPage: React.FC = () => {
                 onClick={() => handleCommentLike(comment.id)}
                 className={`cursor-pointer flex items-center gap-1 hover:scale-110 active:scale-95 transition-all duration-200 ${comment.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
               >
-                {comment.isLiked ? <HeartIconSolid className="w-4 h-4" /> : <HeartIcon className="w-4 h-4" />}
+                {comment.isLiked ? <HeartIconSolid className="w-4 h-4" active /> : <HeartIcon className="w-4 h-4" />}
                 <span>{comment.likeCount}</span>
               </button>
               <button
@@ -610,7 +611,7 @@ const PostDetailPage: React.FC = () => {
               onClick={handlePostLike}
               className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
             >
-              {post.isLiked ? <HeartIconSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
+              {post.isLiked ? <HeartIconSolid className="w-5 h-5" active /> : <HeartIcon className="w-5 h-5" />}
               <span>{post.likeCount}</span>
             </button>
             <div className="flex items-center gap-1.5">
@@ -640,7 +641,7 @@ const PostDetailPage: React.FC = () => {
                 title={post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
               >
                 {post.isBookmarked ? (
-                  <BookmarkIconSolid className="w-5 h-5" />
+                  <BookmarkIconSolid className="w-5 h-5" active />
                 ) : (
                   <BookmarkIcon className="w-5 h-5" />
                 )}

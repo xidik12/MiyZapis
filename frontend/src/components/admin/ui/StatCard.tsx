@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { ArrowUpIcon, ArrowDownIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface StatCardProps {

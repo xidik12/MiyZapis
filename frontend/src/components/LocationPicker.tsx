@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, X, Search } from 'lucide-react';
+import { MapPinIcon as MapPin, XIcon as X, MagnifyingGlassIcon as Search } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { InlineLoader, ContentLoader } from '@/components/ui';
 

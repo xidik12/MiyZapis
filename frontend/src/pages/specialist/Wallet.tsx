@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft } from '@/components/icons';
 import WalletDashboard from '../../components/wallet/WalletDashboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 

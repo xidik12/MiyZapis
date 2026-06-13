@@ -16,8 +16,8 @@ import {
   ClockIcon,
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
-  CakeIcon,
-} from '@heroicons/react/24/outline';
+  GiftIcon as CakeIcon,
+} from '@/components/icons';
 
 // Per-type accent + icon for the card header.
 const TYPE_META: Record<

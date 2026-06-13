@@ -345,7 +345,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 pb-28 lg:pb-0">
-          <div key={location.pathname} className="page-enter">
+          <div key={location.pathname} className="page-enter px-1 sm:px-2">
             {children}
           </div>
         </main>

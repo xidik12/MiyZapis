@@ -19,16 +19,16 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   EyeIcon,
-  InboxArrowDownIcon,
+  InboxIcon as InboxArrowDownIcon,
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
   ArrowPathIcon,
   BuildingStorefrontIcon,
-  ShoppingCartIcon,
+  BuildingStorefrontIcon as ShoppingCartIcon,
   NoSymbolIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 type Tab = 'orders' | 'suppliers';

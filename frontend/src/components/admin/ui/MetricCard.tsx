@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@heroicons/react/24/solid';
+import { ArrowUpIcon, ArrowDownIcon } from '@/components/icons';
+import { MinusIcon } from '@heroicons/react/24/solid';
 
 export interface MetricCardProps {
   label: string;

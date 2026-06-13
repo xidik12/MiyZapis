@@ -31,16 +31,16 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   GiftIcon,
   CurrencyDollarIcon,
   UsersIcon,
   ArrowPathIcon,
-  TicketIcon,
+  GiftIcon as TicketIcon,
   CreditCardIcon,
   NoSymbolIcon,
-  ShoppingBagIcon,
-} from '@heroicons/react/24/outline';
+  BuildingStorefrontIcon as ShoppingBagIcon,
+} from '@/components/icons';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 

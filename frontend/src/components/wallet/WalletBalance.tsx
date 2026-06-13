@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Loader2, Wallet, Eye, EyeOff, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  ArrowPathIcon as Loader2,
+  WalletIcon as Wallet,
+  EyeIcon as Eye,
+  EyeSlashIcon as EyeOff,
+  ArrowTrendingUpIcon as TrendingUp,
+  ArrowTrendingDownIcon as TrendingDown,
+} from '@/components/icons';
 import { walletService, WalletSummary } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';

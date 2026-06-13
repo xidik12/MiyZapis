@@ -7,7 +7,7 @@ import { selectUser } from '@/store/slices/authSlice';
 import { communityService, CreatePostData, fileUploadService, POST_TYPES, Post } from '@/services';
 import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ImageIcon as PhotoIcon, XIcon as XMarkIcon } from '@/components/icons';
 
 const CreatePostPage: React.FC = () => {
   const { t } = useLanguage();

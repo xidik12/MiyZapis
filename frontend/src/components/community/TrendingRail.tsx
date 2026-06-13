@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FireIcon, HeartIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { FireIcon, HeartIcon, ChatCircleIcon as ChatBubbleLeftIcon } from '@/components/icons';
 import type { Post } from '@/services';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 
@@ -42,7 +42,7 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
   return (
     <section className="mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <FireIcon className="w-5 h-5 text-orange-500" />
+        <FireIcon className="w-5 h-5 text-orange-500" active />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
           {label || 'Trending'}
         </h2>
@@ -82,11 +82,11 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
                 </h3>
                 <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                   <span className="inline-flex items-center gap-1">
-                    <HeartIcon className="w-3.5 h-3.5 text-rose-500" />
+                    <HeartIcon className="w-3.5 h-3.5 text-rose-500" active />
                     {post.likeCount || 0}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <ChatBubbleLeftIcon className="w-3.5 h-3.5 text-primary-500" />
+                    <ChatBubbleLeftIcon className="w-3.5 h-3.5 text-primary-500" active />
                     {post.commentCount || 0}
                   </span>
                   {post.type === 'SALE' && post.price != null && (

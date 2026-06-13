@@ -4,7 +4,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 export interface Column<T> {
   key: string;

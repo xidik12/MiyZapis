@@ -18,20 +18,20 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   CalendarDaysIcon,
   BuildingOfficeIcon,
   FireIcon,
-  CubeIcon,
+  ArchiveBoxIcon as CubeIcon,
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
-  MegaphoneIcon,
   UserGroupIcon,
   EllipsisHorizontalIcon,
   ArrowPathIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
+import { MegaphoneIcon } from '@heroicons/react/24/outline';
 
 // Category icon mapping
 const getCategoryIcon = (category: ExpenseCategory) => {

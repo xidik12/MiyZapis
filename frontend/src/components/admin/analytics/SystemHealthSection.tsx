@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ServerIcon,
-  CircleStackIcon,
-  CpuChipIcon,
   ClockIcon,
   ArrowPathIcon
+} from '@/components/icons';
+import {
+  ServerIcon,
+  CircleStackIcon,
+  CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HealthIndicator } from '../ui/HealthIndicator';

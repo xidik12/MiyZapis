@@ -13,11 +13,11 @@ import {
   RocketLaunchIcon,
   UsersIcon,
   UserPlusIcon,
-  GlobeAltIcon,
-  CodeBracketIcon,
+  GlobeIcon as GlobeAltIcon,
   LinkIcon,
   CalendarDaysIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
+import { CodeBracketIcon } from '@heroicons/react/24/outline';
 
 // Boost-length presets (days).
 const DAY_PRESETS = [7, 30, 90];

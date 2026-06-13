@@ -2,7 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Loader2, Filter, RefreshCw, ArrowUpRight, ArrowDownLeft, RotateCcw, Coins } from 'lucide-react';
+import {
+  ArrowPathIcon as Loader2,
+  FunnelIcon as Filter,
+  ArrowPathIcon as RefreshCw,
+  ArrowUpIcon as ArrowUpRight,
+  ArrowDownIcon as ArrowDownLeft,
+  ArrowPathIcon as RotateCcw,
+  CurrencyDollarIcon as Coins,
+} from '@/components/icons';
 import { walletService, WalletTransaction, TransactionFilters } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';

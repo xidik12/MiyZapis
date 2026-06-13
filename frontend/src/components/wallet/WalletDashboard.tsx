@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Wallet, History, CreditCard, Gift, Users, TrendingUp } from 'lucide-react';
+import {
+  WalletIcon as Wallet,
+  ClockIcon as History,
+  CreditCardIcon as CreditCard,
+  GiftIcon as Gift,
+  UsersIcon as Users,
+  ArrowTrendingUpIcon as TrendingUp,
+} from '@/components/icons';
 import { InlineLoader } from '@/components/ui';
 import WalletBalance from './WalletBalance';
 import WalletTransactionHistory from './WalletTransactionHistory';

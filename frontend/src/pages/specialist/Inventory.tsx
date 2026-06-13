@@ -18,15 +18,15 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  XMarkIcon,
-  CubeIcon,
+  XIcon as XMarkIcon,
+  ArchiveBoxIcon as CubeIcon,
   ArchiveBoxIcon,
-  ExclamationTriangleIcon,
+  WarningIcon as ExclamationTriangleIcon,
   CurrencyDollarIcon,
   ArrowPathIcon,
-  ArrowsUpDownIcon,
+  SlidersIcon as ArrowsUpDownIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 

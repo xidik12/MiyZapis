@@ -1,9 +1,9 @@
 import React from 'react';
 import {
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  WarningIcon as ExclamationTriangleIcon,
   XCircleIcon
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 import type { HealthStatus } from '@/types/admin.types';
 
 export interface HealthIndicatorProps {

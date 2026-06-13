@@ -7,7 +7,7 @@ import {
   CalendarIcon,
   CheckCircleIcon,
   XCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { StatCard } from '../ui/StatCard';
 import { TrendLineChart } from '../charts/TrendLineChart';

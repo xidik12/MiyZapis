@@ -4,10 +4,10 @@ import {
   FunnelIcon,
   UsersIcon,
   CheckIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   TrashIcon,
   ArrowPathIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DataTable, Column } from '../ui/DataTable';
 import { StatCard } from '../ui/StatCard';

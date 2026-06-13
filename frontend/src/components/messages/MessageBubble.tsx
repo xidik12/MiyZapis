@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCheck } from 'lucide-react';
+import { CheckIcon as CheckCheck } from '@/components/icons';
 
 interface MessageBubbleProps {
   message: {

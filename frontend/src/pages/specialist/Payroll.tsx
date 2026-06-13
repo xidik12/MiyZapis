@@ -18,16 +18,16 @@ import { toast } from 'react-toastify';
 import {
   PlusIcon,
   TrashIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   EyeIcon,
   CheckCircleIcon,
-  BanknotesIcon,
+  CurrencyDollarIcon as BanknotesIcon,
   UsersIcon,
   CurrencyDollarIcon,
   ArrowPathIcon,
   ClockIcon,
-  ReceiptPercentIcon,
-} from '@heroicons/react/24/outline';
+  CurrencyDollarIcon as ReceiptPercentIcon,
+} from '@/components/icons';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 type Tab = 'staff' | 'runs';

@@ -9,16 +9,17 @@ import { formatDateRelative } from '@/utils/dateUtils';
 import {
   PlusIcon,
   HeartIcon,
-  ChatBubbleLeftIcon,
+  ChatCircleIcon as ChatBubbleLeftIcon,
   EyeIcon,
   MagnifyingGlassIcon,
-  BookmarkIcon,
+  StarIcon as BookmarkIcon,
   FunnelIcon,
-  XMarkIcon,
+  XIcon as XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid, BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+  HeartIcon as HeartIconSolid,
+  StarIcon as BookmarkIconSolid,
+} from '@/components/icons';
 import CreatePostFAB from '@/components/community/CreatePostFAB';
 import HashtagChips from '@/components/community/HashtagChips';
 import TrendingRail from '@/components/community/TrendingRail';
@@ -519,7 +520,7 @@ const CommunityPage: React.FC = () => {
                 }`}
               >
                 <span className="flex items-center gap-1.5">
-                  <BookmarkIconSolid className="w-4 h-4" />
+                  <BookmarkIconSolid className="w-4 h-4" active />
                   {t('community.savedPosts') || 'Saved Posts'}
                 </span>
               </button>
@@ -821,7 +822,7 @@ const CommunityPage: React.FC = () => {
                         disabled={!isAuthenticated}
                       >
                         {post.isLiked ? (
-                          <HeartIconSolid className="w-5 h-5" />
+                          <HeartIconSolid className="w-5 h-5" active />
                         ) : (
                           <HeartIcon className="w-5 h-5" />
                         )}
@@ -855,7 +856,7 @@ const CommunityPage: React.FC = () => {
                           title={post.isBookmarked ? t('community.bookmarked') || 'Saved' : t('community.bookmark') || 'Save'}
                         >
                           {post.isBookmarked ? (
-                            <BookmarkIconSolid className="w-5 h-5" />
+                            <BookmarkIconSolid className="w-5 h-5" active />
                           ) : (
                             <BookmarkIcon className="w-5 h-5" />
                           )}
