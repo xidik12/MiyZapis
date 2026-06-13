@@ -764,6 +764,7 @@ const ru: Record<string, string> = {
   'dashboard.reviews': 'Отзывы',
   'dashboard.nav.messages': 'Сообщения',
   'dashboard.nav.accounting': 'Бухгалтерия',
+  'dashboard.nav.calendarSync': 'Синхронизация календаря',
   'dashboard.nav.settings': 'Настройки',
   'dashboard.nav.favorites': 'Избранное',
   'dashboard.nav.payments': 'Платежи',
