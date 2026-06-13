@@ -67,16 +67,21 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
             <div className="flex flex-1 items-center">{right.map((i) => <Tab key={i.href} item={i} />)}</div>
           </nav>
 
-          {/* Raised centre menu button */}
-          <motion.button
-            onClick={() => setOpen(true)}
-            whileTap={{ scale: 0.9 }}
-            aria-label={t('dashboard.nav.more') || 'Menu'}
-            className="absolute left-1/2 -translate-x-1/2 -top-4 h-14 w-14 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-[0_8px_20px_-4px_rgba(37,99,235,0.55)] ring-4 ring-white dark:ring-gray-950 flex items-center justify-center cursor-pointer"
-          >
-            <span className="absolute inset-0 rounded-full bg-secondary-400/30 blur-md -z-10" aria-hidden />
-            <GridGlyph open={open} />
-          </motion.button>
+          {/* Raised centre menu button. Centring lives on this WRAPPER (CSS
+              -translate-x-1/2). The button itself only does a whileTap scale —
+              keeping framer's transform off the element that's centred, so the
+              press no longer shifts it right / overlaps the tabs. */}
+          <div className="absolute left-1/2 -translate-x-1/2 -top-4">
+            <motion.button
+              onClick={() => setOpen(true)}
+              whileTap={{ scale: 0.9 }}
+              aria-label={t('dashboard.nav.more') || 'Menu'}
+              className="relative h-14 w-14 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-[0_8px_20px_-4px_rgba(37,99,235,0.55)] ring-4 ring-white dark:ring-gray-950 flex items-center justify-center cursor-pointer"
+            >
+              <span className="absolute inset-0 rounded-full bg-secondary-400/30 blur-md -z-10" aria-hidden />
+              <GridGlyph open={open} />
+            </motion.button>
+          </div>
         </div>
       </div>
 
