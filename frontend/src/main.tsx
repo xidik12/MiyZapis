@@ -194,8 +194,30 @@ if (environment.DEBUG) {
 }
 
 // Service worker is registered automatically by vite-plugin-pwa via registerSW.js
-// (injected into index.html at build time). No manual registration needed here.
-// The PWA service worker (sw.js) handles both precaching and offline support.
+// (injected into index.html at build time). The SW uses skipWaiting + clientsClaim,
+// so a new build's SW activates and claims the page immediately after a deploy.
+// BUT the already-open tab keeps running the OLD cached JS until it reloads — which
+// is why fresh deploys (e.g. nav changes) can appear "stuck" on the previous version.
+// Reload once when a new SW takes control so the page picks up the fresh bundle.
+if ('serviceWorker' in navigator) {
+  // Whether a SW was already controlling this page when it loaded. A controllerchange
+  // when one ALREADY existed = a real update → reload; the first-ever install =
+  // initial claim → don't reload (avoids a pointless first-visit refresh).
+  const hadController = !!navigator.serviceWorker.controller;
+  let swReloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swReloading || !hadController) return;
+    swReloading = true;
+    window.location.reload();
+  });
+  // Proactively check for a newer SW on load + when the tab regains focus.
+  const checkForUpdate = () =>
+    navigator.serviceWorker.getRegistration().then((r) => r?.update()).catch(() => {});
+  checkForUpdate();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
+}
 
 // Initialize the application
 initializeApp();
