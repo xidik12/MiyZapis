@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useAppDispatch } from '@/hooks/redux';
+import { logout } from '@/store/slices/authSlice';
+import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon } from '@/components/icons';
 
 type IconType = React.ComponentType<{ className?: string; active?: boolean }>;
 export interface TabItem { nameKey: string; fallback: string; href: string; icon: IconType; }
@@ -26,7 +31,16 @@ const isActivePath = (pathname: string, href: string) =>
 export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
   const location = useLocation();
   const { t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const { currency, setCurrency } = useCurrency();
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
+
+  const currencies: { value: string; label: string }[] = [
+    { value: 'UAH', label: '₴ UAH' },
+    { value: 'USD', label: '$ USD' },
+    { value: 'EUR', label: '€ EUR' },
+  ];
 
   const left = primary.slice(0, 2);
   const right = primary.slice(2, 4);
@@ -147,6 +161,61 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                     </motion.div>
                   </div>
                 ))}
+
+                {/* Account controls — on mobile these live in the sheet since there's no sidebar. */}
+                <div>
+                  <h3 className="px-1 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                    {t('nav.section.account') || 'Account'}
+                  </h3>
+                  <div className="space-y-2">
+                    {/* Theme toggle */}
+                    <button
+                      onClick={toggleTheme}
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98] transition-colors"
+                    >
+                      <span className="shrink-0 grid place-items-center h-9 w-9 rounded-xl bg-white dark:bg-gray-700/60 text-gray-500 dark:text-gray-300">
+                        {theme === 'dark'
+                          ? <SunIcon className="w-[18px] h-[18px]" />
+                          : <MoonIcon className="w-[18px] h-[18px]" />}
+                      </span>
+                      <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                        {theme === 'dark'
+                          ? (t('customer.settings.lightTheme') || 'Light')
+                          : (t('customer.settings.darkTheme') || 'Dark')}
+                      </span>
+                    </button>
+
+                    {/* Currency */}
+                    <div className="flex items-center gap-2 p-3 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-800/60">
+                      {currencies.map((c) => (
+                        <button
+                          key={c.value}
+                          onClick={() => setCurrency(c.value as 'UAH' | 'USD' | 'EUR')}
+                          className={`flex-1 px-2 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                            currency === c.value
+                              ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/60'
+                          }`}
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => { setOpen(false); dispatch(logout()); }}
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-error-100 dark:border-error-500/20 bg-error-50 dark:bg-error-500/10 hover:bg-error-100 dark:hover:bg-error-500/15 active:scale-[0.98] transition-colors"
+                    >
+                      <span className="shrink-0 grid place-items-center h-9 w-9 rounded-xl bg-white dark:bg-error-500/20 text-error-600 dark:text-error-400">
+                        <ArrowRightOnRectangleIcon className="w-[18px] h-[18px]" />
+                      </span>
+                      <span className="text-[13px] font-medium text-error-600 dark:text-error-400">
+                        {t('auth.logout') || 'Log out'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
