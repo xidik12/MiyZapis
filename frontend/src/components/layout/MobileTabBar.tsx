@@ -37,14 +37,14 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
     return (
       <Link
         to={item.href}
-        className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full px-0.5 cursor-pointer select-none"
+        className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full cursor-pointer select-none"
       >
         {/* Fixed-size icon box — stays put regardless of label length or active state. */}
         <span className={`grid place-items-center h-6 w-6 transition-colors duration-200 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`}>
           <Icon className="w-[22px] h-[22px]" active={active} />
         </span>
         {/* Label as its own bubble under the icon. */}
-        <span className={`max-w-full truncate rounded-full px-2 py-[3px] text-[10px] font-medium leading-none transition-colors duration-200 ${
+        <span className={`max-w-full truncate rounded-full px-1.5 py-[3px] text-[9.5px] font-medium leading-none transition-colors duration-200 ${
           active
             ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300'
             : 'bg-gray-100 text-gray-500 dark:bg-white/[0.06] dark:text-gray-400'
