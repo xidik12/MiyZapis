@@ -163,10 +163,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                 ))}
 
                 {/* Account controls — on mobile these live in the sheet since there's no sidebar. */}
-                <div>
-                  <h3 className="px-1 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                    {t('nav.section.account') || 'Account'}
-                  </h3>
+                <div className="pt-4 border-t border-gray-100 dark:border-white/5">
                   <div className="space-y-2">
                     {/* Theme toggle */}
                     <button
