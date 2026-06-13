@@ -39,9 +39,10 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
         to={item.href}
         className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full cursor-pointer select-none"
       >
-        {/* Fixed-size icon box — stays put regardless of label length or active state. */}
+        {/* Fixed-size icon box. The glyph never swaps (regular variant always) so
+            it cannot shift on activation — active is shown by colour + the bubble. */}
         <span className={`grid place-items-center h-6 w-6 transition-colors duration-200 ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`}>
-          <Icon className="w-[22px] h-[22px]" active={active} />
+          <Icon className="w-[22px] h-[22px]" />
         </span>
         {/* Label as its own bubble under the icon. */}
         <span className={`max-w-full truncate rounded-full px-1.5 py-[3px] text-[9.5px] font-medium leading-none transition-colors duration-200 ${
