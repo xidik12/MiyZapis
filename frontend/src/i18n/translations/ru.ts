@@ -763,6 +763,7 @@ const ru: Record<string, string> = {
   'dashboard.nav.referrals': 'Рефералы',
   'dashboard.reviews': 'Отзывы',
   'dashboard.nav.messages': 'Сообщения',
+  'dashboard.nav.accounting': 'Бухгалтерия',
   'dashboard.nav.settings': 'Настройки',
   'dashboard.nav.favorites': 'Избранное',
   'dashboard.nav.payments': 'Платежи',

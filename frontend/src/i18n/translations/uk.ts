@@ -763,6 +763,7 @@ const uk: Record<string, string> = {
   'dashboard.nav.referrals': 'Реферали',
   'dashboard.reviews': 'Відгуки',
   'dashboard.nav.messages': 'Повідомлення',
+  'dashboard.nav.accounting': 'Бухгалтерія',
   'dashboard.nav.settings': 'Налаштування',
   'dashboard.nav.favorites': 'Обране',
   'dashboard.nav.payments': 'Платежі',

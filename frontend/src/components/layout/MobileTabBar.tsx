@@ -37,7 +37,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
     return (
       <Link
         to={item.href}
-        className="relative flex flex-1 flex-col items-center justify-center gap-0.5 h-full cursor-pointer"
+        className="relative flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 h-full px-0.5 cursor-pointer"
       >
         {active && (
           <motion.span
@@ -53,7 +53,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
         >
           <Icon className="w-[22px] h-[22px]" active={active} />
         </motion.span>
-        <span className={`relative z-10 text-[10px] font-medium leading-none ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`}>
+        <span className={`relative z-10 block w-full truncate text-center text-[10px] font-medium leading-none ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`}>
           {t(item.nameKey) || item.fallback}
         </span>
       </Link>
