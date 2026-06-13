@@ -29,26 +29,26 @@ const SOURCE_META: Record<
 > = {
   DISCOVERY: {
     icon: GlobeAltIcon,
-    accent: 'text-sky-600 dark:text-sky-400',
-    iconBg: 'bg-sky-100 dark:bg-sky-900/30',
+    accent: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/30',
     key: 'promote.discovery',
   },
   EMBED: {
     icon: CodeBracketIcon,
-    accent: 'text-amber-600 dark:text-amber-400',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+    accent: 'text-secondary-600 dark:text-secondary-400',
+    iconBg: 'bg-secondary-100 dark:bg-secondary-900/30',
     key: 'promote.embed',
   },
   DIRECT: {
     icon: LinkIcon,
-    accent: 'text-emerald-600 dark:text-emerald-400',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    accent: 'text-gray-600 dark:text-gray-400',
+    iconBg: 'bg-gray-100 dark:bg-gray-700',
     key: 'promote.direct',
   },
   MARKETPLACE: {
     icon: UsersIcon,
-    accent: 'text-violet-600 dark:text-violet-400',
-    iconBg: 'bg-violet-100 dark:bg-violet-900/30',
+    accent: 'text-success-600 dark:text-success-400',
+    iconBg: 'bg-success-100 dark:bg-success-900/30',
     key: 'promote.marketplace',
   },
 };
@@ -125,8 +125,8 @@ const Promote: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="p-2.5 rounded-xl bg-sky-100 dark:bg-sky-900/30">
-          <RocketLaunchIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+        <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+          <RocketLaunchIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -241,8 +241,8 @@ const Promote: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-sky-100 dark:bg-sky-900/30">
-                <UsersIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+                <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -256,8 +256,8 @@ const Promote: React.FC = () => {
           </div>
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                <UserPlusIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2.5 rounded-xl bg-success-100 dark:bg-success-900/30">
+                <UserPlusIcon className="w-5 h-5 text-success-600 dark:text-success-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -300,7 +300,7 @@ const Promote: React.FC = () => {
                     <span className="text-right text-sm text-gray-700 dark:text-gray-300">
                       {stats?.bySource?.[src] ?? 0}
                     </span>
-                    <span className="text-right text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-right text-sm font-semibold text-success-600 dark:text-success-400">
                       {stats?.newClientsBySource?.[src] ?? 0}
                     </span>
                   </div>

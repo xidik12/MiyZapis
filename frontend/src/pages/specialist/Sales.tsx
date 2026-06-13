@@ -277,7 +277,7 @@ const SpecialistSales: React.FC = () => {
 
   const statusBadgeClass = (status: string): string => {
     if (status === 'ACTIVE') return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
-    if (status === 'REDEEMED' || status === 'USED') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+    if (status === 'REDEEMED' || status === 'USED') return 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400';
     if (status === 'CANCELLED') return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
     return 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
   };
@@ -627,8 +627,8 @@ const SpecialistSales: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                  <TicketIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                  <TicketIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">

@@ -26,8 +26,8 @@ const TYPE_META: Record<
 > = {
   WINBACK: {
     icon: SparklesIcon,
-    accent: 'text-sky-600 dark:text-sky-400',
-    iconBg: 'bg-sky-100 dark:bg-sky-900/30',
+    accent: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/30',
   },
   REBOOKING: {
     icon: ArrowPathIcon,
@@ -63,11 +63,11 @@ const Toggle: React.FC<{
     aria-label={label}
     disabled={disabled}
     onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
       disabled
         ? 'cursor-not-allowed bg-gray-200 dark:bg-gray-700'
         : checked
-        ? 'bg-sky-500'
+        ? 'bg-primary-500'
         : 'bg-gray-300 dark:bg-gray-600'
     }`}
   >
@@ -190,7 +190,7 @@ const Marketing: React.FC = () => {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <SparklesIcon className="h-7 w-7 text-sky-500" />
+              <SparklesIcon className="h-7 w-7 text-primary-500" />
               {t('marketing.title')}
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">{t('marketing.subtitle')}</p>
@@ -199,7 +199,7 @@ const Marketing: React.FC = () => {
             type="button"
             onClick={runNow}
             disabled={running}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
           >
             <ArrowPathIcon className={`h-5 w-5 ${running ? 'animate-spin' : ''}`} />
             {running ? t('marketing.running') : t('marketing.runNow')}
@@ -308,7 +308,7 @@ const Marketing: React.FC = () => {
                               const v = clampDays(e.target.value);
                               if (v !== automation?.lapsedDays) patch(type, { lapsedDays: v });
                             }}
-                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                           />
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             {t('marketing.winback.lapsedHint')}
@@ -329,7 +329,7 @@ const Marketing: React.FC = () => {
                               const v = clampDays(e.target.value);
                               if (v !== automation?.rebookDays) patch(type, { rebookDays: v });
                             }}
-                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                           />
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             {t('marketing.rebooking.rebookHint')}
@@ -352,8 +352,8 @@ const Marketing: React.FC = () => {
                                 onClick={() => !active && patch(type, { channel: ch })}
                                 className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
                                   active
-                                    ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-500 text-sky-700 dark:text-sky-300'
-                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-sky-400'
+                                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-primary-400'
                                 }`}
                               >
                                 {ch === 'TELEGRAM' && <ChatBubbleLeftRightIcon className="h-4 w-4" />}
@@ -386,7 +386,7 @@ const Marketing: React.FC = () => {
                             patch(type, { messageTemplate: next.length > 0 ? next : null });
                           }
                         }}
-                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 resize-y"
+                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-y"
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         {t('marketing.templateHint')}

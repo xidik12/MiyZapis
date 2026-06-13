@@ -44,7 +44,7 @@ const num = (v: number | string | null | undefined): number => {
 // ---------- Status badge styling ----------
 const STATUS_BADGE: Record<PayrollStatus, string> = {
   DRAFT: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
-  APPROVED: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
+  APPROVED: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400',
   PAID: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
 };
 
@@ -397,8 +397,8 @@ const SpecialistPayroll: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-                  <ClockIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                  <ClockIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -828,7 +828,7 @@ const SpecialistPayroll: React.FC = () => {
                                     onClick={() => handleApprove(rec)}
                                     disabled={isBusy}
                                     aria-label={t('payroll.approve') || 'Approve'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-50"
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
                                   >
                                     <CheckCircleIcon className="h-4 w-4" />
                                   </button>

@@ -46,7 +46,7 @@ const num = (v: number | string | null | undefined): number => {
 const STATUS_BADGE: Record<POStatus, string> = {
   DRAFT: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
   ORDERED: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-  PARTIAL: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
+  PARTIAL: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400',
   RECEIVED: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
   CANCELLED: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
 };
@@ -465,8 +465,8 @@ const SpecialistPurchasing: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-                  <ClipboardDocumentListIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                  <ClipboardDocumentListIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">

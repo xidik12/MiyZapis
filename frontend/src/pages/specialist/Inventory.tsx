@@ -337,8 +337,8 @@ const SpecialistInventory: React.FC = () => {
             {/* Total products */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                  <ArchiveBoxIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                  <ArchiveBoxIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">

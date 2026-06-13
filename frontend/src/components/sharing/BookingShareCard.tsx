@@ -117,7 +117,7 @@ export const BookingShareCard: React.FC<BookingShareCardProps> = ({
         openShare(
           `https://t.me/share/url?url=${encodeURIComponent(bookingUrl)}&text=${encodeURIComponent(shareText)}`,
         ),
-      classes: 'bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50',
+      classes: 'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50',
     },
     {
       key: 'whatsapp',
@@ -132,7 +132,7 @@ export const BookingShareCard: React.FC<BookingShareCardProps> = ({
       onClick: () =>
         openShare(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(bookingUrl)}`),
       classes:
-        'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50',
+        'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50',
     },
     {
       key: 'instagram',

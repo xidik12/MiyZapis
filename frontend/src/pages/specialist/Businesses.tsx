@@ -606,7 +606,7 @@ const ActionBtn: React.FC<{ onClick: () => void; children: React.ReactNode }> = 
 
 const ManagedBadge: React.FC<{ managed: boolean }> = ({ managed }) => {
   const { t } = useLanguage();
-  const cls = managed ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+  const cls = managed ? 'bg-amber-100 text-amber-700' : 'bg-success-100 text-success-700';
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cls}`}>{managed ? t('businesses.staff.managed') : t('businesses.staff.invited')}</span>;
 };
 
@@ -823,7 +823,7 @@ const Stat: React.FC<{ label: string; value: string; hint?: string }> = ({ label
 );
 
 const RoleBadge: React.FC<{ role: BusinessRole }> = ({ role }) => {
-  const color = role === 'OWNER' ? 'bg-indigo-100 text-indigo-700' : role === 'MANAGER' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700';
+  const color = role === 'OWNER' ? 'bg-primary-100 text-primary-700' : role === 'MANAGER' ? 'bg-secondary-100 text-secondary-700' : 'bg-gray-100 text-gray-700';
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>{role}</span>;
 };
 
