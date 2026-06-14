@@ -389,8 +389,8 @@ const SpecialistInventory: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <div className="flex-1 min-w-0">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('inventory.search') || 'Search'}
               </label>
@@ -401,18 +401,18 @@ const SpecialistInventory: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('inventory.searchPlaceholder') || 'Search by name or SKU...'}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  className="w-full min-w-0 pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('inventory.type') || 'Type'}
               </label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as ProductType | '')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                className="w-full min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('inventory.allTypes') || 'All Types'}</option>
                 {PRODUCT_TYPES.map((type) => (
@@ -420,24 +420,26 @@ const SpecialistInventory: React.FC = () => {
                 ))}
               </select>
             </div>
-            <label className="flex items-center gap-2 cursor-pointer py-2">
-              <input
-                type="checkbox"
-                checked={filterLowStock}
-                onChange={(e) => setFilterLowStock(e.target.checked)}
-                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                {t('inventory.lowStockOnly') || 'Low stock only'}
-              </span>
-            </label>
-            <button
-              onClick={clearFilters}
-              className="w-full sm:w-auto px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
-            >
-              <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
-              {t('inventory.clearFilters') || 'Clear'}
-            </button>
+            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2">
+              <label className="flex items-center gap-2 cursor-pointer py-2 sm:py-0">
+                <input
+                  type="checkbox"
+                  checked={filterLowStock}
+                  onChange={(e) => setFilterLowStock(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 flex-shrink-0"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  {t('inventory.lowStockOnly') || 'Low stock only'}
+                </span>
+              </label>
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
+                {t('inventory.clearFilters') || 'Clear'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -466,103 +468,211 @@ const SpecialistInventory: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    <th scope="col" className="px-6 py-3 font-medium">{t('inventory.name') || 'Name'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium">{t('inventory.type') || 'Type'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium">{t('inventory.unit') || 'Unit'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.stockQty') || 'Stock'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.costPrice') || 'Cost'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.salePrice') || 'Sale'}</th>
-                    <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {products.map((product) => {
-                    const low = isLowStock(product);
-                    const productCurrency = asCurrency(product.currency);
-                    return (
-                      <tr
-                        key={product.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="min-w-0">
-                            <p className="font-medium text-gray-900 dark:text-white truncate">
-                              {product.name}
-                            </p>
-                            {product.sku && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {t('inventory.sku') || 'SKU'}: {product.sku}
+            <>
+              {/* Desktop table — hidden on mobile */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th scope="col" className="px-6 py-3 font-medium">{t('inventory.name') || 'Name'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium">{t('inventory.type') || 'Type'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium">{t('inventory.unit') || 'Unit'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.stockQty') || 'Stock'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.costPrice') || 'Cost'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium text-right">{t('inventory.salePrice') || 'Sale'}</th>
+                      <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {products.map((product) => {
+                      const low = isLowStock(product);
+                      const productCurrency = asCurrency(product.currency);
+                      return (
+                        <tr
+                          key={product.id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 dark:text-white truncate">
+                                {product.name}
                               </p>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                            {getTypeLabel(product.type)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                          {product.unit}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {num(product.stockQty)}
-                          </span>
-                          {low && (
-                            <span className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
-                              <ExclamationTriangleIcon className="h-3 w-3" />
-                              {t('inventory.lowStock') || 'Low'}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
-                          {formatPrice(num(product.costPrice), productCurrency)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
-                          {product.salePrice != null
-                            ? formatPrice(num(product.salePrice), productCurrency)
-                            : <span className="text-gray-400 dark:text-gray-600">—</span>}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              onClick={() => handleOpenAdjust(product)}
-                              aria-label={t('inventory.adjustStock') || 'Adjust stock'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                            >
-                              <ArrowsUpDownIcon className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEditProduct(product)}
-                              aria-label={t('inventory.editProduct') || 'Edit product'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(product.id)}
-                              disabled={deleting === product.id}
-                              aria-label={t('common.delete') || 'Delete'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                            >
-                              {deleting === product.id ? (
-                                <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <TrashIcon className="h-4 w-4" />
+                              {product.sku && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  {t('inventory.sku') || 'SKU'}: {product.sku}
+                                </p>
                               )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                              {getTypeLabel(product.type)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                            {product.unit}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {num(product.stockQty)}
+                            </span>
+                            {low && (
+                              <span className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                                <ExclamationTriangleIcon className="h-3 w-3" />
+                                {t('inventory.lowStock') || 'Low'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
+                            {formatPrice(num(product.costPrice), productCurrency)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
+                            {product.salePrice != null
+                              ? formatPrice(num(product.salePrice), productCurrency)
+                              : <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenAdjust(product)}
+                                aria-label={t('inventory.adjustStock') || 'Adjust stock'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                              >
+                                <ArrowsUpDownIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEditProduct(product)}
+                                aria-label={t('inventory.editProduct') || 'Edit product'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                disabled={deleting === product.id}
+                                aria-label={t('common.delete') || 'Delete'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              >
+                                {deleting === product.id ? (
+                                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <TrashIcon className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile card list — hidden on lg and up */}
+              <div className="lg:hidden space-y-3 p-4">
+                {products.map((product) => {
+                  const low = isLowStock(product);
+                  const productCurrency = asCurrency(product.currency);
+                  return (
+                    <div
+                      key={product.id}
+                      className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm"
+                    >
+                      {/* Name + type badge */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 dark:text-white break-words">
+                            {product.name}
+                          </p>
+                          {product.sku && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 break-words mt-0.5">
+                              {t('inventory.sku') || 'SKU'}: {product.sku}
+                            </p>
+                          )}
+                        </div>
+                        <span className="flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                          {getTypeLabel(product.type)}
+                        </span>
+                      </div>
+
+                      {/* Detail rows */}
+                      <dl className="mt-3 space-y-2 text-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                            {t('inventory.unit') || 'Unit'}
+                          </dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                            {product.unit}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                            {t('inventory.stockQty') || 'Stock'}
+                          </dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums flex items-center gap-2 flex-wrap justify-end">
+                            <span className="font-medium">{num(product.stockQty)}</span>
+                            {low && (
+                              <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                                <ExclamationTriangleIcon className="h-3 w-3" />
+                                {t('inventory.lowStock') || 'Low'}
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                            {t('inventory.costPrice') || 'Cost'}
+                          </dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums break-words">
+                            {formatPrice(num(product.costPrice), productCurrency)}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                            {t('inventory.salePrice') || 'Sale'}
+                          </dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums break-words">
+                            {product.salePrice != null
+                              ? formatPrice(num(product.salePrice), productCurrency)
+                              : <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </dd>
+                        </div>
+                      </dl>
+
+                      {/* Action buttons */}
+                      <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <button
+                          onClick={() => handleOpenAdjust(product)}
+                          aria-label={t('inventory.adjustStock') || 'Adjust stock'}
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                        >
+                          <ArrowsUpDownIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          aria-label={t('inventory.editProduct') || 'Edit product'}
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          disabled={deleting === product.id}
+                          aria-label={t('common.delete') || 'Delete'}
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                        >
+                          {deleting === product.id ? (
+                            <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrashIcon className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 

@@ -711,72 +711,129 @@ const SpecialistSales: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('sales.code') || 'Code'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.balance') || 'Balance'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.recipient') || 'Recipient'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.expires') || 'Expires'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {giftCards.map((card) => {
-                        const cur = asCurrency(card.currency);
-                        return (
-                          <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                            <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                              {card.code}
-                            </td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white font-medium">
-                              {formatPrice(num(card.balance), cur)}
-                              <span className="block text-xs text-gray-400 dark:text-gray-500">
-                                / {formatPrice(num(card.initialAmount), cur)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(card.status)}`}>
-                                {giftCardStatusLabel(card.status)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                              {card.recipientEmail || <span className="text-gray-400 dark:text-gray-600">—</span>}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                              {fmtDate(card.expiresAt)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                {card.status === 'ACTIVE' && (
-                                  <>
-                                    <button
-                                      onClick={() => handleRedeem(card)}
-                                      disabled={acting === card.id}
-                                      className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
-                                    >
-                                      {t('sales.redeem') || 'Redeem'}
-                                    </button>
-                                    <button
-                                      onClick={() => handleCancelGiftCard(card)}
-                                      disabled={acting === card.id}
-                                      aria-label={t('sales.cancel') || 'Cancel'}
-                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                    >
-                                      <NoSymbolIcon className="h-4 w-4" />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('sales.code') || 'Code'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.balance') || 'Balance'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.recipient') || 'Recipient'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.expires') || 'Expires'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {giftCards.map((card) => {
+                          const cur = asCurrency(card.currency);
+                          return (
+                            <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                              <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                {card.code}
+                              </td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white font-medium">
+                                {formatPrice(num(card.balance), cur)}
+                                <span className="block text-xs text-gray-400 dark:text-gray-500">
+                                  / {formatPrice(num(card.initialAmount), cur)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(card.status)}`}>
+                                  {giftCardStatusLabel(card.status)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                {card.recipientEmail || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                {fmtDate(card.expiresAt)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  {card.status === 'ACTIVE' && (
+                                    <>
+                                      <button
+                                        onClick={() => handleRedeem(card)}
+                                        disabled={acting === card.id}
+                                        className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                      >
+                                        {t('sales.redeem') || 'Redeem'}
+                                      </button>
+                                      <button
+                                        onClick={() => handleCancelGiftCard(card)}
+                                        disabled={acting === card.id}
+                                        aria-label={t('sales.cancel') || 'Cancel'}
+                                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                      >
+                                        <NoSymbolIcon className="h-4 w-4" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {giftCards.map((card) => {
+                      const cur = asCurrency(card.currency);
+                      return (
+                        <div key={card.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="min-w-0 flex-1 font-semibold font-mono text-gray-900 dark:text-white break-words">{card.code}</p>
+                            <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(card.status)}`}>
+                              {giftCardStatusLabel(card.status)}
+                            </span>
+                          </div>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.balance') || 'Balance'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words tabular-nums">
+                                {formatPrice(num(card.balance), cur)}
+                                <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">/ {formatPrice(num(card.initialAmount), cur)}</span>
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.recipient') || 'Recipient'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                                {card.recipientEmail || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.expires') || 'Expires'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{fmtDate(card.expiresAt)}</dd>
+                            </div>
+                          </dl>
+                          {card.status === 'ACTIVE' && (
+                            <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                              <button
+                                onClick={() => handleRedeem(card)}
+                                disabled={acting === card.id}
+                                className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                {t('sales.redeem') || 'Redeem'}
+                              </button>
+                              <button
+                                onClick={() => handleCancelGiftCard(card)}
+                                disabled={acting === card.id}
+                                aria-label={t('sales.cancel') || 'Cancel'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              >
+                                <NoSymbolIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -807,64 +864,126 @@ const SpecialistSales: React.FC = () => {
                   {t('sales.noPackages') || 'No packages defined yet'}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('sales.name') || 'Name'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.credits') || 'Credits'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.price') || 'Price'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.validDays') || 'Valid days'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.sold') || 'Sold'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {packages.map((pkg) => {
-                        const cur = asCurrency(pkg.currency);
-                        return (
-                          <tr key={pkg.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                            <td className="px-6 py-4">
-                              <p className="font-medium text-gray-900 dark:text-white">{pkg.name}</p>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('sales.name') || 'Name'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.credits') || 'Credits'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.price') || 'Price'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.validDays') || 'Valid days'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.sold') || 'Sold'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {packages.map((pkg) => {
+                          const cur = asCurrency(pkg.currency);
+                          return (
+                            <tr key={pkg.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                              <td className="px-6 py-4">
+                                <p className="font-medium text-gray-900 dark:text-white">{pkg.name}</p>
+                                {pkg.description && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{pkg.description}</p>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white">{pkg.credits}</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{formatPrice(num(pkg.price), cur)}</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{pkg.validDays}</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{pkg._count?.purchases ?? 0}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    onClick={() => { setGrantPackage(pkg); setGrantEmail(''); }}
+                                    className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                                  >
+                                    {t('sales.grant') || 'Grant'}
+                                  </button>
+                                  <button
+                                    onClick={() => openEditPackage(pkg)}
+                                    aria-label={t('common.edit') || 'Edit'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                  >
+                                    <PencilIcon className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePackage(pkg.id)}
+                                    disabled={acting === pkg.id}
+                                    aria-label={t('common.delete') || 'Delete'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                  >
+                                    {acting === pkg.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {packages.map((pkg) => {
+                      const cur = asCurrency(pkg.currency);
+                      return (
+                        <div key={pkg.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-gray-900 dark:text-white break-words">{pkg.name}</p>
                               {pkg.description && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{pkg.description}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 break-words mt-0.5">{pkg.description}</p>
                               )}
-                            </td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white">{pkg.credits}</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{formatPrice(num(pkg.price), cur)}</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{pkg.validDays}</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{pkg._count?.purchases ?? 0}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => { setGrantPackage(pkg); setGrantEmail(''); }}
-                                  className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                                >
-                                  {t('sales.grant') || 'Grant'}
-                                </button>
-                                <button
-                                  onClick={() => openEditPackage(pkg)}
-                                  aria-label={t('common.edit') || 'Edit'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                                >
-                                  <PencilIcon className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeletePackage(pkg.id)}
-                                  disabled={acting === pkg.id}
-                                  aria-label={t('common.delete') || 'Delete'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                >
-                                  {acting === pkg.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            </div>
+                          </div>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.credits') || 'Credits'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{pkg.credits}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.price') || 'Price'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(pkg.price), cur)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.validDays') || 'Valid days'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{pkg.validDays}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.sold') || 'Sold'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{pkg._count?.purchases ?? 0}</dd>
+                            </div>
+                          </dl>
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => { setGrantPackage(pkg); setGrantEmail(''); }}
+                              className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                            >
+                              {t('sales.grant') || 'Grant'}
+                            </button>
+                            <button
+                              onClick={() => openEditPackage(pkg)}
+                              aria-label={t('common.edit') || 'Edit'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePackage(pkg.id)}
+                              disabled={acting === pkg.id}
+                              aria-label={t('common.delete') || 'Delete'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                            >
+                              {acting === pkg.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
 
@@ -880,44 +999,81 @@ const SpecialistSales: React.FC = () => {
                   {t('sales.noSoldPackages') || 'No packages granted to customers yet'}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('sales.package') || 'Package'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.remaining') || 'Remaining'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.expires') || 'Expires'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {customerPackages.map((cp) => (
-                        <tr key={cp.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                          <td className="px-6 py-4 text-gray-900 dark:text-white">{cp.package?.name || cp.packageId}</td>
-                          <td className="px-6 py-4 text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">{cp.remainingCredits}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(cp.status)}`}>
-                              {packageStatusLabel(cp.status)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(cp.expiresAt)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {cp.status === 'ACTIVE' && cp.remainingCredits > 0 && (
-                              <button
-                                onClick={() => handleUseCredit(cp)}
-                                disabled={acting === cp.id}
-                                className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
-                              >
-                                {t('sales.useCredit') || 'Use credit'}
-                              </button>
-                            )}
-                          </td>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('sales.package') || 'Package'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.remaining') || 'Remaining'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.expires') || 'Expires'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {customerPackages.map((cp) => (
+                          <tr key={cp.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                            <td className="px-6 py-4 text-gray-900 dark:text-white">{cp.package?.name || cp.packageId}</td>
+                            <td className="px-6 py-4 text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">{cp.remainingCredits}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(cp.status)}`}>
+                                {packageStatusLabel(cp.status)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(cp.expiresAt)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              {cp.status === 'ACTIVE' && cp.remainingCredits > 0 && (
+                                <button
+                                  onClick={() => handleUseCredit(cp)}
+                                  disabled={acting === cp.id}
+                                  className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {t('sales.useCredit') || 'Use credit'}
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {customerPackages.map((cp) => (
+                      <div key={cp.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white break-words">{cp.package?.name || cp.packageId}</p>
+                          <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(cp.status)}`}>
+                            {packageStatusLabel(cp.status)}
+                          </span>
+                        </div>
+                        <dl className="mt-3 space-y-2 text-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.remaining') || 'Remaining'}</dt>
+                            <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{cp.remainingCredits}</dd>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.expires') || 'Expires'}</dt>
+                            <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{fmtDate(cp.expiresAt)}</dd>
+                          </div>
+                        </dl>
+                        {cp.status === 'ACTIVE' && cp.remainingCredits > 0 && (
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => handleUseCredit(cp)}
+                              disabled={acting === cp.id}
+                              className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {t('sales.useCredit') || 'Use credit'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -948,64 +1104,126 @@ const SpecialistSales: React.FC = () => {
                   {t('sales.noPlans') || 'No membership plans defined yet'}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('sales.name') || 'Name'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.price') || 'Price'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.billingPeriod') || 'Billing'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.discount') || 'Discount'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.members') || 'Members'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {plans.map((plan) => {
-                        const cur = asCurrency(plan.currency);
-                        return (
-                          <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                            <td className="px-6 py-4">
-                              <p className="font-medium text-gray-900 dark:text-white">{plan.name}</p>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('sales.name') || 'Name'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.price') || 'Price'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.billingPeriod') || 'Billing'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.discount') || 'Discount'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.members') || 'Members'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {plans.map((plan) => {
+                          const cur = asCurrency(plan.currency);
+                          return (
+                            <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                              <td className="px-6 py-4">
+                                <p className="font-medium text-gray-900 dark:text-white">{plan.name}</p>
+                                {plan.description && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{plan.description}</p>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{formatPrice(num(plan.price), cur)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{billingPeriodLabel(plan.billingPeriod)}</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{num(plan.discountPercent)}%</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{plan._count?.members ?? 0}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    onClick={() => { setEnrollPlan(plan); setEnrollEmail(''); }}
+                                    className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                                  >
+                                    {t('sales.enroll') || 'Enroll'}
+                                  </button>
+                                  <button
+                                    onClick={() => openEditPlan(plan)}
+                                    aria-label={t('common.edit') || 'Edit'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                  >
+                                    <PencilIcon className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePlan(plan.id)}
+                                    disabled={acting === plan.id}
+                                    aria-label={t('common.delete') || 'Delete'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                  >
+                                    {acting === plan.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {plans.map((plan) => {
+                      const cur = asCurrency(plan.currency);
+                      return (
+                        <div key={plan.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-gray-900 dark:text-white break-words">{plan.name}</p>
                               {plan.description && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{plan.description}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 break-words mt-0.5">{plan.description}</p>
                               )}
-                            </td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{formatPrice(num(plan.price), cur)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{billingPeriodLabel(plan.billingPeriod)}</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{num(plan.discountPercent)}%</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300">{plan._count?.members ?? 0}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => { setEnrollPlan(plan); setEnrollEmail(''); }}
-                                  className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                                >
-                                  {t('sales.enroll') || 'Enroll'}
-                                </button>
-                                <button
-                                  onClick={() => openEditPlan(plan)}
-                                  aria-label={t('common.edit') || 'Edit'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                                >
-                                  <PencilIcon className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeletePlan(plan.id)}
-                                  disabled={acting === plan.id}
-                                  aria-label={t('common.delete') || 'Delete'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                >
-                                  {acting === plan.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            </div>
+                          </div>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.price') || 'Price'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(plan.price), cur)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.billingPeriod') || 'Billing'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">{billingPeriodLabel(plan.billingPeriod)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.discount') || 'Discount'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{num(plan.discountPercent)}%</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.members') || 'Members'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{plan._count?.members ?? 0}</dd>
+                            </div>
+                          </dl>
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => { setEnrollPlan(plan); setEnrollEmail(''); }}
+                              className="px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                            >
+                              {t('sales.enroll') || 'Enroll'}
+                            </button>
+                            <button
+                              onClick={() => openEditPlan(plan)}
+                              aria-label={t('common.edit') || 'Edit'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePlan(plan.id)}
+                              disabled={acting === plan.id}
+                              aria-label={t('common.delete') || 'Delete'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                            >
+                              {acting === plan.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
 
@@ -1021,44 +1239,81 @@ const SpecialistSales: React.FC = () => {
                   {t('sales.noMembers') || 'No members enrolled yet'}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('sales.plan') || 'Plan'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.started') || 'Started'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.renews') || 'Renews'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {members.map((m) => (
-                        <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                          <td className="px-6 py-4 text-gray-900 dark:text-white">{m.plan?.name || m.planId}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(m.status)}`}>
-                              {membershipStatusLabel(m.status)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(m.startedAt)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(m.currentPeriodEnd)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {m.status === 'ACTIVE' && (
-                              <button
-                                onClick={() => handleCancelMembership(m)}
-                                disabled={acting === m.id}
-                                className="px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                              >
-                                {t('sales.cancel') || 'Cancel'}
-                              </button>
-                            )}
-                          </td>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('sales.plan') || 'Plan'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.started') || 'Started'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.renews') || 'Renews'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {members.map((m) => (
+                          <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                            <td className="px-6 py-4 text-gray-900 dark:text-white">{m.plan?.name || m.planId}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(m.status)}`}>
+                                {membershipStatusLabel(m.status)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(m.startedAt)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{fmtDate(m.currentPeriodEnd)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              {m.status === 'ACTIVE' && (
+                                <button
+                                  onClick={() => handleCancelMembership(m)}
+                                  disabled={acting === m.id}
+                                  className="px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {t('sales.cancel') || 'Cancel'}
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {members.map((m) => (
+                      <div key={m.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white break-words">{m.plan?.name || m.planId}</p>
+                          <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(m.status)}`}>
+                            {membershipStatusLabel(m.status)}
+                          </span>
+                        </div>
+                        <dl className="mt-3 space-y-2 text-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.started') || 'Started'}</dt>
+                            <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{fmtDate(m.startedAt)}</dd>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.renews') || 'Renews'}</dt>
+                            <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{fmtDate(m.currentPeriodEnd)}</dd>
+                          </div>
+                        </dl>
+                        {m.status === 'ACTIVE' && (
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => handleCancelMembership(m)}
+                              disabled={acting === m.id}
+                              className="px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {t('sales.cancel') || 'Cancel'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -1123,86 +1378,159 @@ const SpecialistSales: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th className="px-6 py-3 font-medium">{t('store.orderNumber') || 'Order #'}</th>
-                        <th className="px-6 py-3 font-medium">{t('store.customer') || 'Customer'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('store.items') || 'Items'}</th>
-                        <th className="px-6 py-3 font-medium text-right">{t('sales.total') || 'Total'}</th>
-                        <th className="px-6 py-3 font-medium">{t('store.fulfilment') || 'Fulfilment'}</th>
-                        <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
-                        <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {orders.map((order) => {
-                        const cur = asCurrency(order.currency);
-                        const itemCount = order._count?.items ?? order.items?.length ?? 0;
-                        return (
-                          <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                            <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                              {order.orderNumber}
-                              <span className="block text-xs font-sans text-gray-400 dark:text-gray-500">
-                                {fmtDate(order.createdAt)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                              {order.customerName || order.customerEmail || (
-                                <span className="text-gray-400 dark:text-gray-600">{t('store.guest') || 'Guest'}</span>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th className="px-6 py-3 font-medium">{t('store.orderNumber') || 'Order #'}</th>
+                          <th className="px-6 py-3 font-medium">{t('store.customer') || 'Customer'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('store.items') || 'Items'}</th>
+                          <th className="px-6 py-3 font-medium text-right">{t('sales.total') || 'Total'}</th>
+                          <th className="px-6 py-3 font-medium">{t('store.fulfilment') || 'Fulfilment'}</th>
+                          <th className="px-6 py-3 font-medium">{t('sales.status') || 'Status'}</th>
+                          <th className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {orders.map((order) => {
+                          const cur = asCurrency(order.currency);
+                          const itemCount = order._count?.items ?? order.items?.length ?? 0;
+                          return (
+                            <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                              <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                {order.orderNumber}
+                                <span className="block text-xs font-sans text-gray-400 dark:text-gray-500">
+                                  {fmtDate(order.createdAt)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                {order.customerName || order.customerEmail || (
+                                  <span className="text-gray-400 dark:text-gray-600">{t('store.guest') || 'Guest'}</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white">{itemCount}</td>
+                              <td className="px-6 py-4 text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                {formatPrice(num(order.total), cur)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                {fulfilmentLabel(order.fulfilment)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${orderStatusBadgeClass(order.status)}`}>
+                                  {orderStatusLabel(order.status)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  {order.status === 'PENDING' && (
+                                    <button
+                                      onClick={() => handleSetOrderStatus(order, 'PAID')}
+                                      disabled={acting === order.id}
+                                      className="px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                      {t('store.markPaid') || 'Mark paid'}
+                                    </button>
+                                  )}
+                                  {(order.status === 'PENDING' || order.status === 'PAID') && (
+                                    <button
+                                      onClick={() => handleSetOrderStatus(order, 'FULFILLED')}
+                                      disabled={acting === order.id}
+                                      className="px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                      {t('store.fulfil') || 'Fulfil'}
+                                    </button>
+                                  )}
+                                  {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
+                                    <button
+                                      onClick={() => handleSetOrderStatus(order, 'CANCELLED')}
+                                      disabled={acting === order.id}
+                                      aria-label={t('sales.cancel') || 'Cancel'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      {acting === order.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <NoSymbolIcon className="h-4 w-4" />}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {orders.map((order) => {
+                      const cur = asCurrency(order.currency);
+                      const itemCount = order._count?.items ?? order.items?.length ?? 0;
+                      return (
+                        <div key={order.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold font-mono text-gray-900 dark:text-white break-words">{order.orderNumber}</p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{fmtDate(order.createdAt)}</p>
+                            </div>
+                            <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${orderStatusBadgeClass(order.status)}`}>
+                              {orderStatusLabel(order.status)}
+                            </span>
+                          </div>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('store.customer') || 'Customer'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                                {order.customerName || order.customerEmail || (
+                                  <span className="text-gray-400 dark:text-gray-600">{t('store.guest') || 'Guest'}</span>
+                                )}
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('sales.total') || 'Total'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(order.total), cur)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('store.items') || 'Items'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{itemCount}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('store.fulfilment') || 'Fulfilment'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">{fulfilmentLabel(order.fulfilment)}</dd>
+                            </div>
+                          </dl>
+                          {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
+                            <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                              {order.status === 'PENDING' && (
+                                <button
+                                  onClick={() => handleSetOrderStatus(order, 'PAID')}
+                                  disabled={acting === order.id}
+                                  className="px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {t('store.markPaid') || 'Mark paid'}
+                                </button>
                               )}
-                            </td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap text-gray-900 dark:text-white">{itemCount}</td>
-                            <td className="px-6 py-4 text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                              {formatPrice(num(order.total), cur)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                              {fulfilmentLabel(order.fulfilment)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${orderStatusBadgeClass(order.status)}`}>
-                                {orderStatusLabel(order.status)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                {order.status === 'PENDING' && (
-                                  <button
-                                    onClick={() => handleSetOrderStatus(order, 'PAID')}
-                                    disabled={acting === order.id}
-                                    className="px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors disabled:opacity-50"
-                                  >
-                                    {t('store.markPaid') || 'Mark paid'}
-                                  </button>
-                                )}
-                                {(order.status === 'PENDING' || order.status === 'PAID') && (
-                                  <button
-                                    onClick={() => handleSetOrderStatus(order, 'FULFILLED')}
-                                    disabled={acting === order.id}
-                                    className="px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
-                                  >
-                                    {t('store.fulfil') || 'Fulfil'}
-                                  </button>
-                                )}
-                                {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
-                                  <button
-                                    onClick={() => handleSetOrderStatus(order, 'CANCELLED')}
-                                    disabled={acting === order.id}
-                                    aria-label={t('sales.cancel') || 'Cancel'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                  >
-                                    {acting === order.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <NoSymbolIcon className="h-4 w-4" />}
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                              <button
+                                onClick={() => handleSetOrderStatus(order, 'FULFILLED')}
+                                disabled={acting === order.id}
+                                className="px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                {t('store.fulfil') || 'Fulfil'}
+                              </button>
+                              <button
+                                onClick={() => handleSetOrderStatus(order, 'CANCELLED')}
+                                disabled={acting === order.id}
+                                aria-label={t('sales.cancel') || 'Cancel'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              >
+                                {acting === order.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <NoSymbolIcon className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </div>

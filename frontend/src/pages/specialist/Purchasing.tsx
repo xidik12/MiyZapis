@@ -556,103 +556,196 @@ const SpecialistPurchasing: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.poNumber') || 'PO #'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.supplier') || 'Supplier'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.status') || 'Status'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium text-right">{t('purchasing.total') || 'Total'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.date') || 'Date'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {orders.map((po) => {
-                        const poCur = asCurrency(po.currency);
-                        const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT';
-                        const canCancel = po.status !== 'RECEIVED' && po.status !== 'CANCELLED';
-                        const isBusy = busyOrder === po.id;
-                        return (
-                          <tr key={po.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
-                            <td className="px-6 py-4">
-                              <p className="font-medium text-gray-900 dark:text-white whitespace-nowrap">{po.poNumber}</p>
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.poNumber') || 'PO #'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.supplier') || 'Supplier'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.status') || 'Status'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium text-right">{t('purchasing.total') || 'Total'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.date') || 'Date'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {orders.map((po) => {
+                          const poCur = asCurrency(po.currency);
+                          const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT';
+                          const canCancel = po.status !== 'RECEIVED' && po.status !== 'CANCELLED';
+                          const isBusy = busyOrder === po.id;
+                          return (
+                            <tr key={po.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
+                              <td className="px-6 py-4">
+                                <p className="font-medium text-gray-900 dark:text-white whitespace-nowrap">{po.poNumber}</p>
+                                {po.itemCount != null && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {po.itemCount} {t('purchasing.items') || 'items'}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{supplierName(po)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[po.status]}`}>
+                                  {getStatusLabel(po.status)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
+                                {formatPrice(num(po.total), poCur)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                {new Date(po.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    onClick={() => openView(po)}
+                                    aria-label={t('purchasing.view') || 'View'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                  >
+                                    <EyeIcon className="h-4 w-4" />
+                                  </button>
+                                  {po.status === 'DRAFT' && (
+                                    <button
+                                      onClick={() => handleMarkOrdered(po)}
+                                      disabled={isBusy}
+                                      aria-label={t('purchasing.markOrdered') || 'Mark ordered'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <ClipboardDocumentListIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {canReceive && (
+                                    <button
+                                      onClick={() => openReceive(po)}
+                                      disabled={isBusy}
+                                      aria-label={t('purchasing.receive') || 'Receive'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <InboxArrowDownIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {canCancel && (
+                                    <button
+                                      onClick={() => handleCancel(po)}
+                                      disabled={isBusy}
+                                      aria-label={t('purchasing.cancel') || 'Cancel'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <NoSymbolIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {po.status === 'DRAFT' && (
+                                    <button
+                                      onClick={() => handleDeletePO(po)}
+                                      disabled={isBusy}
+                                      aria-label={t('common.delete') || 'Delete'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {orders.map((po) => {
+                      const poCur = asCurrency(po.currency);
+                      const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT';
+                      const canCancel = po.status !== 'RECEIVED' && po.status !== 'CANCELLED';
+                      const isBusy = busyOrder === po.id;
+                      return (
+                        <div key={po.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-gray-900 dark:text-white break-words">{po.poNumber}</p>
                               {po.itemCount != null && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                   {po.itemCount} {t('purchasing.items') || 'items'}
                                 </p>
                               )}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{supplierName(po)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[po.status]}`}>
-                                {getStatusLabel(po.status)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
-                              {formatPrice(num(po.total), poCur)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                              {new Date(po.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => openView(po)}
-                                  aria-label={t('purchasing.view') || 'View'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                </button>
-                                {po.status === 'DRAFT' && (
-                                  <button
-                                    onClick={() => handleMarkOrdered(po)}
-                                    disabled={isBusy}
-                                    aria-label={t('purchasing.markOrdered') || 'Mark ordered'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors disabled:opacity-50"
-                                  >
-                                    <ClipboardDocumentListIcon className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {canReceive && (
-                                  <button
-                                    onClick={() => openReceive(po)}
-                                    disabled={isBusy}
-                                    aria-label={t('purchasing.receive') || 'Receive'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
-                                  >
-                                    <InboxArrowDownIcon className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {canCancel && (
-                                  <button
-                                    onClick={() => handleCancel(po)}
-                                    disabled={isBusy}
-                                    aria-label={t('purchasing.cancel') || 'Cancel'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                  >
-                                    <NoSymbolIcon className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {po.status === 'DRAFT' && (
-                                  <button
-                                    onClick={() => handleDeletePO(po)}
-                                    disabled={isBusy}
-                                    aria-label={t('common.delete') || 'Delete'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                  >
-                                    {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            </div>
+                            <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[po.status]}`}>
+                              {getStatusLabel(po.status)}
+                            </span>
+                          </div>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.supplier') || 'Supplier'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">{supplierName(po)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.total') || 'Total'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(po.total), poCur)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.date') || 'Date'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{new Date(po.createdAt).toLocaleDateString()}</dd>
+                            </div>
+                          </dl>
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => openView(po)}
+                              aria-label={t('purchasing.view') || 'View'}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
+                            {po.status === 'DRAFT' && (
+                              <button
+                                onClick={() => handleMarkOrdered(po)}
+                                disabled={isBusy}
+                                aria-label={t('purchasing.markOrdered') || 'Mark ordered'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors disabled:opacity-50"
+                              >
+                                <ClipboardDocumentListIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                            {canReceive && (
+                              <button
+                                onClick={() => openReceive(po)}
+                                disabled={isBusy}
+                                aria-label={t('purchasing.receive') || 'Receive'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                              >
+                                <InboxArrowDownIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                            {canCancel && (
+                              <button
+                                onClick={() => handleCancel(po)}
+                                disabled={isBusy}
+                                aria-label={t('purchasing.cancel') || 'Cancel'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              >
+                                <NoSymbolIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                            {po.status === 'DRAFT' && (
+                              <button
+                                onClick={() => handleDeletePO(po)}
+                                disabled={isBusy}
+                                aria-label={t('common.delete') || 'Delete'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              >
+                                {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </>
@@ -684,64 +777,125 @@ const SpecialistPurchasing: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                      <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.name') || 'Name'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.email') || 'Email'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.phone') || 'Phone'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.taxId') || 'Tax ID'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {suppliers.map((s) => (
-                      <tr key={s.id} className={`hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top ${!s.isActive ? 'opacity-50' : ''}`}>
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
-                          {s.address && <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{s.address}</p>}
-                          {!s.isActive && (
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 mt-1">
-                              {t('purchasing.inactive') || 'Inactive'}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                          {s.email || <span className="text-gray-400 dark:text-gray-600">—</span>}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                          {s.phone || <span className="text-gray-400 dark:text-gray-600">—</span>}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                          {s.taxId || <span className="text-gray-400 dark:text-gray-600">—</span>}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              onClick={() => openEditSupplier(s)}
-                              aria-label={t('purchasing.editSupplier') || 'Edit supplier'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </button>
-                            {s.isActive && (
-                              <button
-                                onClick={() => handleDeleteSupplier(s.id)}
-                                disabled={deletingSupplier === s.id}
-                                aria-label={t('common.delete') || 'Delete'}
-                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                              >
-                                {deletingSupplier === s.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
-                              </button>
-                            )}
-                          </div>
-                        </td>
+              <>
+                {/* Desktop table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.name') || 'Name'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.email') || 'Email'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.phone') || 'Phone'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium">{t('purchasing.taxId') || 'Tax ID'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {suppliers.map((s) => (
+                        <tr key={s.id} className={`hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top ${!s.isActive ? 'opacity-50' : ''}`}>
+                          <td className="px-6 py-4">
+                            <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
+                            {s.address && <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{s.address}</p>}
+                            {!s.isActive && (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 mt-1">
+                                {t('purchasing.inactive') || 'Inactive'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                            {s.email || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                            {s.phone || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                            {s.taxId || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                onClick={() => openEditSupplier(s)}
+                                aria-label={t('purchasing.editSupplier') || 'Edit supplier'}
+                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </button>
+                              {s.isActive && (
+                                <button
+                                  onClick={() => handleDeleteSupplier(s.id)}
+                                  disabled={deletingSupplier === s.id}
+                                  aria-label={t('common.delete') || 'Delete'}
+                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                >
+                                  {deletingSupplier === s.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="lg:hidden space-y-3 p-4">
+                  {suppliers.map((s) => (
+                    <div key={s.id} className={`rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm${!s.isActive ? ' opacity-50' : ''}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 dark:text-white break-words">{s.name}</p>
+                          {s.address && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">{s.address}</p>}
+                        </div>
+                        {!s.isActive && (
+                          <span className="flex-shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                            {t('purchasing.inactive') || 'Inactive'}
+                          </span>
+                        )}
+                      </div>
+                      <dl className="mt-3 space-y-2 text-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.email') || 'Email'}</dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                            {s.email || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.phone') || 'Phone'}</dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">
+                            {s.phone || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.taxId') || 'Tax ID'}</dt>
+                          <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">
+                            {s.taxId || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <button
+                          onClick={() => openEditSupplier(s)}
+                          aria-label={t('purchasing.editSupplier') || 'Edit supplier'}
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        {s.isActive && (
+                          <button
+                            onClick={() => handleDeleteSupplier(s.id)}
+                            disabled={deletingSupplier === s.id}
+                            aria-label={t('common.delete') || 'Delete'}
+                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                          >
+                            {deletingSupplier === s.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -1077,30 +1231,60 @@ const SpecialistPurchasing: React.FC = () => {
                 {loadingView ? (
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('purchasing.loading') || 'Loading...'}</p>
                 ) : (
-                  <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-                          <th className="px-4 py-2">{t('purchasing.description') || 'Description'}</th>
-                          <th className="px-4 py-2 text-right">{t('purchasing.qty') || 'Qty'}</th>
-                          <th className="px-4 py-2 text-right">{t('purchasing.received') || 'Recv'}</th>
-                          <th className="px-4 py-2 text-right">{t('purchasing.unitCost') || 'Cost'}</th>
-                          <th className="px-4 py-2 text-right">{t('purchasing.lineTotal') || 'Total'}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {(viewPO.items || []).map((it: PurchaseOrderItem) => (
-                          <tr key={it.id}>
-                            <td className="px-4 py-2 text-gray-900 dark:text-white">{it.description}</td>
-                            <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.quantity)}</td>
-                            <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.receivedQty)}</td>
-                            <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{formatPrice(num(it.unitCost), asCurrency(viewPO.currency))}</td>
-                            <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{formatPrice(num(it.quantity) * num(it.unitCost), asCurrency(viewPO.currency))}</td>
+                  <>
+                    {/* Desktop table */}
+                    <div className="hidden lg:block overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <table className="min-w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                            <th className="px-4 py-2">{t('purchasing.description') || 'Description'}</th>
+                            <th className="px-4 py-2 text-right">{t('purchasing.qty') || 'Qty'}</th>
+                            <th className="px-4 py-2 text-right">{t('purchasing.received') || 'Recv'}</th>
+                            <th className="px-4 py-2 text-right">{t('purchasing.unitCost') || 'Cost'}</th>
+                            <th className="px-4 py-2 text-right">{t('purchasing.lineTotal') || 'Total'}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {(viewPO.items || []).map((it: PurchaseOrderItem) => (
+                            <tr key={it.id}>
+                              <td className="px-4 py-2 text-gray-900 dark:text-white">{it.description}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.quantity)}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.receivedQty)}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{formatPrice(num(it.unitCost), asCurrency(viewPO.currency))}</td>
+                              <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{formatPrice(num(it.quantity) * num(it.unitCost), asCurrency(viewPO.currency))}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile cards */}
+                    <div className="lg:hidden space-y-3">
+                      {(viewPO.items || []).map((it: PurchaseOrderItem) => (
+                        <div key={it.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <p className="min-w-0 font-semibold text-gray-900 dark:text-white break-words">{it.description}</p>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.qty') || 'Qty'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{num(it.quantity)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.received') || 'Recv'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{num(it.receivedQty)}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.unitCost') || 'Cost'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(it.unitCost), asCurrency(viewPO.currency))}</dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('purchasing.lineTotal') || 'Total'}</dt>
+                              <dd className="min-w-0 text-right font-semibold text-gray-900 dark:text-white tabular-nums">{formatPrice(num(it.quantity) * num(it.unitCost), asCurrency(viewPO.currency))}</dd>
+                            </div>
+                          </dl>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <div className="text-right space-y-1 text-sm">

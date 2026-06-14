@@ -466,7 +466,7 @@ const SpecialistPayroll: React.FC = () => {
                 {t('payroll.staff') || 'Staff'}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('payroll.commissionHint') || 'Set each professional’s commission as a % of completed service prices.'}
+                {t('payroll.commissionHint') || "Set each professional's commission as a % of completed service prices."}
               </p>
             </div>
 
@@ -480,38 +480,163 @@ const SpecialistPayroll: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                      <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('payroll.role') || 'Role'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium">{t('payroll.commission') || 'Commission'}</th>
-                      <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {staff.map((s) => {
-                      const d = getDraft(s.staffUserId);
-                      return (
-                      <tr key={s.staffUserId} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+              <>
+                {/* Desktop table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.role') || 'Role'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.commission') || 'Commission'}</th>
+                        <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {staff.map((s) => {
+                        const d = getDraft(s.staffUserId);
+                        return (
+                        <tr key={s.staffUserId} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
+                          <td className="px-6 py-4">
+                            <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                              {getRoleLabel(s.role)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 min-w-[18rem]">
+                            {/* Mode selector */}
+                            <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden mb-2">
+                              {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => setDraft(s.staffUserId, { mode: m })}
+                                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                    d.mode === m
+                                      ? 'bg-primary-600 text-white'
+                                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                  }`}
+                                >
+                                  {m === 'FLAT'
+                                    ? (t('payroll.commission.flat') || 'Flat')
+                                    : (t('payroll.commission.tiered') || 'Tiered')}
+                                </button>
+                              ))}
+                            </div>
+
+                            {d.mode === 'FLAT' ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="100"
+                                  value={d.percent ?? ''}
+                                  onChange={(e) => setDraft(s.staffUserId, { percent: e.target.value })}
+                                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                />
+                                <span className="text-gray-500 dark:text-gray-400">%</span>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {t('payroll.commission.tieredHint') || "Commission % is chosen by the staff member's total revenue in the pay period."}
+                                </p>
+                                {d.tiers.map((tr, idx) => (
+                                  <div key={idx} className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                        {t('payroll.commission.minRevenue') || 'Min revenue'}
+                                      </span>
+                                      <input
+                                        type="number"
+                                        step="1"
+                                        min="0"
+                                        value={tr.minRevenue}
+                                        onChange={(e) => updateTierRow(s.staffUserId, idx, 'minRevenue', e.target.value)}
+                                        className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                      />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        max="100"
+                                        value={tr.percent}
+                                        onChange={(e) => updateTierRow(s.staffUserId, idx, 'percent', e.target.value)}
+                                        className="w-20 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                      />
+                                      <span className="text-gray-500 dark:text-gray-400">%</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTierRow(s.staffUserId, idx)}
+                                      aria-label={t('common.delete') || 'Delete'}
+                                      className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                    >
+                                      <TrashIcon className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  type="button"
+                                  onClick={() => addTierRow(s.staffUserId)}
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                                >
+                                  <PlusIcon className="h-4 w-4" />
+                                  {t('payroll.commission.addTier') || 'Add tier'}
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleSaveCommission(s.staffUserId)}
+                              disabled={savingCommission === s.staffUserId}
+                              className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                            >
+                              {savingCommission === s.staffUserId && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
+                              {t('common.save') || 'Save'}
+                            </button>
+                          </td>
+                        </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="lg:hidden space-y-3 p-4">
+                  {staff.map((s) => {
+                    const d = getDraft(s.staffUserId);
+                    return (
+                      <div key={s.staffUserId} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                        {/* Title row */}
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white break-words">{s.name}</p>
+                          <span className="flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                             {getRoleLabel(s.role)}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 min-w-[18rem]">
-                          {/* Mode selector */}
-                          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden mb-2">
+                        </div>
+
+                        {/* Commission editor */}
+                        <div className="mt-3 space-y-3">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            {t('payroll.commission') || 'Commission'}
+                          </p>
+
+                          {/* Mode toggle */}
+                          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
                             {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
                               <button
                                 key={m}
                                 type="button"
                                 onClick={() => setDraft(s.staffUserId, { mode: m })}
-                                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                className={`px-4 py-2 text-sm font-medium transition-colors ${
                                   d.mode === m
                                     ? 'bg-primary-600 text-white'
                                     : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -533,19 +658,19 @@ const SpecialistPayroll: React.FC = () => {
                                 max="100"
                                 value={d.percent ?? ''}
                                 onChange={(e) => setDraft(s.staffUserId, { percent: e.target.value })}
-                                className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                               />
-                              <span className="text-gray-500 dark:text-gray-400">%</span>
+                              <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">%</span>
                             </div>
                           ) : (
                             <div className="space-y-2">
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {t('payroll.commission.tieredHint') || 'Commission % is chosen by the staff member’s total revenue in the pay period.'}
+                                {t('payroll.commission.tieredHint') || "Commission % is chosen by the staff member's total revenue in the pay period."}
                               </p>
                               {d.tiers.map((tr, idx) => (
-                                <div key={idx} className="flex flex-wrap items-center gap-2">
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                <div key={idx} className="space-y-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
                                       {t('payroll.commission.minRevenue') || 'Min revenue'}
                                     </span>
                                     <input
@@ -554,10 +679,13 @@ const SpecialistPayroll: React.FC = () => {
                                       min="0"
                                       value={tr.minRevenue}
                                       onChange={(e) => updateTierRow(s.staffUserId, idx, 'minRevenue', e.target.value)}
-                                      className="w-28 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                      className="flex-1 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                                     />
                                   </div>
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                                      {t('payroll.commission') || 'Commission'} %
+                                    </span>
                                     <input
                                       type="number"
                                       step="0.1"
@@ -565,47 +693,48 @@ const SpecialistPayroll: React.FC = () => {
                                       max="100"
                                       value={tr.percent}
                                       onChange={(e) => updateTierRow(s.staffUserId, idx, 'percent', e.target.value)}
-                                      className="w-20 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                      className="flex-1 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                                     />
-                                    <span className="text-gray-500 dark:text-gray-400">%</span>
+                                    <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">%</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTierRow(s.staffUserId, idx)}
+                                      aria-label={t('common.delete') || 'Delete'}
+                                      className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                    >
+                                      <TrashIcon className="h-4 w-4" />
+                                    </button>
                                   </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeTierRow(s.staffUserId, idx)}
-                                    aria-label={t('common.delete') || 'Delete'}
-                                    className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                  >
-                                    <TrashIcon className="h-4 w-4" />
-                                  </button>
                                 </div>
                               ))}
                               <button
                                 type="button"
                                 onClick={() => addTierRow(s.staffUserId)}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                                className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
                               >
                                 <PlusIcon className="h-4 w-4" />
                                 {t('payroll.commission.addTier') || 'Add tier'}
                               </button>
                             </div>
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        </div>
+
+                        {/* Save action */}
+                        <div className="mt-3 flex items-center justify-end border-t border-gray-100 dark:border-gray-700 pt-3">
                           <button
                             onClick={() => handleSaveCommission(s.staffUserId)}
                             disabled={savingCommission === s.staffUserId}
-                            className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
                           >
                             {savingCommission === s.staffUserId && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                             {t('common.save') || 'Save'}
                           </button>
-                        </td>
-                      </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -670,7 +799,8 @@ const SpecialistPayroll: React.FC = () => {
 
                 {runRows.length > 0 && (
                   <>
-                    <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                    {/* Desktop preview table */}
+                    <div className="hidden lg:block overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                       <table className="min-w-full text-sm">
                         <thead>
                           <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
@@ -712,6 +842,62 @@ const SpecialistPayroll: React.FC = () => {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+
+                    {/* Mobile preview cards */}
+                    <div className="lg:hidden space-y-3">
+                      {runRows.map((r, idx) => (
+                        <div key={r.staffUserId} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          {/* Title */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-gray-900 dark:text-white break-words">{r.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                {getRoleLabel(r.role)} · {r.commissionPercent}%
+                                {r.mode === 'TIERED' && ` (${t('payroll.commission.tiered') || 'Tiered'})`}
+                              </p>
+                            </div>
+                            <p className="flex-shrink-0 font-bold text-gray-900 dark:text-white tabular-nums">
+                              {formatPrice(rowNet(r), asCurrency(runCurrency))}
+                            </p>
+                          </div>
+
+                          {/* Editable fields */}
+                          <dl className="mt-3 space-y-2 text-sm">
+                            {([
+                              ['baseSalary', t('payroll.baseSalary') || 'Base'],
+                              ['commissionTotal', t('payroll.commission') || 'Commission'],
+                              ['bonus', t('payroll.bonus') || 'Bonus'],
+                              ['deductions', t('payroll.deductions') || 'Deductions'],
+                              ['taxAmount', t('payroll.tax') || 'Tax'],
+                            ] as [keyof Pick<RunRow, 'baseSalary' | 'commissionTotal' | 'bonus' | 'deductions' | 'taxAmount'>, string][]).map(([field, label]) => (
+                              <div key={field} className="flex items-center justify-between gap-3">
+                                <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{label}</dt>
+                                <dd className="min-w-0">
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={r[field]}
+                                    onChange={(e) => updateRunRow(idx, { [field]: e.target.value })}
+                                    className="w-32 px-2 py-1.5 text-sm text-right border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 tabular-nums"
+                                  />
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+
+                          {/* Net pay row */}
+                          <div className="mt-3 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {t('payroll.netPay') || 'Net Pay'}
+                            </span>
+                            <span className="font-bold text-gray-900 dark:text-white tabular-nums">
+                              {formatPrice(rowNet(r), asCurrency(runCurrency))}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     <div>
@@ -783,84 +969,169 @@ const SpecialistPayroll: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.period') || 'Period'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.status') || 'Status'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium text-right">{t('payroll.netPay') || 'Net Pay'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {records.map((rec) => {
-                        const cur = asCurrency(rec.currency);
-                        const isBusy = busyRecord === rec.id;
-                        return (
-                          <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
-                            <td className="px-6 py-4">
-                              <p className="font-medium text-gray-900 dark:text-white">{rec.staffName || rec.staffUserId}</p>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
-                              {new Date(rec.periodStart).toLocaleDateString()} – {new Date(rec.periodEnd).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[rec.status]}`}>
-                                {getStatusLabel(rec.status)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
-                              {formatPrice(num(rec.netPay), cur)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  onClick={() => setViewRecord(rec)}
-                                  aria-label={t('payroll.viewPayslip') || 'View payslip'}
-                                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                </button>
-                                {rec.status === 'DRAFT' && (
+                <>
+                  {/* Desktop records table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium">{t('payroll.period') || 'Period'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium">{t('payroll.status') || 'Status'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium text-right">{t('payroll.netPay') || 'Net Pay'}</th>
+                          <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {records.map((rec) => {
+                          const cur = asCurrency(rec.currency);
+                          const isBusy = busyRecord === rec.id;
+                          return (
+                            <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
+                              <td className="px-6 py-4">
+                                <p className="font-medium text-gray-900 dark:text-white">{rec.staffName || rec.staffUserId}</p>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                {new Date(rec.periodStart).toLocaleDateString()} – {new Date(rec.periodEnd).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[rec.status]}`}>
+                                  {getStatusLabel(rec.status)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
+                                {formatPrice(num(rec.netPay), cur)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <div className="inline-flex items-center gap-1">
                                   <button
-                                    onClick={() => handleApprove(rec)}
-                                    disabled={isBusy}
-                                    aria-label={t('payroll.approve') || 'Approve'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
+                                    onClick={() => setViewRecord(rec)}
+                                    aria-label={t('payroll.viewPayslip') || 'View payslip'}
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                                   >
-                                    <CheckCircleIcon className="h-4 w-4" />
+                                    <EyeIcon className="h-4 w-4" />
                                   </button>
-                                )}
-                                {rec.status === 'APPROVED' && (
-                                  <button
-                                    onClick={() => handleMarkPaid(rec)}
-                                    disabled={isBusy}
-                                    aria-label={t('payroll.markPaid') || 'Mark paid'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
-                                  >
-                                    <BanknotesIcon className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {rec.status === 'DRAFT' && (
-                                  <button
-                                    onClick={() => handleDelete(rec)}
-                                    disabled={isBusy}
-                                    aria-label={t('common.delete') || 'Delete'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                  >
-                                    {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                                  {rec.status === 'DRAFT' && (
+                                    <button
+                                      onClick={() => handleApprove(rec)}
+                                      disabled={isBusy}
+                                      aria-label={t('payroll.approve') || 'Approve'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <CheckCircleIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {rec.status === 'APPROVED' && (
+                                    <button
+                                      onClick={() => handleMarkPaid(rec)}
+                                      disabled={isBusy}
+                                      aria-label={t('payroll.markPaid') || 'Mark paid'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <BanknotesIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {rec.status === 'DRAFT' && (
+                                    <button
+                                      onClick={() => handleDelete(rec)}
+                                      disabled={isBusy}
+                                      aria-label={t('common.delete') || 'Delete'}
+                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile records cards */}
+                  <div className="lg:hidden space-y-3 p-4">
+                    {records.map((rec) => {
+                      const cur = asCurrency(rec.currency);
+                      const isBusy = busyRecord === rec.id;
+                      return (
+                        <div key={rec.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          {/* Title row */}
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white break-words">
+                              {rec.staffName || rec.staffUserId}
+                            </p>
+                            <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[rec.status]}`}>
+                              {getStatusLabel(rec.status)}
+                            </span>
+                          </div>
+
+                          {/* Detail rows */}
+                          <dl className="mt-3 space-y-2 text-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('payroll.period') || 'Period'}</dt>
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                                {new Date(rec.periodStart).toLocaleDateString()} – {new Date(rec.periodEnd).toLocaleDateString()}
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('payroll.netPay') || 'Net Pay'}</dt>
+                              <dd className="min-w-0 text-right font-medium text-gray-900 dark:text-white tabular-nums">
+                                {formatPrice(num(rec.netPay), cur)}
+                              </dd>
+                            </div>
+                          </dl>
+
+                          {/* Actions */}
+                          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button
+                              onClick={() => setViewRecord(rec)}
+                              aria-label={t('payroll.viewPayslip') || 'View payslip'}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 border border-gray-200 dark:border-gray-600 rounded-lg transition-colors"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                              {t('payroll.viewPayslip') || 'View'}
+                            </button>
+                            {rec.status === 'DRAFT' && (
+                              <button
+                                onClick={() => handleApprove(rec)}
+                                disabled={isBusy}
+                                aria-label={t('payroll.approve') || 'Approve'}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 border border-primary-200 dark:border-primary-800 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                <CheckCircleIcon className="h-4 w-4" />
+                                {t('payroll.approve') || 'Approve'}
+                              </button>
+                            )}
+                            {rec.status === 'APPROVED' && (
+                              <button
+                                onClick={() => handleMarkPaid(rec)}
+                                disabled={isBusy}
+                                aria-label={t('payroll.markPaid') || 'Mark paid'}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-700 border border-green-200 dark:border-green-800 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                <BanknotesIcon className="h-4 w-4" />
+                                {t('payroll.markPaid') || 'Mark paid'}
+                              </button>
+                            )}
+                            {rec.status === 'DRAFT' && (
+                              <button
+                                onClick={() => handleDelete(rec)}
+                                disabled={isBusy}
+                                aria-label={t('common.delete') || 'Delete'}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 border border-red-200 dark:border-red-800 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
+                                {t('common.delete') || 'Delete'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </>
