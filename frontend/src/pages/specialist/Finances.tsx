@@ -289,9 +289,9 @@ const SpecialistFinances: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
               {t('finances.title') || 'Business Finances'}
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
@@ -300,7 +300,7 @@ const SpecialistFinances: React.FC = () => {
           </div>
           <button
             onClick={handleAddExpense}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
             {t('finances.addExpense') || 'Add Expense'}
@@ -349,9 +349,9 @@ const SpecialistFinances: React.FC = () => {
             </div>
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+              className="w-full sm:w-auto px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
             >
-              <ArrowPathIcon className="h-5 w-5" />
+              <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
               {t('finances.clearFilters') || 'Clear'}
             </button>
           </div>
@@ -363,14 +363,14 @@ const SpecialistFinances: React.FC = () => {
             {/* Total Expenses */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
                   <CurrencyDollarIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('finances.totalExpenses') || 'Total Expenses'}
                   </p>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400 truncate tabular-nums">
                     {formatPrice(Number(summary.totalExpenses) || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -380,14 +380,14 @@ const SpecialistFinances: React.FC = () => {
             {/* Transaction Count */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
                   <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('finances.transactions') || 'Transactions'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {summary.totalCount}
                   </p>
                 </div>
@@ -397,14 +397,14 @@ const SpecialistFinances: React.FC = () => {
             {/* Monthly Average */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
                   <CalendarDaysIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('finances.monthlyAverage') || 'Monthly Average'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(monthlyAverage, summaryCurrency)}
                   </p>
                 </div>

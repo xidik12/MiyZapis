@@ -611,14 +611,14 @@ const SpecialistSales: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex-shrink-0">
                   <CurrencyDollarIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('sales.outstandingBalance') || 'Gift-card balance outstanding'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.giftCardOutstanding || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -627,14 +627,14 @@ const SpecialistSales: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex-shrink-0">
                   <TicketIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('sales.creditsOutstanding') || 'Package credits outstanding'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {summary.creditsOutstanding}
                   </p>
                 </div>
@@ -643,14 +643,14 @@ const SpecialistSales: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl flex-shrink-0">
                   <UsersIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('sales.activeMembers') || 'Active members'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white break-words tabular-nums">
                     {summary.activeMembers}
                     <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                       · {t('sales.mrr') || 'MRR'} {formatPrice(summary.mrrEstimate || 0, summaryCurrency)}
@@ -663,7 +663,7 @@ const SpecialistSales: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           {tabs.map((tb) => {
             const Icon = tb.icon;
             const active = tab === tb.key;
@@ -1072,14 +1072,14 @@ const SpecialistSales: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
+                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0">
                       <ShoppingBagIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {t('store.pendingOrders') || 'Pending orders'}
                       </p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                         {storeSummary.pendingOrders}
                       </p>
                     </div>
@@ -1087,14 +1087,14 @@ const SpecialistSales: React.FC = () => {
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl flex-shrink-0">
                       <CurrencyDollarIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {t('store.monthSales') || 'Sales this month'}
                       </p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                         {formatPrice(storeSummary.monthSalesTotal || 0, asCurrency(storeSummary.currency))}
                       </p>
                     </div>

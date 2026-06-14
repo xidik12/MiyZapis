@@ -313,9 +313,9 @@ const SpecialistInventory: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
               {t('inventory.title') || 'Inventory'}
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
@@ -324,7 +324,7 @@ const SpecialistInventory: React.FC = () => {
           </div>
           <button
             onClick={handleAddProduct}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
             {t('inventory.addProduct') || 'Add Product'}
@@ -337,14 +337,14 @@ const SpecialistInventory: React.FC = () => {
             {/* Total products */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
                   <ArchiveBoxIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('inventory.totalProducts') || 'Total Products'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {summary.totalProducts}
                   </p>
                 </div>
@@ -354,14 +354,14 @@ const SpecialistInventory: React.FC = () => {
             {/* Stock value */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
                   <CurrencyDollarIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('inventory.stockValue') || 'Stock Value'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalStockValue || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -371,14 +371,14 @@ const SpecialistInventory: React.FC = () => {
             {/* Low-stock alerts */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${summary.lowStockCount > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
+                <div className={`flex-shrink-0 p-3 rounded-xl ${summary.lowStockCount > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
                   <ExclamationTriangleIcon className={`h-6 w-6 ${summary.lowStockCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('inventory.lowStockAlerts') || 'Low-stock Alerts'}
                   </p>
-                  <p className={`text-2xl font-bold ${summary.lowStockCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                  <p className={`text-2xl font-bold truncate tabular-nums ${summary.lowStockCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                     {summary.lowStockCount}
                   </p>
                 </div>
@@ -433,9 +433,9 @@ const SpecialistInventory: React.FC = () => {
             </label>
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+              className="w-full sm:w-auto px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
             >
-              <ArrowPathIcon className="h-5 w-5" />
+              <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
               {t('inventory.clearFilters') || 'Clear'}
             </button>
           </div>

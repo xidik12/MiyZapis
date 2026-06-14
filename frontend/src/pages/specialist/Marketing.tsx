@@ -187,10 +187,10 @@ const Marketing: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <SparklesIcon className="h-7 w-7 text-primary-500" />
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words">
+              <SparklesIcon className="h-7 w-7 text-primary-500 flex-shrink-0" />
               {t('marketing.title')}
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">{t('marketing.subtitle')}</p>
@@ -199,7 +199,7 @@ const Marketing: React.FC = () => {
             type="button"
             onClick={runNow}
             disabled={running}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
           >
             <ArrowPathIcon className={`h-5 w-5 ${running ? 'animate-spin' : ''}`} />
             {running ? t('marketing.running') : t('marketing.runNow')}
@@ -212,20 +212,20 @@ const Marketing: React.FC = () => {
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
               {t('marketing.stats.title')}
             </p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {ORDER.map((type) => {
                 const Meta = TYPE_META[type];
                 const Icon = Meta.icon;
                 return (
                   <div key={type} className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${Meta.iconBg}`}>
+                    <div className={`p-2 rounded-lg flex-shrink-0 ${Meta.iconBg}`}>
                       <Icon className={`h-5 w-5 ${Meta.accent}`} />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="min-w-0">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                         {stats.last30Days?.[type] ?? 0}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 break-words">
                         {t(`marketing.${type.toLowerCase()}.title`)}
                       </p>
                     </div>
@@ -256,11 +256,11 @@ const Marketing: React.FC = () => {
               >
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-3 rounded-xl ${Meta.iconBg}`}>
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className={`p-3 rounded-xl flex-shrink-0 ${Meta.iconBg}`}>
                       <Icon className={`h-6 w-6 ${Meta.accent}`} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {t(`marketing.${type.toLowerCase()}.title`)}
                       </h2>
@@ -350,15 +350,15 @@ const Marketing: React.FC = () => {
                                 key={ch}
                                 type="button"
                                 onClick={() => !active && patch(type, { channel: ch })}
-                                className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                className={`flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
                                   active
                                     ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
                                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-primary-400'
                                 }`}
                               >
-                                {ch === 'TELEGRAM' && <ChatBubbleLeftRightIcon className="h-4 w-4" />}
-                                {ch === 'EMAIL' && <EnvelopeIcon className="h-4 w-4" />}
-                                {ch === 'BOTH' && <SparklesIcon className="h-4 w-4" />}
+                                {ch === 'TELEGRAM' && <ChatBubbleLeftRightIcon className="h-4 w-4 flex-shrink-0" />}
+                                {ch === 'EMAIL' && <EnvelopeIcon className="h-4 w-4 flex-shrink-0" />}
+                                {ch === 'BOTH' && <SparklesIcon className="h-4 w-4 flex-shrink-0" />}
                                 <span className="truncate">{t(`marketing.channel.${ch}`)}</span>
                               </button>
                             );

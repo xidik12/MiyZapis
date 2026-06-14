@@ -408,9 +408,9 @@ const SpecialistPurchasing: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
               {t('purchasing.title') || 'Purchasing'}
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
@@ -419,7 +419,7 @@ const SpecialistPurchasing: React.FC = () => {
           </div>
           <button
             onClick={tab === 'orders' ? openNewPO : openNewSupplier}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
             {tab === 'orders'
@@ -433,14 +433,14 @@ const SpecialistPurchasing: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
                   <CurrencyDollarIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('purchasing.outstandingValue') || 'Outstanding Value'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalOutstanding || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -449,14 +449,14 @@ const SpecialistPurchasing: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
                   <InboxArrowDownIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('purchasing.spentThisMonth') || 'Spent This Month'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalSpentThisMonth || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -465,14 +465,14 @@ const SpecialistPurchasing: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                <div className="flex-shrink-0 p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
                   <ClipboardDocumentListIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('purchasing.openOrders') || 'Open Orders'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {activeCount}
                   </p>
                 </div>
@@ -482,27 +482,27 @@ const SpecialistPurchasing: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setTab('orders')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
               tab === 'orders'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            <ShoppingCartIcon className="h-5 w-5" />
+            <ShoppingCartIcon className="h-5 w-5 flex-shrink-0" />
             {t('purchasing.purchaseOrders') || 'Purchase Orders'}
           </button>
           <button
             onClick={() => setTab('suppliers')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
               tab === 'suppliers'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            <BuildingStorefrontIcon className="h-5 w-5" />
+            <BuildingStorefrontIcon className="h-5 w-5 flex-shrink-0" />
             {t('purchasing.suppliers') || 'Suppliers'}
           </button>
         </div>

@@ -524,14 +524,14 @@ const SpecialistEarnings: React.FC = () => {
     
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.earnings')}</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">{t('dashboard.nav.earnings')}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t('earnings.subtitle')}</p>
         </div>
-        <button 
+        <button
           onClick={handleExportReport}
           disabled={isExporting}
-          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <DocumentArrowDownIcon className="w-5 h-5" />
           <span>{isExporting ? t('earnings.exporting') : t('earnings.exportReport')}</span>
@@ -560,72 +560,72 @@ const SpecialistEarnings: React.FC = () => {
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalEarnings')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {formatPrice(earningsData.totalEarnings || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonth')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {formatPrice(earningsData.thisMonth || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
               <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.pending')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-orange-600">
+                <p className="text-xl sm:text-2xl font-bold text-orange-600 truncate tabular-nums">
                   {formatPrice(earningsData.pending || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
               <ClockIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.lastPayout')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {formatPrice(earningsData.lastPayout || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -635,62 +635,62 @@ const SpecialistEarnings: React.FC = () => {
       {/* Additional Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.completedBookings')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {earningsData.completedBookings || 0}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
               <CheckCircleIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.activeClients')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {earningsData.activeClients || 0}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
               <UserGroupIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                   {formatPrice(earningsData.averageBookingValue || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
               <ChartBarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.monthlyGrowth')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -700,7 +700,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
               <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -710,8 +710,8 @@ const SpecialistEarnings: React.FC = () => {
       {/* Expense and Profit Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalExpenses')}</p>
               {loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -721,15 +721,15 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
               <ArrowTrendingDownIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonthExpenses')}</p>
               {loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -739,15 +739,15 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
               <WalletIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.netProfit')}</p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -757,15 +757,15 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.profitMargin')}</p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -775,7 +775,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
+            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
               <ChartBarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -924,28 +924,28 @@ const SpecialistEarnings: React.FC = () => {
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.performanceMetrics')}</h4>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.conversionRate')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.conversionRate')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{(earningsData.conversionRate || 0).toFixed(1)}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{(earningsData.conversionRate || 0).toFixed(1)}%</span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.repeatCustomers')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.repeatCustomers')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.repeatCustomers || 0}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.repeatCustomers || 0}%</span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.avgSessionValue')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.avgSessionValue')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
                 )}
               </div>
             </div>
@@ -955,28 +955,28 @@ const SpecialistEarnings: React.FC = () => {
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.timeAnalysis')}</h4>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.peakHours')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.peakHours')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.peakHours || t('earnings.noData')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.peakHours || t('earnings.noData')}</span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.bestDay')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.bestDay')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.bestDay || t('earnings.noData')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.bestDay || t('earnings.noData')}</span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.avgBookingDuration')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.avgBookingDuration')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">90 {t('earnings.duration.minutes')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">90 {t('earnings.duration.minutes')}</span>
                 )}
               </div>
             </div>
@@ -986,8 +986,8 @@ const SpecialistEarnings: React.FC = () => {
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.growthInsights')}</h4>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.monthlyGrowth')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.monthlyGrowth')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -996,16 +996,16 @@ const SpecialistEarnings: React.FC = () => {
                   </span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.newCustomers')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.newCustomers')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">+{Math.max(0, (earningsData.activeClients || 0) - (earningsData.repeatCustomers || 0))} {t('earnings.thisMonthShort')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">+{Math.max(0, (earningsData.activeClients || 0) - (earningsData.repeatCustomers || 0))} {t('earnings.thisMonthShort')}</span>
                 )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t('earnings.revenueTrend')}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.revenueTrend')}</span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (

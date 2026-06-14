@@ -381,14 +381,14 @@ const SpecialistPayroll: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex-shrink-0">
                   <CurrencyDollarIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('payroll.thisPeriodTotal') || 'This-period Payroll'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalPayrollThisPeriod || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -397,14 +397,14 @@ const SpecialistPayroll: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex-shrink-0">
                   <ClockIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('payroll.pendingApproval') || 'Pending Approval'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.pendingApproval || 0, summaryCurrency)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -416,14 +416,14 @@ const SpecialistPayroll: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl flex-shrink-0">
                   <ReceiptPercentIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('payroll.totalCommission') || 'Total Commission'}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalCommission || 0, summaryCurrency)}
                   </p>
                 </div>
@@ -433,10 +433,10 @@ const SpecialistPayroll: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setTab('staff')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
               tab === 'staff'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -447,7 +447,7 @@ const SpecialistPayroll: React.FC = () => {
           </button>
           <button
             onClick={() => setTab('runs')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
               tab === 'runs'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -543,7 +543,7 @@ const SpecialistPayroll: React.FC = () => {
                                 {t('payroll.commission.tieredHint') || 'Commission % is chosen by the staff member’s total revenue in the pay period.'}
                               </p>
                               {d.tiers.map((tr, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
+                                <div key={idx} className="flex flex-wrap items-center gap-2">
                                   <div className="flex items-center gap-1">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                       {t('payroll.commission.minRevenue') || 'Min revenue'}
@@ -726,14 +726,14 @@ const SpecialistPayroll: React.FC = () => {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between pt-2">
-                      <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white break-words">
                         {t('payroll.runTotal') || 'Run total'}: {formatPrice(runTotal, asCurrency(runCurrency))}
                       </p>
                       <button
                         onClick={handleCreateRun}
                         disabled={creatingRun}
-                        className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {creatingRun ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <PlusIcon className="h-5 w-5" />}
                         {t('payroll.createPayRun') || 'Create pay run'}
