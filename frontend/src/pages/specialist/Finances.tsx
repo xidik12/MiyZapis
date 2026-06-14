@@ -309,8 +309,8 @@ const SpecialistFinances: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+            <div className="w-full sm:flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('finances.category') || 'Category'}
               </label>
@@ -325,7 +325,7 @@ const SpecialistFinances: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
+            <div className="w-full sm:flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('finances.startDate') || 'Start Date'}
               </label>
@@ -336,7 +336,7 @@ const SpecialistFinances: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               />
             </div>
-            <div className="flex-1">
+            <div className="w-full sm:flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('finances.endDate') || 'End Date'}
               </label>
@@ -476,7 +476,8 @@ const SpecialistFinances: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -588,6 +589,107 @@ const SpecialistFinances: React.FC = () => {
                 })()}
               </table>
             </div>
+
+            {/* Mobile card list */}
+            <div className="lg:hidden space-y-3 p-4">
+              {expenses.map((expense) => {
+                const Icon = getCategoryIcon(expense.category);
+                const config = CATEGORY_CONFIG[expense.category];
+                return (
+                  <div
+                    key={expense.id}
+                    className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`p-1.5 rounded-lg flex-shrink-0 ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'}`}>
+                          <Icon className={`h-4 w-4 ${config?.color || 'text-gray-600'}`} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white break-words">
+                            {expense.description}
+                          </p>
+                          {expense.notes && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 break-words">
+                              {expense.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <span className="flex-shrink-0 text-right font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                        -{formatPrice(Number(expense.amount) || 0, (expense.currency || 'UAH') as 'USD' | 'EUR' | 'UAH')}
+                      </span>
+                    </div>
+                    <dl className="mt-3 space-y-2 text-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('finances.date') || 'Date'}</dt>
+                        <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">{formatDate(expense.date)}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('finances.category') || 'Category'}</dt>
+                        <dd className="min-w-0 text-right">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config?.bgColor || 'bg-gray-100'} ${config?.darkBgColor || 'dark:bg-gray-700'} ${config?.color || 'text-gray-600'}`}>
+                            {getCategoryLabel(expense.category)}
+                          </span>
+                        </dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('finances.vendorName') || 'Vendor'}</dt>
+                        <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                          {expense.vendorName || <span className="text-gray-400 dark:text-gray-600">—</span>}
+                        </dd>
+                      </div>
+                      {expense.isRecurring && expense.recurringFrequency && (
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('finances.frequency') || 'Recurring'}</dt>
+                          <dd className="min-w-0 text-right text-primary-600 dark:text-primary-400">
+                            {getRecurringLabel(expense.recurringFrequency)}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                      <button
+                        onClick={() => handleEditExpense(expense)}
+                        aria-label={t('finances.editExpense') || 'Edit expense'}
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(expense.id)}
+                        disabled={deleting === expense.id}
+                        aria-label={t('common.delete') || 'Delete'}
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                      >
+                        {deleting === expense.id ? (
+                          <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <TrashIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {(() => {
+                const currencies = Array.from(new Set(expenses.map((e) => e.currency || 'UAH')));
+                if (currencies.length !== 1) return null;
+                const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                return (
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 px-4 py-3">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      {t('finances.totalExpenses') || 'Total'}
+                      <span className="ml-2 text-gray-400 dark:text-gray-500 font-normal">({expenses.length})</span>
+                    </span>
+                    <span className="text-sm font-bold text-red-600 dark:text-red-400 tabular-nums">
+                      -{formatPrice(total, currencies[0] as 'USD' | 'EUR' | 'UAH')}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+            </>
           )}
         </div>
 

@@ -932,8 +932,8 @@ const SpecialistPayroll: React.FC = () => {
 
             {/* Status filter */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-              <div className="flex flex-col sm:flex-row gap-4 items-end">
-                <div className="flex-1 max-w-xs">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+                <div className="w-full sm:flex-1 sm:max-w-xs">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('payroll.status') || 'Status'}
                   </label>
