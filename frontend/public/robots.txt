@@ -1,12 +1,21 @@
+# МійЗапис / MiyZapis — robots.txt
+# Specialist service search + booking platform (Ukraine).
+# Search crawlers and AI answer engines are welcome on all PUBLIC pages.
+# AI assistants (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, anthropic-ai,
+# PerplexityBot, Google-Extended, Applebot-Extended, Amazonbot, cohere-ai, …)
+# fall through to the rules below and are intentionally allowed on public content.
+
 User-agent: *
 Allow: /
 Allow: /search
+Allow: /s/
+Allow: /biz/
 Allow: /auth/register
 Allow: /auth/login
 Allow: /loyalty
 Allow: /community
 
-# Block private/authenticated routes
+# Private / authenticated areas — not for indexing
 Disallow: /dashboard
 Disallow: /bookings
 Disallow: /profile
@@ -18,8 +27,10 @@ Disallow: /admin/
 Disallow: /favorites
 Disallow: /reviews
 
-# Block build assets
+# Build assets
 Disallow: /assets/
 
-# Sitemap
+# Sitemaps: static pages + the live, DB-generated index of every public
+# specialist (/s/<slug>) and business (/biz/<slug>) page.
 Sitemap: https://miyzapis.com/sitemap.xml
+Sitemap: https://api.miyzapis.com/api/v1/discovery/sitemap.xml

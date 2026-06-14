@@ -155,6 +155,45 @@ function socialSameAs(s: any): string[] | undefined {
   return urls.length > 0 ? urls : undefined;
 }
 
+// BreadcrumbList — navigation trail for the page.
+// items: ordered array of { name, url } pairs (Home first).
+export function buildBreadcrumbJsonLd(items: { name: string; url: string }[]): object {
+  if (!items || items.length === 0) return {};
+  return prune({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, idx) =>
+      prune({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        item: item.url,
+      }),
+    ),
+  });
+}
+
+// ItemList — a collection of named links (categories, search results, etc.).
+// items: array of { name, url, image? } — positions are 1-based.
+export function buildItemListJsonLd(
+  items: { name: string; url: string; image?: string }[],
+): object {
+  if (!items || items.length === 0) return {};
+  return prune({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map((item, idx) =>
+      prune({
+        '@type': 'ListItem',
+        position: idx + 1,
+        url: item.url,
+        name: item.name,
+        image: item.image,
+      }),
+    ),
+  });
+}
+
 export interface BusinessLdInput {
   business: any;
 }

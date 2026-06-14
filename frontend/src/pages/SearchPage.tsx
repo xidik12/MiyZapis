@@ -1,9 +1,11 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
 import { locationService, CityData } from '../services/location.service';
+import PublicSeo from '@/components/common/PublicSeo';
+import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '@/utils/structuredData';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
@@ -670,8 +672,117 @@ const SearchPage: React.FC = () => {
     );
   };
 
+  // ── SEO: dynamic title / description / JSON-LD ────────────────────
+  const seoMeta = useMemo(() => {
+    const SITE = 'https://miyzapis.com';
+    const categoryName =
+      selectedCategory && selectedCategory !== 'all'
+        ? (categories.find((c: any) => c.id === selectedCategory)?.name as string | undefined) ||
+          selectedCategory
+        : '';
+    const cityName = selectedLocation || '';
+    const query = debouncedSearchQuery || '';
+
+    // Dynamic title
+    let title: string;
+    let description: string;
+    if (categoryName && cityName) {
+      title = `${categoryName} у місті ${cityName} — МійЗапис`;
+      description = `Знайдіть і забронюйте ${categoryName.toLowerCase()} у ${cityName}. Перевірені спеціалісти, онлайн-запис на МійЗапис.`;
+    } else if (categoryName) {
+      title = `${categoryName} — пошук спеціалістів | МійЗапис`;
+      description = `Перевірені спеціалісти з ${categoryName.toLowerCase()} в Україні. Онлайн-запис за лічені секунди на МійЗапис.`;
+    } else if (cityName) {
+      title = `Спеціалісти у ${cityName} — МійЗапис`;
+      description = `Знайдіть спеціалістів та послуги у ${cityName}. Онлайн-бронювання на МійЗапис.`;
+    } else if (query) {
+      title = `${query} — пошук спеціалістів | МійЗапис`;
+      description = `Результати пошуку «${query}» — перевірені спеціалісти та послуги в Україні. МійЗапис.`;
+    } else {
+      title =
+        t('seo.searchTitle') || 'Пошук спеціалістів та послуг — МійЗапис';
+      description =
+        t('seo.searchDescription') ||
+        'Знайдіть спеціаліста в Україні та забронюйте онлайн. Краса, здоров\'я, навчання та сотні інших послуг на МійЗапис.';
+    }
+
+    // Canonical URL with active querystring
+    const qs = new URLSearchParams();
+    if (query) qs.set('q', query);
+    if (categoryName && selectedCategory !== 'all') qs.set('category', selectedCategory);
+    if (cityName) qs.set('location', cityName);
+    const qsStr = qs.toString();
+    const url = qsStr ? `${SITE}/search?${qsStr}` : `${SITE}/search`;
+
+    // Breadcrumb: Home → Search (→ Category if selected)
+    const breadcrumbItems: { name: string; url: string }[] = [
+      { name: 'МійЗапис', url: `${SITE}/` },
+      { name: t('seo.breadcrumb.search') || 'Пошук', url: `${SITE}/search` },
+    ];
+    if (categoryName) {
+      breadcrumbItems.push({ name: categoryName, url: `${SITE}/search?category=${selectedCategory}` });
+    }
+    const breadcrumbLd = buildBreadcrumbJsonLd(breadcrumbItems);
+
+    // ItemList from visible results (guard: only when loaded and non-empty)
+    const filteredNow = getFilteredServices();
+    const itemListLd =
+      !loading && filteredNow.length > 0
+        ? buildItemListJsonLd(
+            filteredNow.slice(0, 20).map((svc) => {
+              const firstName = svc.specialist?.user?.firstName || '';
+              const lastName = svc.specialist?.user?.lastName || '';
+              const businessName = svc.specialist?.businessName || '';
+              const displayName =
+                businessName ||
+                [firstName, lastName].filter(Boolean).join(' ') ||
+                svc.name;
+              const slug = svc.specialist?.id || '';
+              return {
+                name: displayName,
+                url: `${SITE}/s/${slug}`,
+                image: svc.specialist?.user?.avatar,
+              };
+            }),
+          )
+        : null;
+
+    // Merge into a @graph so both schemas are in one script tag
+    const jsonLd =
+      itemListLd && Object.keys(itemListLd).length > 0
+        ? {
+            '@context': 'https://schema.org',
+            '@graph': [
+              { ...breadcrumbLd, '@context': undefined },
+              { ...itemListLd, '@context': undefined },
+            ],
+          }
+        : breadcrumbLd;
+
+    return { title, description, url, jsonLd };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    debouncedSearchQuery,
+    selectedCategory,
+    selectedLocation,
+    categories,
+    loading,
+    services,
+    activeQuickFilters,
+    showFavoritesOnly,
+    availableNow,
+    t,
+  ]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PublicSeo
+        title={seoMeta.title}
+        description={seoMeta.description}
+        url={seoMeta.url}
+        type="website"
+        jsonLd={seoMeta.jsonLd}
+      />
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">

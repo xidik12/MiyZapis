@@ -8,6 +8,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { translateProfession } from '@/utils/profession';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { locationService, CityData } from '@/services/location.service';
+import PublicSeo from '@/components/common/PublicSeo';
+import { buildItemListJsonLd } from '@/utils/structuredData';
 import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -251,6 +253,27 @@ const HomePage: React.FC = () => {
       className="min-h-screen w-full prevent-overflow"
       style={{ fontFamily: "'Work Sans', 'Inter', system-ui, sans-serif" }}
     >
+      <PublicSeo
+        title={t('seo.homeTitle') || 'МійЗапис — знайдіть спеціаліста та забронюйте онлайн'}
+        description={
+          t('seo.homeDescription') ||
+          "Пошукова система спеціалістів і платформа онлайн-запису в Україні. Знаходьте перевірених майстрів краси, здоров'я та інших послуг — бронюйте онлайн за лічені секунди."
+        }
+        url="https://miyzapis.com/"
+        type="website"
+        jsonLd={
+          categories.length > 0
+            ? buildItemListJsonLd(
+                categories.map((cat: any) => ({
+                  name: cat.name as string,
+                  url: `https://miyzapis.com/search?category=${encodeURIComponent(
+                    (cat.slug || cat.id) as string,
+                  )}`,
+                })),
+              )
+            : undefined
+        }
+      />
       {/* ====== Inline keyframes + homepage-scoped styles ====== */}
       <style>{`
         @keyframes aurora-drift {
