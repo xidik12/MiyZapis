@@ -118,6 +118,15 @@ a,
   word-break: normal;
 }
 
+/* A button/link that is ITSELF a rounded+border element matches the card rule
+   directly (specificity 0,2,0), which would beat the plain `button` reset.
+   This compound selector (0,2,1) outranks it so interactive elements stay
+   `normal` regardless. */
+:is(button, a, [role="button"])[class*="rounded-"][class*="border"] {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
 /* ── Icon contrast on SOLID colored backgrounds ──────────────
    Force child icons white ONLY inside buttons/links whose background is a
    genuine solid saturated colour, matched as a STANDALONE class via
