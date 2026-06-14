@@ -43,6 +43,29 @@
 	@noCache path /sw.js /registerSW.js /manifest.json /manifest.webmanifest *.html
 	header @noCache Cache-Control "no-cache, must-revalidate"
 
+	# ─── Dynamic rendering for crawlers (SEO / GEO / AEO) ──────────────────
+	# Search engines and AI answer engines mostly don't run JS, so this SPA's
+	# content would be invisible to them. Route ONLY bot user-agents (and never
+	# asset requests) to the headless-Chromium prerender service, which returns
+	# fully-rendered HTML. Human traffic never matches this and is unaffected.
+	@prerender {
+		header_regexp ua User-Agent (?i)(googlebot|google-inspectiontool|bingbot|yandex(bot)?|duckduckbot|baiduspider|slurp|gptbot|oai-searchbot|chatgpt-user|claudebot|claude-web|anthropic-ai|perplexitybot|perplexity-user|google-extended|applebot|amazonbot|cohere-ai|bytespider|meta-externalagent|facebookexternalhit|twitterbot|telegrambot|linkedinbot|whatsapp|slackbot|discordbot|pinterest|redditbot|petalbot|semrushbot|ahrefsbot)
+		not path_regexp \.(js|mjs|css|map|png|jpg|jpeg|gif|svg|webp|avif|ico|woff|woff2|ttf|eot|json|xml|txt|wasm)$
+		not path /healthz
+	}
+	handle @prerender {
+		reverse_proxy http://miyzapis-prerender:3000 {
+			# Successful renders pass straight through. If the prerenderer errors,
+			# fall back to the SPA shell so bots get a valid page, never a 5xx.
+			@fail status 500 502 503 504
+			handle_response @fail {
+				root * /app/dist
+				rewrite * /index.html
+				file_server
+			}
+		}
+	}
+
 	# Static file requests: serve them if they exist, real 404 if they don't.
 	# Without this, missing /favicon.svg etc. would silently fall back to index.html
 	# and clients would try to parse HTML as the wrong content type.

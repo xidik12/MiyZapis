@@ -117,13 +117,16 @@ app.get('/healthz', (_req, res) => res.json({ ok: true, cached: cache.size }));
 // Prerender entrypoint. Accepts either /render?url=<full-url> or the
 // prerender.io-style /<full-url> path. Only miyzapis.com is allowed.
 app.get(/.*/, async (req, res) => {
+  // Two call forms:
+  //   ?url=<full-url>            (manual / explicit)
+  //   the original request path  (Caddy reverse-proxies bots straight through,
+  //                               so "/s/foo?x=1" → render https://miyzapis.com/s/foo?x=1)
   let raw = req.query.url;
   if (!raw) {
-    // path form: everything after the leading slash is the URL (may be encoded)
-    raw = req.originalUrl.replace(/^\/+/, '');
+    raw = req.originalUrl.replace(/^\/+/, ''); // '' for the homepage
     try { raw = decodeURIComponent(raw); } catch (_) {}
   }
-  if (!raw || raw === 'favicon.ico') return res.status(400).send('missing url');
+  if (raw === 'favicon.ico' || raw === 'healthz') return res.status(400).send('bad');
 
   let parsed;
   try {
