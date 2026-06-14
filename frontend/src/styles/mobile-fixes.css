@@ -97,9 +97,25 @@ body {
   }
 }
 
-/* Long unbreakable strings (URLs, emails) shouldn't blow out card width */
+/* Long unbreakable strings (URLs, emails) shouldn't blow out card width.
+   Use `break-word`, NOT `anywhere`: `anywhere` is far more aggressive and —
+   because overflow-wrap is an INHERITED property — leaks into every descendant
+   of a bordered card, snapping ordinary words mid-character (e.g. a status
+   pill rendering "Complet\ned"). `break-word` only breaks a word when it can't
+   fit on its own line, leaving normal text intact. */
 [class*="rounded-"][class*="border"] {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+/* Buttons, links and pill chips must never break a word mid-character — a
+   short label like "Completed" / "Manage Schedule" should stay whole (wrapping
+   only at spaces). Resets the inherited value from the card rule above. */
+button,
+a,
+[role="button"],
+[class*="rounded-full"] {
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 /* ── Icon contrast on SOLID colored backgrounds ──────────────

@@ -760,26 +760,26 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-4">
             {dashboardData.recentBookings.slice(0, 4).map((booking: any) => (
-              <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
+              <div key={booking.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 flex-shrink-0 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {(booking.customerName || 'U').split(' ').map((n: string) => n[0]).join('')}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{booking.customerName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{booking.serviceName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {booking.date}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                <div className="text-right flex-shrink-0">
+                  <p className="font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                     {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </p>
-                  <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                  <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}
                   </span>
                 </div>
