@@ -228,6 +228,30 @@ api.interceptors.request.use(
   }
 );
 
+// Public routes must never be force-redirected to /auth/login by a background
+// 401 (e.g. an optional store/products call on a public specialist profile).
+// Only authenticated areas should bounce to login on an unrecoverable 401;
+// public pages let the call fail quietly and render what they have. This is the
+// fix for anonymous visitors (and crawlers) being kicked off /s/:slug profiles.
+const PROTECTED_PATH_PREFIXES = [
+  '/dashboard', '/specialist', '/customer', '/admin', '/settings',
+  '/bookings', '/profile', '/payments', '/favorites', '/wallet',
+];
+const onProtectedRoute = (): boolean => {
+  try {
+    const p = window.location.pathname;
+    return PROTECTED_PATH_PREFIXES.some((pre) => p === pre || p.startsWith(`${pre}/`));
+  } catch {
+    return false;
+  }
+};
+const redirectToLoginIfProtected = (): void => {
+  if (onProtectedRoute()) {
+    const rt = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/auth/login?returnUrl=${rt}`;
+  }
+};
+
 // Response interceptor for error handling and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
@@ -320,8 +344,9 @@ api.interceptors.response.use(
 
         const refreshTokenValue = getRefreshToken();
         if (!refreshTokenValue) {
+          // Anonymous (or token already gone): don't yank public pages to login.
           clearAuthTokens();
-          window.location.href = '/auth/login';
+          redirectToLoginIfProtected();
           return Promise.reject(error);
         }
 
@@ -354,9 +379,10 @@ api.interceptors.response.use(
         } catch (refreshError) {
           isRefreshing = false;
           refreshSubscribers = [];
-          // Refresh failed, redirect to login
+          // Refresh failed: clear session. Only bounce to login from protected
+          // areas — public pages stay put (ProtectedRoute guards the rest).
           clearAuthTokens();
-          window.location.href = '/auth/login';
+          redirectToLoginIfProtected();
           return Promise.reject(refreshError);
         }
       }

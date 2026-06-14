@@ -140,10 +140,11 @@ ownerRouter.post('/orders/:id/status', async (req: Request, res: Response): Prom
   }
 });
 
-router.use(ownerRouter);
-
 // ===========================================================================
-// PUBLIC ROUTES
+// PUBLIC ROUTES — registered BEFORE the guarded ownerRouter is mounted, so the
+// ownerRouter's blanket authenticateToken middleware never runs for anonymous
+// storefront views or guest checkout. (Owner routes are all under /orders/* and
+// the public GET only matches /<sellerId>/products, so there is no shadowing.)
 // ===========================================================================
 
 // POST /store/orders — place an order (guests allowed; authed → customerUserId)
@@ -212,5 +213,9 @@ router.get('/:sellerUserId/products', async (req: Request, res: Response): Promi
     res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
   }
 });
+
+// Guarded owner routes mounted LAST so their auth middleware can't intercept
+// the public routes above.
+router.use(ownerRouter);
 
 export default router;
