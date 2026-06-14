@@ -1556,6 +1556,7 @@ const ru: Record<string, string> = {
   'common.message': 'Сообщение',
   'common.edit': 'Редактировать',
   'common.delete': 'Удалить',
+  'common.actions': 'Действия',
   'common.remove': 'Удалить',
   'common.close': 'Закрыть',
   'common.cancel': 'Отменить',

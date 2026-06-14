@@ -1556,6 +1556,7 @@ const en: Record<string, string> = {
   'common.message': 'Message',
   'common.edit': 'Edit',
   'common.delete': 'Delete',
+  'common.actions': 'Actions',
   'common.remove': 'Remove',
   'common.close': 'Close',
   'common.cancel': 'Cancel',

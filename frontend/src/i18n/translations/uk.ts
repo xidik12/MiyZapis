@@ -1556,6 +1556,7 @@ const uk: Record<string, string> = {
   'common.message': 'Повідомлення',
   'common.edit': 'Редагувати',
   'common.delete': 'Видалити',
+  'common.actions': 'Дії',
   'common.remove': 'Видалити',
   'common.close': 'Закрити',
   'common.cancel': 'Скасувати',
