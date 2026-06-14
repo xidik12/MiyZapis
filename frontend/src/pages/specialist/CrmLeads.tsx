@@ -74,27 +74,27 @@ const stageColumnHeaderClass = (stage: LeadStage): string => {
   }
 };
 
-const stageLabel = (stage: LeadStage): string => {
-  switch (stage) {
-    case 'new':       return 'New';
-    case 'contacted': return 'Contacted';
-    case 'qualified': return 'Qualified';
-    case 'won':       return 'Won';
-    case 'lost':      return 'Lost';
-  }
-};
+type TFn = (key: string) => string;
 
-const sourceLabel = (source?: LeadSource | null): string => {
-  if (!source) return '—';
-  switch (source) {
-    case 'walk-in':  return 'Walk-in';
-    case 'referral': return 'Referral';
-    case 'instagram':return 'Instagram';
-    case 'web':      return 'Web';
-    case 'phone':    return 'Phone';
-    case 'other':    return 'Other';
-  }
+const STAGE_KEY: Record<LeadStage, string> = {
+  new: 'crm.stageNew', contacted: 'crm.stageContacted', qualified: 'crm.stageQualified',
+  won: 'crm.stageWon', lost: 'crm.stageLost',
 };
+const STAGE_EN: Record<LeadStage, string> = {
+  new: 'New', contacted: 'Contacted', qualified: 'Qualified', won: 'Won', lost: 'Lost',
+};
+const stageLabel = (stage: LeadStage, t?: TFn): string =>
+  (t && t(STAGE_KEY[stage])) || STAGE_EN[stage];
+
+const SOURCE_KEY: Record<LeadSource, string> = {
+  'walk-in': 'crm.sourceWalkIn', referral: 'crm.sourceReferral', instagram: 'crm.sourceInstagram',
+  web: 'crm.sourceWeb', phone: 'crm.sourcePhone', other: 'crm.sourceOther',
+};
+const SOURCE_EN: Record<LeadSource, string> = {
+  'walk-in': 'Walk-in', referral: 'Referral', instagram: 'Instagram', web: 'Web', phone: 'Phone', other: 'Other',
+};
+const sourceLabel = (source?: LeadSource | null, t?: TFn): string =>
+  !source ? '—' : ((t && t(SOURCE_KEY[source])) || SOURCE_EN[source]);
 
 // ---------------------------------------------------------------------------
 // Form shape
@@ -155,7 +155,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
         </p>
         {lead.source && (
           <span className="flex-shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-            {sourceLabel(lead.source)}
+            {sourceLabel(lead.source, t)}
           </span>
         )}
       </div>
@@ -207,7 +207,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
         >
           {LEAD_STAGES.map((s) => (
             <option key={s} value={s} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-              {stageLabel(s)}
+              {stageLabel(s, t)}
             </option>
           ))}
         </select>
@@ -502,7 +502,7 @@ const CrmLeads: React.FC = () => {
                 {/* Column header */}
                 <div className="flex items-center justify-between">
                   <span className={`text-sm font-semibold uppercase tracking-wide ${stageColumnHeaderClass(stage)}`}>
-                    {stageLabel(stage)}
+                    {stageLabel(stage, t)}
                   </span>
                   <span className="text-xs font-medium text-gray-400 dark:text-gray-500 tabular-nums">
                     {stageLeads.length}
@@ -562,7 +562,7 @@ const CrmLeads: React.FC = () => {
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${stageBadgeClass(stage)}`}
                     >
-                      {stageLabel(stage)}
+                      {stageLabel(stage, t)}
                     </span>
                     <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
                       {stageLeads.length}
@@ -648,7 +648,7 @@ const CrmLeads: React.FC = () => {
                     >
                       <option value="">{t('crm.sourceNone') || '— None —'}</option>
                       {LEAD_SOURCES.map((s) => (
-                        <option key={s} value={s}>{sourceLabel(s)}</option>
+                        <option key={s} value={s}>{sourceLabel(s, t)}</option>
                       ))}
                     </select>
                   </div>
@@ -660,7 +660,7 @@ const CrmLeads: React.FC = () => {
                       className={inputClass}
                     >
                       {LEAD_STAGES.map((s) => (
-                        <option key={s} value={s}>{stageLabel(s)}</option>
+                        <option key={s} value={s}>{stageLabel(s, t)}</option>
                       ))}
                     </select>
                   </div>
