@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { MobileTabBar, TabItem, TabSection } from './MobileTabBar';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon, FunnelIcon, CheckCircleIcon, UserPlusIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -69,6 +69,34 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/analytics',
     icon: PresentationChartLineIcon,
     iconActive: PresentationChartLineIcon,
+  },
+  {
+    name: 'Clients',
+    nameUk: 'Клієнти',
+    href: '/specialist/clients',
+    icon: UsersIcon,
+    iconActive: UsersIcon,
+  },
+  {
+    name: 'Segments & Campaigns',
+    nameUk: 'Сегменти та кампанії',
+    href: '/specialist/segments',
+    icon: FunnelIcon,
+    iconActive: FunnelIcon,
+  },
+  {
+    name: 'Tasks',
+    nameUk: 'Завдання',
+    href: '/specialist/tasks',
+    icon: CheckCircleIcon,
+    iconActive: CheckCircleIcon,
+  },
+  {
+    name: 'Leads',
+    nameUk: 'Ліди',
+    href: '/specialist/leads',
+    icon: UserPlusIcon,
+    iconActive: UserPlusIcon,
   },
   {
     name: 'Community',
@@ -450,6 +478,7 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.find services', fallback: 'Find Services', href: '/search', icon: MagnifyingGlassIcon },
     { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
     { nameKey: 'dashboard.nav.clients', fallback: 'Clients', href: '/specialist/clients', icon: UsersIcon },
+    { nameKey: 'dashboard.nav.tasks', fallback: 'Tasks', href: '/specialist/tasks', icon: CheckCircleIcon },
     { nameKey: 'dashboard.nav.schedule', fallback: 'Schedule', href: '/specialist/schedule', icon: CalendarIcon },
     { nameKey: 'dashboard.nav.analytics', fallback: 'Analytics', href: '/specialist/analytics', icon: PresentationChartLineIcon },
     { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: CalendarIcon },
@@ -463,6 +492,8 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
   ]},
   { title: 'nav.section.growth', items: [
+    { nameKey: 'dashboard.nav.segments', fallback: 'Segments & Campaigns', href: '/specialist/segments', icon: FunnelIcon },
+    { nameKey: 'dashboard.nav.leads', fallback: 'Leads', href: '/specialist/leads', icon: UserPlusIcon },
     { nameKey: 'dashboard.nav.marketing', fallback: 'Marketing', href: '/specialist/marketing', icon: SparklesIcon },
     { nameKey: 'dashboard.nav.promote', fallback: 'Promote', href: '/specialist/promote', icon: RocketLaunchIcon },
     { nameKey: 'dashboard.nav.loyalty', fallback: 'Loyalty', href: '/specialist/loyalty', icon: GiftIcon },

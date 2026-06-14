@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -12,127 +12,127 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String?
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  password            String?
   passwordLastChanged DateTime?
-  authProvider String? // "google", "telegram", "email" - tracks how user registered/authenticated
+  authProvider        String? // "google", "telegram", "email" - tracks how user registered/authenticated
   // Owner-managed staff: a salon owner created this professional's profile
   // directly (no login). They are bookable but can't sign in until claimed.
-  isManaged    Boolean  @default(false)
-  managedById  String?  // the owner user who manages this profile
-  dateOfBirth  DateTime? // for birthday marketing automation + greetings
-  firstName String
-  lastName  String
-  avatar    String?
-  userType  String   @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "ADMIN"
+  isManaged           Boolean   @default(false)
+  managedById         String? // the owner user who manages this profile
+  dateOfBirth         DateTime? // for birthday marketing automation + greetings
+  firstName           String
+  lastName            String
+  avatar              String?
+  userType            String    @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "ADMIN"
 
   // Contact information
   phoneNumber String?
   telegramId  String? @unique
 
   // Platform settings
-  isEmailVerified Boolean @default(false)
-  isPhoneVerified Boolean @default(false)
-  isActive        Boolean @default(true)
+  isEmailVerified Boolean   @default(false)
+  isPhoneVerified Boolean   @default(false)
+  isActive        Boolean   @default(true)
   lastLoginAt     DateTime?
 
   // Preferences
-  language         String @default("en")
-  currency         String @default("USD")
-  timezone         String @default("UTC")
+  language String @default("en")
+  currency String @default("USD")
+  timezone String @default("UTC")
 
   // Notification preferences
-  emailNotifications     Boolean @default(true)
-  pushNotifications      Boolean @default(true)
-  telegramNotifications  Boolean @default(true)
+  emailNotifications    Boolean @default(true)
+  pushNotifications     Boolean @default(true)
+  telegramNotifications Boolean @default(true)
 
   // Loyalty program
-  loyaltyPoints          Int     @default(0)
+  loyaltyPoints Int @default(0)
 
   // Wallet and Payment
-  walletBalance          Decimal @default(0.0)
-  walletCurrency         String  @default("USD")
+  walletBalance  Decimal @default(0.0)
+  walletCurrency String  @default("USD")
 
   // Specialist subscription
-  subscriptionStatus     String  @default("PAY_PER_USE") // PAY_PER_USE, MONTHLY_SUBSCRIPTION
-  subscriptionValidUntil DateTime?
+  subscriptionStatus        String    @default("PAY_PER_USE") // PAY_PER_USE, MONTHLY_SUBSCRIPTION
+  subscriptionValidUntil    DateTime?
   subscriptionEffectiveDate DateTime?
 
   // Free trial period (3 months for both users and specialists)
-  trialStartDate         DateTime? // When trial started
-  trialEndDate           DateTime? // When trial ends (3 months from start)
-  isInTrial              Boolean @default(true) // Quick check if user is in trial period
+  trialStartDate DateTime? // When trial started
+  trialEndDate   DateTime? // When trial ends (3 months from start)
+  isInTrial      Boolean   @default(true) // Quick check if user is in trial period
 
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  specialist           Specialist?
-  customerBookings     Booking[]               @relation("CustomerBookings")
-  specialistBookings   Booking[]               @relation("SpecialistBookings")
-  reviews              Review[]
-  payments             Payment[]
-  paymentMethods       PaymentMethod[]
-  notifications        Notification[]
-  loyaltyTransactions  LoyaltyTransaction[]
-  
+  specialist          Specialist?
+  customerBookings    Booking[]            @relation("CustomerBookings")
+  specialistBookings  Booking[]            @relation("SpecialistBookings")
+  reviews             Review[]
+  payments            Payment[]
+  paymentMethods      PaymentMethod[]
+  notifications       Notification[]
+  loyaltyTransactions LoyaltyTransaction[]
+
   // Enhanced Loyalty Relations
-  loyaltyTier          LoyaltyTier? @relation("UserLoyaltyTier", fields: [loyaltyTierId], references: [id])
-  loyaltyTierId        String?
-  badges               UserBadge[]
-  referralsGiven       LoyaltyReferral[] @relation("ReferrerRelation")
-  referralsReceived    LoyaltyReferral[] @relation("ReferredRelation")
-  campaignRedemptions  CampaignRedemption[]
-  pointsRedemptions    PointsRedemption[]
-  reviewRewards        ReviewReward[]
-  refreshTokens        RefreshToken[]
+  loyaltyTier             LoyaltyTier?             @relation("UserLoyaltyTier", fields: [loyaltyTierId], references: [id])
+  loyaltyTierId           String?
+  badges                  UserBadge[]
+  referralsGiven          LoyaltyReferral[]        @relation("ReferrerRelation")
+  referralsReceived       LoyaltyReferral[]        @relation("ReferredRelation")
+  campaignRedemptions     CampaignRedemption[]
+  pointsRedemptions       PointsRedemption[]
+  reviewRewards           ReviewReward[]
+  refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
-  sentMessages         Message[]               @relation("SentMessages")
-  receivedMessages     Message[]               @relation("ReceivedMessages")
-  customerConversations Conversation[]         @relation("CustomerConversations")
-  specialistConversations Conversation[]       @relation("SpecialistConversations")
-  uploadedFiles        File[]
-  reportsMade          Report[]                @relation("ReportsMade")
-  reportsReceived      Report[]                @relation("ReportsReceived")
-  favoriteSpecialists  FavoriteSpecialist[]    @relation("UserFavoriteSpecialists")
-  favoriteServices     FavoriteService[]       @relation("UserFavoriteServices")
-  profileViews         ProfileView[]           @relation("ProfileViewer")
-  profileViewsReceived ProfileView[]           @relation("ProfileViewed")
-  telegramSessions     TelegramSession[]
-  createdRewards       LoyaltyReward[]         @relation("SpecialistRewards")
-  rewardRedemptions    RewardRedemption[]      @relation("UserRewardRedemptions")
-  walletTransactions   WalletTransaction[]
-  cryptoPayments       CryptoPayment[]
-  subscriptions        SpecialistSubscription[]
-  onrampSessions       OnrampSession[]
-  expenses             Expense[]              @relation("SpecialistExpenses")
-  invoices             Invoice[]              @relation("SpecialistInvoices")
-  calendarConnections  CalendarConnection[]   @relation("UserCalendarConnections")
-  ownedBusinesses      Business[]             @relation("OwnedBusinesses")
-  businessMemberships  BusinessMember[]       @relation("BusinessMemberships")
+  sentMessages            Message[]                @relation("SentMessages")
+  receivedMessages        Message[]                @relation("ReceivedMessages")
+  customerConversations   Conversation[]           @relation("CustomerConversations")
+  specialistConversations Conversation[]           @relation("SpecialistConversations")
+  uploadedFiles           File[]
+  reportsMade             Report[]                 @relation("ReportsMade")
+  reportsReceived         Report[]                 @relation("ReportsReceived")
+  favoriteSpecialists     FavoriteSpecialist[]     @relation("UserFavoriteSpecialists")
+  favoriteServices        FavoriteService[]        @relation("UserFavoriteServices")
+  profileViews            ProfileView[]            @relation("ProfileViewer")
+  profileViewsReceived    ProfileView[]            @relation("ProfileViewed")
+  telegramSessions        TelegramSession[]
+  createdRewards          LoyaltyReward[]          @relation("SpecialistRewards")
+  rewardRedemptions       RewardRedemption[]       @relation("UserRewardRedemptions")
+  walletTransactions      WalletTransaction[]
+  cryptoPayments          CryptoPayment[]
+  subscriptions           SpecialistSubscription[]
+  onrampSessions          OnrampSession[]
+  expenses                Expense[]                @relation("SpecialistExpenses")
+  invoices                Invoice[]                @relation("SpecialistInvoices")
+  calendarConnections     CalendarConnection[]     @relation("UserCalendarConnections")
+  ownedBusinesses         Business[]               @relation("OwnedBusinesses")
+  businessMemberships     BusinessMember[]         @relation("BusinessMemberships")
   // Tax regime preference used by the bookkeeping calculator endpoints.
-  taxRegime            String?                // UA_FOP_GROUP_3, UA_FOP_GROUP_2, KH_FLAT_10, NONE
-  taxId                String?                // EDRPOU / individual TIN / similar
-  pushSubscriptions    PushSubscription[]
-  waitlists            Waitlist[]
-  clientNotes          ClientNote[] @relation("ClientNotes")
+  taxRegime               String? // UA_FOP_GROUP_3, UA_FOP_GROUP_2, KH_FLAT_10, NONE
+  taxId                   String? // EDRPOU / individual TIN / similar
+  pushSubscriptions       PushSubscription[]
+  waitlists               Waitlist[]
+  clientNotes             ClientNote[]             @relation("ClientNotes")
 
   // Community relations
-  posts                Post[]                 @relation("UserPosts")
-  comments             Comment[]              @relation("UserComments")
-  postLikes            PostLike[]             @relation("UserPostLikes")
-  commentLikes         CommentLike[]          @relation("UserCommentLikes")
-  postBookmarks        PostBookmark[]         @relation("UserPostBookmarks")
-  postReports          PostReport[]           @relation("UserPostReports")
+  posts         Post[]         @relation("UserPosts")
+  comments      Comment[]      @relation("UserComments")
+  postLikes     PostLike[]     @relation("UserPostLikes")
+  commentLikes  CommentLike[]  @relation("UserCommentLikes")
+  postBookmarks PostBookmark[] @relation("UserPostBookmarks")
+  postReports   PostReport[]   @relation("UserPostReports")
 
   // Review engagement relations
-  reviewReactions      ReviewReaction[]       @relation("UserReviewReactions")
-  reviewReports        ReviewReport[]         @relation("UserReviewReports")
-  responseReactions    ReviewResponseReaction[] @relation("UserResponseReactions")
-  reviewComments       ReviewComment[]        @relation("UserReviewComments")
-  commentReactions     ReviewCommentReaction[] @relation("UserCommentReactions")
+  reviewReactions   ReviewReaction[]         @relation("UserReviewReactions")
+  reviewReports     ReviewReport[]           @relation("UserReviewReports")
+  responseReactions ReviewResponseReaction[] @relation("UserResponseReactions")
+  reviewComments    ReviewComment[]          @relation("UserReviewComments")
+  commentReactions  ReviewCommentReaction[]  @relation("UserCommentReactions")
 
   // Indexes for performance
   @@index([email])
@@ -140,42 +140,41 @@ model User {
   @@index([userType, isActive])
   @@index([userType, isActive, createdAt])
   @@index([lastLoginAt])
-  @@index([isInTrial, trialEndDate])  // Trial expiration service queries
-  @@index([trialStartDate])           // Trial start lookups
-
+  @@index([isInTrial, trialEndDate]) // Trial expiration service queries
+  @@index([trialStartDate]) // Trial start lookups
   @@map("users")
 }
 
 model Specialist {
-  id           String  @id @default(cuid())
-  userId       String  @unique
+  id     String @id @default(cuid())
+  userId String @unique
 
   // Optional: link to a multi-specialist Business this person works under.
-  businessId   String?
+  businessId String?
 
   // Business profile
   businessName String?
-  slug          String?  @unique
+  slug         String? @unique
   bio          String?
   bioUk        String? // Ukrainian bio
   bioRu        String? // Russian bio
   education    String? // Education background
   educationUk  String? // Ukrainian education
   educationRu  String? // Russian education
-  
+
   // Professional details
-  specialties  String // JSON string of specialty tags
-  experience   Int      @default(0) // Years of experience
-  isVerified   Boolean  @default(false)
-  languages    String? // JSON string of supported languages
+  specialties String // JSON string of specialty tags
+  experience  Int     @default(0) // Years of experience
+  isVerified  Boolean @default(false)
+  languages   String? // JSON string of supported languages
 
   // Reputation: external review profile links (for "leave us a review" requests)
   googleReviewUrl   String?
   facebookReviewUrl String?
   // Marketplace acquisition: featured/boosted placement in search
-  isFeatured        Boolean  @default(false)
+  isFeatured        Boolean   @default(false)
   featuredUntil     DateTime?
-  
+
   // Location
   address      String?
   city         String?
@@ -183,57 +182,57 @@ model Specialist {
   country      String?
   latitude     Float?
   longitude    Float?
-  timezone     String   @default("UTC")
-  workingHours String   // JSON string for working hours
+  timezone     String  @default("UTC")
+  workingHours String // JSON string for working hours
 
   // Detailed contact information for confirmed bookings
-  preciseAddress    String? // Exact address with apartment/suite number
-  businessPhone     String? // Primary business phone number
-  whatsappNumber    String? // WhatsApp contact number
-  locationNotes     String? // Special instructions for finding the location
-  parkingInfo       String? // Parking instructions
+  preciseAddress     String? // Exact address with apartment/suite number
+  businessPhone      String? // Primary business phone number
+  whatsappNumber     String? // WhatsApp contact number
+  locationNotes      String? // Special instructions for finding the location
+  parkingInfo        String? // Parking instructions
   accessInstructions String? // Building access, buzzer codes, etc.
-  
+
   // Business operations
-  paymentMethods String? // JSON string of accepted payment methods
-  bankDetails    String? // JSON string of bank account details
-  paymentQrCodeUrl String? // QR code image URL for payments
-  serviceArea    String? // JSON string for service area settings (radius, cities)
-  notifications  String? // JSON string for notification preferences
-  privacy        String? // JSON string for privacy settings
-  socialMedia    String? // JSON string for social media profiles
-  autoBooking    Boolean @default(false) // Auto-approve bookings without manual confirmation
-  allowPayAtVenue Boolean @default(false)
-  cancellationWindowHours Int @default(24) // Hours before booking that cancellation is allowed (2, 6, 12, 24, 48)
+  paymentMethods          String? // JSON string of accepted payment methods
+  bankDetails             String? // JSON string of bank account details
+  paymentQrCodeUrl        String? // QR code image URL for payments
+  serviceArea             String? // JSON string for service area settings (radius, cities)
+  notifications           String? // JSON string for notification preferences
+  privacy                 String? // JSON string for privacy settings
+  socialMedia             String? // JSON string for social media profiles
+  autoBooking             Boolean @default(false) // Auto-approve bookings without manual confirmation
+  allowPayAtVenue         Boolean @default(false)
+  cancellationWindowHours Int     @default(24) // Hours before booking that cancellation is allowed (2, 6, 12, 24, 48)
 
   // Onboarding
   onboardingCompleted Boolean @default(false)
 
   // Verification details
-  verifiedDate   DateTime? // Date when verified
+  verifiedDate       DateTime? // Date when verified
   documentsSubmitted String? // JSON string of submitted documents
-  
+
   // Business metrics
-  rating           Float   @default(0.0)
-  reviewCount      Int     @default(0)
-  completedBookings Int    @default(0)
-  responseTime     Int     @default(0) // Average response time in minutes
-  
+  rating            Float @default(0.0)
+  reviewCount       Int   @default(0)
+  completedBookings Int   @default(0)
+  responseTime      Int   @default(0) // Average response time in minutes
+
   // Portfolio
-  portfolioImages  String? // JSON string of image URLs
-  certifications   String? // JSON string of certifications
-  
+  portfolioImages String? // JSON string of image URLs
+  certifications  String? // JSON string of certifications
+
   // Metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   services           Service[]
-  reviews            Review[]             @relation("SpecialistReviews")
+  reviews            Review[]              @relation("SpecialistReviews")
   availabilityBlocks AvailabilityBlock[]
   analytics          SpecialistAnalytics[]
-  favorites          FavoriteSpecialist[] @relation("SpecialistFavorites")
+  favorites          FavoriteSpecialist[]  @relation("SpecialistFavorites")
   clientNotes        ClientNote[]
   beforeAfterPhotos  BeforeAfterPhoto[]
 
@@ -242,90 +241,89 @@ model Specialist {
   @@index([rating])
   @@index([specialties])
   @@index([isVerified])
-
   @@map("specialists")
 }
 
 model Service {
-  id          String  @id @default(cuid())
+  id           String  @id @default(cuid())
   specialistId String
-  businessId  String?    // optional: service offered under a multi-specialist business
-  categoryId  String?
-  name        String
-  description String
-  category    String
-  
+  businessId   String? // optional: service offered under a multi-specialist business
+  categoryId   String?
+  name         String
+  description  String
+  category     String
+
   // Pricing
-  basePrice      Decimal
-  currency       String @default("USD")
+  basePrice Decimal
+  currency  String  @default("USD")
 
   // Loyalty Points Pricing
   loyaltyPointsEnabled Boolean @default(false)
-  loyaltyPointsPrice   Int?    // Points required to book this service
+  loyaltyPointsPrice   Int? // Points required to book this service
   loyaltyPointsOnly    Boolean @default(false) // If true, only bookable with points
 
   // Service Discounts
-  discountEnabled      Boolean @default(false)
-  discountType         String? // PERCENTAGE, FIXED_AMOUNT
-  discountValue        Decimal?  // Percentage (0-100) or fixed amount
-  discountValidFrom    DateTime?
-  discountValidUntil   DateTime?
-  discountDescription  String? // Optional description for the discount
+  discountEnabled     Boolean   @default(false)
+  discountType        String? // PERCENTAGE, FIXED_AMOUNT
+  discountValue       Decimal? // Percentage (0-100) or fixed amount
+  discountValidFrom   DateTime?
+  discountValidUntil  DateTime?
+  discountDescription String? // Optional description for the discount
 
   // Service details
-  duration       Int    // Duration in minutes
-  prepTime        Int     @default(0)
-  cleanupTime     Int     @default(0)
+  duration        Int // Duration in minutes
+  prepTime        Int  @default(0)
+  cleanupTime     Int  @default(0)
   rebookCycleDays Int?
 
   // Location details (shown to customer after payment)
   serviceLocation String? // Physical address or location details for this service
   locationNotes   String? // Additional instructions for finding the location
-  latitude        Float?  // Geographic latitude coordinate
-  longitude       Float?  // Geographic longitude coordinate
+  latitude        Float? // Geographic latitude coordinate
+  longitude       Float? // Geographic longitude coordinate
 
   // Requirements and deliverables
-  requirements  String // JSON string of requirements
-  deliverables  String // JSON string of deliverables
-  
+  requirements String // JSON string of requirements
+  deliverables String // JSON string of deliverables
+
   // Settings
-  isActive         Boolean @default(true)
-  requiresApproval Boolean @default(true)
-  maxAdvanceBooking Int    @default(30) // Days
-  minAdvanceBooking Int    @default(1)  // Hours
+  isActive          Boolean @default(true)
+  requiresApproval  Boolean @default(true)
+  maxAdvanceBooking Int     @default(30) // Days
+  minAdvanceBooking Int     @default(1) // Hours
 
   // Group Session Settings
-  isGroupSession   Boolean @default(false) // Whether this service supports group bookings
-  maxParticipants  Int?    // Maximum number of participants (NULL = unlimited)
-  minParticipants  Int     @default(1) // Minimum participants required
+  isGroupSession  Boolean @default(false) // Whether this service supports group bookings
+  maxParticipants Int? // Maximum number of participants (NULL = unlimited)
+  minParticipants Int     @default(1) // Minimum participants required
 
   // Soft deletion
-  isDeleted        Boolean @default(false)
-  deletedAt        DateTime?
-  
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
   // Service images
   images String? // JSON string of image URLs
-  
+
   // Metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // No-show protection / deposit policy (per service; charging happens once
   // a payment provider is live — until then deposits are tracked as REQUIRED).
-  requireDeposit          Boolean  @default(false)
-  depositType             String?  // PERCENT | FIXED
-  depositValue            Decimal  @default(0)
-  cancellationWindowHours Int      @default(0)   // free-cancel cutoff before start
-  noShowFeeType           String?  // PERCENT | FIXED
-  noShowFeeValue          Decimal  @default(0)
+  requireDeposit          Boolean @default(false)
+  depositType             String? // PERCENT | FIXED
+  depositValue            Decimal @default(0)
+  cancellationWindowHours Int     @default(0) // free-cancel cutoff before start
+  noShowFeeType           String? // PERCENT | FIXED
+  noShowFeeValue          Decimal @default(0)
 
   // Relations
-  specialist     Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
-  categoryModel  Category?  @relation(fields: [categoryId], references: [id])
-  bookings       Booking[]
-  favorites      FavoriteService[] @relation("ServiceFavorites")
-  waitlists      Waitlist[]
-  consumables    ServiceConsumable[]
+  specialist    Specialist          @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+  categoryModel Category?           @relation(fields: [categoryId], references: [id])
+  bookings      Booking[]
+  favorites     FavoriteService[]   @relation("ServiceFavorites")
+  waitlists     Waitlist[]
+  consumables   ServiceConsumable[]
 
   // Indexes for performance
   @@index([categoryId, isActive, isDeleted])
@@ -335,37 +333,36 @@ model Service {
   @@index([duration])
   @@index([isActive, isDeleted])
   @@index([isDeleted])
-
   @@map("services")
 }
 
 model Booking {
-  id          String        @id @default(cuid())
-  customerId  String
+  id           String  @id @default(cuid())
+  customerId   String
   specialistId String
-  businessId   String?     // denormalised: speeds up business-scoped queries
-  serviceId   String
-  promoCodeId String?
-  
+  businessId   String? // denormalised: speeds up business-scoped queries
+  serviceId    String
+  promoCodeId  String?
+
   // Booking details
-  status      String @default("PENDING") // PENDING, PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, REFUNDED
+  status      String   @default("PENDING") // PENDING, PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, REFUNDED
   scheduledAt DateTime
-  duration    Int           // Duration in minutes
-  
+  duration    Int // Duration in minutes
+
   // Pricing
-  totalAmount    Decimal
-  depositAmount  Decimal
-  remainingAmount Decimal
-  loyaltyPointsUsed Int @default(0)
+  totalAmount           Decimal
+  depositAmount         Decimal
+  remainingAmount       Decimal
+  loyaltyPointsUsed     Int     @default(0)
   paidWithLoyaltyPoints Boolean @default(false) // True if booking was paid entirely with loyalty points
 
   // Deposit payment tracking
-  depositStatus        String @default("PENDING") // PENDING, PAID, REFUNDED, FORFEITED
-  depositPaidAt        DateTime?
-  depositRefundedAt    DateTime?
-  depositCurrency      String @default("USD")
-  walletAmountUsed     Decimal @default(0.0)
-  
+  depositStatus     String    @default("PENDING") // PENDING, PAID, REFUNDED, FORFEITED
+  depositPaidAt     DateTime?
+  depositRefundedAt DateTime?
+  depositCurrency   String    @default("USD")
+  walletAmountUsed  Decimal   @default(0.0)
+
   // Additional information
   customerNotes    String?
   specialistNotes  String?
@@ -374,26 +371,26 @@ model Booking {
   deliverables     String // JSON string of deliverables
 
   // Group Session Support
-  participantCount Int    @default(1) // Number of participants in this booking
+  participantCount Int     @default(1) // Number of participants in this booking
   groupSessionId   String? // Links multiple bookings to same group session
 
   // Time tracking
-  confirmedAt   DateTime?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  cancelledAt   DateTime?
-  
+  confirmedAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
   // Cancellation details
   cancellationReason String?
   cancelledBy        String? // customerId or specialistId
   refundAmount       Decimal?
 
   // Recurring booking support
-  isRecurring       Boolean   @default(false)
-  recurringPattern  String?   // JSON: { frequency, daysOfWeek?, endType, endAfterCount?, endDate? }
-  parentBookingId   String?
-  parentBooking     Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id])
-  childBookings     Booking[] @relation("RecurringBookings")
+  isRecurring      Boolean   @default(false)
+  recurringPattern String? // JSON: { frequency, daysOfWeek?, endType, endAfterCount?, endDate? }
+  parentBookingId  String?
+  parentBooking    Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id])
+  childBookings    Booking[] @relation("RecurringBookings")
 
   // External calendar sync — event IDs in each party's connected calendar
   calendarEventIdCustomer   String?
@@ -403,24 +400,11 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Indexes for performance
-  @@index([status, scheduledAt])
-  @@index([customerId, status])
-  @@index([customerId, createdAt])
-  @@index([specialistId, status])
-  @@index([specialistId, status, scheduledAt])
-  @@index([scheduledAt])
-  @@index([groupSessionId])
-  @@index([scheduledAt, serviceId])
-  @@index([parentBookingId])
-  @@index([customerId, serviceId, scheduledAt])  // Double-booking prevention composite
-  @@index([specialistId, serviceId, scheduledAt]) // Specialist schedule conflict check
-
   // Relations
-  customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
-  specialist    User        @relation("SpecialistBookings", fields: [specialistId], references: [id])
-  service       Service     @relation(fields: [serviceId], references: [id])
-  promoCode     PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  customer      User           @relation("CustomerBookings", fields: [customerId], references: [id])
+  specialist    User           @relation("SpecialistBookings", fields: [specialistId], references: [id])
+  service       Service        @relation(fields: [serviceId], references: [id])
+  promoCode     PromoCode?     @relation(fields: [promoCodeId], references: [id])
   payments      Payment[]
   review        Review?
   notifications Notification[]
@@ -432,32 +416,44 @@ model Booking {
   rewardRedemptions RewardRedemption[] @relation("BookingRewardRedemptions")
 
   // No-show protection state (depositStatus already exists above)
-  noShowFeeAmount   Decimal  @default(0)
-  noShowFeeStatus   String   @default("NONE") // NONE | CHARGED | WAIVED
-  consumablesDeducted Boolean @default(false) // guard so stock is written off once
-  source            String   @default("DIRECT") // DIRECT | DISCOVERY | EMBED | MARKETPLACE — acquisition channel
-  isFirstVisit      Boolean  @default(false)     // customer's first-ever booking with this specialist
-  reviewRequestedAt DateTime?                    // when the post-visit review request was sent
+  noShowFeeAmount     Decimal   @default(0)
+  noShowFeeStatus     String    @default("NONE") // NONE | CHARGED | WAIVED
+  consumablesDeducted Boolean   @default(false) // guard so stock is written off once
+  source              String    @default("DIRECT") // DIRECT | DISCOVERY | EMBED | MARKETPLACE — acquisition channel
+  isFirstVisit        Boolean   @default(false) // customer's first-ever booking with this specialist
+  reviewRequestedAt   DateTime? // when the post-visit review request was sent
 
   // Crypto Payment Relations
-  cryptoPayments    CryptoPayment[]
+  cryptoPayments     CryptoPayment[]
   walletTransactions WalletTransaction[]
-  onrampSessions    OnrampSession[]
-  beforeAfterPhotos BeforeAfterPhoto[]
+  onrampSessions     OnrampSession[]
+  beforeAfterPhotos  BeforeAfterPhoto[]
 
+  // Indexes for performance
+  @@index([status, scheduledAt])
+  @@index([customerId, status])
+  @@index([customerId, createdAt])
+  @@index([specialistId, status])
+  @@index([specialistId, status, scheduledAt])
+  @@index([scheduledAt])
+  @@index([groupSessionId])
+  @@index([scheduledAt, serviceId])
+  @@index([parentBookingId])
+  @@index([customerId, serviceId, scheduledAt]) // Double-booking prevention composite
+  @@index([specialistId, serviceId, scheduledAt]) // Specialist schedule conflict check
   @@map("bookings")
 }
 
 model Payment {
-  id        String        @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String
   bookingId String?
 
   // Payment details
-  status    String  // PENDING, PROCESSING, SUCCEEDED, FAILED, CANCELLED, REFUNDED
-  type      String  // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION, SUBSCRIPTION
-  amount    Decimal
-  currency  String  @default("USD")
+  status   String // PENDING, PROCESSING, SUCCEEDED, FAILED, CANCELLED, REFUNDED
+  type     String // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION, SUBSCRIPTION
+  amount   Decimal
+  currency String  @default("USD")
 
   // External payment provider info
   stripePaymentIntentId String?
@@ -467,7 +463,7 @@ model Payment {
   paymentMethodType String? // card, telegram_payment, crypto, wallet
 
   // Metadata
-  metadata String? // JSON string
+  metadata  String? // JSON string
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -487,12 +483,12 @@ model Review {
   specialistId String
 
   // Review content
-  rating  Int    // 1-5 stars
+  rating  Int // 1-5 stars
   comment String?
   tags    String // JSON string of tags like "professional", "punctual", etc.
 
   // Review metadata
-  isPublic Boolean @default(true)
+  isPublic   Boolean @default(true)
   isVerified Boolean @default(false)
 
   // Engagement metrics
@@ -504,9 +500,9 @@ model Review {
   updatedAt DateTime @updatedAt
 
   // Relations
-  booking    Booking    @relation(fields: [bookingId], references: [id])
-  customer   User       @relation(fields: [customerId], references: [id])
-  specialist Specialist @relation("SpecialistReviews", fields: [specialistId], references: [id])
+  booking    Booking          @relation(fields: [bookingId], references: [id])
+  customer   User             @relation(fields: [customerId], references: [id])
+  specialist Specialist       @relation("SpecialistReviews", fields: [specialistId], references: [id])
   reactions  ReviewReaction[]
   reports    ReviewReport[]
   response   ReviewResponse?
@@ -519,9 +515,9 @@ model Review {
 }
 
 model ReviewReaction {
-  id        String @id @default(cuid())
-  reviewId  String
-  userId    String
+  id       String @id @default(cuid())
+  reviewId String
+  userId   String
 
   // Reaction type: "like" or "dislike"
   reactionType String // "like" | "dislike"
@@ -547,7 +543,7 @@ model ReviewReport {
   reportedBy String
 
   // Report reason
-  reason String // spam, offensive, fake, harassment, personal_info, other
+  reason  String // spam, offensive, fake, harassment, personal_info, other
   details String? // Optional additional details
 
   // Report status
@@ -563,8 +559,8 @@ model ReviewReport {
   updatedAt DateTime @updatedAt
 
   // Relations
-  review      Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  reporter    User   @relation("UserReviewReports", fields: [reportedBy], references: [id], onDelete: Cascade)
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporter User   @relation("UserReviewReports", fields: [reportedBy], references: [id], onDelete: Cascade)
 
   // Prevent duplicate reports from same user
   @@unique([reviewId, reportedBy])
@@ -576,8 +572,8 @@ model ReviewReport {
 }
 
 model ReviewResponse {
-  id           String @id @default(cuid())
-  reviewId     String @unique
+  id       String @id @default(cuid())
+  reviewId String @unique
 
   // Response content
   responseText String
@@ -591,7 +587,7 @@ model ReviewResponse {
   updatedAt DateTime @updatedAt
 
   // Relations
-  review    Review                  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review    Review                   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   reactions ReviewResponseReaction[]
 
   @@index([reviewId])
@@ -622,7 +618,7 @@ model ReviewResponseReaction {
 }
 
 model ReviewComment {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   reviewId String
   userId   String
   parentId String? // For nested replies (Reddit-style threading)
@@ -635,7 +631,7 @@ model ReviewComment {
   dislikeCount Int @default(0)
 
   // Moderation
-  isDeleted Boolean @default(false)
+  isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
   // Timestamps
@@ -643,10 +639,10 @@ model ReviewComment {
   updatedAt DateTime @updatedAt
 
   // Relations
-  review   Review         @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user     User           @relation("UserReviewComments", fields: [userId], references: [id], onDelete: Cascade)
-  parent   ReviewComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  ReviewComment[] @relation("CommentReplies")
+  review    Review                  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User                    @relation("UserReviewComments", fields: [userId], references: [id], onDelete: Cascade)
+  parent    ReviewComment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ReviewComment[]         @relation("CommentReplies")
   reactions ReviewCommentReaction[]
 
   @@index([reviewId])
@@ -680,19 +676,19 @@ model ReviewCommentReaction {
 }
 
 model LoyaltyTransaction {
-  id     String                 @id @default(cuid())
+  id     String @id @default(cuid())
   userId String
-  
+
   // Transaction details
-  type      String // EARNED, REDEEMED, EXPIRED, BONUS
-  points    Int
-  reason    String
+  type        String // EARNED, REDEEMED, EXPIRED, BONUS
+  points      Int
+  reason      String
   description String?
-  
+
   // Transaction metadata
   referenceId String? // Reference to related booking, etc.
   expiresAt   DateTime?
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -707,28 +703,28 @@ model LoyaltyTransaction {
 }
 
 model Notification {
-  id       String            @id @default(cuid())
-  userId   String
-  type     String // BOOKING_CREATED, BOOKING_CONFIRMED, etc.
-  
+  id     String @id @default(cuid())
+  userId String
+  type   String // BOOKING_CREATED, BOOKING_CONFIRMED, etc.
+
   // Content
-  title    String
-  message  String
-  data     String? // JSON string - Additional data for the notification
-  
+  title   String
+  message String
+  data    String? // JSON string - Additional data for the notification
+
   // Status
-  isRead   Boolean  @default(false)
-  readAt   DateTime?
-  
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
   // Delivery channels
-  emailSent     Boolean @default(false)
-  smsSent       Boolean @default(false)
-  pushSent      Boolean @default(false)
-  telegramSent  Boolean @default(false)
-  
+  emailSent    Boolean @default(false)
+  smsSent      Boolean @default(false)
+  pushSent     Boolean @default(false)
+  telegramSent Boolean @default(false)
+
   // Optional booking reference
   bookingId String?
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -744,20 +740,20 @@ model Notification {
 model AvailabilityBlock {
   id           String @id @default(cuid())
   specialistId String
-  
+
   // Time block
   startDateTime DateTime
   endDateTime   DateTime
-  
+
   // Block details
   isAvailable Boolean @default(true)
   reason      String? // Reason for unavailability
-  
+
   // Recurring settings
-  isRecurring     Boolean @default(false)
-  recurringUntil  DateTime?
-  recurringDays   String? // JSON string of days: ["monday", "tuesday"]
-  
+  isRecurring    Boolean   @default(false)
+  recurringUntil DateTime?
+  recurringDays  String? // JSON string of days: ["monday", "tuesday"]
+
   // Metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -774,15 +770,15 @@ model RefreshToken {
   userId    String
   token     String   @unique
   expiresAt DateTime
-  
+
   // Device info
   userAgent String?
   ipAddress String?
-  
+
   // Status
-  isRevoked Boolean @default(false)
+  isRevoked Boolean   @default(false)
   revokedAt DateTime?
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -799,11 +795,11 @@ model EmailVerificationToken {
   token     String   @unique
   type      String   @default("EMAIL_VERIFICATION") // EMAIL_VERIFICATION, PASSWORD_RESET
   expiresAt DateTime
-  
+
   // Status
-  isUsed    Boolean @default(false)
-  usedAt    DateTime?
-  
+  isUsed Boolean   @default(false)
+  usedAt DateTime?
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -817,18 +813,18 @@ model EmailVerificationToken {
 model SpecialistAnalytics {
   id           String @id @default(cuid())
   specialistId String
-  
+
   // Time period
-  date    DateTime
-  
+  date DateTime
+
   // Metrics
-  bookingsCount     Int   @default(0)
-  completedBookings Int   @default(0)
-  cancelledBookings Int   @default(0)
+  bookingsCount     Int     @default(0)
+  completedBookings Int     @default(0)
+  cancelledBookings Int     @default(0)
   totalRevenue      Decimal @default(0.0)
-  averageRating     Float @default(0.0)
-  responseTimeAvg   Int   @default(0)
-  
+  averageRating     Float   @default(0.0)
+  responseTimeAvg   Int     @default(0)
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -844,7 +840,7 @@ model SystemSettings {
   id    String @id @default(cuid())
   key   String @unique
   value String // JSON string
-  
+
   // Metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -853,17 +849,17 @@ model SystemSettings {
 }
 
 model AuditLog {
-  id        String @id @default(cuid())
-  userId    String?
-  entityType String  // Model name
-  entityId  String  // Record ID
-  action    String  // CREATE, UPDATE, DELETE
-  
+  id         String  @id @default(cuid())
+  userId     String?
+  entityType String // Model name
+  entityId   String // Record ID
+  action     String // CREATE, UPDATE, DELETE
+
   // Details
-  changes    String? // JSON string
-  ipAddress  String?
-  userAgent  String?
-  
+  changes   String? // JSON string
+  ipAddress String?
+  userAgent String?
+
   // Timestamps
   createdAt DateTime @default(now())
 
@@ -874,65 +870,65 @@ model AuditLog {
 }
 
 model Category {
-  id          String @id @default(cuid())
-  name        String
-  nameUk      String // Ukrainian translation
-  nameRu      String // Russian translation
-  description String?
+  id            String  @id @default(cuid())
+  name          String
+  nameUk        String // Ukrainian translation
+  nameRu        String // Russian translation
+  description   String?
   descriptionUk String?
   descriptionRu String?
-  slug        String @unique
-  icon        String?
-  color       String?
-  
+  slug          String  @unique
+  icon          String?
+  color         String?
+
   // Hierarchy
-  parentId    String?
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-  
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
   // Settings
-  isActive    Boolean @default(true)
-  sortOrder   Int     @default(0)
-  
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  services    Service[]
+  services Service[]
 
   @@map("categories")
 }
 
 model Message {
-  id           String @id @default(cuid())
+  id             String @id @default(cuid())
   conversationId String
-  senderId     String
-  receiverId   String
-  
+  senderId       String
+  receiverId     String
+
   // Content
-  content      String
-  messageType  String @default("TEXT") // TEXT, IMAGE, FILE, SYSTEM
-  attachments  String? // JSON array of file URLs
-  
+  content     String
+  messageType String  @default("TEXT") // TEXT, IMAGE, FILE, SYSTEM
+  attachments String? // JSON array of file URLs
+
   // Message status
-  isRead       Boolean @default(false)
-  readAt       DateTime?
-  isDelivered  Boolean @default(false)
-  deliveredAt  DateTime?
-  
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  isDelivered Boolean   @default(false)
+  deliveredAt DateTime?
+
   // Metadata
-  editedAt     DateTime?
-  deletedAt    DateTime?
-  
+  editedAt  DateTime?
+  deletedAt DateTime?
+
   // Timestamps
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver     User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiver     User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
   @@index([conversationId, createdAt])
   @@index([receiverId, isRead])
@@ -940,35 +936,35 @@ model Message {
 }
 
 model Conversation {
-  id            String @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Participants
-  customerId    String
-  specialistId  String
-  
+  customerId   String
+  specialistId String
+
   // Related booking (optional)
-  bookingId     String?
-  
+  bookingId String?
+
   // Conversation status
-  status        String @default("ACTIVE") // ACTIVE, ARCHIVED, BLOCKED
-  
+  status String @default("ACTIVE") // ACTIVE, ARCHIVED, BLOCKED
+
   // Last message info
-  lastMessageAt DateTime?
+  lastMessageAt      DateTime?
   lastMessageContent String?
-  
+
   // Unread counts
-  customerUnreadCount    Int @default(0)
-  specialistUnreadCount  Int @default(0)
-  
+  customerUnreadCount   Int @default(0)
+  specialistUnreadCount Int @default(0)
+
   // Metadata
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  customer      User @relation("CustomerConversations", fields: [customerId], references: [id])
-  specialist    User @relation("SpecialistConversations", fields: [specialistId], references: [id])
-  booking       Booking? @relation(fields: [bookingId], references: [id])
-  messages      Message[]
+  customer   User      @relation("CustomerConversations", fields: [customerId], references: [id])
+  specialist User      @relation("SpecialistConversations", fields: [specialistId], references: [id])
+  booking    Booking?  @relation(fields: [bookingId], references: [id])
+  messages   Message[]
 
   @@unique([customerId, specialistId, bookingId])
   @@index([customerId])
@@ -978,210 +974,210 @@ model Conversation {
 }
 
 model File {
-  id          String @id @default(cuid())
-  filename    String
+  id           String @id @default(cuid())
+  filename     String
   originalName String
-  mimeType    String
-  size        Int
-  path        String
-  url         String
-  
+  mimeType     String
+  size         Int
+  path         String
+  url          String
+
   // File metadata
-  width       Int?
-  height      Int?
-  duration    Int? // For videos/audio in seconds
-  
+  width    Int?
+  height   Int?
+  duration Int? // For videos/audio in seconds
+
   // Upload info
-  uploadedBy  String
-  
+  uploadedBy String
+
   // File purpose
-  purpose     String // AVATAR, SERVICE_IMAGE, MESSAGE_ATTACHMENT, PORTFOLIO, etc.
-  entityType  String? // Model name this file belongs to
-  entityId    String? // Record ID this file belongs to
-  
+  purpose    String // AVATAR, SERVICE_IMAGE, MESSAGE_ATTACHMENT, PORTFOLIO, etc.
+  entityType String? // Model name this file belongs to
+  entityId   String? // Record ID this file belongs to
+
   // Status
   isProcessed Boolean @default(false)
   isPublic    Boolean @default(false)
-  
+
   // Cloud storage fields
   cloudProvider String? // 'S3', 'CLOUDINARY', 'LOCAL', etc.
   cloudKey      String? // Key/path in cloud storage
   cloudBucket   String? // Bucket name for cloud storage
-  
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   // Relations
-  uploader    User @relation(fields: [uploadedBy], references: [id])
+  uploader User @relation(fields: [uploadedBy], references: [id])
 
   @@map("files")
 }
 
 model EmailTemplate {
-  id          String @id @default(cuid())
-  name        String @unique
-  subject     String
-  subjectUk   String
-  subjectRu   String
-  htmlContent String
+  id            String  @id @default(cuid())
+  name          String  @unique
+  subject       String
+  subjectUk     String
+  subjectRu     String
+  htmlContent   String
   htmlContentUk String
   htmlContentRu String
-  textContent String?
+  textContent   String?
   textContentUk String?
   textContentRu String?
-  
+
   // Template variables
-  variables   String // JSON array of variable names
-  
+  variables String // JSON array of variable names
+
   // Settings
-  isActive    Boolean @default(true)
-  
+  isActive Boolean @default(true)
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("email_templates")
 }
 
 model SMSTemplate {
-  id          String @id @default(cuid())
-  name        String @unique
-  content     String
-  contentUk   String
-  contentRu   String
-  
+  id        String @id @default(cuid())
+  name      String @unique
+  content   String
+  contentUk String
+  contentRu String
+
   // Template variables
-  variables   String // JSON array of variable names
-  
+  variables String // JSON array of variable names
+
   // Settings
-  isActive    Boolean @default(true)
-  
+  isActive Boolean @default(true)
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("sms_templates")
 }
 
 model PromoCode {
-  id            String @id @default(cuid())
-  code          String @unique
-  name          String
-  description   String?
-  
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+
   // Discount details
-  discountType  String // PERCENTAGE, FIXED_AMOUNT
-  discountValue Decimal
-  maxDiscount   Decimal?
+  discountType   String // PERCENTAGE, FIXED_AMOUNT
+  discountValue  Decimal
+  maxDiscount    Decimal?
   minOrderAmount Decimal?
-  
+
   // Usage limits
-  maxUses       Int?
-  maxUsesPerUser Int @default(1)
-  usedCount     Int @default(0)
-  
+  maxUses        Int?
+  maxUsesPerUser Int  @default(1)
+  usedCount      Int  @default(0)
+
   // Validity
-  validFrom     DateTime
-  validUntil    DateTime
-  
+  validFrom  DateTime
+  validUntil DateTime
+
   // Restrictions
   applicableFor String? // JSON array of service categories or specialist IDs
-  
+
   // Settings
-  isActive      Boolean @default(true)
-  
+  isActive Boolean @default(true)
+
   // Metadata
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  bookings      Booking[]
+  bookings Booking[]
 
   @@map("promo_codes")
 }
 
 model FAQ {
-  id          String @id @default(cuid())
-  question    String
-  questionUk  String
-  questionRu  String
-  answer      String
-  answerUk    String
-  answerRu    String
-  
+  id         String @id @default(cuid())
+  question   String
+  questionUk String
+  questionRu String
+  answer     String
+  answerUk   String
+  answerRu   String
+
   // Categorization
-  category    String
-  tags        String? // JSON array
-  
+  category String
+  tags     String? // JSON array
+
   // Settings
-  isActive    Boolean @default(true)
-  sortOrder   Int @default(0)
-  
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("faqs")
 }
 
 model Report {
-  id          String @id @default(cuid())
-  reporterId  String
-  reportedId  String
-  entityType  String // USER, SERVICE, REVIEW
-  entityId    String
-  
+  id         String @id @default(cuid())
+  reporterId String
+  reportedId String
+  entityType String // USER, SERVICE, REVIEW
+  entityId   String
+
   // Report details
   reason      String
   description String?
-  
+
   // Status
-  status      String @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
-  resolution  String?
-  resolvedBy  String?
-  resolvedAt  DateTime?
-  
+  status     String    @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+  resolution String?
+  resolvedBy String?
+  resolvedAt DateTime?
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  reporter    User @relation("ReportsMade", fields: [reporterId], references: [id])
-  reported    User @relation("ReportsReceived", fields: [reportedId], references: [id])
+  reporter User @relation("ReportsMade", fields: [reporterId], references: [id])
+  reported User @relation("ReportsReceived", fields: [reportedId], references: [id])
 
   @@map("reports")
 }
 
 model PaymentMethod {
-  id          String @id @default(cuid())
-  userId      String
-  
+  id     String @id @default(cuid())
+  userId String
+
   // Payment method details
-  type        String // CARD, APPLE_PAY, GOOGLE_PAY, BANK_TRANSFER
-  cardLast4   String?
-  cardBrand   String? // visa, mastercard, amex, etc.
+  type         String // CARD, APPLE_PAY, GOOGLE_PAY, BANK_TRANSFER
+  cardLast4    String?
+  cardBrand    String? // visa, mastercard, amex, etc.
   cardExpMonth Int?
-  cardExpYear Int?
-  
+  cardExpYear  Int?
+
   // Stripe customer and payment method IDs
-  stripeCustomerId String?
+  stripeCustomerId      String?
   stripePaymentMethodId String?
-  
+
   // Display info
-  nickname    String?
-  isDefault   Boolean @default(false)
-  
+  nickname  String?
+  isDefault Boolean @default(false)
+
   // Status
-  isActive    Boolean @default(true)
-  
+  isActive Boolean @default(true)
+
   // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isActive])
   @@index([stripeCustomerId])
@@ -1192,15 +1188,15 @@ model FavoriteSpecialist {
   id           String @id @default(cuid())
   userId       String
   specialistId String
-  
+
   // Timestamps
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  user         User @relation("UserFavoriteSpecialists", fields: [userId], references: [id], onDelete: Cascade)
-  specialist   Specialist @relation("SpecialistFavorites", fields: [specialistId], references: [id], onDelete: Cascade)
-  
+  user       User       @relation("UserFavoriteSpecialists", fields: [userId], references: [id], onDelete: Cascade)
+  specialist Specialist @relation("SpecialistFavorites", fields: [specialistId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([userId, specialistId])
   @@index([userId])
@@ -1212,15 +1208,15 @@ model FavoriteService {
   id        String @id @default(cuid())
   userId    String
   serviceId String
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
-  user      User @relation("UserFavoriteServices", fields: [userId], references: [id], onDelete: Cascade)
-  service   Service @relation("ServiceFavorites", fields: [serviceId], references: [id], onDelete: Cascade)
-  
+  user    User    @relation("UserFavoriteServices", fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation("ServiceFavorites", fields: [serviceId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([userId, serviceId])
   @@index([userId])
@@ -1229,25 +1225,25 @@ model FavoriteService {
 }
 
 model ProfileView {
-  id          String @id @default(cuid())
-  viewerId    String?  // null for anonymous views
-  specialistId String  // whose profile was viewed
-  
+  id           String  @id @default(cuid())
+  viewerId     String? // null for anonymous views
+  specialistId String // whose profile was viewed
+
   // View details
-  ipAddress   String?
-  userAgent   String?
-  referrer    String?
-  
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+
   // Session tracking (to avoid counting same user multiple times in short period)
-  sessionId   String?
-  
+  sessionId String?
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   // Relations
-  viewer      User? @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: SetNull)
-  specialist  User @relation("ProfileViewed", fields: [specialistId], references: [id], onDelete: Cascade)
-  
+  viewer     User? @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  specialist User  @relation("ProfileViewed", fields: [specialistId], references: [id], onDelete: Cascade)
+
   // Indexes
   @@index([specialistId, createdAt])
   @@index([viewerId])
@@ -1256,23 +1252,23 @@ model ProfileView {
 }
 
 model TelegramSession {
-  id           String @id @default(cuid())
-  userId       String
-  telegramId   String @unique
-  chatId       String?
-  platform     String // 'bot' or 'miniapp'
-  
+  id         String  @id @default(cuid())
+  userId     String
+  telegramId String  @unique
+  chatId     String?
+  platform   String // 'bot' or 'miniapp'
+
   // Session status
-  isActive     Boolean @default(true)
+  isActive     Boolean  @default(true)
   lastActivity DateTime @default(now())
-  
+
   // Timestamps
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([telegramId])
   @@index([platform])
@@ -1280,18 +1276,18 @@ model TelegramSession {
 }
 
 model PlatformAnalytics {
-  id          String @id @default(cuid())
-  date        DateTime
-  platform    String
-  
+  id       String   @id @default(cuid())
+  date     DateTime
+  platform String
+
   // Metrics
   activeUsers Int @default(0)
   newUsers    Int @default(0)
-  
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([date, platform])
   @@index([date])
   @@index([platform])
@@ -1301,37 +1297,37 @@ model PlatformAnalytics {
 // Enhanced Loyalty Program Models
 
 model LoyaltyTier {
-  id          String @id @default(cuid())
-  name        String @unique // SILVER, GOLD, PLATINUM
-  minPoints   Int
-  maxPoints   Int?
-  color       String
-  icon        String
-  benefits    String // JSON array of benefits
-  
+  id        String @id @default(cuid())
+  name      String @unique // SILVER, GOLD, PLATINUM
+  minPoints Int
+  maxPoints Int?
+  color     String
+  icon      String
+  benefits  String // JSON array of benefits
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  users       User[] @relation("UserLoyaltyTier")
-  
+  users User[] @relation("UserLoyaltyTier")
+
   @@map("loyalty_tiers")
 }
 
 model UserBadge {
-  id       String @id @default(cuid())
-  userId   String
-  badgeId  String
-  
+  id      String @id @default(cuid())
+  userId  String
+  badgeId String
+
   // Badge metadata
   earnedAt DateTime @default(now())
-  progress Float?   // Progress towards badge if applicable (0.0-1.0)
-  
+  progress Float? // Progress towards badge if applicable (0.0-1.0)
+
   // Relations
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge    Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
   @@unique([userId, badgeId])
   @@map("user_badges")
 }
@@ -1343,64 +1339,64 @@ model Badge {
   icon        String
   color       String
   category    String // BOOKING, REVIEW, REFERRAL, LOYALTY
-  
+
   // Badge criteria (JSON)
-  criteria    String
-  rarity      String @default("COMMON") // COMMON, RARE, EPIC, LEGENDARY
-  
+  criteria String
+  rarity   String @default("COMMON") // COMMON, RARE, EPIC, LEGENDARY
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  userBadges  UserBadge[]
-  
+  userBadges UserBadge[]
+
   @@map("badges")
 }
 
 model LoyaltyReferral {
-  id            String @id @default(cuid())
-  referrerId    String
-  referredId    String?
-  referralCode  String @unique
+  id           String  @id @default(cuid())
+  referrerId   String
+  referredId   String?
+  referralCode String  @unique
 
   // Enhanced referral type support
-  referralType  String @default("CUSTOMER_TO_CUSTOMER") // CUSTOMER_TO_CUSTOMER, SPECIALIST_TO_CUSTOMER, CUSTOMER_TO_SPECIALIST
+  referralType   String  @default("CUSTOMER_TO_CUSTOMER") // CUSTOMER_TO_CUSTOMER, SPECIALIST_TO_CUSTOMER, CUSTOMER_TO_SPECIALIST
   targetUserType String? // CUSTOMER, SPECIALIST - who is being referred
 
   // Referral status
-  status        String @default("PENDING") // PENDING, COMPLETED, EXPIRED
-  completedAt   DateTime?
+  status      String    @default("PENDING") // PENDING, COMPLETED, EXPIRED
+  completedAt DateTime?
 
   // Points tracking
-  referrerPoints    Int @default(0)
-  referredPoints    Int @default(0)
-  pointsAwarded     Boolean @default(false)
+  referrerPoints Int     @default(0)
+  referredPoints Int     @default(0)
+  pointsAwarded  Boolean @default(false)
 
   // Enhanced rewards tracking
-  referrerRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
-  referredRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referrerRewardType  String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referredRewardType  String? // POINTS, DISCOUNT, CREDIT, CUSTOM
   referrerRewardValue Decimal? // Monetary value or percentage for non-points rewards
   referredRewardValue Decimal? // Monetary value or percentage for non-points rewards
 
   // Metadata
-  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT, LINK
-  firstBookingId    String? // First booking that completed the referral
-  specialistId      String? // For specialist-related referrals
-  customMessage     String? // Personalized message from referrer
+  inviteChannel  String? // EMAIL, SMS, SOCIAL, DIRECT, LINK
+  firstBookingId String? // First booking that completed the referral
+  specialistId   String? // For specialist-related referrals
+  customMessage  String? // Personalized message from referrer
 
   // Tracking
-  clickCount        Int @default(0) // How many times referral link was clicked
-  viewCount         Int @default(0) // How many times referral was viewed
+  clickCount Int @default(0) // How many times referral link was clicked
+  viewCount  Int @default(0) // How many times referral was viewed
 
   // Timestamps
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  expiresAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
 
   // Relations
-  referrer      User     @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
-  referred      User?    @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
+  referrer User  @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User? @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
 
   @@index([referralCode])
   @@index([referrerId])
@@ -1410,96 +1406,96 @@ model LoyaltyReferral {
 }
 
 model LoyaltyCampaign {
-  id                String @id @default(cuid())
-  name              String
-  description       String
-  type              String // DOUBLE_POINTS, BONUS_REVIEW, SEASONAL, SPECIALIST_MULTIPLIER
-  
+  id          String @id @default(cuid())
+  name        String
+  description String
+  type        String // DOUBLE_POINTS, BONUS_REVIEW, SEASONAL, SPECIALIST_MULTIPLIER
+
   // Campaign rules (JSON)
-  rules             String
-  multiplier        Float @default(1.0)
-  bonusPoints       Int @default(0)
-  
+  rules       String
+  multiplier  Float  @default(1.0)
+  bonusPoints Int    @default(0)
+
   // Targeting
-  targetUserType    String? // CUSTOMER, SPECIALIST, ALL
-  targetTiers       String? // JSON array of tier names
-  specialistIds     String? // JSON array for specialist-specific campaigns
-  
+  targetUserType String? // CUSTOMER, SPECIALIST, ALL
+  targetTiers    String? // JSON array of tier names
+  specialistIds  String? // JSON array for specialist-specific campaigns
+
   // Status
-  isActive          Boolean @default(true)
-  
+  isActive Boolean @default(true)
+
   // Time bounds
-  startsAt          DateTime
-  endsAt            DateTime
-  
+  startsAt DateTime
+  endsAt   DateTime
+
   // Usage limits
-  maxRedemptions    Int?
-  currentRedemptions Int @default(0)
-  maxPerUser        Int @default(1)
-  
+  maxRedemptions     Int?
+  currentRedemptions Int  @default(0)
+  maxPerUser         Int  @default(1)
+
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  redemptions       CampaignRedemption[]
-  
+  redemptions CampaignRedemption[]
+
   @@index([isActive, startsAt, endsAt])
   @@map("loyalty_campaigns")
 }
 
 model CampaignRedemption {
-  id          String @id @default(cuid())
-  campaignId  String
-  userId      String
-  
+  id         String @id @default(cuid())
+  campaignId String
+  userId     String
+
   // Redemption details
-  pointsEarned    Int
-  referenceId     String? // Booking ID, Review ID, etc.
-  referenceType   String? // BOOKING, REVIEW, REFERRAL
-  
+  pointsEarned  Int
+  referenceId   String? // Booking ID, Review ID, etc.
+  referenceType String? // BOOKING, REVIEW, REFERRAL
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   // Relations
-  campaign    LoyaltyCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  campaign LoyaltyCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([campaignId, userId, referenceId])
   @@index([userId])
   @@map("campaign_redemptions")
 }
 
 model PointsRedemption {
-  id              String @id @default(cuid())
-  userId          String
-  
+  id     String @id @default(cuid())
+  userId String
+
   // Redemption details
   type            String // DISCOUNT, PAYMENT, PERK
   pointsUsed      Int
   discountPercent Float?
   cashValue       Decimal? // For partial payments
-  
+
   // Service/booking reference
-  bookingId       String?
-  serviceId       String?
-  specialistId    String?
-  
+  bookingId    String?
+  serviceId    String?
+  specialistId String?
+
   // Status
-  status          String @default("COMPLETED") // COMPLETED, REFUNDED, CANCELLED
-  
+  status String @default("COMPLETED") // COMPLETED, REFUNDED, CANCELLED
+
   // Metadata
-  description     String
-  originalAmount  Decimal?
-  finalAmount     Decimal?
+  description    String
+  originalAmount Decimal?
+  finalAmount    Decimal?
 
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id])
 
   @@index([userId])
   @@index([bookingId])
@@ -1507,40 +1503,40 @@ model PointsRedemption {
 }
 
 model ReviewReward {
-  id            String @id @default(cuid())
-  userId        String
-  reviewId      String?
-  bookingId     String
-  
+  id        String  @id @default(cuid())
+  userId    String
+  reviewId  String?
+  bookingId String
+
   // Reward details
-  pointsEarned  Int
-  rewardType    String // RATING_ONLY, WITH_COMMENT, WITH_PHOTO
-  monthYear     String // YYYY-MM for monthly cap tracking
-  
+  pointsEarned Int
+  rewardType   String // RATING_ONLY, WITH_COMMENT, WITH_PHOTO
+  monthYear    String // YYYY-MM for monthly cap tracking
+
   // Verification
-  verified      Boolean @default(false)
-  verifiedAt    DateTime?
-  
+  verified   Boolean   @default(false)
+  verifiedAt DateTime?
+
   // Timestamps
-  createdAt     DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   // Relations
-  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@unique([userId, bookingId]) // One reward per booking
   @@index([userId, monthYear])
   @@map("review_rewards")
 }
 
 model LoyaltyReward {
-  id              String @id @default(cuid())
-  specialistId    String
+  id           String @id @default(cuid())
+  specialistId String
 
   // Reward details
-  title           String
-  description     String
-  type            String // DISCOUNT_VOUCHER, SERVICE_CREDIT, FREE_SERVICE, PERCENTAGE_OFF
+  title       String
+  description String
+  type        String // DISCOUNT_VOUCHER, SERVICE_CREDIT, FREE_SERVICE, PERCENTAGE_OFF
 
   // Reward value
   pointsRequired  Int
@@ -1549,26 +1545,26 @@ model LoyaltyReward {
   serviceIds      String? // JSON array of applicable service IDs (null = all services)
 
   // Usage limits
-  maxRedemptions  Int? // null = unlimited
-  currentRedemptions Int @default(0)
-  usageLimit      String @default("UNLIMITED") // UNLIMITED, ONCE_PER_USER, LIMITED_TOTAL
+  maxRedemptions     Int? // null = unlimited
+  currentRedemptions Int    @default(0)
+  usageLimit         String @default("UNLIMITED") // UNLIMITED, ONCE_PER_USER, LIMITED_TOTAL
 
   // Availability
-  isActive        Boolean @default(true)
-  validFrom       DateTime @default(now())
-  validUntil      DateTime?
+  isActive   Boolean   @default(true)
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
 
   // Terms and conditions
   termsConditions String?
   minimumTier     String? // Minimum loyalty tier required (BRONZE, SILVER, GOLD, PLATINUM)
 
   // Metadata
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  specialist      User @relation("SpecialistRewards", fields: [specialistId], references: [id], onDelete: Cascade)
-  redemptions     RewardRedemption[]
+  specialist  User               @relation("SpecialistRewards", fields: [specialistId], references: [id], onDelete: Cascade)
+  redemptions RewardRedemption[]
 
   @@index([specialistId, isActive])
   @@index([isActive, validFrom, validUntil])
@@ -1576,32 +1572,32 @@ model LoyaltyReward {
 }
 
 model RewardRedemption {
-  id              String @id @default(cuid())
-  rewardId        String
-  userId          String
-  bookingId       String?
+  id        String  @id @default(cuid())
+  rewardId  String
+  userId    String
+  bookingId String?
 
   // Redemption details
-  status          String @default("PENDING") // PENDING, APPROVED, USED, EXPIRED, CANCELLED
+  status          String   @default("PENDING") // PENDING, APPROVED, USED, EXPIRED, CANCELLED
   pointsUsed      Int
   discountApplied Decimal?
   originalAmount  Decimal?
   finalAmount     Decimal?
 
   // Usage tracking
-  redeemedAt      DateTime @default(now())
-  usedAt          DateTime?
-  expiresAt       DateTime?
+  redeemedAt DateTime  @default(now())
+  usedAt     DateTime?
+  expiresAt  DateTime?
 
   // Metadata
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  reward          LoyaltyReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
-  user            User @relation("UserRewardRedemptions", fields: [userId], references: [id], onDelete: Cascade)
-  booking         Booking? @relation("BookingRewardRedemptions", fields: [bookingId], references: [id], onDelete: SetNull)
+  reward  LoyaltyReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user    User          @relation("UserRewardRedemptions", fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking?      @relation("BookingRewardRedemptions", fields: [bookingId], references: [id], onDelete: SetNull)
 
   @@index([userId, status])
   @@index([rewardId, status])
@@ -1612,42 +1608,42 @@ model RewardRedemption {
 // Crypto Payment Models
 
 model CryptoPayment {
-  id              String @id @default(cuid())
-  userId          String
-  bookingId       String?
+  id        String  @id @default(cuid())
+  userId    String
+  bookingId String?
 
   // Coinbase Commerce details
-  coinbaseChargeId    String @unique
-  coinbaseChargeCode  String? // Short code for the payment
+  coinbaseChargeId   String  @unique
+  coinbaseChargeCode String? // Short code for the payment
 
   // Payment details
-  status          String // PENDING, PAID, FAILED, EXPIRED, CANCELLED, REFUNDED
-  type            String // DEPOSIT, SUBSCRIPTION
-  amount          Decimal
-  currency        String @default("USD")
+  status   String // PENDING, PAID, FAILED, EXPIRED, CANCELLED, REFUNDED
+  type     String // DEPOSIT, SUBSCRIPTION
+  amount   Decimal
+  currency String  @default("USD")
 
   // Crypto details
-  cryptoAmount    Decimal?
-  cryptoCurrency  String? // BTC, ETH, USDC, etc.
-  exchangeRate    Decimal? // USD to crypto rate at time of payment
+  cryptoAmount   Decimal?
+  cryptoCurrency String? // BTC, ETH, USDC, etc.
+  exchangeRate   Decimal? // USD to crypto rate at time of payment
 
   // Payment URLs and QR codes
-  paymentUrl      String
-  qrCodeUrl       String?
+  paymentUrl String
+  qrCodeUrl  String?
 
   // Webhook data
-  webhookData     String? // JSON string of webhook payload
-  confirmedAt     DateTime?
-  expiresAt       DateTime?
+  webhookData String? // JSON string of webhook payload
+  confirmedAt DateTime?
+  expiresAt   DateTime?
 
   // Metadata
-  metadata        String? // JSON string
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  metadata  String? // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user            User @relation(fields: [userId], references: [id])
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
 
   @@index([userId, status])
   @@index([coinbaseChargeId])
@@ -1656,35 +1652,35 @@ model CryptoPayment {
 }
 
 model WalletTransaction {
-  id              String @id @default(cuid())
-  userId          String
-  bookingId       String?
+  id        String  @id @default(cuid())
+  userId    String
+  bookingId String?
 
   // Transaction details
-  type            String // CREDIT, DEBIT, REFUND, FORFEITURE_SPLIT
-  amount          Decimal
-  currency        String @default("USD")
-  balanceBefore   Decimal
-  balanceAfter    Decimal
+  type          String // CREDIT, DEBIT, REFUND, FORFEITURE_SPLIT
+  amount        Decimal
+  currency      String  @default("USD")
+  balanceBefore Decimal
+  balanceAfter  Decimal
 
   // Transaction context
-  reason          String // DEPOSIT_REFUND, CANCELLATION_CREDIT, BOOKING_PAYMENT, etc.
-  description     String?
-  referenceId     String? // Related payment, booking, etc.
-  referenceType   String? // BOOKING, CRYPTO_PAYMENT, CANCELLATION
+  reason        String // DEPOSIT_REFUND, CANCELLATION_CREDIT, BOOKING_PAYMENT, etc.
+  description   String?
+  referenceId   String? // Related payment, booking, etc.
+  referenceType String? // BOOKING, CRYPTO_PAYMENT, CANCELLATION
 
   // Status
-  status          String @default("COMPLETED") // PENDING, COMPLETED, FAILED
-  processedAt     DateTime?
+  status      String    @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  processedAt DateTime?
 
   // Metadata
-  metadata        String? // JSON string
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  metadata  String? // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user            User @relation(fields: [userId], references: [id])
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
 
   @@index([userId, type])
   @@index([userId, createdAt])
@@ -1693,79 +1689,79 @@ model WalletTransaction {
 }
 
 model SpecialistSubscription {
-  id                    String @id @default(cuid())
-  specialistId          String
+  id           String @id @default(cuid())
+  specialistId String
 
   // Subscription details
-  planType              String // PAY_PER_USE, MONTHLY_SUBSCRIPTION
-  status                String @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PENDING
+  planType String // PAY_PER_USE, MONTHLY_SUBSCRIPTION
+  status   String @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PENDING
 
   // Billing
-  monthlyRate           Decimal @default(10.0) // $10/month
-  currency              String @default("USD")
-  transactionFee        Decimal @default(20.0) // 20₴ per transaction for pay-per-use
+  monthlyRate    Decimal @default(10.0) // $10/month
+  currency       String  @default("USD")
+  transactionFee Decimal @default(20.0) // 20₴ per transaction for pay-per-use
 
   // Coinbase Commerce subscription (if applicable)
   coinbaseSubscriptionId String?
 
   // Billing cycle
-  currentPeriodStart    DateTime?
-  currentPeriodEnd      DateTime?
-  nextBillingDate       DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  nextBillingDate    DateTime?
 
   // Plan change management
-  pendingPlanType       String? // For plan changes that take effect next month
+  pendingPlanType         String? // For plan changes that take effect next month
   planChangeEffectiveDate DateTime?
 
   // Usage tracking (for pay-per-use)
-  currentMonthTransactions Int @default(0)
-  currentMonthFees      Decimal @default(0.0)
+  currentMonthTransactions Int     @default(0)
+  currentMonthFees         Decimal @default(0.0)
 
   // Payment tracking
-  lastPaymentDate       DateTime?
-  lastPaymentAmount     Decimal?
-  paymentFailures       Int @default(0)
+  lastPaymentDate   DateTime?
+  lastPaymentAmount Decimal?
+  paymentFailures   Int       @default(0)
 
   // Metadata
-  metadata              String? // JSON string
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  metadata  String? // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  specialist            User @relation(fields: [specialistId], references: [id])
+  specialist User @relation(fields: [specialistId], references: [id])
 
   @@index([specialistId, status])
   @@index([planType, status])
   @@index([nextBillingDate])
-  @@index([planChangeEffectiveDate])  // processPendingPlanChanges query
+  @@index([planChangeEffectiveDate]) // processPendingPlanChanges query
   @@index([planType, status, nextBillingDate]) // processMonthlyBilling composite
   @@map("specialist_subscriptions")
 }
 
 model PaymentWebhook {
-  id              String @id @default(cuid())
+  id String @id @default(cuid())
 
   // Webhook details
-  provider        String // COINBASE_COMMERCE
-  eventType       String // charge:confirmed, charge:failed, etc.
-  eventId         String @unique
+  provider  String // COINBASE_COMMERCE
+  eventType String // charge:confirmed, charge:failed, etc.
+  eventId   String @unique
 
   // Processing status
-  status          String @default("PENDING") // PENDING, PROCESSED, FAILED, IGNORED
-  processedAt     DateTime?
-  errorMessage    String?
+  status       String    @default("PENDING") // PENDING, PROCESSED, FAILED, IGNORED
+  processedAt  DateTime?
+  errorMessage String?
 
   // Webhook data
-  payload         String // JSON string of full webhook payload
-  signature       String? // Webhook signature for verification
+  payload   String // JSON string of full webhook payload
+  signature String? // Webhook signature for verification
 
   // Related entities
-  relatedId       String? // CryptoPayment ID, Booking ID, etc.
-  relatedType     String? // CRYPTO_PAYMENT, SUBSCRIPTION
+  relatedId   String? // CryptoPayment ID, Booking ID, etc.
+  relatedType String? // CRYPTO_PAYMENT, SUBSCRIPTION
 
   // Metadata
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([provider, eventType])
   @@index([status, createdAt])
@@ -1775,42 +1771,42 @@ model PaymentWebhook {
 
 // Coinbase Onramp Sessions for fiat-to-crypto conversion
 model OnrampSession {
-  id                String @id @default(cuid())
+  id String @id @default(cuid())
 
   // User information
-  userId            String
-  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Session details
-  sessionToken      String @unique
-  status            String @default("PENDING") // PENDING, COMPLETED, FAILED, EXPIRED
+  sessionToken String @unique
+  status       String @default("PENDING") // PENDING, COMPLETED, FAILED, EXPIRED
 
   // Payment amounts
-  amount            Decimal // Fiat amount
-  currency          String @default("USD") // Fiat currency
-  cryptoAmount      Decimal? // Actual crypto received
-  cryptoCurrency    String? // USDC, ETH, BTC, etc.
-  blockchain        String? // ethereum, base, bitcoin, etc.
+  amount         Decimal // Fiat amount
+  currency       String   @default("USD") // Fiat currency
+  cryptoAmount   Decimal? // Actual crypto received
+  cryptoCurrency String? // USDC, ETH, BTC, etc.
+  blockchain     String? // ethereum, base, bitcoin, etc.
 
   // Transaction details
-  transactionHash   String? // Blockchain transaction hash
-  onrampURL         String // URL for the onramp widget
+  transactionHash String? // Blockchain transaction hash
+  onrampURL       String // URL for the onramp widget
 
   // Purpose and related entities
-  purpose           String // BOOKING_DEPOSIT, WALLET_TOPUP, SUBSCRIPTION
-  bookingId         String? // If for booking deposit
-  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  purpose   String // BOOKING_DEPOSIT, WALLET_TOPUP, SUBSCRIPTION
+  bookingId String? // If for booking deposit
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
   // Timing
-  expiresAt         DateTime
-  completedAt       DateTime?
+  expiresAt   DateTime
+  completedAt DateTime?
 
   // Metadata
-  metadata          String? // JSON string for additional data
+  metadata String? // JSON string for additional data
 
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, status])
   @@index([status, expiresAt])
@@ -1821,36 +1817,36 @@ model OnrampSession {
 
 // Specialist Expense Tracking
 model Expense {
-  id                  String    @id @default(cuid())
-  specialistId        String
+  id           String @id @default(cuid())
+  specialistId String
 
   // Expense details
-  category            String    // RENT, UTILITIES, CONSUMABLES, EQUIPMENT, INSURANCE, MARKETING, SALARIES, OTHER
-  amount              Decimal
-  currency            String    @default("UAH")
-  description         String
-  date                DateTime  @default(now())
+  category    String // RENT, UTILITIES, CONSUMABLES, EQUIPMENT, INSURANCE, MARKETING, SALARIES, OTHER
+  amount      Decimal
+  currency    String   @default("UAH")
+  description String
+  date        DateTime @default(now())
 
   // Recurring expense settings
-  isRecurring         Boolean   @default(false)
-  recurringFrequency  String?   // WEEKLY, MONTHLY, QUARTERLY, YEARLY
+  isRecurring        Boolean @default(false)
+  recurringFrequency String? // WEEKLY, MONTHLY, QUARTERLY, YEARLY
 
   // Tax / accounting
-  isTaxDeductible     Boolean   @default(true)
-  vatAmount           Decimal?  // optional VAT/input tax component
-  vendorName          String?
-  vendorTaxId         String?
+  isTaxDeductible Boolean  @default(true)
+  vatAmount       Decimal? // optional VAT/input tax component
+  vendorName      String?
+  vendorTaxId     String?
 
   // Optional details
-  notes               String?
-  receiptUrl          String?
+  notes      String?
+  receiptUrl String?
 
   // Metadata
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  specialist          User      @relation("SpecialistExpenses", fields: [specialistId], references: [id], onDelete: Cascade)
+  specialist User @relation("SpecialistExpenses", fields: [specialistId], references: [id], onDelete: Cascade)
 
   @@index([specialistId, date])
   @@index([category])
@@ -1862,45 +1858,45 @@ model Expense {
 // Independent of the booking-payment flow — used for B2B invoicing and as the
 // source-of-truth document for accountants and tax filings.
 model Invoice {
-  id              String    @id @default(cuid())
-  specialistId    String
-  bookingId       String?
-  customerId      String?
+  id           String  @id @default(cuid())
+  specialistId String
+  bookingId    String?
+  customerId   String?
 
   // Document identity
-  invoiceNumber   String    @unique
-  issueDate       DateTime  @default(now())
-  dueDate         DateTime?
+  invoiceNumber String    @unique
+  issueDate     DateTime  @default(now())
+  dueDate       DateTime?
 
   // Counterparty (free-text for non-platform clients)
-  clientName      String
-  clientEmail     String?
-  clientAddress   String?
-  clientTaxId     String?
+  clientName    String
+  clientEmail   String?
+  clientAddress String?
+  clientTaxId   String?
 
   // Money
-  currency        String    @default("UAH")
-  subtotal        Decimal
-  taxRate         Decimal   @default(0)
-  taxAmount       Decimal   @default(0)
-  total           Decimal
-  amountPaid      Decimal   @default(0)
+  currency   String  @default("UAH")
+  subtotal   Decimal
+  taxRate    Decimal @default(0)
+  taxAmount  Decimal @default(0)
+  total      Decimal
+  amountPaid Decimal @default(0)
 
   // Line items stored as JSON for flexibility (description, qty, unitPrice, total).
-  lineItems       String    // JSON array
+  lineItems String // JSON array
 
   // Lifecycle
-  status          String    @default("DRAFT") // DRAFT, SENT, PARTIAL, PAID, OVERDUE, CANCELLED, VOID
-  sentAt          DateTime?
-  paidAt          DateTime?
-  cancelledAt     DateTime?
+  status      String    @default("DRAFT") // DRAFT, SENT, PARTIAL, PAID, OVERDUE, CANCELLED, VOID
+  sentAt      DateTime?
+  paidAt      DateTime?
+  cancelledAt DateTime?
 
-  notes           String?
+  notes String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  specialist      User      @relation("SpecialistInvoices", fields: [specialistId], references: [id], onDelete: Cascade)
+  specialist User @relation("SpecialistInvoices", fields: [specialistId], references: [id], onDelete: Cascade)
 
   @@index([specialistId, issueDate])
   @@index([specialistId, status])
@@ -1912,44 +1908,44 @@ model Invoice {
 // SPECIALISTs. Individual specialists who aren't part of a business simply have
 // no BusinessMember row — the whole feature is opt-in.
 model Business {
-  id            String    @id @default(cuid())
-  slug          String    @unique
-  name          String
-  description   String?
-  ownerId       String
-  email         String?
-  phone         String?
-  address       String?
-  websiteUrl    String?
-  logoUrl       String?
-  currency      String    @default("UAH")
-  timezone      String    @default("UTC")
-  taxId         String?
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  ownerId     String
+  email       String?
+  phone       String?
+  address     String?
+  websiteUrl  String?
+  logoUrl     String?
+  currency    String   @default("UAH")
+  timezone    String   @default("UTC")
+  taxId       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  owner         User              @relation("OwnedBusinesses", fields: [ownerId], references: [id], onDelete: Cascade)
-  members       BusinessMember[]
+  owner   User             @relation("OwnedBusinesses", fields: [ownerId], references: [id], onDelete: Cascade)
+  members BusinessMember[]
 
   @@index([ownerId])
   @@map("businesses")
 }
 
 model BusinessMember {
-  id            String    @id @default(cuid())
-  businessId    String
-  userId        String
-  role          String    // OWNER, MANAGER, SPECIALIST
-  invitedBy     String?
-  invitedAt     DateTime  @default(now())
-  joinedAt      DateTime?
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  businessId String
+  userId     String
+  role       String // OWNER, MANAGER, SPECIALIST
+  invitedBy  String?
+  invitedAt  DateTime  @default(now())
+  joinedAt   DateTime?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  user          User      @relation("BusinessMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation("BusinessMemberships", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([businessId, userId])
   @@index([userId])
@@ -1962,7 +1958,7 @@ model BusinessMember {
 model CalendarConnection {
   id                String    @id @default(cuid())
   userId            String
-  provider          String    // GOOGLE (future: APPLE, MICROSOFT)
+  provider          String // GOOGLE (future: APPLE, MICROSOFT)
   providerAccountId String?
   accessToken       String
   refreshToken      String?
@@ -1976,7 +1972,7 @@ model CalendarConnection {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  user              User      @relation("UserCalendarConnections", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserCalendarConnections", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
   @@map("calendar_connections")
@@ -1985,43 +1981,43 @@ model CalendarConnection {
 // Community Feature Models
 
 model Post {
-  id              String    @id @default(cuid())
-  authorId        String
+  id       String @id @default(cuid())
+  authorId String
 
-  type            String    @default("DISCUSSION") // DISCUSSION, SALE
-  title           String
-  content         String    @db.Text
+  type    String @default("DISCUSSION") // DISCUSSION, SALE
+  title   String
+  content String @db.Text
 
   // Sale-specific fields
-  price           Decimal?
-  currency        String?   @default("UAH")
-  contactPhone    String?
-  contactEmail    String?
-  images          String?   // JSON array of image URLs
+  price        Decimal?
+  currency     String?  @default("UAH")
+  contactPhone String?
+  contactEmail String?
+  images       String? // JSON array of image URLs
 
   // Rent/marketplace fields
-  condition       String?   // NEW, USED, LIKE_NEW
-  listingStatus   String?   @default("ACTIVE") // ACTIVE, SOLD, RENTED
+  condition     String? // NEW, USED, LIKE_NEW
+  listingStatus String? @default("ACTIVE") // ACTIVE, SOLD, RENTED
 
   // Metrics
-  viewCount       Int       @default(0)
-  likeCount       Int       @default(0)
-  commentCount    Int       @default(0)
+  viewCount    Int @default(0)
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
 
   // Status
-  isPublished     Boolean   @default(true)
-  isPinned        Boolean   @default(false)
-  isDeleted       Boolean   @default(false)
-  deletedAt       DateTime?
+  isPublished Boolean   @default(true)
+  isPinned    Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  author          User      @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  comments        Comment[]
-  likes           PostLike[]
-  bookmarks       PostBookmark[]
-  reports         PostReport[]
+  author    User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  likes     PostLike[]
+  bookmarks PostBookmark[]
+  reports   PostReport[]
 
   @@index([authorId, isDeleted])
   @@index([type, isPublished, isDeleted])
@@ -2030,25 +2026,25 @@ model Post {
 }
 
 model Comment {
-  id              String    @id @default(cuid())
-  postId          String
-  authorId        String
-  parentId        String?   // For nested replies
+  id       String  @id @default(cuid())
+  postId   String
+  authorId String
+  parentId String? // For nested replies
 
-  content         String    @db.Text
-  likeCount       Int       @default(0)
+  content   String @db.Text
+  likeCount Int    @default(0)
 
-  isDeleted       Boolean   @default(false)
-  deletedAt       DateTime?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author          User      @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
-  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies         Comment[] @relation("CommentReplies")
-  likes           CommentLike[]
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User          @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("CommentReplies")
+  likes   CommentLike[]
 
   @@index([postId, isDeleted])
   @@index([parentId])
@@ -2061,8 +2057,8 @@ model PostLike {
   userId    String
   createdAt DateTime @default(now())
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("post_likes")
@@ -2074,8 +2070,8 @@ model CommentLike {
   userId    String
   createdAt DateTime @default(now())
 
-  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserCommentLikes", fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation("UserCommentLikes", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId])
   @@map("comment_likes")
@@ -2087,8 +2083,8 @@ model PostBookmark {
   userId    String
   createdAt DateTime @default(now())
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserPostBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation("UserPostBookmarks", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("post_bookmarks")
@@ -2103,8 +2099,8 @@ model PostReport {
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserPostReports", fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation("UserPostReports", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("post_reports")
@@ -2116,8 +2112,8 @@ model EmailLog {
   recipient String
   subject   String
   status    String   @default("SENT") // SENT, FAILED
-  messageId String?  // External email provider message ID
-  error     String?  // Error message if failed
+  messageId String? // External email provider message ID
+  error     String? // Error message if failed
   sentAt    DateTime @default(now())
 
   // Timestamps
@@ -2125,8 +2121,8 @@ model EmailLog {
   updatedAt DateTime @updatedAt
 
   @@index([recipient, subject, sentAt]) // Dedup lookups in trial/reminder workers
-  @@index([recipient, sentAt])          // Per-recipient recent emails
-  @@index([sentAt])                     // Cleanup/analytics queries
+  @@index([recipient, sentAt]) // Per-recipient recent emails
+  @@index([sentAt]) // Cleanup/analytics queries
   @@map("email_logs")
 }
 
@@ -2148,20 +2144,20 @@ model PushSubscription {
 
 // Waitlist Model - allows customers to join a waitlist when no slots are available
 model Waitlist {
-  id             String    @id @default(uuid())
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  serviceId      String
-  service        Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  specialistId   String
-  preferredDate  DateTime
-  preferredTime  String?   // e.g., "morning", "afternoon", "evening", or specific time
-  status         String    @default("WAITING") // WAITING, NOTIFIED, BOOKED, CANCELLED, EXPIRED
-  notifiedAt     DateTime?
-  bookedAt       DateTime?
-  notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  specialistId  String
+  preferredDate DateTime
+  preferredTime String? // e.g., "morning", "afternoon", "evening", or specific time
+  status        String    @default("WAITING") // WAITING, NOTIFIED, BOOKED, CANCELLED, EXPIRED
+  notifiedAt    DateTime?
+  bookedAt      DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([specialistId, preferredDate])
   @@index([userId])
@@ -2170,32 +2166,32 @@ model Waitlist {
 }
 
 model ClientNote {
-  id            String   @id @default(cuid())
-  specialistId  String
-  customerId    String
-  content       String
-  category      String   @default("general") // general, allergy, preference, formula, medical
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  specialistId String
+  customerId   String
+  content      String
+  category     String   @default("general") // general, allergy, preference, formula, medical
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  specialist    Specialist @relation(fields: [specialistId], references: [id])
-  customer      User       @relation("ClientNotes", fields: [customerId], references: [id])
+  specialist Specialist @relation(fields: [specialistId], references: [id])
+  customer   User       @relation("ClientNotes", fields: [customerId], references: [id])
 
   @@index([specialistId, customerId])
 }
 
 model BeforeAfterPhoto {
-  id            String   @id @default(cuid())
-  specialistId  String
-  bookingId     String?
-  beforeUrl     String
-  afterUrl      String
-  caption       String?
-  isPublic      Boolean  @default(true)
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  specialistId String
+  bookingId    String?
+  beforeUrl    String
+  afterUrl     String
+  caption      String?
+  isPublic     Boolean  @default(true)
+  createdAt    DateTime @default(now())
 
-  specialist    Specialist @relation(fields: [specialistId], references: [id])
-  booking       Booking?   @relation(fields: [bookingId], references: [id])
+  specialist Specialist @relation(fields: [specialistId], references: [id])
+  booking    Booking?   @relation(fields: [bookingId], references: [id])
 
   @@index([specialistId])
 }
@@ -2208,15 +2204,15 @@ model BeforeAfterPhoto {
 
 // Pending staff invitation (email may not have an account yet).
 model BusinessInvite {
-  id          String    @id @default(cuid())
-  businessId  String
-  email       String
-  role        String    // MANAGER | SPECIALIST
-  token       String    @unique
-  invitedBy   String
-  expiresAt   DateTime
-  acceptedAt  DateTime?
-  createdAt   DateTime  @default(now())
+  id         String    @id @default(cuid())
+  businessId String
+  email      String
+  role       String // MANAGER | SPECIALIST
+  token      String    @unique
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([email])
   @@index([businessId])
@@ -2225,24 +2221,24 @@ model BusinessInvite {
 
 // Inventory item (retail product OR consumable). ownerId = the employer/solo user.
 model Product {
-  id            String    @id @default(cuid())
-  ownerId       String                       // user who owns the inventory (solo or business owner)
-  businessId    String?                      // null for solo specialists
-  sku           String?
-  name          String
-  description   String?
-  type          String    @default("CONSUMABLE") // CONSUMABLE | RETAIL
-  unit          String    @default("unit")        // unit | ml | g | pack
-  costPrice     Decimal   @default(0)
-  salePrice     Decimal?                     // for RETAIL items
-  stockQty      Decimal   @default(0)
-  reorderLevel  Decimal   @default(0)        // low-stock threshold
-  currency      String    @default("UAH")
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  ownerId      String // user who owns the inventory (solo or business owner)
+  businessId   String? // null for solo specialists
+  sku          String?
+  name         String
+  description  String?
+  type         String   @default("CONSUMABLE") // CONSUMABLE | RETAIL
+  unit         String   @default("unit") // unit | ml | g | pack
+  costPrice    Decimal  @default(0)
+  salePrice    Decimal? // for RETAIL items
+  stockQty     Decimal  @default(0)
+  reorderLevel Decimal  @default(0) // low-stock threshold
+  currency     String   @default("UAH")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  movements     StockMovement[]
+  movements StockMovement[]
 
   @@index([ownerId])
   @@index([businessId])
@@ -2253,13 +2249,13 @@ model Product {
 model StockMovement {
   id          String   @id @default(cuid())
   productId   String
-  delta       Decimal                       // +received / -used / -sold / ±adjust
-  reason      String                        // PURCHASE | USAGE | SALE | ADJUSTMENT | RETURN
-  reference   String?                       // PO id, booking id, free note
+  delta       Decimal // +received / -used / -sold / ±adjust
+  reason      String // PURCHASE | USAGE | SALE | ADJUSTMENT | RETURN
+  reference   String? // PO id, booking id, free note
   createdById String
   createdAt   DateTime @default(now())
 
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("stock_movements")
@@ -2267,18 +2263,18 @@ model StockMovement {
 
 // Vendor / supplier of products.
 model Supplier {
-  id          String    @id @default(cuid())
-  ownerId     String
-  businessId  String?
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  taxId       String?
-  notes       String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  ownerId    String
+  businessId String?
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  taxId      String?
+  notes      String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   purchaseOrders PurchaseOrder[]
 
@@ -2287,24 +2283,24 @@ model Supplier {
 }
 
 model PurchaseOrder {
-  id          String    @id @default(cuid())
-  ownerId     String
-  businessId  String?
-  supplierId  String?
-  poNumber    String
-  status      String    @default("DRAFT")   // DRAFT | ORDERED | PARTIAL | RECEIVED | CANCELLED
-  currency    String    @default("UAH")
-  subtotal    Decimal   @default(0)
-  taxAmount   Decimal   @default(0)
-  total       Decimal   @default(0)
-  notes       String?
-  orderedAt   DateTime?
-  receivedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  ownerId    String
+  businessId String?
+  supplierId String?
+  poNumber   String
+  status     String    @default("DRAFT") // DRAFT | ORDERED | PARTIAL | RECEIVED | CANCELLED
+  currency   String    @default("UAH")
+  subtotal   Decimal   @default(0)
+  taxAmount  Decimal   @default(0)
+  total      Decimal   @default(0)
+  notes      String?
+  orderedAt  DateTime?
+  receivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  supplier    Supplier?           @relation(fields: [supplierId], references: [id])
-  items       PurchaseOrderItem[]
+  supplier Supplier?           @relation(fields: [supplierId], references: [id])
+  items    PurchaseOrderItem[]
 
   @@index([ownerId])
   @@index([businessId])
@@ -2312,15 +2308,15 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderItem {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   purchaseOrderId String
-  productId       String?                     // links to inventory if known
+  productId       String? // links to inventory if known
   description     String
   quantity        Decimal
   unitCost        Decimal
-  receivedQty     Decimal  @default(0)
+  receivedQty     Decimal @default(0)
 
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
   @@index([purchaseOrderId])
   @@map("purchase_order_items")
@@ -2329,11 +2325,11 @@ model PurchaseOrderItem {
 // Commission rate per staff member (% of service price on completed bookings).
 model CommissionRule {
   id          String   @id @default(cuid())
-  ownerId     String                          // employer
+  ownerId     String // employer
   businessId  String?
   staffUserId String
-  mode        String   @default("FLAT")        // FLAT | TIERED
-  tiers       String?                          // JSON: [{minRevenue, percent}] applied by period revenue (TIERED mode)
+  mode        String   @default("FLAT") // FLAT | TIERED
+  tiers       String? // JSON: [{minRevenue, percent}] applied by period revenue (TIERED mode)
   percent     Decimal  @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -2347,9 +2343,9 @@ model CommissionRule {
 // A pay-run line for one staff member over a period.
 model PayrollRecord {
   id              String    @id @default(cuid())
-  ownerId         String                       // employer (business owner / solo)
+  ownerId         String // employer (business owner / solo)
   businessId      String?
-  staffUserId     String                       // professional being paid
+  staffUserId     String // professional being paid
   periodStart     DateTime
   periodEnd       DateTime
   baseSalary      Decimal   @default(0)
@@ -2359,7 +2355,7 @@ model PayrollRecord {
   taxAmount       Decimal   @default(0)
   netPay          Decimal   @default(0)
   currency        String    @default("UAH")
-  status          String    @default("DRAFT")  // DRAFT | APPROVED | PAID
+  status          String    @default("DRAFT") // DRAFT | APPROVED | PAID
   paidAt          DateTime?
   notes           String?
   createdAt       DateTime  @default(now())
@@ -2379,13 +2375,13 @@ model PayrollRecord {
 // Links a service to the products it consumes, so completing a booking writes
 // the stock off automatically.
 model ServiceConsumable {
-  id         String   @id @default(cuid())
-  serviceId  String
-  productId  String
-  quantity   Decimal  @default(1)   // units consumed per booking of this service
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  serviceId String
+  productId String
+  quantity  Decimal  @default(1) // units consumed per booking of this service
+  createdAt DateTime @default(now())
 
-  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@unique([serviceId, productId])
   @@index([productId])
@@ -2394,23 +2390,23 @@ model ServiceConsumable {
 
 // Prepaid gift card, redeemable against bookings.
 model GiftCard {
-  id              String    @id @default(cuid())
-  ownerId         String                       // issuing business owner / solo
-  businessId      String?
-  code            String    @unique
-  initialAmount   Decimal
-  balance         Decimal
-  currency        String    @default("UAH")
-  status          String    @default("ACTIVE") // ACTIVE | REDEEMED | EXPIRED | CANCELLED
-  recipientEmail  String?
-  recipientUserId String?
+  id                String    @id @default(cuid())
+  ownerId           String // issuing business owner / solo
+  businessId        String?
+  code              String    @unique
+  initialAmount     Decimal
+  balance           Decimal
+  currency          String    @default("UAH")
+  status            String    @default("ACTIVE") // ACTIVE | REDEEMED | EXPIRED | CANCELLED
+  recipientEmail    String?
+  recipientUserId   String?
   purchasedByUserId String?
-  note            String?
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  note              String?
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  transactions    GiftCardTransaction[]
+  transactions GiftCardTransaction[]
 
   @@index([ownerId])
   @@index([code])
@@ -2418,14 +2414,14 @@ model GiftCard {
 }
 
 model GiftCardTransaction {
-  id          String   @id @default(cuid())
-  giftCardId  String
-  amount      Decimal                          // negative = redeemed, positive = top-up
-  reason      String                           // ISSUE | REDEEM | REFUND | ADJUST
-  bookingId   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  giftCardId String
+  amount     Decimal // negative = redeemed, positive = top-up
+  reason     String // ISSUE | REDEEM | REFUND | ADJUST
+  bookingId  String?
+  createdAt  DateTime @default(now())
 
-  giftCard    GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
 
   @@index([giftCardId])
   @@map("gift_card_transactions")
@@ -2438,7 +2434,7 @@ model ServicePackage {
   businessId  String?
   name        String
   description String?
-  serviceId   String?                          // optional: credits valid for one service
+  serviceId   String? // optional: credits valid for one service
   credits     Int      @default(1)
   price       Decimal
   currency    String   @default("UAH")
@@ -2447,7 +2443,7 @@ model ServicePackage {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  purchases   CustomerPackage[]
+  purchases CustomerPackage[]
 
   @@index([ownerId])
   @@map("service_packages")
@@ -2462,7 +2458,7 @@ model CustomerPackage {
   purchasedAt      DateTime  @default(now())
   expiresAt        DateTime?
 
-  package          ServicePackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package ServicePackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@index([customerUserId])
   @@index([packageId])
@@ -2471,36 +2467,36 @@ model CustomerPackage {
 
 // Recurring membership plan offered by a business.
 model MembershipPlan {
-  id           String   @id @default(cuid())
-  ownerId      String
-  businessId   String?
-  name         String
-  description  String?
-  price        Decimal
-  currency     String   @default("UAH")
-  billingPeriod String  @default("MONTHLY")   // MONTHLY | YEARLY
-  benefits     String?                         // JSON / free text
-  discountPercent Decimal @default(0)          // member discount on services
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  ownerId         String
+  businessId      String?
+  name            String
+  description     String?
+  price           Decimal
+  currency        String   @default("UAH")
+  billingPeriod   String   @default("MONTHLY") // MONTHLY | YEARLY
+  benefits        String? // JSON / free text
+  discountPercent Decimal  @default(0) // member discount on services
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  members      CustomerMembership[]
+  members CustomerMembership[]
 
   @@index([ownerId])
   @@map("membership_plans")
 }
 
 model CustomerMembership {
-  id              String    @id @default(cuid())
-  planId          String
-  customerUserId  String
-  status          String    @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
-  startedAt       DateTime  @default(now())
+  id               String    @id @default(cuid())
+  planId           String
+  customerUserId   String
+  status           String    @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  startedAt        DateTime  @default(now())
   currentPeriodEnd DateTime?
-  cancelledAt     DateTime?
+  cancelledAt      DateTime?
 
-  plan            MembershipPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  plan MembershipPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([customerUserId])
   @@index([planId])
@@ -2509,18 +2505,18 @@ model CustomerMembership {
 
 // Configurable marketing automation (win-back, rebooking nudge, birthday).
 model MarketingAutomation {
-  id            String   @id @default(cuid())
-  ownerId       String
-  businessId    String?
-  type          String                          // WINBACK | REBOOKING | BIRTHDAY
-  isEnabled     Boolean  @default(false)
-  lapsedDays    Int      @default(60)            // for WINBACK: no booking in N days
-  rebookDays    Int      @default(30)            // for REBOOKING: nudge N days after last visit
-  channel       String   @default("BOTH")        // TELEGRAM | EMAIL | BOTH
+  id              String    @id @default(cuid())
+  ownerId         String
+  businessId      String?
+  type            String // WINBACK | REBOOKING | BIRTHDAY
+  isEnabled       Boolean   @default(false)
+  lapsedDays      Int       @default(60) // for WINBACK: no booking in N days
+  rebookDays      Int       @default(30) // for REBOOKING: nudge N days after last visit
+  channel         String    @default("BOTH") // TELEGRAM | EMAIL | BOTH
   messageTemplate String?
-  lastRunAt     DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  lastRunAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@unique([ownerId, type])
   @@index([businessId])
@@ -2529,11 +2525,11 @@ model MarketingAutomation {
 
 // Log of automation messages sent (idempotency + reporting).
 model MarketingLog {
-  id            String   @id @default(cuid())
-  automationId  String
+  id             String   @id @default(cuid())
+  automationId   String
   customerUserId String
-  channel       String
-  sentAt        DateTime @default(now())
+  channel        String
+  sentAt         DateTime @default(now())
 
   @@index([automationId])
   @@index([customerUserId])
@@ -2543,23 +2539,23 @@ model MarketingLog {
 // Retail store — a customer orders RETAIL products from a specialist/business.
 // Collection happens in-store or via payments later; status tracks fulfilment.
 model ProductOrder {
-  id            String   @id @default(cuid())
-  ownerId       String                          // the seller (specialist/business owner)
-  businessId    String?
-  customerUserId String?                        // null for walk-in / guest
-  customerName  String?
-  customerEmail String?
-  orderNumber   String
-  status        String   @default("PENDING")    // PENDING | PAID | FULFILLED | CANCELLED
-  fulfilment    String   @default("PICKUP")      // PICKUP | DELIVERY
-  currency      String   @default("UAH")
-  subtotal      Decimal  @default(0)
-  total         Decimal  @default(0)
-  note          String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(cuid())
+  ownerId        String // the seller (specialist/business owner)
+  businessId     String?
+  customerUserId String? // null for walk-in / guest
+  customerName   String?
+  customerEmail  String?
+  orderNumber    String
+  status         String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
+  fulfilment     String   @default("PICKUP") // PICKUP | DELIVERY
+  currency       String   @default("UAH")
+  subtotal       Decimal  @default(0)
+  total          Decimal  @default(0)
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  items         ProductOrderItem[]
+  items ProductOrderItem[]
 
   @@index([ownerId])
   @@index([customerUserId])
@@ -2567,15 +2563,133 @@ model ProductOrder {
 }
 
 model ProductOrderItem {
-  id           String   @id @default(cuid())
-  orderId      String
-  productId    String
-  name         String
-  quantity     Decimal
-  unitPrice    Decimal
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  quantity  Decimal
+  unitPrice Decimal
 
-  order        ProductOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order ProductOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@map("product_order_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CRM — customer tags, saved segments, segment campaigns, tasks, consent, leads
+// Client-centric. specialistId / customerId are plain indexed columns (no FK to
+// users/specialists) so every model here is purely additive — same convention
+// as the salon suite above. A "client" is the (specialistId, customerId) pair.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CustomerTag {
+  id           String   @id @default(cuid())
+  specialistId String
+  name         String
+  color        String   @default("primary") // primary | success | warning | danger | gray | info
+  createdAt    DateTime @default(now())
+
+  assignments CustomerTagAssignment[]
+
+  @@unique([specialistId, name])
+  @@index([specialistId])
+  @@map("customer_tags")
+}
+
+model CustomerTagAssignment {
+  id           String   @id @default(cuid())
+  tagId        String
+  specialistId String
+  customerId   String
+  createdAt    DateTime @default(now())
+
+  tag CustomerTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, customerId])
+  @@index([specialistId, customerId])
+  @@map("customer_tag_assignments")
+}
+
+model CustomerSegment {
+  id           String   @id @default(cuid())
+  specialistId String
+  name         String
+  description  String?
+  filter       Json // { minSpent?, maxSpent?, lapsedDays?, activeWithinDays?, minBookings?, tagIds?: string[], hasEmail?, hasPhone? }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([specialistId])
+  @@map("customer_segments")
+}
+
+model SegmentCampaign {
+  id             String    @id @default(cuid())
+  specialistId   String
+  name           String
+  channel        String    @default("email") // email | sms | push | inapp
+  subject        String?
+  body           String
+  filter         Json? // snapshot of the audience filter at send time
+  segmentId      String?
+  status         String    @default("draft") // draft | sending | sent | failed
+  recipientCount Int       @default(0)
+  sentCount      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  sentAt         DateTime?
+
+  @@index([specialistId])
+  @@map("segment_campaigns")
+}
+
+model ClientTask {
+  id           String    @id @default(cuid())
+  specialistId String
+  customerId   String?
+  title        String
+  notes        String?
+  dueDate      DateTime?
+  status       String    @default("open") // open | done
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  @@index([specialistId, status])
+  @@index([specialistId, customerId])
+  @@map("client_tasks")
+}
+
+model MarketingConsent {
+  id           String   @id @default(cuid())
+  specialistId String
+  customerId   String
+  email        Boolean  @default(true)
+  sms          Boolean  @default(true)
+  push         Boolean  @default(true)
+  optOutAll    Boolean  @default(false)
+  source       String? // how/where consent was captured
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([specialistId, customerId])
+  @@index([specialistId])
+  @@map("marketing_consents")
+}
+
+model Lead {
+  id           String   @id @default(cuid())
+  specialistId String
+  name         String
+  email        String?
+  phone        String?
+  source       String? // walk-in | referral | instagram | web | phone | other
+  stage        String   @default("new") // new | contacted | qualified | won | lost
+  value        Decimal?
+  notes        String?
+  customerId   String? // set when converted to a real customer
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([specialistId, stage])
+  @@map("leads")
 }

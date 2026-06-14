@@ -52,6 +52,7 @@ import marketingRoutes from './marketing';
 import storeRoutes from './store';
 import promoteRoutes from './promote';
 import discoveryRoutes from './discovery';
+import crmRoutes from './crm';
 
 const router = Router();
 
@@ -105,6 +106,7 @@ router.use('/businesses', businessRoutes);
 router.use('/search', searchRoutes);
 router.use('/sales', salesRoutes);
 router.use('/marketing', marketingRoutes);
+router.use('/crm', crmRoutes);
 router.use('/store', storeRoutes);
 router.use('/promote', promoteRoutes);
 

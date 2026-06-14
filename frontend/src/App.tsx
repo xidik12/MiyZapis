@@ -72,6 +72,9 @@ const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'
 const SpecialistReferrals = React.lazy(() => import('./pages/specialist/Referrals'));
 const SpecialistWallet = React.lazy(() => import('./pages/specialist/Wallet'));
 const SpecialistClients = React.lazy(() => import('./pages/specialist/Clients'));
+const SpecialistCrmCampaigns = React.lazy(() => import('./pages/specialist/CrmCampaigns'));
+const SpecialistCrmTasks = React.lazy(() => import('./pages/specialist/CrmTasks'));
+const SpecialistCrmLeads = React.lazy(() => import('./pages/specialist/CrmLeads'));
 const SpecialistOnboarding = React.lazy(() => import('./pages/specialist/Onboarding'));
 
 // Customer pages (continued)
@@ -522,6 +525,42 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistClients />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/segments"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistCrmCampaigns />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/tasks"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistCrmTasks />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/leads"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistCrmLeads />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>

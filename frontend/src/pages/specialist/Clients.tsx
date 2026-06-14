@@ -1,12 +1,18 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { bookingService } from '@/services/booking.service';
 import { specialistService } from '@/services/specialist.service';
+import {
+  crmService,
+  CrmClient,
+  CustomerTag,
+  MarketingConsent,
+  TAG_COLORS,
+  TagColor,
+} from '@/services/crm.service';
 import { toast } from 'react-toastify';
-import { Booking } from '@/types';
 import {
   MagnifyingGlassIcon,
   UserGroupIcon,
@@ -18,38 +24,51 @@ import {
   XIcon,
   ArrowPathIcon,
   UserIcon,
+  PlusIcon,
+  TrashIcon,
+  PencilIcon,
+  NoSymbolIcon,
+  CheckCircleIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  BellIcon,
+  FunnelIcon,
 } from '@/components/icons';
+
+// ---------------------------------------------------------------------------
+// Tag colour mapping
+// ---------------------------------------------------------------------------
+
+const TAG_COLOR_CLASSES: Record<TagColor, { pill: string; swatch: string }> = {
+  primary: {
+    pill: 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300',
+    swatch: 'bg-primary-500',
+  },
+  success: {
+    pill: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300',
+    swatch: 'bg-green-500',
+  },
+  warning: {
+    pill: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
+    swatch: 'bg-amber-500',
+  },
+  danger: {
+    pill: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',
+    swatch: 'bg-red-500',
+  },
+  gray: {
+    pill: 'bg-gray-100 text-gray-700 dark:bg-gray-600/30 dark:text-gray-300',
+    swatch: 'bg-gray-500',
+  },
+  info: {
+    pill: 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
+    swatch: 'bg-sky-500',
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface ClientBooking {
-  id: string;
-  serviceName: string;
-  scheduledAt: string;
-  date: string;
-  status: string;
-  totalAmount: number;
-  currency: string;
-  duration: number;
-}
-
-interface Client {
-  id: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
-  email?: string;
-  phone?: string;
-  bookingsCount: number;
-  totalSpent: number;
-  currency: string;
-  lastVisitDate: string;
-  isActive: boolean;
-  bookings: ClientBooking[];
-}
 
 type SortField = 'name' | 'bookingsCount' | 'lastVisitDate' | 'totalSpent';
 type SortOrder = 'asc' | 'desc';
@@ -58,82 +77,24 @@ type SortOrder = 'asc' | 'desc';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const getInitials = (firstName: string, lastName: string): string => {
-  return `${(firstName || '').charAt(0)}${(lastName || '').charAt(0)}`.toUpperCase() || '?';
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(' ');
+  return `${(parts[0] || '').charAt(0)}${(parts[1] || '').charAt(0)}`.toUpperCase() || '?';
 };
 
-const isActiveClient = (lastVisitDate: string): boolean => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  return new Date(lastVisitDate) >= thirtyDaysAgo;
-};
+// ---------------------------------------------------------------------------
+// TagIcon shim — the icons index doesn't export TagIcon; use a simple SVG
+// ---------------------------------------------------------------------------
 
-const deriveClientsFromBookings = (bookings: Booking[]): Client[] => {
-  const clientMap = new Map<string, Client>();
-
-  for (const booking of bookings) {
-    const customerId = booking.customerId;
-    if (!customerId) continue;
-
-    const firstName = booking.customer?.firstName || booking.customerName?.split(' ')[0] || 'Unknown';
-    const lastName = booking.customer?.lastName || booking.customerName?.split(' ').slice(1).join(' ') || '';
-    const avatar = booking.customer?.avatar;
-    const email = booking.customerEmail || booking.customer?.email;
-    const phone = booking.customerPhone || booking.customer?.phoneNumber;
-
-    const clientBooking: ClientBooking = {
-      id: booking.id,
-      serviceName: booking.serviceName || booking.service?.name || 'Service',
-      scheduledAt: booking.scheduledAt || '',
-      date: booking.date || '',
-      status: booking.status,
-      totalAmount: Number(booking.totalAmount || booking.amount || 0),
-      currency: booking.service?.currency || 'USD',
-      duration: booking.duration || 0,
-    };
-
-    if (clientMap.has(customerId)) {
-      const existing = clientMap.get(customerId)!;
-      existing.bookingsCount += 1;
-      existing.totalSpent += clientBooking.totalAmount;
-      existing.bookings.push(clientBooking);
-      if (new Date(clientBooking.scheduledAt) > new Date(existing.lastVisitDate)) {
-        existing.lastVisitDate = clientBooking.scheduledAt;
-      }
-      // Prefer richer data if available
-      if (!existing.avatar && avatar) existing.avatar = avatar;
-      if (!existing.email && email) existing.email = email;
-      if (!existing.phone && phone) existing.phone = phone;
-    } else {
-      clientMap.set(customerId, {
-        id: customerId,
-        name: `${firstName} ${lastName}`.trim(),
-        firstName,
-        lastName,
-        avatar,
-        email,
-        phone,
-        bookingsCount: 1,
-        totalSpent: clientBooking.totalAmount,
-        currency: clientBooking.currency,
-        lastVisitDate: clientBooking.scheduledAt,
-        isActive: false, // will be computed after
-        bookings: [clientBooking],
-      });
-    }
-  }
-
-  // Finalize: sort each client's bookings by date descending, set active flag
-  const clients = Array.from(clientMap.values());
-  for (const client of clients) {
-    client.bookings.sort(
-      (a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
-    );
-    client.isActive = isActiveClient(client.lastVisitDate);
-  }
-
-  return clients;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TagIconFallback: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+    className={className}>
+    <path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+    <line x1="7" y1="7" x2="7.01" y2="7" />
+  </svg>
+);
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -206,7 +167,7 @@ const StatsBar: React.FC<{
             key={stat.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`${stat.bg} rounded-2xl p-4 border border-gray-200 dark:border-gray-800 cursor-pointer hover:shadow-md transition-all duration-200`}
+            className={`${stat.bg} rounded-2xl p-4 border border-gray-200 dark:border-gray-800`}
           >
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-xl ${stat.bg}`}>
@@ -224,58 +185,514 @@ const StatsBar: React.FC<{
   );
 };
 
-/** Booking history row inside the expanded detail */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const BookingHistoryRow: React.FC<{ booking: ClientBooking; formatPrice: (p: any, fromCurrency?: any) => string }> = ({
-  booking,
-  formatPrice,
-}) => {
-  const statusClasses: Record<string, string> = {
-    COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-    CONFIRMED: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-    CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    IN_PROGRESS: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
-    NO_SHOW: 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300',
-  };
+// ---------------------------------------------------------------------------
+// Tag Chips (reusable)
+// ---------------------------------------------------------------------------
 
-  const statusLabel = booking.status.replace(/_/g, ' ');
-
+const TagPills: React.FC<{ tags: CustomerTag[] }> = ({ tags }) => {
+  if (!tags.length) return null;
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-      <div className="flex-1 min-w-0 mb-2 sm:mb-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-          {booking.serviceName}
-        </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          {new Date(booking.scheduledAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
-          {' - '}
-          {booking.duration} min
-        </p>
-      </div>
-      <div className="flex items-center space-x-3">
+    <div className="flex flex-wrap gap-1 mt-2">
+      {tags.map((tag) => (
         <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-            statusClasses[booking.status] || statusClasses['PENDING']
+          key={tag.id}
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${
+            TAG_COLOR_CLASSES[tag.color]?.pill || TAG_COLOR_CLASSES.gray.pill
           }`}
         >
-          {statusLabel}
+          {tag.name}
         </span>
-        <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-          {formatPrice(booking.totalAmount, booking.currency)}
-        </span>
+      ))}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Consent panel (inside expanded area)
+// ---------------------------------------------------------------------------
+
+const ConsentPanel: React.FC<{
+  customerId: string;
+  onClose?: () => void;
+}> = ({ customerId }) => {
+  const { t } = useLanguage();
+  const [consent, setConsent] = useState<MarketingConsent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    crmService
+      .getConsent(customerId)
+      .then((c) => { if (!cancelled) setConsent(c); })
+      .catch(() => {
+        if (!cancelled)
+          setConsent({ email: false, sms: false, push: false, optOutAll: false });
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [customerId]);
+
+  const handleToggle = async (field: keyof MarketingConsent, value: boolean) => {
+    if (!consent || saving) return;
+    const updated = { ...consent, [field]: value };
+    // If opting out all, set everything to false
+    if (field === 'optOutAll' && value) {
+      updated.email = false;
+      updated.sms = false;
+      updated.push = false;
+    }
+    // If enabling any channel while optOutAll is true, clear optOutAll
+    if (field !== 'optOutAll' && value && consent.optOutAll) {
+      updated.optOutAll = false;
+    }
+    setConsent(updated);
+    setSaving(true);
+    try {
+      const result = await crmService.setConsent(customerId, updated);
+      setConsent(result);
+    } catch {
+      toast.error(t('crm.consentSaveFailed') || 'Failed to save consent');
+      setConsent(consent); // revert
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-2 mt-3">
+        {[1, 2, 3].map((i) => <div key={i} className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />)}
+      </div>
+    );
+  }
+
+  if (!consent) return null;
+
+  const consentRows: { field: keyof MarketingConsent; label: string; icon: React.FC<{ className?: string }> }[] = [
+    { field: 'email', label: t('crm.consent.email') || 'Email marketing', icon: EnvelopeIcon },
+    { field: 'sms', label: t('crm.consent.sms') || 'SMS marketing', icon: PhoneIcon },
+    { field: 'push', label: t('crm.consent.push') || 'Push notifications', icon: BellIcon },
+  ];
+
+  return (
+    <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          {t('crm.consent.title') || 'Marketing Consent'}
+        </h4>
+        {consent.optOutAll && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+            <NoSymbolIcon className="w-3 h-3" />
+            {t('crm.consent.optedOut') || 'Opted Out'}
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        {consentRows.map(({ field, label, icon: Icon }) => (
+          <div
+            key={field}
+            className="flex items-center justify-between px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800"
+          >
+            <div className="flex items-center gap-2">
+              <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+            </div>
+            <button
+              onClick={() => handleToggle(field, !consent[field as keyof Pick<MarketingConsent, 'email' | 'sms' | 'push'>])}
+              disabled={saving}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                consent[field as keyof Pick<MarketingConsent, 'email' | 'sms' | 'push'>]
+                  ? 'bg-primary-500'
+                  : 'bg-gray-300 dark:bg-gray-600'
+              } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              aria-label={label}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                  consent[field as keyof Pick<MarketingConsent, 'email' | 'sms' | 'push'>] ? 'translate-x-4' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        ))}
+
+        {/* Opt-out all toggle */}
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+          <div className="flex items-center gap-2">
+            <NoSymbolIcon className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <span className="text-sm text-red-700 dark:text-red-300">
+              {t('crm.consent.optOutAll') || 'Opt out of all'}
+            </span>
+          </div>
+          <button
+            onClick={() => handleToggle('optOutAll', !consent.optOutAll)}
+            disabled={saving}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+              consent.optOutAll ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-600'
+            } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+            aria-label={t('crm.consent.optOutAll') || 'Opt out of all'}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                consent.optOutAll ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-/** Client card */
-const ClientCard: React.FC<{
-  client: Client;
+// ---------------------------------------------------------------------------
+// Tag assignment inline (inside expanded area)
+// ---------------------------------------------------------------------------
+
+const TagAssignment: React.FC<{
+  client: CrmClient;
+  allTags: CustomerTag[];
+  onTagsChanged: (customerId: string) => void;
+}> = ({ client, allTags, onTagsChanged }) => {
+  const { t } = useLanguage();
+  const [busy, setBusy] = useState<string | null>(null); // tagId being toggled
+
+  const assignedIds = new Set(client.tags.map((t) => t.id));
+
+  const handleToggle = async (tag: CustomerTag) => {
+    if (busy) return;
+    setBusy(tag.id);
+    try {
+      if (assignedIds.has(tag.id)) {
+        await crmService.unassignTag(client.customerId, tag.id);
+      } else {
+        await crmService.assignTag(client.customerId, tag.id);
+      }
+      onTagsChanged(client.customerId);
+    } catch {
+      toast.error(t('crm.tagToggleFailed') || 'Failed to update tags');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (!allTags.length) {
+    return (
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        {t('crm.noTagsYet') || 'No tags yet — create some in Manage Tags.'}
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {allTags.map((tag) => {
+        const assigned = assignedIds.has(tag.id);
+        const colors = TAG_COLOR_CLASSES[tag.color] || TAG_COLOR_CLASSES.gray;
+        return (
+          <button
+            key={tag.id}
+            onClick={() => handleToggle(tag)}
+            disabled={busy === tag.id}
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
+              assigned
+                ? `${colors.pill} ring-2 ring-offset-1 ring-current`
+                : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+            } ${busy === tag.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+          >
+            {assigned && <CheckCircleIcon className="w-3 h-3 flex-shrink-0" />}
+            {tag.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Manage Tags Modal
+// ---------------------------------------------------------------------------
+
+interface ManageTagsModalProps {
+  onClose: () => void;
+  onTagsUpdated: () => void;
+}
+
+const ManageTagsModal: React.FC<ManageTagsModalProps> = ({ onClose, onTagsUpdated }) => {
+  const { t } = useLanguage();
+  const [tags, setTags] = useState<CustomerTag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState('');
+  const [newColor, setNewColor] = useState<TagColor>('primary');
+  const [creating, setCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editColor, setEditColor] = useState<TagColor>('primary');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const loadTags = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await crmService.listTags();
+      setTags(result);
+    } catch {
+      toast.error(t('crm.tagLoadFailed') || 'Failed to load tags');
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => { loadTags(); }, [loadTags]);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const handleCreate = async () => {
+    const name = newName.trim();
+    if (!name) return;
+    setCreating(true);
+    try {
+      const tag = await crmService.createTag({ name, color: newColor });
+      setTags((prev) => [...prev, tag]);
+      setNewName('');
+      setNewColor('primary');
+      onTagsUpdated();
+    } catch {
+      toast.error(t('crm.tagCreateFailed') || 'Failed to create tag');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const startEdit = (tag: CustomerTag) => {
+    setEditingId(tag.id);
+    setEditName(tag.name);
+    setEditColor(tag.color);
+    setConfirmDeleteId(null);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    const name = editName.trim();
+    if (!name) return;
+    try {
+      const updated = await crmService.updateTag(id, { name, color: editColor });
+      setTags((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      setEditingId(null);
+      onTagsUpdated();
+    } catch {
+      toast.error(t('crm.tagUpdateFailed') || 'Failed to update tag');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await crmService.deleteTag(id);
+      setTags((prev) => prev.filter((t) => t.id !== id));
+      setConfirmDeleteId(null);
+      onTagsUpdated();
+    } catch {
+      toast.error(t('crm.tagDeleteFailed') || 'Failed to delete tag');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      <div className="relative w-full sm:max-w-lg bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-t-3xl sm:rounded-t-2xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('crm.manageTags') || 'Manage Tags'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Create new tag */}
+          <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t('crm.newTag') || 'New Tag'}
+            </h3>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={t('crm.tagNamePlaceholder') || 'Tag name...'}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 mb-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            {/* Color picker */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {TAG_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setNewColor(c)}
+                  className={`w-7 h-7 rounded-full transition-all ${TAG_COLOR_CLASSES[c].swatch} ${
+                    newColor === c ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-300 scale-110' : 'opacity-70 hover:opacity-100'
+                  }`}
+                  title={c}
+                  aria-label={c}
+                />
+              ))}
+            </div>
+            {/* Preview + create */}
+            <div className="flex items-center gap-3">
+              {newName && (
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${TAG_COLOR_CLASSES[newColor].pill}`}>
+                  {newName}
+                </span>
+              )}
+              <button
+                onClick={handleCreate}
+                disabled={creating || !newName.trim()}
+                className="ml-auto inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <PlusIcon className="w-4 h-4" />
+                {creating ? (t('common.saving') || 'Saving…') : (t('crm.createTag') || 'Create')}
+              </button>
+            </div>
+          </div>
+
+          {/* Existing tags */}
+          {loading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : tags.length === 0 ? (
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 py-6">
+              {t('crm.noTagsYet') || 'No tags yet'}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {tags.map((tag) => (
+                <div
+                  key={tag.id}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3"
+                >
+                  {editingId === tag.id ? (
+                    /* Edit mode */
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(tag.id); if (e.key === 'Escape') setEditingId(null); }}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        autoFocus
+                      />
+                      <div className="flex flex-wrap gap-1.5">
+                        {TAG_COLORS.map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setEditColor(c)}
+                            className={`w-6 h-6 rounded-full transition-all ${TAG_COLOR_CLASSES[c].swatch} ${
+                              editColor === c ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : 'opacity-60 hover:opacity-100'
+                            }`}
+                            aria-label={c}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleSaveEdit(tag.id)}
+                          className="px-3 py-1.5 text-xs font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                        >
+                          {t('actions.save') || 'Save'}
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          {t('actions.cancel') || 'Cancel'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : confirmDeleteId === tag.id ? (
+                    /* Delete confirm */
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 min-w-0">
+                        {t('crm.confirmDeleteTag') || 'Delete this tag?'}{' '}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${TAG_COLOR_CLASSES[tag.color].pill}`}>
+                          {tag.name}
+                        </span>
+                      </p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleDelete(tag.id)}
+                          disabled={deletingId === tag.id}
+                          className="px-3 py-1.5 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === tag.id ? '…' : (t('actions.delete') || 'Delete')}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          {t('actions.cancel') || 'Cancel'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Display mode */
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${TAG_COLOR_CLASSES[tag.color].swatch}`} />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{tag.name}</span>
+                        {tag.count !== undefined && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                            ({tag.count})
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => startEdit(tag)}
+                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          aria-label={t('actions.edit') || 'Edit'}
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(tag.id)}
+                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          aria-label={t('actions.delete') || 'Delete'}
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Client card
+// ---------------------------------------------------------------------------
+
+interface ClientCardProps {
+  client: CrmClient;
   isExpanded: boolean;
   onToggle: () => void;
   onViewBookings: () => void;
@@ -283,6 +700,8 @@ const ClientCard: React.FC<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatPrice: (p: any, fromCurrency?: any) => string;
   index: number;
+  allTags: CustomerTag[];
+  onTagsChanged: (customerId: string) => void;
   // Notes props
   notes: Array<{ id: string; content: string; category: string; updatedAt: string }>;
   loadingNotes: boolean;
@@ -292,7 +711,27 @@ const ClientCard: React.FC<{
   onNoteCategoryChange: (value: string) => void;
   onCreateNote: () => void;
   onDeleteNote: (noteId: string) => void;
-}> = ({ client, isExpanded, onToggle, onViewBookings, onSendMessage, formatPrice, index, notes, loadingNotes, newNote, noteCategory, onNewNoteChange, onNoteCategoryChange, onCreateNote, onDeleteNote }) => {
+}
+
+const ClientCard: React.FC<ClientCardProps> = ({
+  client,
+  isExpanded,
+  onToggle,
+  onViewBookings,
+  onSendMessage,
+  formatPrice,
+  index,
+  allTags,
+  onTagsChanged,
+  notes,
+  loadingNotes,
+  newNote,
+  noteCategory,
+  onNewNoteChange,
+  onNoteCategoryChange,
+  onCreateNote,
+  onDeleteNote,
+}) => {
   const { t } = useLanguage();
 
   return (
@@ -302,7 +741,7 @@ const ClientCard: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ delay: index * 0.03, duration: 0.25 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-all duration-200"
+      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
     >
       {/* Main card content */}
       <div className="p-5">
@@ -319,20 +758,20 @@ const ClientCard: React.FC<{
             ) : (
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-base">
-                  {getInitials(client.firstName, client.lastName)}
+                  {getInitials(client.name)}
                 </span>
               </div>
             )}
 
             {/* Name + meta */}
             <div className="min-w-0 flex-1">
-              <div className="flex items-center space-x-2">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white break-words min-w-0">
                   {client.name}
                 </h3>
                 {/* Status badge */}
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap flex-shrink-0 ${
                     client.isActive
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
@@ -340,25 +779,29 @@ const ClientCard: React.FC<{
                 >
                   {client.isActive
                     ? t('clients.status.active') || 'Active'
-                    : t('clients.status.inactive') || 'Inactive'}
+                    : t('clients.status.inactive') || 'Lapsed'}
                 </span>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 {t('clients.lastVisit') || 'Last visit'}:{' '}
-                {new Date(client.lastVisitDate).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
+                {client.lastVisitDate
+                  ? new Date(client.lastVisitDate).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : '—'}
               </p>
+              {/* Tag pills */}
+              {client.tags.length > 0 && <TagPills tags={client.tags} />}
             </div>
           </div>
 
-          {/* Right: expand toggle (mobile / desktop) */}
+          {/* Right: expand toggle */}
           <button
             onClick={onToggle}
-            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2"
-            aria-label={t('clients.toggleDetails')}
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2 flex-shrink-0"
+            aria-label={t('clients.toggleDetails') || 'Toggle details'}
           >
             {isExpanded ? (
               <ChevronUpIcon className="w-5 h-5" />
@@ -369,26 +812,26 @@ const ClientCard: React.FC<{
         </div>
 
         {/* Quick stats row */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-white">{client.bookingsCount}</p>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-2 py-2 text-center">
+            <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums">{client.bookingsCount}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
               {t('clients.bookings') || 'Bookings'}
             </p>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-2 py-2 text-center min-w-0">
+            <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums truncate">
               {formatPrice(client.totalSpent, client.currency)}
             </p>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
               {t('clients.totalSpent') || 'Total Spent'}
             </p>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 text-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl px-2 py-2 text-center min-w-0">
+            <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums truncate">
               {formatPrice(client.totalSpent / (client.bookingsCount || 1), client.currency)}
             </p>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
               {t('clients.avgSpent') || 'Avg / Visit'}
             </p>
           </div>
@@ -398,14 +841,14 @@ const ClientCard: React.FC<{
         <div className="mt-4 flex items-center space-x-2">
           <button
             onClick={onViewBookings}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:shadow-sm dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-all duration-200"
           >
             <EyeIcon className="w-4 h-4" />
-            <span>{t('clients.viewBookings') || 'View Bookings'}</span>
+            <span>{t('clients.viewBookings') || 'History'}</span>
           </button>
           <button
             onClick={onSendMessage}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
           >
             <ChatBubbleLeftRightIcon className="w-4 h-4" />
             <span>{t('clients.sendMessage') || 'Message'}</span>
@@ -413,7 +856,7 @@ const ClientCard: React.FC<{
         </div>
       </div>
 
-      {/* Expandable booking history */}
+      {/* Expandable detail section */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -423,28 +866,26 @@ const ClientCard: React.FC<{
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-gray-200 dark:border-gray-700 px-5 py-4 bg-gray-50/50 dark:bg-gray-900/30">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                {t('clients.bookingHistory') || 'Booking History'}
-              </h4>
-              {client.bookings.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('clients.noBookings') || 'No bookings found.'}
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {client.bookings.map((booking) => (
-                    <BookingHistoryRow
-                      key={booking.id}
-                      booking={booking}
-                      formatPrice={formatPrice}
-                    />
-                  ))}
-                </div>
-              )}
+            <div className="border-t border-gray-200 dark:border-gray-700 px-5 py-4 bg-gray-50/50 dark:bg-gray-900/30 space-y-5">
+
+              {/* Tags assignment */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <TagIconFallback className="w-4 h-4" />
+                  {t('crm.tags') || 'Tags'}
+                </h4>
+                <TagAssignment
+                  client={client}
+                  allTags={allTags}
+                  onTagsChanged={onTagsChanged}
+                />
+              </div>
+
+              {/* Consent */}
+              <ConsentPanel customerId={client.customerId} />
 
               {/* Client Notes */}
-              <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                   {t('clients.notes') || 'Notes'}
                 </h4>
@@ -460,12 +901,12 @@ const ClientCard: React.FC<{
                       onKeyDown={(e) => e.key === 'Enter' && onCreateNote()}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
                     />
-                    <div className="flex items-center mt-1 space-x-1">
+                    <div className="flex items-center mt-1 space-x-1 flex-wrap gap-y-1">
                       {['general', 'allergy', 'preference', 'formula'].map((cat) => (
                         <button
                           key={cat}
                           onClick={() => onNoteCategoryChange(cat)}
-                          className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                          className={`px-2 py-0.5 text-xs rounded-full transition-colors whitespace-nowrap ${
                             (noteCategory || 'general') === cat
                               ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
                               : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
@@ -478,7 +919,7 @@ const ClientCard: React.FC<{
                   </div>
                   <button
                     onClick={onCreateNote}
-                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0"
                   >
                     {t('actions.add') || 'Add'}
                   </button>
@@ -486,28 +927,40 @@ const ClientCard: React.FC<{
 
                 {/* Notes list */}
                 {loadingNotes ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">{t('common.loading') || 'Loading notes...'}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
+                    {t('common.loading') || 'Loading notes...'}
+                  </div>
                 ) : notes.length > 0 ? (
                   <div className="space-y-2">
                     {notes.map((note) => (
-                      <div key={note.id} className="flex items-start justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                      <div
+                        key={note.id}
+                        className="flex items-start justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800"
+                      >
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-0.5">
-                            <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
-                              note.category === 'allergy' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
-                              note.category === 'preference' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
-                              note.category === 'formula' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
-                              'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                            }`}>
+                          <div className="flex items-center space-x-2 mb-0.5 flex-wrap gap-y-0.5">
+                            <span
+                              className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                                note.category === 'allergy'
+                                  ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                                  : note.category === 'preference'
+                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                                  : note.category === 'formula'
+                                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                              }`}
+                            >
                               {note.category}
                             </span>
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                              {new Date(note.updatedAt).toLocaleDateString()}
+                            </span>
                           </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{note.content}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 break-words">{note.content}</p>
                         </div>
                         <button
                           onClick={() => onDeleteNote(note.id)}
-                          className="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
+                          className="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
                         >
                           <XIcon className="w-3.5 h-3.5" />
                         </button>
@@ -515,7 +968,9 @@ const ClientCard: React.FC<{
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('clients.noNotes') || 'No notes yet'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('clients.noNotes') || 'No notes yet'}
+                  </p>
                 )}
               </div>
             </div>
@@ -543,7 +998,7 @@ const EmptyState: React.FC = () => {
       </h3>
       <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
         {t('clients.empty.description') ||
-          'When customers book your services, they will appear here. Start by sharing your profile or listing services.'}
+          'When customers book your services, they will appear here.'}
       </p>
     </motion.div>
   );
@@ -558,17 +1013,25 @@ const SpecialistClients: React.FC = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
-  // State
+  // Core state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [allClients, setAllClients] = useState<Client[]>([]);
+  const [allClients, setAllClients] = useState<CrmClient[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('lastVisitDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
 
+  // Tag filter
+  const [allTags, setAllTags] = useState<CustomerTag[]>([]);
+  const [filterTagId, setFilterTagId] = useState<string | null>(null);
+  const [showManageTags, setShowManageTags] = useState(false);
+  const [tagFilterOpen, setTagFilterOpen] = useState(false);
+
   // Notes state
-  const [clientNotes, setClientNotes] = useState<Record<string, Array<{ id: string; content: string; category: string; updatedAt: string }>>>({});
+  const [clientNotes, setClientNotes] = useState<
+    Record<string, Array<{ id: string; content: string; category: string; updatedAt: string }>>
+  >({});
   const [newNote, setNewNote] = useState<Record<string, string>>({});
   const [noteCategory, setNoteCategory] = useState<Record<string, string>>({});
   const [loadingNotes, setLoadingNotes] = useState<Record<string, boolean>>({});
@@ -577,46 +1040,73 @@ const SpecialistClients: React.FC = () => {
   // Data Fetching
   // ---------------------------------------------------------------------------
 
-  const loadClients = useCallback(async () => {
+  const loadTags = useCallback(async () => {
+    try {
+      const tags = await crmService.listTags();
+      setAllTags(tags);
+    } catch {
+      // tags are optional; swallow
+    }
+  }, []);
+
+  const loadClients = useCallback(async (opts?: { tagId?: string; search?: string }) => {
     try {
       setLoading(true);
       setError(null);
-
-      // Fetch all specialist bookings (with a high limit to capture all)
-      const result = await bookingService.getBookings({ limit: 1000 }, 'specialist');
-      const bookings = result.bookings || [];
-      const clients = deriveClientsFromBookings(bookings);
+      const clients = await crmService.getClients({
+        tagId: opts?.tagId || filterTagId || undefined,
+        search: opts?.search !== undefined ? opts.search : searchTerm || undefined,
+      });
       setAllClients(clients);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('[Clients] Error loading client data:', error);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[Clients] Error loading clients:', err);
       setError(message || 'Failed to load clients');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filterTagId, searchTerm]);
 
+  // Initial load
   useEffect(() => {
     loadClients();
-  }, [loadClients]);
+    loadTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-fetch when tag filter changes (search debounced below)
+  useEffect(() => {
+    loadClients({ tagId: filterTagId || undefined, search: searchTerm || undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterTagId]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadClients({ tagId: filterTagId || undefined, search: searchTerm || undefined });
+    }, 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Refresh a single client's tags after assign/unassign
+  const refreshClientTags = useCallback(async (customerId: string) => {
+    try {
+      const updated = await crmService.getClient(customerId);
+      setAllClients((prev) =>
+        prev.map((c) => (c.customerId === customerId ? updated : c))
+      );
+    } catch {
+      // silently skip; list will resync on next full reload
+    }
+  }, []);
 
   // ---------------------------------------------------------------------------
-  // Filtering + Sorting
+  // Filtering + Sorting (client-side after server fetch)
   // ---------------------------------------------------------------------------
 
   const filteredAndSortedClients = useMemo(() => {
     let result = [...allClients];
-
-    // Filter by search
-    if (searchTerm.trim()) {
-      const lower = searchTerm.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(lower) ||
-          c.email?.toLowerCase().includes(lower) ||
-          c.phone?.includes(lower)
-      );
-    }
 
     // Sort
     result.sort((a, b) => {
@@ -629,7 +1119,9 @@ const SpecialistClients: React.FC = () => {
           cmp = a.bookingsCount - b.bookingsCount;
           break;
         case 'lastVisitDate':
-          cmp = new Date(a.lastVisitDate).getTime() - new Date(b.lastVisitDate).getTime();
+          cmp =
+            new Date(a.lastVisitDate || 0).getTime() -
+            new Date(b.lastVisitDate || 0).getTime();
           break;
         case 'totalSpent':
           cmp = a.totalSpent - b.totalSpent;
@@ -639,7 +1131,7 @@ const SpecialistClients: React.FC = () => {
     });
 
     return result;
-  }, [allClients, searchTerm, sortField, sortOrder]);
+  }, [allClients, sortField, sortOrder]);
 
   // ---------------------------------------------------------------------------
   // Stats
@@ -649,10 +1141,13 @@ const SpecialistClients: React.FC = () => {
     const total = allClients.length;
     const active = allClients.filter((c) => c.isActive).length;
     const avg =
+      total > 0 ? allClients.reduce((sum, c) => sum + c.bookingsCount, 0) / total : 0;
+    const repeat =
       total > 0
-        ? allClients.reduce((sum, c) => sum + c.bookingsCount, 0) / total
+        ? Math.round(
+            (allClients.filter((c) => c.bookingsCount > 1).length / total) * 100
+          )
         : 0;
-    const repeat = total > 0 ? Math.round((allClients.filter((c) => c.bookingsCount > 1).length / total) * 100) : 0;
     return { totalClients: total, activeClients: active, averageBookings: avg, repeatRate: repeat };
   }, [allClients]);
 
@@ -679,39 +1174,54 @@ const SpecialistClients: React.FC = () => {
     });
   };
 
-  const handleViewBookings = (client: Client) => {
-    // Expand the card inline to show booking history
-    setExpandedClientId(client.id);
+  const handleViewBookings = (client: CrmClient) => {
+    setExpandedClientId(client.customerId);
+    if (!clientNotes[client.customerId]) {
+      loadClientNotes(client.customerId);
+    }
   };
 
-  const handleSendMessage = (client: Client) => {
-    navigate(`/specialist/messages?recipientId=${client.id}&recipientName=${encodeURIComponent(client.name)}`);
+  const handleSendMessage = (client: CrmClient) => {
+    navigate(
+      `/specialist/messages?recipientId=${client.customerId}&recipientName=${encodeURIComponent(client.name)}`
+    );
   };
 
   // Notes handlers
   const loadClientNotes = async (clientId: string) => {
     try {
-      setLoadingNotes(prev => ({ ...prev, [clientId]: true }));
+      setLoadingNotes((prev) => ({ ...prev, [clientId]: true }));
       const response = await specialistService.getClientNotes(clientId);
-      setClientNotes(prev => ({ ...prev, [clientId]: response?.notes || [] }));
+      setClientNotes((prev) => ({ ...prev, [clientId]: response?.notes || [] }));
     } catch {
-      // Silently fail - notes are supplementary
+      // silently fail
     } finally {
-      setLoadingNotes(prev => ({ ...prev, [clientId]: false }));
+      setLoadingNotes((prev) => ({ ...prev, [clientId]: false }));
     }
   };
 
   const handleCreateNote = async (clientId: string) => {
     const content = newNote[clientId]?.trim();
     if (!content) return;
-
     try {
-      const response = await specialistService.createClientNote(clientId, content, noteCategory[clientId] || 'general');
-      setClientNotes(prev => ({
+      const response = await specialistService.createClientNote(
+        clientId,
+        content,
+        noteCategory[clientId] || 'general'
+      );
+      setClientNotes((prev) => ({
         ...prev,
-        [clientId]: [response?.note || { id: Date.now().toString(), content, category: noteCategory[clientId] || 'general', updatedAt: new Date().toISOString() }, ...(prev[clientId] || [])],
+        [clientId]: [
+          response?.note || {
+            id: Date.now().toString(),
+            content,
+            category: noteCategory[clientId] || 'general',
+            updatedAt: new Date().toISOString(),
+          },
+          ...(prev[clientId] || []),
+        ],
       }));
-      setNewNote(prev => ({ ...prev, [clientId]: '' }));
+      setNewNote((prev) => ({ ...prev, [clientId]: '' }));
     } catch {
       toast.error('Failed to save note');
     }
@@ -720,9 +1230,9 @@ const SpecialistClients: React.FC = () => {
   const handleDeleteNote = async (clientId: string, noteId: string) => {
     try {
       await specialistService.deleteClientNote(noteId);
-      setClientNotes(prev => ({
+      setClientNotes((prev) => ({
         ...prev,
-        [clientId]: (prev[clientId] || []).filter(n => n.id !== noteId),
+        [clientId]: (prev[clientId] || []).filter((n) => n.id !== noteId),
       }));
     } catch {
       toast.error('Failed to delete note');
@@ -730,15 +1240,19 @@ const SpecialistClients: React.FC = () => {
   };
 
   // ---------------------------------------------------------------------------
-  // Sort options config
+  // Sort options
   // ---------------------------------------------------------------------------
 
   const sortOptions: { field: SortField; label: string }[] = [
     { field: 'name', label: t('clients.sort.name') || 'Name' },
     { field: 'bookingsCount', label: t('clients.sort.bookings') || 'Bookings' },
     { field: 'lastVisitDate', label: t('clients.sort.lastVisit') || 'Last Visit' },
-    { field: 'totalSpent', label: t('clients.sort.totalSpent') || 'Total Spent' },
+    { field: 'totalSpent', label: t('clients.sort.totalSpent') || 'Spent' },
   ];
+
+  const activeTagLabel = filterTagId
+    ? allTags.find((t) => t.id === filterTagId)?.name
+    : null;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -749,31 +1263,43 @@ const SpecialistClients: React.FC = () => {
       <div className="py-6">
         {/* Page header */}
         <div className="max-w-5xl mx-auto px-4 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('clients.title') || 'My Clients'}
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
                 {t('clients.subtitle') || 'Manage and view your client relationships'}
                 {!loading && allClients.length > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">
-                    {allClients.length} {allClients.length === 1 ? (t('clients.client') || 'client') : (t('clients.clientsPlural') || 'clients')}
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">
+                    {allClients.length}{' '}
+                    {allClients.length === 1
+                      ? t('clients.client') || 'client'
+                      : t('clients.clientsPlural') || 'clients'}
                   </span>
                 )}
               </p>
             </div>
 
-            {/* Refresh button */}
-            {!loading && (
+            {/* Header actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <button
-                onClick={loadClients}
-                className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                onClick={() => setShowManageTags(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
               >
-                <ArrowPathIcon className="w-4 h-4" />
-                <span>{t('common.refresh') || 'Refresh'}</span>
+                <TagIconFallback className="w-4 h-4" />
+                <span>{t('crm.manageTags') || 'Manage Tags'}</span>
               </button>
-            )}
+              {!loading && (
+                <button
+                  onClick={() => loadClients()}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
+                >
+                  <ArrowPathIcon className="w-4 h-4" />
+                  <span>{t('common.refresh') || 'Refresh'}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -781,11 +1307,11 @@ const SpecialistClients: React.FC = () => {
           {/* Error state */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
                 <button
-                  onClick={loadClients}
-                  className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline"
+                  onClick={() => loadClients()}
+                  className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
                 >
                   {t('common.retry') || 'Retry'}
                 </button>
@@ -796,7 +1322,6 @@ const SpecialistClients: React.FC = () => {
           {/* Loading skeletons */}
           {loading && (
             <>
-              {/* Stats skeleton */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {[1, 2, 3, 4].map((i) => (
                   <div
@@ -813,9 +1338,7 @@ const SpecialistClients: React.FC = () => {
                   </div>
                 ))}
               </div>
-              {/* Search bar skeleton */}
-              <div className="h-12 bg-white dark:bg-gray-800 rounded-2xl mb-6 animate-pulse border border-gray-200 dark:border-gray-700" />
-              {/* Cards skeleton */}
+              <div className="h-12 bg-white dark:bg-gray-800 rounded-2xl mb-4 animate-pulse border border-gray-200 dark:border-gray-700" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <SkeletonCard key={i} />
@@ -827,7 +1350,7 @@ const SpecialistClients: React.FC = () => {
           {/* Loaded content */}
           {!loading && (
             <>
-              {/* Stats bar */}
+              {/* Stats */}
               {allClients.length > 0 && (
                 <StatsBar
                   totalClients={stats.totalClients}
@@ -837,15 +1360,17 @@ const SpecialistClients: React.FC = () => {
                 />
               )}
 
-              {/* Search + Sort controls */}
-              {allClients.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
-                  {/* Search */}
+              {/* Search + Tag filter + Sort */}
+              <div className="flex flex-col gap-3 mb-6">
+                {/* Search row */}
+                <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <input
                       type="text"
-                      placeholder={t('clients.searchPlaceholder') || 'Search clients by name, email, or phone...'}
+                      placeholder={
+                        t('clients.searchPlaceholder') || 'Search by name, email, or phone...'
+                      }
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full pl-11 pr-10 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm"
@@ -860,99 +1385,178 @@ const SpecialistClients: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Sort buttons */}
-                  <div className="flex flex-wrap items-center gap-1 bg-white dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-1">
-                    {sortOptions.map((opt) => {
-                      const isActive = sortField === opt.field;
-                      return (
-                        <button
-                          key={opt.field}
-                          onClick={() => handleToggleSort(opt.field)}
-                          className={`px-3 py-2 text-xs font-medium rounded-xl transition-colors whitespace-nowrap ${
-                            isActive
-                              ? 'bg-primary-500 text-white shadow-sm'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          {opt.label}
-                          {isActive && (
-                            <span className="ml-1">{sortOrder === 'asc' ? '\u2191' : '\u2193'}</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {/* Tag filter button */}
+                  {allTags.length > 0 && (
+                    <div className="relative flex-shrink-0">
+                      <button
+                        onClick={() => setTagFilterOpen((v) => !v)}
+                        className={`inline-flex items-center gap-2 px-3 py-3 rounded-2xl border text-sm font-medium transition-colors ${
+                          filterTagId
+                            ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-400'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <FunnelIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline whitespace-nowrap">
+                          {activeTagLabel || t('crm.filterByTag') || 'Filter'}
+                        </span>
+                        {filterTagId && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFilterTagId(null);
+                            }}
+                            className="inline-flex items-center"
+                          >
+                            <XIcon className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                      </button>
+
+                      <AnimatePresence>
+                        {tagFilterOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 mt-2 z-30 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 min-w-[160px]"
+                          >
+                            <button
+                              onClick={() => { setFilterTagId(null); setTagFilterOpen(false); }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                              {t('crm.allClients') || 'All clients'}
+                            </button>
+                            <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                            {allTags.map((tag) => (
+                              <button
+                                key={tag.id}
+                                onClick={() => { setFilterTagId(tag.id); setTagFilterOpen(false); }}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                              >
+                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${TAG_COLOR_CLASSES[tag.color].swatch}`} />
+                                <span className="truncate">{tag.name}</span>
+                                {tag.count !== undefined && (
+                                  <span className="ml-auto text-xs text-gray-400 flex-shrink-0">{tag.count}</span>
+                                )}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Sort chips */}
+                <div className="flex flex-wrap items-center gap-1 bg-white dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-1">
+                  {sortOptions.map((opt) => {
+                    const isActive = sortField === opt.field;
+                    return (
+                      <button
+                        key={opt.field}
+                        onClick={() => handleToggleSort(opt.field)}
+                        className={`px-3 py-2 text-xs font-medium rounded-xl transition-colors whitespace-nowrap ${
+                          isActive
+                            ? 'bg-primary-500 text-white shadow-sm'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {opt.label}
+                        {isActive && (
+                          <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active tag chip */}
+                {filterTagId && activeTagLabel && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('crm.filteredByTag') || 'Filtered by:'}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                        TAG_COLOR_CLASSES[allTags.find((t) => t.id === filterTagId)?.color || 'gray'].pill
+                      }`}
+                    >
+                      {activeTagLabel}
+                      <button onClick={() => setFilterTagId(null)}>
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* Client list */}
               {filteredAndSortedClients.length > 0 ? (
-                <>
-                  {/* Results count when searching */}
-                  {searchTerm && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      {filteredAndSortedClients.length}{' '}
-                      {filteredAndSortedClients.length === 1
-                        ? t('clients.resultSingular') || 'result'
-                        : t('clients.resultPlural') || 'results'}{' '}
-                      {t('clients.foundFor') || 'found for'} &ldquo;{searchTerm}&rdquo;
-                    </p>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <AnimatePresence mode="popLayout">
-                      {filteredAndSortedClients.map((client, idx) => (
-                        <ClientCard
-                          key={client.id}
-                          client={client}
-                          isExpanded={expandedClientId === client.id}
-                          onToggle={() => handleToggleExpand(client.id)}
-                          onViewBookings={() => handleViewBookings(client)}
-                          onSendMessage={() => handleSendMessage(client)}
-                          formatPrice={formatPrice}
-                          index={idx}
-                          notes={clientNotes[client.id] || []}
-                          loadingNotes={loadingNotes[client.id] || false}
-                          newNote={newNote[client.id] || ''}
-                          noteCategory={noteCategory[client.id] || 'general'}
-                          onNewNoteChange={(value) => setNewNote(prev => ({ ...prev, [client.id]: value }))}
-                          onNoteCategoryChange={(value) => setNoteCategory(prev => ({ ...prev, [client.id]: value }))}
-                          onCreateNote={() => handleCreateNote(client.id)}
-                          onDeleteNote={(noteId) => handleDeleteNote(client.id, noteId)}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </>
-              ) : searchTerm ? (
-                // No search results
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center justify-center py-16"
-                >
-                  <MagnifyingGlassIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                    {t('clients.noResults.title') || 'No clients found'}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm text-center max-w-sm">
-                    {t('clients.noResults.description') || 'Try adjusting your search term.'}
-                  </p>
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="mt-4 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {t('clients.clearSearch') || 'Clear search'}
-                  </button>
-                </motion.div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AnimatePresence mode="popLayout">
+                    {filteredAndSortedClients.map((client, idx) => (
+                      <ClientCard
+                        key={client.customerId}
+                        client={client}
+                        isExpanded={expandedClientId === client.customerId}
+                        onToggle={() => handleToggleExpand(client.customerId)}
+                        onViewBookings={() => handleViewBookings(client)}
+                        onSendMessage={() => handleSendMessage(client)}
+                        formatPrice={formatPrice}
+                        index={idx}
+                        allTags={allTags}
+                        onTagsChanged={refreshClientTags}
+                        notes={clientNotes[client.customerId] || []}
+                        loadingNotes={loadingNotes[client.customerId] || false}
+                        newNote={newNote[client.customerId] || ''}
+                        noteCategory={noteCategory[client.customerId] || 'general'}
+                        onNewNoteChange={(value) =>
+                          setNewNote((prev) => ({ ...prev, [client.customerId]: value }))
+                        }
+                        onNoteCategoryChange={(value) =>
+                          setNoteCategory((prev) => ({
+                            ...prev,
+                            [client.customerId]: value,
+                          }))
+                        }
+                        onCreateNote={() => handleCreateNote(client.customerId)}
+                        onDeleteNote={(noteId) =>
+                          handleDeleteNote(client.customerId, noteId)
+                        }
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
               ) : (
-                // True empty state
                 <EmptyState />
               )}
             </>
           )}
         </div>
       </div>
+
+      {/* Manage Tags Modal */}
+      <AnimatePresence>
+        {showManageTags && (
+          <ManageTagsModal
+            onClose={() => setShowManageTags(false)}
+            onTagsUpdated={() => {
+              loadTags();
+              loadClients();
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Tag filter dropdown backdrop */}
+      {tagFilterOpen && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setTagFilterOpen(false)}
+        />
+      )}
     </div>
   );
 };
