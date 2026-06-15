@@ -357,7 +357,29 @@ const InvoicesPanel: React.FC = () => {
 
       {loading ? <PageLoader /> : invoices.length === 0
         ? <p className="text-sm text-gray-500 py-8 text-center">{t('accounting.invoices.empty')}</p>
-        : <div className="overflow-x-auto">
+        : <>
+            {/* Mobile: card list (the 7-col table is unreadable < lg) */}
+            <div className="lg:hidden space-y-3">
+              {invoices.map((inv) => (
+                <div key={inv.id} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white truncate">{inv.invoiceNumber}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${statusColor(inv.status)}`}>{inv.status}</span>
+                  </div>
+                  <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 truncate">{inv.clientName}</div>
+                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500 gap-2">
+                    <span className="truncate">{t('accounting.invoices.col.issued')}: {inv.issueDate.slice(0, 10)}</span>
+                    <span className="truncate">{t('accounting.invoices.col.due')}: {inv.dueDate?.slice(0, 10) ?? '—'}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="font-mono font-semibold text-gray-900 dark:text-white">{fmtMoney(inv.total, inv.currency)}</span>
+                  </div>
+                  <div className="mt-2"><InvoiceActions invoice={inv} onChanged={reload} /></div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop: full table */}
+            <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
                 <tr><th className="py-2">{t('accounting.invoices.col.number')}</th><th>{t('accounting.invoices.col.client')}</th><th>{t('accounting.invoices.col.issued')}</th><th>{t('accounting.invoices.col.due')}</th><th className="text-right">{t('accounting.invoices.col.total')}</th><th>{t('accounting.invoices.col.status')}</th><th></th></tr>
@@ -378,7 +400,8 @@ const InvoicesPanel: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>}
+          </div>
+          </>}
 
       {creating && <InvoiceForm onClose={() => { setCreating(false); reload(); }} />}
     </div>

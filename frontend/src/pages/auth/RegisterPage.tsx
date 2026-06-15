@@ -231,7 +231,7 @@ const RegisterPage: React.FC = () => {
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             {t('auth.register.accountType')}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <label className="relative">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
@@ -245,10 +245,10 @@ const RegisterPage: React.FC = () => {
                   : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 bg-white dark:bg-gray-800'
               }`}>
                 <div className="flex items-center">
-                  <div className={`w-4 h-4 rounded-full mr-3 ${
+                  <div className={`w-4 h-4 rounded-full mr-3 flex-shrink-0 ${
                     watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}></div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.bookServices')}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.bookServicesDesc')}</div>
                   </div>
@@ -269,10 +269,10 @@ const RegisterPage: React.FC = () => {
                   : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 bg-white dark:bg-gray-800'
               }`}>
                 <div className="flex items-center">
-                  <div className={`w-4 h-4 rounded-full mr-3 ${
+                  <div className={`w-4 h-4 rounded-full mr-3 flex-shrink-0 ${
                     watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}></div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.offerServices')}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.offerServicesDesc')}</div>
                   </div>
@@ -296,7 +296,7 @@ const RegisterPage: React.FC = () => {
                   <div className={`w-4 h-4 rounded-full mr-3 flex-shrink-0 ${
                     watchUserType === 'business' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}></div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.runBusiness') || 'Business / Salon'}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.runBusinessDesc') || 'Manage a team of professionals'}</div>
                   </div>

@@ -268,7 +268,28 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
       <div>
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('businesses.overview.recent')}</h3>
         {dashboard.recentBookings.length === 0 ? <p className="text-sm text-gray-500">{t('businesses.overview.recentEmpty')}</p> : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile: card list (6-col table doesn't fit < lg) */}
+          <div className="lg:hidden space-y-2">
+            {dashboard.recentBookings.map((b) => (
+              <div key={b.id} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{b.service?.name ?? '—'}</span>
+                  <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white flex-shrink-0">{fmtMoney(b.totalAmount)}</span>
+                </div>
+                <div className="mt-1 text-xs text-gray-500 truncate">
+                  {b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : '—'}
+                  {b.specialist ? ` · ${b.specialist.firstName} ${b.specialist.lastName}` : ''}
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-2 text-xs text-gray-400">
+                  <span className="truncate">{new Date(b.scheduledAt).toLocaleString()}</span>
+                  <span className="flex-shrink-0">{b.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop: full table */}
+          <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase text-gray-500 border-b border-gray-200 dark:border-gray-700">
               <tr><th className="py-2">{t('businesses.overview.colWhen')}</th><th>{t('businesses.overview.colService')}</th><th>{t('businesses.overview.colCustomer')}</th><th>{t('businesses.overview.colSpecialist')}</th><th className="text-right">{t('businesses.overview.colAmount')}</th><th>{t('businesses.overview.colStatus')}</th></tr>
@@ -287,6 +308,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
             </tbody>
           </table>
           </div>
+          </>
         )}
       </div>
     </div>
