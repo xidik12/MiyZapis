@@ -22,6 +22,7 @@ import PaymentDetailsTab from '../../components/settings/PaymentDetailsTab';
 import PortfolioTab from '../../components/settings/PortfolioTab';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { BookingShareCard } from '../../components/sharing/BookingShareCard';
+import { HelpTip } from '@/components/common/HelpTip';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -329,9 +330,12 @@ const SpecialistSettings: React.FC = () => {
         <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                {t('settings.title')}
-              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  {t('settings.title')}
+                </h1>
+                <HelpTip title={t('help.settings.title') || 'Settings'} content={t('help.settings.body') || 'Your account, business profile, language and preferences.'} />
+              </div>
               <p className="text-gray-600 dark:text-gray-400">
                 {t('settings.subtitle')}
               </p>

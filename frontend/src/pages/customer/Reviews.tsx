@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { HelpTip } from '@/components/common/HelpTip';
 import { reviewsService, ReviewStats, Review } from '@/services/reviews.service';
 import { ReviewFeed } from '@/components/reviews/ReviewFeed';
 import { ReviewCardData } from '@/components/reviews/ReviewCard';
@@ -240,9 +241,12 @@ const CustomerReviews: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('customer.nav.reviews')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {t('customer.nav.reviews')}
+            </h1>
+            <HelpTip title={t('help.custReviews.title') || 'My reviews'} content={t('help.custReviews.body') || "Reviews you've left for specialists you've visited."} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('reviews.subtitle') || 'View and manage your reviews'}
           </p>

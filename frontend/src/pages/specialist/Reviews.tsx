@@ -9,6 +9,7 @@ import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
 import { ReviewResponseModal } from '@/components/reviews/ReviewResponseModal';
 import { ReviewReportModal } from '@/components/reviews/ReviewReportModal';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // Reviews & reputation settings — Google/Facebook review URLs. Completed
 // bookings automatically trigger a review request to the customer (platform +
@@ -419,9 +420,12 @@ const SpecialistReviews: React.FC = () => {
       <div className="py-6">
         {/* Header */}
         <div className="max-w-5xl mx-auto px-4 mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('dashboard.nav.reviews')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('dashboard.nav.reviews')}
+            </h1>
+            <HelpTip title={t('help.specReviews.title') || 'Reviews'} content={t('help.specReviews.body') || 'See and respond to client reviews of your work.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('reviews.subtitle') || 'See what your customers are saying'}
           </p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // Helper function to get the booking currency (same as Dashboard)
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
@@ -917,9 +918,12 @@ Performance:
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {t('dashboard.nav.analytics')}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {t('dashboard.nav.analytics')}
+              </h1>
+              <HelpTip title={t('help.analytics.title') || 'Analytics'} content={t('help.analytics.body') || 'Visitor, booking and revenue trends for your business.'} />
+            </div>
             <p className="text-gray-600 dark:text-gray-300">
               {t('analytics.subtitle')}
             </p>

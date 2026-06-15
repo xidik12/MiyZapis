@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { HelpTip } from '@/components/common/HelpTip';
 import { notificationService } from '../../services/notification.service';
 import { BellIcon, CheckIcon, XIcon as XMarkIcon, EyeIcon, CalendarIcon, UserIcon, CreditCardIcon, WarningIcon as ExclamationTriangleIcon, InformationCircleIcon } from '@/components/icons';
 
@@ -169,9 +170,12 @@ const CustomerNotifications: React.FC = () => {
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            {t('dashboard.nav.notifications') || 'Notifications'}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('dashboard.nav.notifications') || 'Notifications'}
+            </h1>
+            <HelpTip title={t('help.custNotifications.title') || 'Notifications'} content={t('help.custNotifications.body') || 'Your alerts about bookings, reminders and offers.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {t('notifications.subtitle') || 'Stay updated with your bookings and activity'}
             {unreadCount > 0 && (

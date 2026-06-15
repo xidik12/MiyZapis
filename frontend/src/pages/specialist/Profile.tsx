@@ -14,6 +14,7 @@ import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { logger } from '@/utils/logger';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, PlusIcon, ShieldCheckIcon } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 interface SpecialistProfile {
   id: string;
@@ -1085,9 +1086,12 @@ const SpecialistProfile: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                      {profile.firstName} {profile.lastName}
-                    </h1>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+                        {profile.firstName} {profile.lastName}
+                      </h1>
+                      <HelpTip title={t('help.specProfile.title') || 'Profile'} content={t('help.specProfile.body') || 'Your public profile — photo, bio, specialties and contact.'} />
+                    </div>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
                       {profile.profession || t('specialist.professionNotSpecified') || 'Profession not specified'}
                     </p>

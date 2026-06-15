@@ -567,7 +567,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {getGreeting()}, {user?.firstName}! 👋
             </h1>
             <HelpTip title={t('help.dashboard.title') || 'Dashboard'} content={t('help.dashboard.body') || 'A snapshot of your business at a glance.'} />

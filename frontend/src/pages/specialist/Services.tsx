@@ -1028,7 +1028,7 @@ const SpecialistServices: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                     {t('services.title')}
                   </h1>
                   <HelpTip title={t('help.services.title') || 'Services'} content={t('help.services.body') || 'Add or edit the services you offer, with price and duration.'} />

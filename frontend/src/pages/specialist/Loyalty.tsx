@@ -9,6 +9,7 @@ import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, FireIcon, BriefcaseIcon, EyeIcon, PlusIcon, PencilIcon, TrashIcon, XIcon as XMarkIcon } from '@/components/icons';
 import { PageLoader, ContentLoader } from '@/components/ui';
+import { HelpTip } from '@/components/common/HelpTip';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -379,9 +380,12 @@ const SpecialistLoyalty: React.FC = () => {
       <div className="max-w-7xl w-full min-w-0 mx-auto px-4 sm:px-6 lg:px-8 mobile-width-safe">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('loyalty.specialistProgramTitle') || 'Specialist Loyalty Program'}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('loyalty.specialistProgramTitle') || 'Specialist Loyalty Program'}
+            </h1>
+            <HelpTip title={t('help.specLoyalty.title') || 'Loyalty'} content={t('help.specLoyalty.body') || 'Reward returning clients with points they earn on each visit.'} />
+          </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('loyalty.specialistProgramSubtitle') || 'Earn points by providing excellent services and grow your business'}
           </p>

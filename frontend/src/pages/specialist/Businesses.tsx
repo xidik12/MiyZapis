@@ -16,6 +16,7 @@ import {
   type CreateStaffInput,
 } from '../../services/business.service';
 import { PageLoader } from '@/components/ui';
+import { HelpTip } from '@/components/common/HelpTip';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { BookingShareCard } from '../../components/sharing/BookingShareCard';
 
@@ -48,7 +49,10 @@ const BusinessList: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('businesses.title')}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('businesses.title')}</h1>
+              <HelpTip title={t('help.businesses.title') || 'Businesses'} content={t('help.businesses.body') || 'Manage your salon/business locations and staff.'} />
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('businesses.subtitle')}</p>
           </div>
           <button onClick={() => navigate('/specialist/businesses/new')} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">{t('businesses.new')}</button>

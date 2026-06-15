@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { HelpTip } from '@/components/common/HelpTip';
 import { loyaltyService, UserBadge, LoyaltyBadge } from '@/services/loyalty.service';
 import { toast } from 'react-toastify';
 import { TrophyIcon, SparklesIcon, CheckCircleIcon, LockClosedIcon, ClockIcon, InformationCircleIcon, StarIcon, HeartIcon, CrownIcon, GiftIcon, FireIcon } from '@/components/icons';
@@ -131,9 +132,12 @@ const CustomerBadges: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Badge Collection
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Badge Collection
+            </h1>
+            <HelpTip title={t('help.badges.title') || 'Badges'} content={t('help.badges.body') || "Achievements you've unlocked as you use the platform."} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             Unlock achievements and show off your accomplishments
           </p>

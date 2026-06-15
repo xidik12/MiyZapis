@@ -17,6 +17,7 @@ import {
 } from '../../services/accounting.service';
 import { businessService } from '../../services/business.service';
 import { PageLoader } from '@/components/ui';
+import { HelpTip } from '@/components/common/HelpTip';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { userService } from '../../services/user.service';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
@@ -68,7 +69,10 @@ const Accounting: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4">
         <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounting.title')}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounting.title')}</h1>
+              <HelpTip title={t('help.accounting.title') || 'Accounting'} content={t('help.accounting.body') || 'Tax estimates and financial summaries for your business.'} />
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('accounting.subtitle')}</p>
           </div>
           {ownsBusiness && <ScopeToggle scope={scope} onChange={setScope} />}

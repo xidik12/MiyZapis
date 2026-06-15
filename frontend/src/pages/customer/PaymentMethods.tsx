@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { HelpTip } from '@/components/common/HelpTip';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { PaymentMethodRecord } from '../../types';
@@ -124,9 +125,12 @@ const PaymentMethods: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
+            </h1>
+            <HelpTip title={t('help.paymentMethods.title') || 'Payment methods'} content={t('help.paymentMethods.body') || 'Manage the cards and methods you pay with.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             {language === 'uk'
               ? 'Керуйте вашими способами оплати та історією транзакцій'

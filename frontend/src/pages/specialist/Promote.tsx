@@ -8,6 +8,7 @@ import {
   BOOKING_SOURCES,
 } from '../../services/promote.service';
 import { PageLoader } from '@/components/ui';
+import { HelpTip } from '@/components/common/HelpTip';
 import { toast } from 'react-toastify';
 import {
   RocketLaunchIcon,
@@ -129,9 +130,12 @@ const Promote: React.FC = () => {
           <RocketLaunchIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t('promote.title') || 'Promote'}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {t('promote.title') || 'Promote'}
+            </h1>
+            <HelpTip title={t('help.promote.title') || 'Promote'} content={t('help.promote.body') || 'Boost your visibility — get featured and attract new clients.'} />
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {t('promote.subtitle') ||
               'Feature your profile at the top of search and track new clients you acquire.'}

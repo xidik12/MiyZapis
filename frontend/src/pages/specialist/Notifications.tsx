@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { notificationService } from '../../services/notification.service';
+import { HelpTip } from '@/components/common/HelpTip';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { BellIcon, CheckIcon, XIcon as XMarkIcon, EyeIcon, CalendarIcon, UserIcon, CreditCardIcon, WarningIcon as ExclamationTriangleIcon, InformationCircleIcon } from '@/components/icons';
 
@@ -225,9 +226,12 @@ const SpecialistNotifications: React.FC = () => {
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8 animate-slide-in-down">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-            {t('dashboard.nav.notifications')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('dashboard.nav.notifications')}
+            </h1>
+            <HelpTip title={t('help.notifications.title') || 'Notifications'} content={t('help.notifications.body') || 'Your alerts about bookings, messages and account activity.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">
             {t('notifications.subtitle')}
             {unreadCount > 0 && (

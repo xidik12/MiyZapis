@@ -11,6 +11,7 @@ import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon, CalendarIcon, XIcon, ArrowPathIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
+import { EmptyState } from '@/components/common/EmptyState';
 ;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
@@ -1630,28 +1631,20 @@ const SearchPage: React.FC = () => {
             {getFilteredServices().map(renderServiceCard)}
           </div>
         ) : !error ? (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <MagnifyingGlassIcon className="w-12 h-12 text-gray-500 dark:text-gray-400" />
-            </div>
-            <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-              {t('search.noResults')}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {t('search.noResultsDescription')}
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                onClick={clearFilters}
-                className="btn btn-primary"
-              >
-                {t('search.resetFilters') || 'Reset filters'}
-              </button>
-              <Link to="/" className="btn btn-secondary">
-                {t('actions.goHome') || 'Go Home'}
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            title={t('search.noResults')}
+            description={t('search.noResultsDescription')}
+            action={
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button onClick={clearFilters} className="btn btn-primary">
+                  {t('search.resetFilters') || 'Reset filters'}
+                </button>
+                <Link to="/" className="btn btn-secondary">
+                  {t('actions.goHome') || 'Go Home'}
+                </Link>
+              </div>
+            }
+          />
         ) : null}
           </div>{/* /results column */}
         </div>{/* /two-column grid */}

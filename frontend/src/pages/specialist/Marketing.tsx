@@ -190,11 +190,13 @@ const Marketing: React.FC = () => {
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words">
-              <SparklesIcon className="h-7 w-7 text-primary-500 flex-shrink-0" />
-              {t('marketing.title')}
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words">
+                <SparklesIcon className="h-7 w-7 text-primary-500 flex-shrink-0" />
+                {t('marketing.title')}
+              </h1>
               <HelpTip title={t('help.marketing.title') || 'Marketing'} content={t('help.marketing.body') || 'Automated win-back, rebooking and birthday messages.'} />
-            </h1>
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">{t('marketing.subtitle')}</p>
           </div>
           <button
