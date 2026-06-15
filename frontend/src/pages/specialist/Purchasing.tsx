@@ -486,7 +486,7 @@ const SpecialistPurchasing: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="flex flex-wrap gap-x-1 gap-y-0 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setTab('orders')}
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${

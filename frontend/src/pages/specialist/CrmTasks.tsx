@@ -197,7 +197,7 @@ const CrmTasks: React.FC = () => {
         </div>
 
         {/* Status tab bar */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
+        <div className="flex flex-wrap gap-x-1 gap-y-0 mb-6 border-b border-gray-200 dark:border-gray-700">
           {statusTabs.map((tb) => {
             const active = statusFilter === tb.key;
             return (

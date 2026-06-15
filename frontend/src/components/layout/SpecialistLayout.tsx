@@ -533,10 +533,10 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 // opens a sheet listing every secondary destination (including the new
 // Accounting / Calendar sync / Businesses pages).
 const specialistBottomNavItems: TabItem[] = [
-  { nameKey: 'dashboard.nav.dashboard', fallback: 'Dashboard', href: '/specialist/dashboard', icon: HomeIcon },
-  { nameKey: 'dashboard.nav.bookings', fallback: 'Bookings', href: '/specialist/bookings', icon: CalendarIcon },
-  { nameKey: 'dashboard.nav.accounting', fallback: 'Accounting', href: '/specialist/accounting', icon: ClipboardDocumentListIcon },
-  { nameKey: 'dashboard.nav.messages', fallback: 'Messages', href: '/specialist/messages', icon: ChatBubbleLeftRightIcon },
+  { nameKey: 'nav.tab.dashboard', fallback: 'Home', href: '/specialist/dashboard', icon: HomeIcon },
+  { nameKey: 'nav.tab.bookings', fallback: 'Bookings', href: '/specialist/bookings', icon: CalendarIcon },
+  { nameKey: 'nav.tab.accounting', fallback: 'Accounts', href: '/specialist/accounting', icon: ClipboardDocumentListIcon },
+  { nameKey: 'nav.tab.messages', fallback: 'Chat', href: '/specialist/messages', icon: ChatBubbleLeftRightIcon },
 ];
 
 // Secondary destinations, grouped into labelled sections for the menu sheet.

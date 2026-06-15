@@ -495,8 +495,8 @@ const SearchPage: React.FC = () => {
       className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover-lift"
     >
       {/* Portfolio lives on the specialist profile — search cards stay clean (ProfiHub-style) */}
-      <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="relative flex-shrink-0 self-center sm:self-start">
+      <div className="flex flex-row items-start gap-3 sm:gap-4">
+        <div className="relative flex-shrink-0 self-start">
           <Avatar
             src={service.specialist?.user?.avatar}
             alt={`${service.specialist?.user?.firstName || ''} ${service.specialist?.user?.lastName || ''}`}
@@ -517,8 +517,8 @@ const SearchPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex-1 min-w-0 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
+        <div className="flex-1 min-w-0 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
             <div className="flex items-center gap-2 min-w-0">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
                 {service.name}
@@ -569,7 +569,7 @@ const SearchPage: React.FC = () => {
             {translateProfession(service.specialist?.businessName, t)} • {service.specialist?.user?.firstName || ''} {service.specialist?.user?.lastName || ''}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1 mt-3 text-sm text-gray-500 dark:text-gray-400">
             {service.location && (
               <div className="flex items-center">
                 <MapPinIcon className="w-4 h-4 mr-1" />
@@ -601,8 +601,8 @@ const SearchPage: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 mt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
+          <div className="flex flex-row items-end justify-between gap-3 mt-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-left min-w-0">
               {(service.specialist?.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist?.experience || ''}
               {typeof service.specialist.responseTime === 'number' && (
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
@@ -610,8 +610,8 @@ const SearchPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <div className="text-center sm:text-right">
-              <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <div className="text-right flex-shrink-0">
+              <div className={`inline-block text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
