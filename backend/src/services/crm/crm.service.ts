@@ -1,5 +1,7 @@
+import axios from 'axios';
 import { prisma } from '@/config/database';
 import { emailService } from '@/services/email';
+import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
 // ---------------------------------------------------------------------------
@@ -34,6 +36,8 @@ export interface CrmClient {
   email?: string | null;
   phone?: string | null;
   avatar?: string | null;
+  telegramId?: string | null;
+  telegramNotifications?: boolean;
   bookingsCount: number;
   totalSpent: number;
   currency: string;
@@ -183,7 +187,7 @@ export async function buildClientList(
   // --- Fetch user rows ---
   const users = await prisma.user.findMany({
     where: { id: { in: Array.from(allCustomerIds) } },
-    select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, avatar: true },
+    select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true, avatar: true, telegramId: true, telegramNotifications: true },
   });
   const userMap = new Map(users.map((u) => [u.id, u]));
 
@@ -245,6 +249,8 @@ export async function buildClientList(
       email: user?.email ?? null,
       phone: user?.phoneNumber ?? null,
       avatar: user?.avatar ?? null,
+      telegramId: user?.telegramId ?? null,
+      telegramNotifications: user?.telegramNotifications ?? true,
       bookingsCount: bInfo?.count ?? 0,
       totalSpent,
       currency: 'UAH',
@@ -466,11 +472,12 @@ export class CrmService {
     body: { name: string; channel?: string; subject?: string; body: string; filter?: SegmentFilter; segmentId?: string },
   ) {
     const specialistId = await getSpecialistId(ownerId);
+    const channel = ['email', 'telegram', 'both'].includes(body.channel ?? '') ? body.channel! : 'email';
     const row = await prisma.segmentCampaign.create({
       data: {
         specialistId,
         name: body.name,
-        channel: body.channel ?? 'email',
+        channel,
         subject: body.subject,
         body: body.body,
         filter: body.filter ? (body.filter as object) : undefined,
@@ -501,17 +508,22 @@ export class CrmService {
     const allClients = await buildClientList(specialistId, userId);
     const audience = applyFilter(allClients, filter);
 
-    // Exclude opted-out clients
-    const eligible = audience.filter((c) => {
-      if (!c.email) return false;
-      const con = c.consent;
-      if (!con) return true; // no record = consented by default
-      if (con.optOutAll) return false;
-      if (con.email === false) return false;
-      return true;
-    });
+    const channel = campaign.channel || 'email';
+    const wantEmail = channel === 'email' || channel === 'both';
+    const wantTelegram = channel === 'telegram' || channel === 'both';
+    const notOptedOut = (c: CrmClient) => !c.consent?.optOutAll;
 
-    const recipientCount = eligible.length;
+    // Per-channel eligibility (respects consent + reachability).
+    const emailEligible = wantEmail
+      ? audience.filter((c) => !!c.email && notOptedOut(c) && c.consent?.email !== false)
+      : [];
+    const tgEligible = wantTelegram
+      ? audience.filter((c) => !!c.telegramId && notOptedOut(c) && c.telegramNotifications !== false)
+      : [];
+
+    // recipientCount = distinct people reached on any channel.
+    const reached = new Set<string>([...emailEligible, ...tgEligible].map((c) => c.customerId));
+    const recipientCount = reached.size;
     let sentCount = 0;
 
     // Mark as sending
@@ -520,19 +532,37 @@ export class CrmService {
       data: { status: 'sending', recipientCount },
     });
 
-    // Send emails
-    for (const client of eligible) {
-      if (!client.email) continue;
+    const plainBody = campaign.body.replace(/<[^>]+>/g, '').trim();
+
+    // Email
+    for (const client of emailEligible) {
       try {
         await emailService.sendEmail({
-          to: client.email,
+          to: client.email!,
           subject: campaign.subject ?? campaign.name,
           html: campaign.body,
-          text: campaign.body.replace(/<[^>]+>/g, ''),
+          text: plainBody,
         });
         sentCount++;
       } catch (err) {
         logger.warn('CRM campaign: email send failed', { customerId: client.customerId, err: (err as Error)?.message });
+      }
+    }
+
+    // Telegram (direct message via the platform bot)
+    if (wantTelegram && config.telegram.botToken) {
+      const tgText = `${campaign.subject ? `${campaign.subject}\n\n` : ''}${plainBody}`;
+      for (const client of tgEligible) {
+        try {
+          await axios.post(`https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`, {
+            chat_id: client.telegramId,
+            text: tgText,
+            disable_web_page_preview: true,
+          });
+          sentCount++;
+        } catch (err) {
+          logger.warn('CRM campaign: telegram send failed', { customerId: client.customerId, err: (err as Error)?.message });
+        }
       }
     }
 

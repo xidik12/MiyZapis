@@ -6,6 +6,8 @@ import {
   SegmentCampaign,
   SegmentFilter,
   CrmClient,
+  CAMPAIGN_CHANNELS,
+  CampaignChannel,
 } from '../../services/crm.service';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
@@ -52,6 +54,7 @@ const initialSegmentForm: SegmentFormData = {
 
 interface CampaignFormData {
   name: string;
+  channel: CampaignChannel;
   subject: string;
   body: string;
   audienceMode: 'segment' | 'adhoc';
@@ -68,6 +71,7 @@ interface CampaignFormData {
 
 const initialCampaignForm: CampaignFormData = {
   name: '',
+  channel: 'email',
   subject: '',
   body: '',
   audienceMode: 'segment',
@@ -428,7 +432,7 @@ const CrmCampaigns: React.FC = () => {
       setSubmitting(true);
       const draft = await crmService.createCampaign({
         name: campaignForm.name.trim(),
-        channel: 'email',
+        channel: campaignForm.channel,
         subject: campaignForm.subject.trim() || undefined,
         body: campaignForm.body.trim(),
         segmentId: campaignForm.audienceMode === 'segment' ? campaignForm.segmentId : undefined,
@@ -855,7 +859,31 @@ const CrmCampaigns: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>{t('crm.emailSubject') || 'Email subject'}</label>
+                  <label className={labelClass}>{t('crm.channel') || 'Channel'}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CAMPAIGN_CHANNELS.map((ch) => (
+                      <button
+                        key={ch}
+                        type="button"
+                        onClick={() => setCampaignForm({ ...campaignForm, channel: ch })}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
+                          campaignForm.channel === ch
+                            ? 'bg-primary-600 text-white border-primary-600'
+                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {t(`crm.channel.${ch}`) || (ch === 'email' ? 'Email' : ch === 'telegram' ? 'Telegram' : 'Both')}
+                      </button>
+                    ))}
+                  </div>
+                  {(campaignForm.channel === 'telegram' || campaignForm.channel === 'both') && (
+                    <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                      {t('crm.channelTelegramNote') || 'Telegram messages reach only clients who have connected Telegram.'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className={labelClass}>{t('crm.emailSubject') || 'Subject / title'}</label>
                   <input
                     type="text"
                     value={campaignForm.subject}

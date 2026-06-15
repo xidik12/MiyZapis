@@ -9,7 +9,7 @@ import { apiClient } from './api';
 export const TAG_COLORS = ['primary', 'success', 'warning', 'danger', 'gray', 'info'] as const;
 export type TagColor = (typeof TAG_COLORS)[number];
 
-export const CAMPAIGN_CHANNELS = ['email'] as const; // sms/push/inapp reserved for later
+export const CAMPAIGN_CHANNELS = ['email', 'telegram', 'both'] as const;
 export type CampaignChannel = (typeof CAMPAIGN_CHANNELS)[number];
 
 export const LEAD_STAGES = ['new', 'contacted', 'qualified', 'won', 'lost'] as const;
