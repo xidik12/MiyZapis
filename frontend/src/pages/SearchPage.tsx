@@ -12,6 +12,8 @@ import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/sl
 import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon, CalendarIcon, XIcon, ArrowPathIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
 import { EmptyState } from '@/components/common/EmptyState';
+import PromotedListingCard from '@/components/common/PromotedListingCard';
+import { promoteService, type ShowcaseItem } from '@/services/promote.service';
 ;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
@@ -79,6 +81,7 @@ const SearchPage: React.FC = () => {
   const [availableNow, setAvailableNow] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [promoted, setPromoted] = useState<ShowcaseItem[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [, setCategoriesLoading] = useState(true);
@@ -170,6 +173,18 @@ const SearchPage: React.FC = () => {
       setAvailableCities(sorted);
     }).catch(() => setAvailableCities([]));
   }, []);
+
+  // Promoted listing (platform-curated ad slot) — relevant to current city/category.
+  useEffect(() => {
+    promoteService
+      .showcase({
+        city: selectedLocation || undefined,
+        category: selectedCategory || undefined,
+        limit: 1,
+      })
+      .then(setPromoted)
+      .catch(() => setPromoted([]));
+  }, [selectedLocation, selectedCategory]);
 
   // Debounce search query (memoization optimization)
   useEffect(() => {
@@ -1601,6 +1616,15 @@ const SearchPage: React.FC = () => {
         )}
 
             </div>{/* /hidden legacy filters */}
+
+            {/* Promoted listing — platform-curated ad slot, above organic results */}
+            {!loading && promoted.length > 0 && (
+              <div className="mb-4 sm:mb-6 space-y-4">
+                {promoted.map((item) => (
+                  <PromotedListingCard key={item.promotionId} item={item} />
+                ))}
+              </div>
+            )}
 
             {/* Results */}
             {loading ? (

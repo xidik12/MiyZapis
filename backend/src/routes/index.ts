@@ -51,6 +51,7 @@ import salesRoutes from './sales';
 import marketingRoutes from './marketing';
 import storeRoutes from './store';
 import promoteRoutes from './promote';
+import promotedRoutes from './promoted';
 import discoveryRoutes from './discovery';
 import crmRoutes from './crm';
 
@@ -109,6 +110,9 @@ router.use('/marketing', marketingRoutes);
 router.use('/crm', crmRoutes);
 router.use('/store', storeRoutes);
 router.use('/promote', promoteRoutes);
+
+// Public promoted-listing surfaces (no auth): marketplace ad slots + tracking.
+router.use('/promoted', promotedRoutes);
 
 // Public AI/search discoverability surfaces (no auth): JSON booking feed + sitemap.
 router.use('/discovery', discoveryRoutes);

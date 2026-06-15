@@ -239,6 +239,7 @@ model Specialist {
   favorites          FavoriteSpecialist[]  @relation("SpecialistFavorites")
   clientNotes        ClientNote[]
   beforeAfterPhotos  BeforeAfterPhoto[]
+  promotion          Promotion?
 
   // Indexes for performance
   @@index([city, isVerified])
@@ -246,6 +247,46 @@ model Specialist {
   @@index([specialties])
   @@index([isVerified])
   @@map("specialists")
+}
+
+// ---------------------------------------------------------------------------
+// Promoted listing creative — the "ad" a specialist/business places on the
+// marketplace. 1:1 with Specialist. Rides on the existing featured boost
+// (Specialist.isFeatured) for ranking; this row holds the *creative* shown in
+// the promoted card slot (search top + homepage featured). Self-serve / free
+// during launch; counters here let us bill on impressions/clicks later.
+// ---------------------------------------------------------------------------
+model Promotion {
+  id           String  @id @default(cuid())
+  specialistId String  @unique
+  specialist   Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+
+  // Creative
+  headline           String? // short hook, e.g. "Манікюр мрії у затишку"
+  offerText          String? // the offer, e.g. "-20% першим клієнтам"
+  imageUrl           String? // hero photo (uploaded)
+  logoUrl            String? // optional brand logo
+  accentColor        String? @default("#5b6b3a") // hex; defaults to olive
+  highlightServiceId String? // which service the card features (name + price)
+  ctaLabel           String? // CTA text; falls back to "Book" / "Записатись"
+
+  // Curation — the platform decides what goes live. A business prepares a
+  // creative (DRAFT) and submits it (PENDING_REVIEW); MiyZapis flips it to
+  // ACTIVE (or PAUSED). Public showcase shows only status=ACTIVE within window.
+  //   DRAFT | PENDING_REVIEW | ACTIVE | PAUSED
+  status    String    @default("DRAFT")
+  startsAt  DateTime? // optional scheduling window (null bounds = open-ended)
+  endsAt    DateTime?
+
+  // Lightweight performance counters (no per-event table yet)
+  impressions Int @default(0)
+  clicks      Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("promotions")
 }
 
 model Service {

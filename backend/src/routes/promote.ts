@@ -23,11 +23,59 @@ const requestId = (req: Request): string =>
 const statusForServiceError = (code: string): number => {
   switch (code) {
     case 'SPECIALIST_NOT_FOUND':
+    case 'SERVICE_NOT_FOUND':
       return 404;
     default:
       return 400;
   }
 };
+
+// GET /promote/listing — the owner's promoted-listing creative (null if none).
+router.get('/listing', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const listing = await PromoteService.getListing(ownerIdOf(req));
+    res.json(createSuccessResponse({ listing }));
+  } catch (error: unknown) {
+    if (error instanceof PromoteServiceError) {
+      res
+        .status(statusForServiceError(error.code))
+        .json(createErrorResponse(error.code, error.message, requestId(req)));
+      return;
+    }
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error getting promote listing:', error);
+    res.status(500).json(createErrorResponse('PROMOTE_ERROR', err.message, requestId(req)));
+  }
+});
+
+// PUT /promote/listing — create/update the creative. Lands in DRAFT, or
+// PENDING_REVIEW when { submit: true }. Going ACTIVE is a platform decision.
+router.put('/listing', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const body = req.body || {};
+    const listing = await PromoteService.upsertListing(ownerIdOf(req), {
+      headline: body.headline,
+      offerText: body.offerText,
+      imageUrl: body.imageUrl,
+      logoUrl: body.logoUrl,
+      accentColor: body.accentColor,
+      highlightServiceId: body.highlightServiceId,
+      ctaLabel: body.ctaLabel,
+      submit: body.submit === true,
+    });
+    res.json(createSuccessResponse({ listing }));
+  } catch (error: unknown) {
+    if (error instanceof PromoteServiceError) {
+      res
+        .status(statusForServiceError(error.code))
+        .json(createErrorResponse(error.code, error.message, requestId(req)));
+      return;
+    }
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error upserting promote listing:', error);
+    res.status(500).json(createErrorResponse('PROMOTE_ERROR', err.message, requestId(req)));
+  }
+});
 
 // GET /promote/status — current featured/boost state for the owner.
 router.get('/status', async (req: Request, res: Response): Promise<void> => {

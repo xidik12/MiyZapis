@@ -9,6 +9,7 @@ import {
 } from '../../services/promote.service';
 import { PageLoader } from '@/components/ui';
 import { HelpTip } from '@/components/common/HelpTip';
+import PromotedListingEditor from '@/components/specialist/PromotedListingEditor';
 import { toast } from 'react-toastify';
 import {
   RocketLaunchIcon,
@@ -229,6 +230,11 @@ const Promote: React.FC = () => {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Promoted listing creative editor */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 sm:p-6">
+        <PromotedListingEditor />
       </div>
 
       {/* Acquisition dashboard */}

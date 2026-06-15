@@ -9,6 +9,8 @@ import { translateProfession } from '@/utils/profession';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { locationService, CityData } from '@/services/location.service';
 import PublicSeo from '@/components/common/PublicSeo';
+import PromotedListingCard from '@/components/common/PromotedListingCard';
+import { promoteService, type ShowcaseItem } from '@/services/promote.service';
 import { buildItemListJsonLd } from '@/utils/structuredData';
 import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon, MapPinIcon } from '@/components/icons';
 
@@ -121,6 +123,7 @@ const HomePage: React.FC = () => {
   const [popularServicesLoading, setPopularServicesLoading] = useState(true);
   const [topSpecialists, setTopSpecialists] = useState<any[]>([]);
   const [specialistsLoading, setSpecialistsLoading] = useState(true);
+  const [promoted, setPromoted] = useState<ShowcaseItem[]>([]);
   const [cities, setCities] = useState<CityData[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(true);
   const { t } = useLanguage();
@@ -232,6 +235,16 @@ const HomePage: React.FC = () => {
     loadPopularServices();
     loadTopSpecialists();
     loadCities();
+
+    // Promoted listing — platform-curated marketplace ad slot.
+    promoteService
+      .showcase({ limit: 1 })
+      .then((items) => {
+        if (isMounted) setPromoted(items);
+      })
+      .catch(() => {
+        if (isMounted) setPromoted([]);
+      });
 
     return () => {
       isMounted = false;
@@ -774,6 +787,14 @@ const HomePage: React.FC = () => {
               {t('featuredSpecialists.subtitle')}
             </p>
           </div>
+
+          {promoted.length > 0 && (
+            <div className="max-w-xl mx-auto mb-8 sm:mb-10">
+              {promoted.map((item) => (
+                <PromotedListingCard key={item.promotionId} item={item} />
+              ))}
+            </div>
+          )}
 
           {specialistsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
