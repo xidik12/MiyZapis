@@ -17,6 +17,7 @@ import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
 import { BookingKanban } from '@/components/bookings/BookingKanban';
 import type { BookingData } from '@/components/bookings/BookingCard';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -1110,9 +1111,12 @@ const SpecialistBookings: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {t('dashboard.nav.bookings')}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {t('dashboard.nav.bookings')}
+              </h1>
+              <HelpTip title={t('help.bookings.title') || 'Bookings'} content={t('help.bookings.body') || 'All your appointments — confirm, reschedule or cancel.'} />
+            </div>
             <p className="text-gray-600 dark:text-gray-300">
               {t('bookings.subtitle')}
             </p>

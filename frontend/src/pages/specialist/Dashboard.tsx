@@ -10,6 +10,7 @@ import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
 import TrialStatusBanner from '../../components/trial/TrialStatusBanner';
 import { ShareButton } from '../../components/common/ShareButton';
+import { HelpTip } from '@/components/common/HelpTip';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -565,9 +566,12 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {getGreeting()}, {user?.firstName}! 👋
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {getGreeting()}, {user?.firstName}! 👋
+            </h1>
+            <HelpTip title={t('help.dashboard.title') || 'Dashboard'} content={t('help.dashboard.body') || 'A snapshot of your business at a glance.'} />
+          </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('dashboard.today')} {currentTime.toLocaleDateString(
               language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',

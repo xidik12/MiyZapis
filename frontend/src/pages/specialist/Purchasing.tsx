@@ -29,6 +29,7 @@ import {
   BuildingStorefrontIcon as ShoppingCartIcon,
   NoSymbolIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 type Tab = 'orders' | 'suppliers';
@@ -410,9 +411,12 @@ const SpecialistPurchasing: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
-              {t('purchasing.title') || 'Purchasing'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
+                {t('purchasing.title') || 'Purchasing'}
+              </h1>
+              <HelpTip title={t('help.purchasing.title') || 'Purchasing'} content={t('help.purchasing.body') || 'Manage suppliers and purchase orders.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('purchasing.subtitle') || 'Manage suppliers and purchase orders'}
             </p>

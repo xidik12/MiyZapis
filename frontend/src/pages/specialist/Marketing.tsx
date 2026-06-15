@@ -18,6 +18,7 @@ import {
   EnvelopeIcon,
   GiftIcon as CakeIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // Per-type accent + icon for the card header.
 const TYPE_META: Record<
@@ -192,6 +193,7 @@ const Marketing: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words">
               <SparklesIcon className="h-7 w-7 text-primary-500 flex-shrink-0" />
               {t('marketing.title')}
+              <HelpTip title={t('help.marketing.title') || 'Marketing'} content={t('help.marketing.body') || 'Automated win-back, rebooking and birthday messages.'} />
             </h1>
             <p className="mt-1 text-gray-600 dark:text-gray-400">{t('marketing.subtitle')}</p>
           </div>

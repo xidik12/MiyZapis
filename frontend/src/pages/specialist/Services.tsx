@@ -15,6 +15,7 @@ import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { reviewsService } from '../../services/reviews.service';
 import { inventoryService, Product, ServiceConsumable } from '../../services/inventory.service';
+import { HelpTip } from '@/components/common/HelpTip';
 
 interface Service {
   id: string;
@@ -1026,9 +1027,12 @@ const SpecialistServices: React.FC = () => {
           <div className="mb-4 sm:mb-6 md:mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {t('services.title')}
-                </h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.title')}
+                  </h1>
+                  <HelpTip title={t('help.services.title') || 'Services'} content={t('help.services.body') || 'Add or edit the services you offer, with price and duration.'} />
+                </div>
                 <p className="text-gray-600 dark:text-gray-300">
                   {t('services.subtitle')}
                 </p>

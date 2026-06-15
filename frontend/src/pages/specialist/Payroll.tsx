@@ -28,6 +28,7 @@ import {
   ClockIcon,
   CurrencyDollarIcon as ReceiptPercentIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 type Tab = 'staff' | 'runs';
@@ -367,9 +368,12 @@ const SpecialistPayroll: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              {t('payroll.title') || 'Payroll'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {t('payroll.title') || 'Payroll'}
+              </h1>
+              <HelpTip title={t('help.payroll.title') || 'Payroll'} content={t('help.payroll.body') || 'Set staff commission and run payouts.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('payroll.subtitle') || 'Manage staff commission and pay runs'}
             </p>

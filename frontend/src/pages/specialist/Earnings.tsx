@@ -7,6 +7,7 @@ import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { expenseService, ExpenseSummary } from '../../services/expense.service';
 import { retryRequest } from '../../services/api';
+import { HelpTip } from '@/components/common/HelpTip';
 
 interface EarningsData {
   totalEarnings: number;
@@ -525,7 +526,10 @@ const SpecialistEarnings: React.FC = () => {
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">{t('dashboard.nav.earnings')}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">{t('dashboard.nav.earnings')}</h1>
+            <HelpTip title={t('help.earnings.title') || 'Earnings'} content={t('help.earnings.body') || 'Revenue from your completed bookings over time.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">{t('earnings.subtitle')}</p>
         </div>
         <button

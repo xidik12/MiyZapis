@@ -34,6 +34,7 @@ import {
   BellIcon,
   FunnelIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // ---------------------------------------------------------------------------
 // Tag colour mapping
@@ -1265,9 +1266,12 @@ const SpecialistClients: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                {t('clients.title') || 'My Clients'}
-              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  {t('clients.title') || 'My Clients'}
+                </h1>
+                <HelpTip title={t('help.clients.title') || 'Clients'} content={t('help.clients.body') || 'Your client book: history, spend, tags, notes and consent.'} />
+              </div>
               <p className="text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
                 {t('clients.subtitle') || 'Manage and view your client relationships'}
                 {!loading && allClients.length > 0 && (

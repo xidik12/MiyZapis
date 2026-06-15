@@ -41,6 +41,7 @@ import {
   NoSymbolIcon,
   BuildingStorefrontIcon as ShoppingBagIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 
@@ -598,9 +599,12 @@ const SpecialistSales: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            {t('sales.title') || 'Sales'}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('sales.title') || 'Sales'}
+            </h1>
+            <HelpTip title={t('help.sales.title') || 'Sales'} content={t('help.sales.body') || 'Gift cards, packages, memberships and store orders.'} />
+          </div>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             {t('sales.subtitle') || 'Gift cards, service packages and memberships'}
           </p>

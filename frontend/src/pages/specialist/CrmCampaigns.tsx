@@ -20,6 +20,7 @@ import {
   FunnelIcon,
   PaperAirplaneIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // ---- Types ------------------------------------------------------------------
 
@@ -483,9 +484,12 @@ const CrmCampaigns: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              {t('crm.segmentsAndCampaigns') || 'Segments & Campaigns'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {t('crm.segmentsAndCampaigns') || 'Segments & Campaigns'}
+              </h1>
+              <HelpTip title={t('help.segments.title') || 'Segments & Campaigns'} content={t('help.segments.body') || 'Build customer segments and send email campaigns.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('crm.segmentsAndCampaignsSubtitle') || 'Build audiences and send targeted email campaigns'}
             </p>

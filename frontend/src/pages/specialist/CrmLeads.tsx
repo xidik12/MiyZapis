@@ -23,6 +23,7 @@ import {
   ArrowRightIcon,
   CheckCircleIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -420,9 +421,12 @@ const CrmLeads: React.FC = () => {
         {/* ---- Header ---- */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              {t('crm.leads') || 'Leads'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {t('crm.leads') || 'Leads'}
+              </h1>
+              <HelpTip title={t('help.leads.title') || 'Leads'} content={t('help.leads.body') || 'Capture prospects and move them through a pipeline.'} />
+            </div>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {t('crm.leadsSubtitle') || 'Track prospects through your pipeline'}
             </p>

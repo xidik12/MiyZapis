@@ -19,6 +19,7 @@ import { ContextMenu } from '../../components/ui/ContextMenu';
 import { Booking } from '../../types';
 import { findBookingConflicts } from '../../utils/bookingConflicts';
 import { downloadICalFile, openInGoogleCalendar, exportMultipleBookings } from '../../utils/calendarExport';
+import { HelpTip } from '@/components/common/HelpTip';
 
 interface CalendarBlock {
   id: string;
@@ -738,7 +739,10 @@ const SpecialistSchedule: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
+            <HelpTip title={t('help.schedule.title') || 'Schedule'} content={t('help.schedule.body') || 'Set your working hours and availability.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">

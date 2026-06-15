@@ -27,6 +27,7 @@ import {
   SlidersIcon as ArrowsUpDownIcon,
   MagnifyingGlassIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 
@@ -315,9 +316,12 @@ const SpecialistInventory: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
-              {t('inventory.title') || 'Inventory'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
+                {t('inventory.title') || 'Inventory'}
+              </h1>
+              <HelpTip title={t('help.inventory.title') || 'Inventory'} content={t('help.inventory.body') || 'Track product stock, cost and low-stock alerts.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('inventory.subtitle') || 'Track stock levels and product costs'}
             </p>

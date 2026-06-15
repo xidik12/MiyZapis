@@ -32,6 +32,7 @@ import {
   ArrowPathIcon
 } from '@/components/icons';
 import { MegaphoneIcon } from '@heroicons/react/24/outline';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // Category icon mapping
 const getCategoryIcon = (category: ExpenseCategory) => {
@@ -291,9 +292,12 @@ const SpecialistFinances: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-6">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
-              {t('finances.title') || 'Business Finances'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
+                {t('finances.title') || 'Business Finances'}
+              </h1>
+              <HelpTip title={t('help.finances.title') || 'Finances'} content={t('help.finances.body') || 'Track business expenses by category.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('finances.subtitle') || 'Track and manage your business expenses'}
             </p>

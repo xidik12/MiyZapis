@@ -13,6 +13,7 @@ import {
   ClipboardDocumentListIcon,
   CalendarIcon,
 } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 
 // ---- Types ------------------------------------------------------------------
 
@@ -176,9 +177,12 @@ const CrmTasks: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              {t('crm.tasks') || 'Tasks'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {t('crm.tasks') || 'Tasks'}
+              </h1>
+              <HelpTip title={t('help.tasks.title') || 'Tasks'} content={t('help.tasks.body') || 'Follow-up reminders, optionally linked to a client.'} />
+            </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('crm.tasksSubtitle') || 'Track follow-ups and to-dos for your clients'}
             </p>
