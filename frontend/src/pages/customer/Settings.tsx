@@ -17,6 +17,7 @@ import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -394,9 +395,12 @@ const CustomerSettings: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {t('customer.settings.title')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {t('customer.settings.title')}
+            </h1>
+            <HelpTip title={t('help.customerSettings.title') || 'Settings'} content={t('help.customerSettings.body') || 'Manage your profile, language, currency and notifications.'} />
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('customer.settings.subtitle')}
           </p>

@@ -137,6 +137,10 @@ export class AuthService {
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
           language: data.language || 'en',
+          // Record Terms acceptance — the registration form requires the user to
+          // tick "I agree to the Terms & Privacy Policy" before they can submit.
+          termsAcceptedAt: new Date(),
+          termsVersion: '2026-06-15',
           // Free 3-month trial period
           trialStartDate,
           trialEndDate,

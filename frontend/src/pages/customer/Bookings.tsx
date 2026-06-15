@@ -10,6 +10,7 @@ import { fetchBookings, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking } from '../../types';
 import { FilterState } from '../../types/booking';
 import { CalendarIcon, EyeIcon, ClockIcon, StarIcon, ListBulletsIcon, CheckCircleIcon } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -335,9 +336,12 @@ const CustomerBookings: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
-              {t('customer.bookings.title')}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
+                {t('customer.bookings.title')}
+              </h1>
+              <HelpTip title={t('help.customerBookings.title') || 'My bookings'} content={t('help.customerBookings.body') || 'View and manage your appointments — reschedule or cancel.'} />
+            </div>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               {t('customer.bookings.subtitle')}
             </p>

@@ -511,23 +511,26 @@ const SpecialistPayroll: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 min-w-[18rem]">
                             {/* Mode selector */}
-                            <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden mb-2">
-                              {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
-                                <button
-                                  key={m}
-                                  type="button"
-                                  onClick={() => setDraft(s.staffUserId, { mode: m })}
-                                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                                    d.mode === m
-                                      ? 'bg-primary-600 text-white'
-                                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                  }`}
-                                >
-                                  {m === 'FLAT'
-                                    ? (t('payroll.commission.flat') || 'Flat')
-                                    : (t('payroll.commission.tiered') || 'Tiered')}
-                                </button>
-                              ))}
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                                {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
+                                  <button
+                                    key={m}
+                                    type="button"
+                                    onClick={() => setDraft(s.staffUserId, { mode: m })}
+                                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                      d.mode === m
+                                        ? 'bg-primary-600 text-white'
+                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    }`}
+                                  >
+                                    {m === 'FLAT'
+                                      ? (t('payroll.commission.flat') || 'Flat')
+                                      : (t('payroll.commission.tiered') || 'Tiered')}
+                                  </button>
+                                ))}
+                              </div>
+                              <HelpTip size={15} title={t('help.tip.tieredCommission.title') || 'Commission mode'} content={t('help.tip.tieredCommission.body') || 'Flat = one % on all sales; Tiered = higher % as monthly revenue grows.'} />
                             </div>
 
                             {d.mode === 'FLAT' ? (
@@ -634,23 +637,26 @@ const SpecialistPayroll: React.FC = () => {
                           </p>
 
                           {/* Mode toggle */}
-                          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                            {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
-                              <button
-                                key={m}
-                                type="button"
-                                onClick={() => setDraft(s.staffUserId, { mode: m })}
-                                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                                  d.mode === m
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                }`}
-                              >
-                                {m === 'FLAT'
-                                  ? (t('payroll.commission.flat') || 'Flat')
-                                  : (t('payroll.commission.tiered') || 'Tiered')}
-                              </button>
-                            ))}
+                          <div className="flex items-center gap-2">
+                            <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                              {(['FLAT', 'TIERED'] as CommissionMode[]).map((m) => (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => setDraft(s.staffUserId, { mode: m })}
+                                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                    d.mode === m
+                                      ? 'bg-primary-600 text-white'
+                                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                  }`}
+                                >
+                                  {m === 'FLAT'
+                                    ? (t('payroll.commission.flat') || 'Flat')
+                                    : (t('payroll.commission.tiered') || 'Tiered')}
+                                </button>
+                              ))}
+                            </div>
+                            <HelpTip size={15} title={t('help.tip.tieredCommission.title') || 'Commission mode'} content={t('help.tip.tieredCommission.body') || 'Flat = one % on all sales; Tiered = higher % as monthly revenue grows.'} />
                           </div>
 
                           {d.mode === 'FLAT' ? (

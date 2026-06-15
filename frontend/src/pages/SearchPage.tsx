@@ -10,6 +10,7 @@ import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon, CalendarIcon, XIcon, ArrowPathIcon } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 ;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
@@ -786,9 +787,12 @@ const SearchPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
-            {t('search.title')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
+              {t('search.title')}
+            </h1>
+            <HelpTip title={t('help.search.title') || 'Search'} content={t('help.search.body') || 'Find specialists by service, city, rating and price, then book online.'} />
+          </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('search.subtitle')}
           </p>

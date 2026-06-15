@@ -19,6 +19,7 @@ import {
   clearError
 } from '../../store/slices/favoritesSlice';
 import { HeartIcon, StarIcon, MapPinIcon, ClockIcon, UserIcon, MagnifyingGlassIcon, XIcon as XMarkIcon } from '@/components/icons';
+import { HelpTip } from '@/components/common/HelpTip';
 ;
 import { Avatar } from '../../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
@@ -220,9 +221,12 @@ const CustomerFavorites: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('customer.favorites.title')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {t('customer.favorites.title')}
+            </h1>
+            <HelpTip title={t('help.favorites.title') || 'Favourites'} content={t('help.favorites.body') || "Specialists you've saved for quick re-booking."} />
+          </div>
           <p className="text-gray-600 dark:text-gray-300">
             {t('customer.favorites.subtitle')}
           </p>

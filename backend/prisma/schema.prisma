@@ -64,6 +64,10 @@ model User {
   trialEndDate   DateTime? // When trial ends (3 months from start)
   isInTrial      Boolean   @default(true) // Quick check if user is in trial period
 
+  // Terms of Service acceptance (recorded at registration for audit/compliance).
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

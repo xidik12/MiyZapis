@@ -25,6 +25,7 @@ const statusColors = {
 };
 import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
 import { PageLoader } from '@/components/ui';
+import { HelpTip } from '@/components/common/HelpTip';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -429,9 +430,12 @@ const CustomerDashboard: React.FC = () => {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {getGreeting()}, {user?.firstName}! 👋
-              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  {getGreeting()}, {user?.firstName}! 👋
+                </h1>
+                <HelpTip title={t('help.customerDashboard.title') || 'Dashboard'} content={t('help.customerDashboard.body') || 'Your upcoming appointments, favourites and loyalty points at a glance.'} />
+              </div>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(
                   language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',

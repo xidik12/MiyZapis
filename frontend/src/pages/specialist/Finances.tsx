@@ -835,8 +835,9 @@ const SpecialistFinances: React.FC = () => {
                       className="mt-0.5 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
                     <span>
-                      <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('finances.taxDeductible') || 'Tax-deductible'}
+                        <HelpTip size={15} title={t('help.tip.taxDeductible.title') || 'Tax-deductible expense'} content={t('help.tip.taxDeductible.body') || 'Mark this if the expense reduces your taxable income. It will be counted in the Accounting tax estimator.'} />
                       </span>
                       <span className="block text-xs text-gray-500 dark:text-gray-400">
                         {t('finances.taxDeductibleHint') || 'Counts against gross income in the tax estimator.'}

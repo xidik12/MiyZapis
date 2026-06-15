@@ -148,7 +148,10 @@ const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, l
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
-        <label className={labelClass}>{t('crm.lapsedDays') || 'Lapsed (days)'}</label>
+        <label className={`${labelClass} flex items-center gap-1`}>
+          {t('crm.lapsedDays') || 'Lapsed (days)'}
+          <HelpTip size={15} title={t('help.tip.lapsedDays.title') || 'Lapsed days'} content={t('help.tip.lapsedDays.body') || "Clients whose last visit was more than N days ago. Use this to target customers who haven't returned recently."} />
+        </label>
         <input
           type="number" step="1" min="0"
           value={values.lapsedDays}
