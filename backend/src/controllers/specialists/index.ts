@@ -656,6 +656,17 @@ export class SpecialistController {
         return;
       }
 
+      if (err.message === 'SERVICE_DUPLICATE_NAME') {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'You already have a service with this name.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,

@@ -258,7 +258,7 @@ const ServiceConsumablesEditor: React.FC<{ serviceId: string }> = ({ serviceId }
 
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
-  const { formatPrice, currency, getCurrencySymbol } = useCurrency();
+  const { formatPrice, convertPrice, currency, getCurrencySymbol } = useCurrency();
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -1129,9 +1129,15 @@ const SpecialistServices: React.FC = () => {
                             const price = s.basePrice || s.price;
                             return price && !isNaN(price);
                           });
-                          return validPrices.length === 0 
-                            ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price || 0), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'USD');
+                          if (validPrices.length === 0) return t('services.noDataYet') || 'No data yet';
+                          // Convert each service's price to the display currency BEFORE averaging.
+                          // Services can be priced in different currencies, so summing raw values
+                          // and labelling one currency is meaningless (it showed e.g. "$6103.66").
+                          const totalInDisplay = validPrices.reduce(
+                            (sum, s) => sum + convertPrice(Number(s.basePrice || s.price || 0), getServiceCurrency(s)),
+                            0
+                          );
+                          return formatPrice(totalInDisplay / validPrices.length, currency as 'USD' | 'EUR' | 'UAH');
                         })()
                     }
                   </p>

@@ -113,11 +113,27 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
+      // Reject a service whose name already exists for this specialist (case-
+      // insensitive, trimmed). Prevents accidental double-submits and re-created
+      // services from showing up as identical duplicate entries.
+      const trimmedName = (data.name || '').trim();
+      const existing = await prisma.service.findFirst({
+        where: {
+          specialistId: specialist.id,
+          isDeleted: false,
+          name: { equals: trimmedName, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new Error('SERVICE_DUPLICATE_NAME');
+      }
+
       // Create service
       const service = await prisma.service.create({
         data: {
           specialistId: specialist.id,
-          name: data.name,
+          name: trimmedName,
           description: data.description,
           category: data.category,
           basePrice: data.basePrice,
