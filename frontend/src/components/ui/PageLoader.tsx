@@ -1,5 +1,6 @@
 import React from 'react';
-import { LoadingAnimation, LoadingAnimationType } from './LoadingAnimation';
+import { LoadingAnimationType } from './LoadingAnimation';
+import { BrandedLoader } from '@/components/common/BrandedLoader';
 
 interface PageLoaderProps {
   /**
@@ -42,8 +43,9 @@ interface PageLoaderProps {
  * }
  * ```
  */
+const SIZE_PX: Record<NonNullable<PageLoaderProps['size']>, number> = { sm: 40, md: 56, lg: 72, xl: 96 };
+
 export const PageLoader: React.FC<PageLoaderProps> = ({
-  type = 'spinner',
   text,
   size = 'xl',
   minHeight = 'min-h-screen',
@@ -52,11 +54,7 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
   return (
     <div className={`${minHeight} flex items-center justify-center bg-gray-50 dark:bg-gray-900 ${className}`}>
       <div className="flex flex-col items-center gap-4">
-        <LoadingAnimation
-          type={type}
-          size={size}
-          color="primary"
-        />
+        <BrandedLoader size={SIZE_PX[size]} />
         {text && (
           <p className="text-sm text-gray-600 dark:text-gray-400 font-medium animate-pulse">
             {text}

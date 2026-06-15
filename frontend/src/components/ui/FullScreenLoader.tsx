@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LoadingAnimation, LoadingAnimationType } from './LoadingAnimation';
+import { LoadingAnimationType } from './LoadingAnimation';
+import { BrandedLoader } from '@/components/common/BrandedLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FullScreenLoaderProps {
@@ -16,7 +17,6 @@ export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
   isOpen = true,
   title,
   subtitle,
-  animationType = 'spinner',
   showProgress = false,
   progress = 0,
 }) => {
@@ -68,7 +68,7 @@ export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
             className="relative flex flex-col items-center text-center px-6 py-8 max-w-md"
           >
             {/* Loading animation */}
-            <LoadingAnimation type={animationType} size="xl" color="primary" />
+            <BrandedLoader size={96} />
 
             {/* Text */}
             <motion.div

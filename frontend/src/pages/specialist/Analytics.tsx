@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 // import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -113,80 +114,51 @@ interface ChartProps {
 
 // Simple CSS-based chart components  
 const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labels, height = '200px', color = '#2563eb' }) => {
-  if (data.length === 0) {
+  const gradientId = `area-${useId().replace(/[:]/g, '')}`;
+  const chartData = data.map((value, i) => ({ name: labels[i] ?? String(i + 1), value: Number(value) || 0 }));
+
+  if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-        No data available
+      <div className="flex items-center justify-center text-gray-400 dark:text-gray-500" style={{ height }}>
+        —
       </div>
     );
   }
-  
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1; // Prevent division by zero
-  
-  const points = data.map((value, index) => {
-    const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-    const y = range === 0 ? 50 : 100 - ((value - min) / range * 80 + 10);
-    return `${x},${y}`;
-  }).join(' ');
-  
-  const gradientId = `lineGradient-${Math.random().toString(36).substr(2, 9)}`;
-  
-  return (
-    <div className="relative" style={{ height }}>
-      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
-        <polyline
-          fill="none"
-          stroke={color}
-          strokeWidth="1.2"
-          points={points}
-        />
-        <polygon
-          fill={`url(#${gradientId})`}
-          points={`0,100 ${points} 100,100`}
-        />
-        {/* Add data point circles for better visibility */}
-        {data.map((value, index) => {
-          const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-          const y = range === 0 ? 50 : 100 - ((value - min) / range * 80 + 10);
-          return (
-            <g key={index}>
-              <circle
-                cx={x}
-                cy={y}
-                r="1.5"
-                fill={color}
-                stroke="white"
-                strokeWidth="0.5"
-              />
-              {/* Show value labels for single data points */}
-              {data.length === 1 && (
-                <text
-                  x={x}
-                  y={y - 8}
-                  textAnchor="middle"
-                  className="text-xs font-medium fill-gray-700 dark:fill-gray-300"
-                  fontSize="8"
-                >
-                  {value}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
-        {labels.map((label, index) => (
-          <span key={index} className="text-center">{label}</span>
-        ))}
+
+  // A single point can't form a trend — show the value cleanly rather than a
+  // degenerate line (which previously rendered a huge stretched number).
+  if (chartData.length === 1) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-1 text-center" style={{ height }}>
+        <span className="text-4xl font-bold text-gray-900 dark:text-white tabular-nums">
+          {chartData[0].value.toLocaleString()}
+        </span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{chartData[0].name}</span>
       </div>
+    );
+  }
+
+  return (
+    <div style={{ height }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.04} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} minTickGap={20} />
+          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={44} />
+          <Tooltip
+            cursor={{ stroke: color, strokeOpacity: 0.25 }}
+            contentStyle={{ background: 'rgba(17,24,39,0.94)', border: '1px solid rgba(148,163,184,0.25)', borderRadius: 12, color: '#fff', fontSize: 12, padding: '8px 12px' }}
+            labelStyle={{ color: '#cbd5e1', marginBottom: 2 }}
+          />
+          <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2.5} fill={`url(#${gradientId})`} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 };
