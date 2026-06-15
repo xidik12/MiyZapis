@@ -6,7 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAppDispatch } from '@/hooks/redux';
 import { logout } from '@/store/slices/authSlice';
-import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon } from '@/components/icons';
+import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, ChevronDownIcon } from '@/components/icons';
 
 type IconType = React.ComponentType<{ className?: string; active?: boolean }>;
 export interface TabItem { nameKey: string; fallback: string; href: string; icon: IconType; }
@@ -35,6 +35,20 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
   const { currency, setCurrency } = useCurrency();
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
+  // Collapsible menu categories (persisted across opens).
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('mobile_nav_open_sections');
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return {};
+  });
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => {
+      const next = { ...prev, [key]: prev[key] === false ? true : false };
+      try { localStorage.setItem('mobile_nav_open_sections', JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
 
   const currencies: { value: string; label: string }[] = [
     { value: 'UAH', label: '₴ UAH' },
@@ -117,13 +131,33 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                 <div className="w-10 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto" />
               </div>
               <div className="px-4 space-y-5">
-                {sections.map((section, si) => (
+                {sections.map((section, si) => {
+                  const sectionOpen = openSections[section.title] !== false;
+                  return (
                   <div key={section.title}>
-                    <h3 className="px-1 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                      {t(section.title) || section.title}
-                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(section.title)}
+                      aria-expanded={sectionOpen}
+                      className="w-full flex items-center justify-between px-1 mb-2 cursor-pointer"
+                    >
+                      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                        {t(section.title) || section.title}
+                      </h3>
+                      <ChevronDownIcon className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${sectionOpen ? '' : '-rotate-90'}`} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                    {sectionOpen && (
                     <motion.div
-                      className="grid grid-cols-2 gap-2"
+                      key="body"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                    <motion.div
+                      className="grid grid-cols-2 gap-2 pb-1"
                       variants={{ show: { transition: { staggerChildren: 0.025, delayChildren: si * 0.04 } } }}
                       initial="hide" animate="show"
                     >
@@ -159,8 +193,12 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                         );
                       })}
                     </motion.div>
+                    </motion.div>
+                    )}
+                    </AnimatePresence>
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Account controls — on mobile these live in the sheet since there's no sidebar. */}
                 <div className="pt-4 border-t border-gray-100 dark:border-white/5">

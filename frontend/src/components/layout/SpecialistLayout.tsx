@@ -205,6 +205,29 @@ const navigation: SidebarNavItem[] = [
   },
 ];
 
+// Sidebar nav grouped into collapsible categories. Keyed by item.name so the
+// flat `navigation` array above remains the single source of truth.
+const NAV_GROUP_OF: Record<string, string> = {
+  Dashboard: 'pinned', Bookings: 'pinned',
+  'Find Services': 'work', Services: 'work', Clients: 'work', Tasks: 'work', Schedule: 'work', Analytics: 'work',
+  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance',
+  'Segments & Campaigns': 'growth', Leads: 'growth', Marketing: 'growth', Promote: 'growth', Loyalty: 'growth', Referrals: 'growth', Reviews: 'growth',
+  Community: 'account',
+};
+const SIDEBAR_GROUPS: { key: string; titleKey: string; fallback: string }[] = [
+  { key: 'work', titleKey: 'nav.section.work', fallback: 'Work' },
+  { key: 'finance', titleKey: 'nav.section.finance', fallback: 'Finance' },
+  { key: 'growth', titleKey: 'nav.section.growth', fallback: 'Growth' },
+  { key: 'account', titleKey: 'nav.section.account', fallback: 'Account' },
+];
+const groupOf = (name: string): string => NAV_GROUP_OF[name] || 'account';
+// Labels that don't follow `dashboard.nav.<name.toLowerCase()>`.
+const NAV_LABEL_OVERRIDE: Record<string, string> = {
+  'Segments & Campaigns': 'dashboard.nav.segments',
+};
+const labelKeyOf = (name: string): string =>
+  NAV_LABEL_OVERRIDE[name] || `dashboard.nav.${name.toLowerCase()}`;
+
 const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -232,6 +255,26 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   // Notifications are now handled by the NotificationBell component
 
   const isCurrentPath = (path: string) => location.pathname === path;
+
+  // Collapsible sidebar categories (persisted; the active route's group stays open).
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('spec_nav_open_groups');
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return { work: true, finance: true, growth: true, account: true };
+  });
+  const toggleGroup = (key: string) =>
+    setOpenGroups((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem('spec_nav_open_groups', JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  useEffect(() => {
+    const active = navigation.find((i) => location.pathname === i.href);
+    const g = active ? groupOf(active.name) : null;
+    if (g && g !== 'pinned') setOpenGroups((prev) => (prev[g] ? prev : { ...prev, [g]: true }));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -320,51 +363,75 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
-            const isActive = isCurrentPath(item.href);
-            const Icon = isActive ? item.iconActive : item.icon;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`
-                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
-                  ${isActive
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
-                  }
-                  ${isCollapsed ? 'justify-center' : 'justify-between'}
-                `}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
-                  {!isCollapsed && (
-                    <span>{t(`dashboard.nav.${item.name.toLowerCase()}`)}</span>
-                  )}
-                </div>
-                
-                {!isCollapsed && (item.count || item.isNew) && (
-                  <div className="flex items-center space-x-1">
-                    {item.count && (
-                      <span className={`
-                        inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                        ${isActive 
-                          ? 'bg-white text-primary-600' 
-                          : 'bg-primary-100 text-primary-700'
-                        }
-                      `}>
-                        {item.count}
-                      </span>
-                    )}
-                    {item.isNew && (
-                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                    )}
+          {(() => {
+            const renderItem = (item: SidebarNavItem) => {
+              const isActive = isCurrentPath(item.href);
+              const Icon = isActive ? item.iconActive : item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`
+                    flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+                    ${isActive
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
+                    }
+                    ${isCollapsed ? 'justify-center' : 'justify-between'}
+                  `}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
+                    {!isCollapsed && <span>{t(labelKeyOf(item.name)) || item.name}</span>}
                   </div>
-                )}
-              </Link>
+                  {!isCollapsed && (item.count || item.isNew) && (
+                    <div className="flex items-center space-x-1">
+                      {item.count && (
+                        <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full ${isActive ? 'bg-white text-primary-600' : 'bg-primary-100 text-primary-700'}`}>
+                          {item.count}
+                        </span>
+                      )}
+                      {item.isNew && <span className="w-2 h-2 bg-red-400 rounded-full"></span>}
+                    </div>
+                  )}
+                </Link>
+              );
+            };
+
+            const pinned = navigation.filter((i) => groupOf(i.name) === 'pinned');
+            return (
+              <>
+                {pinned.map(renderItem)}
+                {SIDEBAR_GROUPS.map((g) => {
+                  const items = navigation.filter((i) => groupOf(i.name) === g.key);
+                  if (items.length === 0) return null;
+                  // Icon-rail mode: drop headers, just separate groups with a divider.
+                  if (isCollapsed) {
+                    return (
+                      <div key={g.key} className="mt-1 pt-1 border-t border-gray-100 dark:border-gray-700/60 space-y-1">
+                        {items.map(renderItem)}
+                      </div>
+                    );
+                  }
+                  const open = openGroups[g.key] !== false;
+                  return (
+                    <div key={g.key} className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(g.key)}
+                        aria-expanded={open}
+                        className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer rounded-lg"
+                      >
+                        <span>{t(g.titleKey) || g.fallback}</span>
+                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+                      </button>
+                      {open && <div className="mt-1 space-y-1">{items.map(renderItem)}</div>}
+                    </div>
+                  );
+                })}
+              </>
             );
-          })}
+          })()}
         </nav>
 
         {/* Bottom controls */}
