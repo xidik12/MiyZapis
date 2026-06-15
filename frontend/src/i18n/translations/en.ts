@@ -2174,6 +2174,7 @@ const en: Record<string, string> = {
   'search.filters': 'Filters',
   'search.showing': 'Showing',
   'search.results': 'Results',
+  'search.resultsFor': 'Results for',
   'search.noResults': 'No specialists found',
   'search.noResultsDescription': 'Try adjusting your search criteria or browse different categories',
   'search.clearFilters': 'Clear all filters',

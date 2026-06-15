@@ -2174,6 +2174,7 @@ const uk: Record<string, string> = {
   'search.filters': 'Фільтри',
   'search.showing': 'Показано',
   'search.results': 'Результати',
+  'search.resultsFor': 'Результати для',
   'search.noResults': 'Спеціалістів не знайдено',
   'search.noResultsDescription': 'Спробуйте змінити критерії пошуку або перегляньте інші категорії',
   'search.clearFilters': 'Очистити всі фільтри',

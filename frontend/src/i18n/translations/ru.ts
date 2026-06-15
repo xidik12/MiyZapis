@@ -2174,6 +2174,7 @@ const ru: Record<string, string> = {
   'search.filters': 'Фильтры',
   'search.showing': 'Показано',
   'search.results': 'Результаты',
+  'search.resultsFor': 'Результаты для',
   'search.noResults': 'Специалисты не найдены',
   'search.noResultsDescription': 'Попробуйте изменить критерии поиска или просмотрите другие категории',
   'search.clearFilters': 'Очистить все фильтры',
