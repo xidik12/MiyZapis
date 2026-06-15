@@ -4,6 +4,7 @@ import { CheckCircleIcon, CreditCardIcon, GiftIcon, StarIcon, ArrowPathIcon, Cal
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { downloadICS, getGoogleCalendarUrl } from '@/utils/calendar';
+import { SuccessAnimation } from '@/components/common/SuccessAnimation';
 import { environment } from '@/config/environment';
 import { ShareButton } from '@/components/common/ShareButton';
 import { serviceService } from '@/services';
@@ -62,7 +63,11 @@ const Confirmation: React.FC<ConfirmationProps> = ({
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 text-center">
-        <CheckCircleIcon className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
+        {isAutoBooked ? (
+          <SuccessAnimation size={104} />
+        ) : (
+          <CheckCircleIcon className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 ${isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
+        )}
 
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
