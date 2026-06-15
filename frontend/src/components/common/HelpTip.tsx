@@ -96,8 +96,8 @@ export const HelpTip: React.FC<HelpTipProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.14, ease: 'easeOut' }}
-            style={{ transform: `translateX(${shift}px)` }}
-            className="absolute left-0 top-full mt-2 z-50 w-72 max-w-[calc(100vw-1.5rem)] origin-top-left rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl p-3.5 text-left normal-case"
+            style={{ marginLeft: shift }}
+            className="absolute left-0 top-full mt-2 z-50 w-72 max-w-[calc(100vw-1.5rem)] origin-top rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl p-3.5 text-left normal-case"
           >
             <div className="flex items-start gap-2">
               {title && (
