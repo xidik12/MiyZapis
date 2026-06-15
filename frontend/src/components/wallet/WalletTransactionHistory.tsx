@@ -31,6 +31,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [total, setTotal] = useState(0);
   const [balance, setBalance] = useState(0);
+  const [walletCurrency, setWalletCurrency] = useState<'USD' | 'EUR' | 'UAH'>('USD');
   const [filters, setFilters] = useState<TransactionFilters>({ limit });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const { formatPrice } = useCurrency();
@@ -43,6 +44,9 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       setTransactions(data.transactions);
       setTotal(data.total);
       setBalance(data.balance);
+      // Wallet amounts carry their own currency; use it so the balance isn't
+      // rendered as raw USD (which would ×-convert a UAH balance at display).
+      setWalletCurrency((data.transactions?.[0]?.currency as 'USD' | 'EUR' | 'UAH') || 'USD');
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast.error(t('wallet.transactions.errors.loadFailed'));
@@ -177,7 +181,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
 
         {/* Current Balance */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(balance)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(balance, walletCurrency)}</div>
           <div className="text-sm text-muted-foreground">{t('wallet.transactions.currentBalance')}</div>
         </div>
 
@@ -227,11 +231,11 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                 <div className="text-right">
                   <div className={`font-semibold ${getTransactionColor(transaction.type)}`}>
                     {transaction.type === 'DEBIT' ? '-' : '+'}
-                    {formatPrice(transaction.amount)}
+                    {formatPrice(transaction.amount, (transaction.currency as 'USD' | 'EUR' | 'UAH') || walletCurrency)}
                   </div>
                   {!compact && (
                     <div className="text-xs text-muted-foreground">
-                      {t('wallet.transactions.balance')}: {formatPrice(transaction.balanceAfter)}
+                      {t('wallet.transactions.balance')}: {formatPrice(transaction.balanceAfter, (transaction.currency as 'USD' | 'EUR' | 'UAH') || walletCurrency)}
                     </div>
                   )}
                 </div>

@@ -116,7 +116,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {/* Main Balance */}
         <div className="text-center">
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {showBalance ? formatPrice(summary.balance) : '•••••'}
+            {showBalance ? formatPrice(summary.balance, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
           </div>
           <div className="text-sm text-muted-foreground mt-1">
             {t('wallet.balance.available')}
@@ -132,7 +132,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
             <span className={isPositiveFlow ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow)} {t('wallet.balance.netFlow')}
+              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow, summary.currency as 'USD' | 'EUR' | 'UAH')} {t('wallet.balance.netFlow')}
             </span>
           </div>
         ) : null}
@@ -141,13 +141,13 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-              {showBalance ? formatPrice(summary.totalCredits) : '•••••'}
+              {showBalance ? formatPrice(summary.totalCredits, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
             </div>
             <div className="text-xs text-muted-foreground">{t('wallet.balance.totalReceived')}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-red-600 dark:text-red-400">
-              {showBalance ? formatPrice(summary.totalDebits) : '•••••'}
+              {showBalance ? formatPrice(summary.totalDebits, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
             </div>
             <div className="text-xs text-muted-foreground">{t('wallet.balance.totalSpent')}</div>
           </div>

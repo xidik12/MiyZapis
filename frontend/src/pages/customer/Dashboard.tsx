@@ -90,7 +90,7 @@ interface SpecialOffer {
 
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice, getCurrencySymbol } = useCurrency();
+  const { formatPrice, convertPrice, currency, getCurrencySymbol } = useCurrency();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -213,7 +213,16 @@ const CustomerDashboard: React.FC = () => {
         // Stats (basic derived). totalAmount is a Prisma Decimal which JSON-
         // serialises as a string — coerce with Number() before summing, otherwise
         // the reduce concatenates strings ("0" + "100" + "200" → "0100200").
-        const totalSpent = completedBookings.reduce((sum: number, b: any) => sum + Number(b.totalAmount || 0), 0);
+        // Convert EACH booking from its own service currency into the display
+        // currency before summing — otherwise mixed-currency amounts are summed
+        // raw and then re-converted at display, inflating the total (e.g. a UAH
+        // total shown as "$" × 41). The sum is therefore already in `currency`.
+        const bookingCurrency = (b: any): 'USD' | 'EUR' | 'UAH' =>
+          (b.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
+        const totalSpent = completedBookings.reduce(
+          (sum: number, b: any) => sum + convertPrice(Number(b.totalAmount || 0), bookingCurrency(b)),
+          0,
+        );
 
         // Real month-over-month spend growth (replaces the hard-coded "+15%"
         // that used to ship next to Total Spent).
@@ -226,7 +235,7 @@ const CustomerDashboard: React.FC = () => {
               const d = new Date(b.scheduledAt || b.createdAt || 0);
               return d >= from && d < to;
             })
-            .reduce((s: number, b: any) => s + Number(b.totalAmount || 0), 0);
+            .reduce((s: number, b: any) => s + convertPrice(Number(b.totalAmount || 0), bookingCurrency(b)), 0);
         const thisMonthSpent = sumInRange(monthStart, new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1));
         const lastMonthSpent = sumInRange(prevMonthStart, monthStart);
         const monthlySpendGrowth =
@@ -288,7 +297,9 @@ const CustomerDashboard: React.FC = () => {
       }
     };
     fetchDashboardData();
-  }, [user]);
+    // `currency` is a dep so spend stats recompute when the display currency changes
+    // (totalSpent is summed in the active display currency).
+  }, [user, currency]);
 
   const loadFavoritesPage = async (page: number) => {
     try {
@@ -478,7 +489,7 @@ const CustomerDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             <StatCard
               title={t('dashboard.customer.totalSpent')}
-              value={stats ? formatPrice(stats.totalSpent) : `${getCurrencySymbol()}0`}
+              value={stats ? formatPrice(stats.totalSpent, currency) : `${getCurrencySymbol()}0`}
               change={
                 stats && stats.monthlySpendGrowth !== 0
                   ? `${stats.monthlySpendGrowth > 0 ? '+' : ''}${stats.monthlySpendGrowth}% ${t('dashboard.specialist.thisMonthImprovement')}`

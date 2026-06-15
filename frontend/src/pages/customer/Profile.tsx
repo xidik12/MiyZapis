@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
@@ -32,6 +33,7 @@ interface LoyaltyInfo {
 
 const CustomerProfile: React.FC = () => {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const currentUser = useAppSelector(selectUser);
   
   // Default data - will be replaced with API calls
@@ -128,7 +130,9 @@ const CustomerProfile: React.FC = () => {
     tier: (loyaltyStats?.currentTier as any)?.slug || (userLoyalty?.tier as any)?.slug || calculateTier(loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0),
     nextTierPoints: loyaltyStats?.pointsToNextTier || 0,
     memberSince: (userLoyalty as any)?.createdAt || (loyaltyStats as any)?.memberSince || currentUser?.createdAt || '',
-    totalSpent: 0, // This would need to be calculated from bookings
+    // All-time spend from the loyalty stats (server-aggregated booking totals).
+    // Stored amounts are UAH on this platform; formatPrice converts to display.
+    totalSpent: Number((loyaltyStats as any)?.totalSpent) || 0,
     discountsUsed: 0, // This would need to be tracked separately
   };
   
@@ -473,7 +477,7 @@ const CustomerProfile: React.FC = () => {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-xl">
-                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400">₴{loyalty.totalSpent}</div>
+                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400">{formatPrice(loyalty.totalSpent, 'UAH')}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {language === 'uk' ? 'Потрачено' : language === 'ru' ? 'Потрачено' : 'Spent'}
                     </div>
