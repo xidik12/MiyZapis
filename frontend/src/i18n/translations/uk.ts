@@ -2235,6 +2235,8 @@ const uk: Record<string, string> = {
   'auth.userType.customer.description': 'Я хочу бронювати послуги у спеціалістів',
   'auth.userType.specialist.title': 'Я спеціаліст',
   'auth.userType.specialist.description': 'Я хочу надавати свої послуги клієнтам',
+  'auth.userType.business.title': 'Бізнес / Салон',
+  'auth.userType.business.description': 'Керуйте командою спеціалістів',
   'auth.userType.footerNote': 'Ви можете змінити це пізніше в налаштуваннях профілю',
   'pricing.from': 'Від',
   'actions.viewProfile': 'Переглянути профіль',

@@ -2235,6 +2235,8 @@ const en: Record<string, string> = {
   'auth.userType.customer.description': 'I want to book services from specialists',
   'auth.userType.specialist.title': 'I\'m a Specialist',
   'auth.userType.specialist.description': 'I want to offer my services to customers',
+  'auth.userType.business.title': 'Business / Salon',
+  'auth.userType.business.description': 'Manage a team of professionals',
   'auth.userType.footerNote': 'You can change this later in your profile settings',
   'pricing.from': 'From',
   'actions.viewProfile': 'View Profile',

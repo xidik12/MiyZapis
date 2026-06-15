@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { UserIcon, WrenchScrewdriverIcon, XIcon as XMarkIcon } from '@/components/icons';
+import { UserIcon, WrenchScrewdriverIcon, BuildingOfficeIcon, XIcon as XMarkIcon } from '@/components/icons';
 
 interface UserTypeSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectUserType: (userType: 'customer' | 'specialist') => void;
+  onSelectUserType: (userType: 'customer' | 'specialist' | 'business') => void;
   userEmail?: string;
   userName?: string;
 }
@@ -23,7 +23,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSelectUserType = (userType: 'customer' | 'specialist') => {
+  const handleSelectUserType = (userType: 'customer' | 'specialist' | 'business') => {
     if (!agreeToTerms) {
       return; // Don't proceed if terms not accepted
     }
@@ -133,10 +133,10 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
               }`}
             >
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
                   <UserIcon className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
                 </div>
-                <div className="flex-1 text-left">
+                <div className="flex-1 text-left min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {t('auth.userType.customer.title')}
                   </h3>
@@ -158,15 +158,40 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
               }`}
             >
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
                   <WrenchScrewdriverIcon className="w-6 h-6 text-green-600 dark:text-green-400 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
                 </div>
-                <div className="flex-1 text-left">
+                <div className="flex-1 text-left min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {t('auth.userType.specialist.title')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('auth.userType.specialist.description')}
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            {/* Business / Salon Option */}
+            <button
+              onClick={() => handleSelectUserType('business')}
+              disabled={!agreeToTerms}
+              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+                agreeToTerms
+                  ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
+                  : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+              }`}
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
+                  <BuildingOfficeIcon className="w-6 h-6 text-purple-600 dark:text-purple-400 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {t('auth.userType.business.title')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('auth.userType.business.description')}
                   </p>
                 </div>
               </div>
