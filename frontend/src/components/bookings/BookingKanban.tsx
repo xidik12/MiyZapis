@@ -15,9 +15,21 @@ import {
   SortableContext,
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
+import { toast } from 'react-toastify';
 import { BookingCard, BookingData } from './BookingCard';
 import { SortableBookingCard } from './SortableBookingCard';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+// Allowed column-to-column moves — mirrors the backend booking state machine, so
+// the board can't request a transition the server will reject ("invalid data").
+// (NO_SHOW / REJECTED / PENDING_PAYMENT aren't board columns, so they're omitted.)
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['IN_PROGRESS', 'CANCELLED'],
+  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: [],
+};
 
 interface BookingKanbanProps {
   bookings: BookingData[];
@@ -90,6 +102,27 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
     const overColumnId = over.id as string;
 
     if (activeBooking && activeBooking.status !== overColumnId) {
+      const allowed = VALID_TRANSITIONS[activeBooking.status] ?? [];
+      if (!allowed.includes(overColumnId)) {
+        // Reject the illegal move on the client with a clear hint, rather than
+        // firing an API call the server will bounce as "invalid data".
+        const labelOf = (s: string) =>
+          t(COLUMN_DEFS.find((c) => c.id === s)?.titleKey || '') || s;
+        if (allowed.length === 0) {
+          toast.info(
+            t('bookings.kanbanFinalState') ||
+              'This booking is in a final state and can’t be moved.'
+          );
+        } else {
+          toast.info(
+            `${t('bookings.kanbanInvalidMove') || 'You can move this booking to:'} ${allowed
+              .map(labelOf)
+              .join(', ')}`
+          );
+        }
+        setActiveId(null);
+        return;
+      }
       if (onStatusChange) {
         onStatusChange(activeBooking.id, overColumnId);
       }

@@ -958,6 +958,8 @@ const en: Record<string, string> = {
   'bookings.selected': 'booking(s) selected',
   'bookings.confirm': 'Confirm',
   'bookings.cancel': 'Cancel',
+  'bookings.kanbanInvalidMove': 'You can move this booking to:',
+  'bookings.kanbanFinalState': 'This booking is in a final state and can’t be moved.',
   'bookings.cancelBooking': 'Cancel Booking?',
   'bookings.cancelWarning': 'Are you sure you want to cancel this booking? This action cannot be undone.',
   'bookings.confirmCancel': 'Yes, Cancel Booking',

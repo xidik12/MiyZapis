@@ -957,6 +957,8 @@ const ru: Record<string, string> = {
   'bookings.selected': 'бронирований выбрано',
   'bookings.confirm': 'Подтвердить',
   'bookings.cancel': 'Отменить',
+  'bookings.kanbanInvalidMove': 'Эту запись можно переместить в:',
+  'bookings.kanbanFinalState': 'Запись в финальном статусе — её нельзя переместить.',
   'bookings.cancelBooking': 'Отменить бронирование?',
   'bookings.cancelWarning': 'Вы уверены, что хотите отменить это бронирование? Это действие необратимо.',
   'bookings.confirmCancel': 'Да, отменить',

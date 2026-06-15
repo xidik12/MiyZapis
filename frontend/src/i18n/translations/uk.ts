@@ -957,6 +957,8 @@ const uk: Record<string, string> = {
   'bookings.selected': 'бронювань обрано',
   'bookings.confirm': 'Підтвердити',
   'bookings.cancel': 'Скасувати',
+  'bookings.kanbanInvalidMove': 'Цей запис можна перемістити в:',
+  'bookings.kanbanFinalState': 'Цей запис у фінальному статусі — його не можна перемістити.',
   'bookings.cancelBooking': 'Скасувати бронювання?',
   'bookings.cancelWarning': 'Ви впевнені, що хочете скасувати це бронювання? Цю дію неможливо скасувати.',
   'bookings.confirmCancel': 'Так, скасувати',
