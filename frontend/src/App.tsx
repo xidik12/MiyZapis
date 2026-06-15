@@ -88,6 +88,9 @@ const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 
 // Routing
 const SearchPageRouter = React.lazy(() => import('./components/routing/SearchPageRouter'));
+const ServiceLandingPage = React.lazy(() => import('./pages/ServiceLandingPage'));
+const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
+const BlogArticlePage = React.lazy(() => import('./pages/BlogArticlePage'));
 const BookingRouter = React.lazy(() => import('./components/routing/BookingRouter'));
 
 // Other pages
@@ -742,6 +745,35 @@ function App() {
             <ConditionalLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <SearchPageRouter />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          {/* Programmatic SEO landing pages (public) */}
+          <Route path="/services/:serviceSlug" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <ServiceLandingPage />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          <Route path="/services/:serviceSlug/:citySlug" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <ServiceLandingPage />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          <Route path="/blog" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <BlogIndexPage />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          <Route path="/blog/:slug" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <BlogArticlePage />
               </Suspense>
             </ConditionalLayout>
           } />

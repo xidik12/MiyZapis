@@ -2,10 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SERVICES } from '@/data/seoServices';
+import { pick, type Lang } from '@/data/seo.types';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const lang = (language as Lang) || 'uk';
+  const popularServices = SERVICES.slice(0, 8);
 
   const footerLinks = {
     specialists: [
@@ -34,6 +38,30 @@ export const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Popular services — internal links for discovery & SEO */}
+        <div className="text-center mb-6 xs:mb-8">
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
+            {t('footer.popularServices') || 'Популярні послуги'}
+          </h3>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-3xl mx-auto">
+            {popularServices.map((s) => (
+              <Link
+                key={s.slug}
+                to={`/services/${s.slug}`}
+                className="text-gray-400 hover:text-white text-sm transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
+              >
+                {pick(s.name, lang)}
+              </Link>
+            ))}
+            <Link
+              to="/blog"
+              className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
+            >
+              {t('footer.blog') || 'Блог і поради'}
+            </Link>
           </div>
         </div>
 
