@@ -308,6 +308,14 @@ const RegisterPage: React.FC = () => {
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.userType.message}</p>
           )}
 
+          {/* Specialists & businesses: trial + recurring + annual upsell disclosure */}
+          {(watchUserType === 'specialist' || watchUserType === 'business') && (
+            <div className="mt-3 rounded-xl bg-primary-50/70 dark:bg-primary-900/15 border border-primary-200/60 dark:border-primary-500/25 p-3 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              🎁 {t('auth.register.trialDisclosure') ||
+                'You get 2 months free. After that, a subscription auto-renews (or switch to pay-per-use). Pay for a year now and get 18 months total (12 + 4 bonus + 2 free).'}
+            </div>
+          )}
+
           {/* Salon / business name — only when registering a business */}
           {watchUserType === 'business' && (
             <div className="mt-4">

@@ -1,9 +1,51 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { paymentController } from '@/controllers/payment.controller';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
+import { prisma } from '@/config/database';
+import { AuthenticatedRequest } from '@/types';
+import { telegramStarsService, starsPricing } from '@/services/payment/telegram-stars.service';
 
 const router = express.Router();
+
+// --- Telegram Stars subscription (specialists) ---------------------------
+// GET pricing (public) — stars for monthly + annual, and the annual access months.
+router.get('/telegram-stars/pricing', (_req: Request, res: Response) => {
+  res.json({ success: true, data: starsPricing() });
+});
+
+// POST /telegram-stars/invoice { plan: 'monthly' | 'annual' } → invoice link
+router.post('/telegram-stars/invoice', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as unknown as AuthenticatedRequest).user!.id;
+    const plan = req.body?.plan === 'annual' ? 'annual' : 'monthly';
+    const specialist = await prisma.specialist.findUnique({ where: { userId }, select: { id: true } });
+    if (!specialist) {
+      res.status(403).json({ success: false, error: { message: 'Not a specialist account' } });
+      return;
+    }
+    const invoiceLink =
+      plan === 'annual'
+        ? await telegramStarsService.createAnnualInvoiceLink(userId)
+        : await telegramStarsService.createSubscriptionInvoiceLink(userId);
+    res.json({ success: true, data: { invoiceLink, plan } });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Failed to create invoice';
+    res.status(500).json({ success: false, error: { message: msg } });
+  }
+});
+
+// POST /telegram-stars/cancel → turn off auto-renew (stays active until period end)
+router.post('/telegram-stars/cancel', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as unknown as AuthenticatedRequest).user!.id;
+    await telegramStarsService.cancelSubscription(userId);
+    res.json({ success: true, data: { ok: true } });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Failed to cancel';
+    res.status(400).json({ success: false, error: { message: msg } });
+  }
+});
 
 // Payment Intent Routes (for payment-first booking flow)
 router.post(

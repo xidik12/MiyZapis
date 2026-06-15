@@ -8,6 +8,7 @@ import { registerCommands, showUserTypeSelection } from './commands';
 import { registerCallbacks } from './handlers/callbacks';
 import { registerMessageHandlers } from './handlers/messages';
 import { createBooking as createBookingHandler } from './handlers/booking';
+import { telegramStarsService } from '../payment/telegram-stars.service';
 
 export class EnhancedTelegramBot {
   private bot!: Telegraf<BotContext>;
@@ -71,6 +72,9 @@ export class EnhancedTelegramBot {
         this.broadcastMessage.bind(this),
         () => this.bot.telegram
       );
+
+      // Telegram Stars subscription payments (pre_checkout_query + successful_payment)
+      telegramStarsService.registerHandlers(this.bot);
 
       this.isInitialized = true;
       logger.info('Enhanced Telegram bot initialized successfully');

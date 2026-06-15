@@ -216,6 +216,129 @@ export class SpecialistSubscriptionService {
     });
   }
 
+  /**
+   * Activate (or renew) a MONTHLY_SUBSCRIPTION paid via Telegram Stars.
+   * Called from the bot's successful_payment handler. Idempotent-ish: re-running
+   * with the same charge just extends the period. `periodEnd` comes from
+   * Telegram's subscription_expiration_date; we fall back to +30d if absent.
+   */
+  async activateMonthlyFromTelegram(
+    specialistId: string,
+    opts: { telegramChargeId: string; telegramPayerId?: string; periodEnd?: Date; amountStars?: number },
+  ): Promise<void> {
+    const now = new Date();
+    const periodEnd =
+      opts.periodEnd && !Number.isNaN(opts.periodEnd.getTime())
+        ? opts.periodEnd
+        : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    // Ensure a subscription row exists.
+    await this.getSubscription(specialistId);
+
+    await prisma.$transaction(async (tx) => {
+      const subscription = await tx.specialistSubscription.findFirst({ where: { specialistId } });
+      if (!subscription) return;
+
+      await tx.specialistSubscription.update({
+        where: { id: subscription.id },
+        data: {
+          planType: 'MONTHLY_SUBSCRIPTION',
+          status: 'ACTIVE',
+          provider: 'TELEGRAM_STARS',
+          telegramChargeId: opts.telegramChargeId,
+          telegramPayerId: opts.telegramPayerId ?? subscription.telegramPayerId,
+          monthlyRate: this.PLANS.MONTHLY_SUBSCRIPTION.monthlyRate,
+          transactionFee: this.PLANS.MONTHLY_SUBSCRIPTION.transactionFee,
+          currency: this.PLANS.MONTHLY_SUBSCRIPTION.currency,
+          pendingPlanType: null,
+          planChangeEffectiveDate: null,
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+          nextBillingDate: periodEnd,
+          currentMonthTransactions: 0,
+          currentMonthFees: 0,
+          paymentFailures: 0,
+          lastPaymentDate: now,
+          lastPaymentAmount: opts.amountStars ?? null,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: specialistId },
+        data: {
+          subscriptionStatus: 'MONTHLY_SUBSCRIPTION',
+          subscriptionEffectiveDate: now,
+          subscriptionValidUntil: periodEnd,
+        },
+      });
+    });
+
+    logger.info('Telegram Stars subscription activated', {
+      specialistId,
+      telegramChargeId: opts.telegramChargeId,
+      periodEnd,
+    });
+  }
+
+  /**
+   * Activate the one-time ANNUAL Telegram Stars plan → 18 months of access
+   * (12 paid + 4 bonus + 2 free trial). No auto-renew: nextBillingDate stays
+   * null so the Coinbase billing worker never touches it.
+   */
+  async activateAnnualFromTelegram(
+    specialistId: string,
+    opts: { telegramChargeId: string; telegramPayerId?: string; amountStars?: number },
+  ): Promise<void> {
+    const now = new Date();
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 18, now.getDate());
+
+    await this.getSubscription(specialistId); // ensure a row exists
+
+    await prisma.$transaction(async (tx) => {
+      const subscription = await tx.specialistSubscription.findFirst({ where: { specialistId } });
+      if (!subscription) return;
+
+      await tx.specialistSubscription.update({
+        where: { id: subscription.id },
+        data: {
+          planType: 'MONTHLY_SUBSCRIPTION',
+          status: 'ACTIVE',
+          provider: 'TELEGRAM_STARS',
+          telegramChargeId: opts.telegramChargeId,
+          telegramPayerId: opts.telegramPayerId ?? subscription.telegramPayerId,
+          monthlyRate: this.PLANS.MONTHLY_SUBSCRIPTION.monthlyRate,
+          transactionFee: this.PLANS.MONTHLY_SUBSCRIPTION.transactionFee,
+          currency: this.PLANS.MONTHLY_SUBSCRIPTION.currency,
+          pendingPlanType: null,
+          planChangeEffectiveDate: null,
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+          nextBillingDate: null, // one-time; no auto-charge
+          currentMonthTransactions: 0,
+          currentMonthFees: 0,
+          paymentFailures: 0,
+          lastPaymentDate: now,
+          lastPaymentAmount: opts.amountStars ?? null,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: specialistId },
+        data: {
+          subscriptionStatus: 'MONTHLY_SUBSCRIPTION',
+          subscriptionEffectiveDate: now,
+          subscriptionValidUntil: periodEnd,
+        },
+      });
+    });
+
+    logger.info('Telegram Stars ANNUAL subscription activated', {
+      specialistId,
+      telegramChargeId: opts.telegramChargeId,
+      periodEnd,
+    });
+  }
+
   async processTransactionFee(specialistId: string, bookingId: string): Promise<{
     feeCharged: number;
     currency: string;
@@ -376,6 +499,9 @@ export class SpecialistSubscriptionService {
         nextBillingDate: {
           lte: new Date(),
         },
+        // Telegram Stars subscriptions renew via Telegram itself (or are one-time
+        // annual) — never bill them through the Coinbase worker.
+        provider: { not: 'TELEGRAM_STARS' },
       },
       include: {
         specialist: {

@@ -475,7 +475,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
       preheader: 'Trial ends {{trialEndDate}}.',
       bodyHtml: `
         <h1 style="${STYLES.h1}">Your free trial ends in {{daysRemaining}} days</h1>
-        <p style="${STYLES.p}">Hi {{firstName}}, we hope you’ve been enjoying MiyZapis. Your 3-month free trial ends on <strong>{{trialEndDate}}</strong>.</p>
+        <p style="${STYLES.p}">Hi {{firstName}}, we hope you’ve been enjoying MiyZapis. Your 2-month free trial ends on <strong>{{trialEndDate}}</strong>.</p>
         <div style="${STYLES.warnBox}">
           <h3 style="${STYLES.h3}">What happens next</h3>
           {{#if isCustomer}}
@@ -490,14 +490,14 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         ${cta('{{trialInfoUrl}}', 'See pricing')}
         <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `Your free trial ends in {{daysRemaining}} days\n\nHi {{firstName}},\n\nYour 3-month trial ends on {{trialEndDate}}.\n\nWhat happens next:\n{{#if isCustomer}}  - A small deposit (10–20%) will be required at booking\n  - All other features stay fully available\n{{/if}}{{#if isSpecialist}}  - Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)\n  - Keep every platform feature\n{{/if}}\nPricing: {{trialInfoUrl}}\nSupport: {{helpUrl}}`,
+      text: `Your free trial ends in {{daysRemaining}} days\n\nHi {{firstName}},\n\nYour 2-month trial ends on {{trialEndDate}}.\n\nWhat happens next:\n{{#if isCustomer}}  - A small deposit (10–20%) will be required at booking\n  - All other features stay fully available\n{{/if}}{{#if isSpecialist}}  - Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)\n  - Keep every platform feature\n{{/if}}\nPricing: {{trialInfoUrl}}\nSupport: {{helpUrl}}`,
     },
     uk: {
       subject: 'Пробний період закінчується через {{daysRemaining}} днів',
       preheader: 'Пробний завершується {{trialEndDate}}.',
       bodyHtml: `
         <h1 style="${STYLES.h1}">Пробний період закінчується через {{daysRemaining}} днів</h1>
-        <p style="${STYLES.p}">Привіт, {{firstName}}. Сподіваємося, вам подобається МійЗапис. Ваш 3-місячний пробний завершується <strong>{{trialEndDate}}</strong>.</p>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Сподіваємося, вам подобається МійЗапис. Ваш 2-місячний пробний завершується <strong>{{trialEndDate}}</strong>.</p>
         <div style="${STYLES.warnBox}">
           <h3 style="${STYLES.h3}">Що буде далі</h3>
           {{#if isCustomer}}
@@ -512,7 +512,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         ${cta('{{trialInfoUrl}}', 'Переглянути тарифи')}
         <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `Пробний період закінчується через {{daysRemaining}} днів\n\nПривіт, {{firstName}},\n\nВаш 3-місячний пробний завершується {{trialEndDate}}.\n\nЩо буде далі:\n{{#if isCustomer}}  - Невеликий депозит (10–20%) при бронюванні\n  - Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  - Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)\n  - Усі функції платформи зберігаються\n{{/if}}\nТарифи: {{trialInfoUrl}}\nПідтримка: {{helpUrl}}`,
+      text: `Пробний період закінчується через {{daysRemaining}} днів\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершується {{trialEndDate}}.\n\nЩо буде далі:\n{{#if isCustomer}}  - Невеликий депозит (10–20%) при бронюванні\n  - Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  - Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)\n  - Усі функції платформи зберігаються\n{{/if}}\nТарифи: {{trialInfoUrl}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
       subject: 'Пробный период заканчивается через {{daysRemaining}} дней',
@@ -542,10 +542,10 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
   trialExpired: {
     en: {
       subject: 'Your free trial has ended — thanks for trying MiyZapis',
-      preheader: 'Your 3-month trial has ended.',
+      preheader: 'Your 2-month trial has ended.',
       bodyHtml: `
         <h1 style="${STYLES.h1}">Thanks for trying MiyZapis 🙌</h1>
-        <p style="${STYLES.p}">Hi {{firstName}}, your 3-month free trial ended on <strong>{{trialEndDate}}</strong>.</p>
+        <p style="${STYLES.p}">Hi {{firstName}}, your 2-month free trial ended on <strong>{{trialEndDate}}</strong>.</p>
         <div style="${STYLES.infoBox}">
           <h3 style="${STYLES.h3}">What’s next</h3>
           {{#if isCustomer}}
@@ -563,14 +563,14 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">See pricing plans</a></div>{{/if}}
         <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `Thanks for trying MiyZapis!\n\nHi {{firstName}},\n\nYour 3-month free trial ended on {{trialEndDate}}.\n\nWhat’s next:\n{{#if isCustomer}}  ✓ Keep browsing and booking services\n  ✓ Small deposits (10–20%) now apply at booking\n  ✓ Every other feature stays fully accessible\n{{/if}}{{#if isSpecialist}}  ✓ Keep serving customers and growing your business\n  ✓ Pick the pricing plan that fits\n  ✓ Every platform feature remains available\n{{/if}}\nDashboard: {{dashboardUrl}}\n{{#if isSpecialist}}Pricing: {{pricingUrl}}{{/if}}\nSupport: {{helpUrl}}`,
+      text: `Thanks for trying MiyZapis!\n\nHi {{firstName}},\n\nYour 2-month free trial ended on {{trialEndDate}}.\n\nWhat’s next:\n{{#if isCustomer}}  ✓ Keep browsing and booking services\n  ✓ Small deposits (10–20%) now apply at booking\n  ✓ Every other feature stays fully accessible\n{{/if}}{{#if isSpecialist}}  ✓ Keep serving customers and growing your business\n  ✓ Pick the pricing plan that fits\n  ✓ Every platform feature remains available\n{{/if}}\nDashboard: {{dashboardUrl}}\n{{#if isSpecialist}}Pricing: {{pricingUrl}}{{/if}}\nSupport: {{helpUrl}}`,
     },
     uk: {
       subject: 'Ваш пробний завершився — дякуємо за використання МійЗапис',
-      preheader: 'Ваш 3-місячний пробний завершився.',
+      preheader: 'Ваш 2-місячний пробний завершився.',
       bodyHtml: `
         <h1 style="${STYLES.h1}">Дякуємо, що випробували МійЗапис 🙌</h1>
-        <p style="${STYLES.p}">Привіт, {{firstName}}. Ваш 3-місячний пробний завершився <strong>{{trialEndDate}}</strong>.</p>
+        <p style="${STYLES.p}">Привіт, {{firstName}}. Ваш 2-місячний пробний завершився <strong>{{trialEndDate}}</strong>.</p>
         <div style="${STYLES.infoBox}">
           <h3 style="${STYLES.h3}">Що далі</h3>
           {{#if isCustomer}}
@@ -588,7 +588,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">Тарифні плани</a></div>{{/if}}
         <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `Дякуємо, що випробували МійЗапис!\n\nПривіт, {{firstName}},\n\nВаш 3-місячний пробний завершився {{trialEndDate}}.\n\nЩо далі:\n{{#if isCustomer}}  ✓ Продовжуйте переглядати та бронювати\n  ✓ Невеликий депозит (10–20%) при бронюванні\n  ✓ Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  ✓ Продовжуйте обслуговувати клієнтів\n  ✓ Оберіть зручний тарифний план\n  ✓ Усі функції платформи зберігаються\n{{/if}}\nКабінет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифи: {{pricingUrl}}{{/if}}\nПідтримка: {{helpUrl}}`,
+      text: `Дякуємо, що випробували МійЗапис!\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершився {{trialEndDate}}.\n\nЩо далі:\n{{#if isCustomer}}  ✓ Продовжуйте переглядати та бронювати\n  ✓ Невеликий депозит (10–20%) при бронюванні\n  ✓ Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  ✓ Продовжуйте обслуговувати клієнтів\n  ✓ Оберіть зручний тарифний план\n  ✓ Усі функції платформи зберігаються\n{{/if}}\nКабінет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифи: {{pricingUrl}}{{/if}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
       subject: 'Ваш пробный завершился — спасибо за МойЗапись',

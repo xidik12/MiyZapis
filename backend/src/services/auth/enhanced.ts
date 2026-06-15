@@ -123,7 +123,7 @@ export class AuthService {
       // Calculate 3-month trial period
       const trialStartDate = new Date();
       const trialEndDate = new Date();
-      trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+      trialEndDate.setMonth(trialEndDate.getMonth() + 2); // 2-month free trial
 
       // Create user (unverified) with 3-month trial period
       const user = await prisma.user.create({
@@ -704,7 +704,7 @@ export class AuthService {
         // Calculate 3-month trial period
         const trialStartDate = new Date();
         const trialEndDate = new Date();
-        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+        trialEndDate.setMonth(trialEndDate.getMonth() + 2); // 2-month free trial
 
         // Create new user from Google data with 3-month trial period
         user = await prisma.user.create({
@@ -994,7 +994,7 @@ export class AuthService {
         // Calculate 3-month trial period
         const trialStartDate = new Date();
         const trialEndDate = new Date();
-        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+        trialEndDate.setMonth(trialEndDate.getMonth() + 2); // 2-month free trial
 
         user = await prisma.user.create({
           data: {

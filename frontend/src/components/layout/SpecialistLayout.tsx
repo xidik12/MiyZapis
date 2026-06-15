@@ -569,6 +569,7 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.businesses', fallback: 'Businesses', href: '/specialist/businesses', icon: BuildingOfficeIcon },
   ]},
   { title: 'nav.section.account', items: [
+    { nameKey: 'dashboard.nav.billing', fallback: 'Subscription', href: '/specialist/billing', icon: CreditCardIcon },
     { nameKey: 'dashboard.nav.community', fallback: 'Community', href: '/community', icon: UsersIcon },
     { nameKey: 'dashboard.nav.notifications', fallback: 'Notifications', href: '/specialist/notifications', icon: BellIcon },
     { nameKey: 'dashboard.nav.profile', fallback: 'Profile', href: '/specialist/profile', icon: UserIcon },

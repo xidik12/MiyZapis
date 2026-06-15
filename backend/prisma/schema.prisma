@@ -1749,6 +1749,12 @@ model SpecialistSubscription {
   // Coinbase Commerce subscription (if applicable)
   coinbaseSubscriptionId String?
 
+  // Telegram Stars recurring subscription: last successful charge id (used to
+  // cancel auto-renewal via editUserStarSubscription) + the paying user's tg id.
+  provider          String? // 'TELEGRAM_STARS' | 'COINBASE' | null
+  telegramChargeId  String?
+  telegramPayerId   String? // Telegram user id that paid (for cancel/refund)
+
   // Billing cycle
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?

@@ -61,6 +61,7 @@ const SpecialistInventory = React.lazy(() => import('./pages/specialist/Inventor
 const SpecialistSales = React.lazy(() => import('./pages/specialist/Sales'));
 const SpecialistMarketing = React.lazy(() => import('./pages/specialist/Marketing'));
 const SpecialistPromote = React.lazy(() => import('./pages/specialist/Promote'));
+const SpecialistBilling = React.lazy(() => import('./pages/specialist/Billing'));
 const SpecialistPurchasing = React.lazy(() => import('./pages/specialist/Purchasing'));
 const SpecialistPayroll = React.lazy(() => import('./pages/specialist/Payroll'));
 const SpecialistCalendarSettings = React.lazy(() => import('./pages/specialist/CalendarSettings'));
@@ -364,6 +365,18 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistPromote />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/billing"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistBilling />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>
