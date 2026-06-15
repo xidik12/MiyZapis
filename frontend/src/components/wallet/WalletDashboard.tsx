@@ -65,7 +65,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
       <div className="space-y-6">
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto scrollbar-hide px-1">
+          <nav className="-mb-px flex flex-wrap gap-x-4 gap-y-1 sm:gap-x-8 px-1">
             <button
               onClick={() => setActiveTab('overview')}
               className={`${

@@ -533,7 +533,7 @@ const SpecialistLoyalty: React.FC = () => {
         {/* Tab Navigation */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8 min-w-0">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex overflow-x-auto px-4 sm:px-6 scrollbar-hide min-w-0">
+            <nav className="flex flex-wrap px-4 sm:px-6 min-w-0">
               {[
                 { key: 'overview', label: t('loyalty.tab.overview') || 'Overview', shortLabel: t('loyalty.tab.overview') || 'Overview', icon: StarIcon },
                 { key: 'history', label: t('loyalty.tab.history') || 'Transaction History', shortLabel: t('loyalty.tab.historyShort') || 'History', icon: ClockIcon },
