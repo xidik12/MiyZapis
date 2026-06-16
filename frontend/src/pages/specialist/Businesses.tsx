@@ -2,6 +2,7 @@
 // list / create / detail+manage views to keep routing minimal.
 
 import React, { useEffect, useState } from 'react';
+import { confirm, promptInput } from '@/components/ui/Confirm';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
@@ -329,7 +330,7 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
   useEffect(() => { loadInvites(); }, [business.id]);
 
   const revoke = async (inviteId: string) => {
-    if (!confirm(t('businesses.invitePending.revokeConfirm'))) return;
+    if (!await confirm(t('businesses.invitePending.revokeConfirm'))) return;
     try { await businessService.revokeInvite(business.id, inviteId); toast.success(t('businesses.invitePending.revoked')); loadInvites(); }
     catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
   };
@@ -402,7 +403,7 @@ const MemberActions: React.FC<{ businessId: string; member: any; onReload: () =>
     setOpen(false);
   };
   const remove = async () => {
-    if (!confirm(t('businesses.members.removeConfirm'))) return;
+    if (!await confirm(t('businesses.members.removeConfirm'))) return;
     try { await businessService.removeMember(businessId, member.user.id); toast.success(t('businesses.members.removedSuccess')); onReload(); }
     catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
     setOpen(false);
@@ -488,7 +489,7 @@ const SettingsTab: React.FC<{ business: Business; canManage: boolean; onReload: 
     finally { setSaving(false); }
   };
   const deactivate = async () => {
-    if (!confirm(t('businesses.settings.deactivateConfirm'))) return;
+    if (!await confirm(t('businesses.settings.deactivateConfirm'))) return;
     try { await businessService.deactivate(business.id); toast.success(t('businesses.settings.deactivatedSuccess')); onReload(); }
     catch (err: any) { toast.error(err?.message || t('businesses.error.generic')); }
   };
@@ -544,7 +545,7 @@ const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ busine
   useEffect(() => { reload(); }, [business.id]);
 
   const clone = async (s: Staff) => {
-    const name = prompt(t('businesses.staff.cloneNamePrompt'), `${s.user.firstName} ${s.user.lastName}`);
+    const name = await promptInput({ message: t('businesses.staff.cloneNamePrompt'), defaultValue: `${s.user.firstName} ${s.user.lastName}` });
     if (!name?.trim()) return;
     const parts = name.trim().split(/\s+/);
     const firstName = parts[0];
@@ -557,7 +558,7 @@ const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ busine
   };
 
   const remove = async (s: Staff) => {
-    if (!confirm(t('businesses.staff.removeConfirm'))) return;
+    if (!await confirm(t('businesses.staff.removeConfirm'))) return;
     try {
       await businessService.deleteStaff(business.id, s.user.id);
       toast.success(t('businesses.staff.removed'));

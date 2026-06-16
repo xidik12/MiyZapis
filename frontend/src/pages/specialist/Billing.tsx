@@ -11,6 +11,7 @@ import { PageLoader } from '@/components/ui';
 import { HelpTip } from '@/components/common/HelpTip';
 import { toast } from 'react-toastify';
 import { CheckCircleIcon, StarIcon, RocketLaunchIcon, CreditCardIcon } from '@/components/icons';
+import { confirm } from '@/components/ui/Confirm';
 
 const Billing: React.FC = () => {
   const { t } = useLanguage();
@@ -82,7 +83,14 @@ const Billing: React.FC = () => {
   };
 
   const cancel = async () => {
-    if (!confirm(t('billing.cancelConfirm') || 'Turn off auto-renewal? Your plan stays active until the period ends.')) return;
+    const ok = await confirm({
+      title: t('billing.cancelTitle') || 'Turn off auto-renewal?',
+      message: t('billing.cancelConfirm') || 'Your plan stays active until the period ends.',
+      confirmText: t('billing.cancelAutoRenew') || 'Turn off auto-renewal',
+      cancelText: t('common.cancel') || 'Cancel',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     setBusy('cancel');
     try {
       if (status?.provider === 'DODO') await subscriptionService.cancelCard();

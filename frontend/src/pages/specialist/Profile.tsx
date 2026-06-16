@@ -549,6 +549,56 @@ const SpecialistProfile: React.FC = () => {
   };
 
   // Save profile
+  // Build the backend payload from current profile state. `portfolioOverride`
+  // lets callers (portfolio upload/remove) persist a fresh portfolio list.
+  const buildSpecialistData = (portfolioOverride?: PortfolioItem[]) => {
+    const portfolio = portfolioOverride ?? (Array.isArray(profile.portfolio) ? profile.portfolio : []);
+    return {
+      businessName: profile.profession || `${profile.firstName} ${profile.lastName}`,
+      bio: profile.bio || '',
+      bioUk: profile.bioUk || '',
+      bioRu: profile.bioRu || '',
+      education: profile.education || '',
+      educationUk: profile.educationUk || '',
+      educationRu: profile.educationRu || '',
+      specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
+      experience: profile.experience || 0,
+      languages: Array.isArray(profile.languages) ? profile.languages : [],
+      address: profile.location?.address || '',
+      city: profile.location?.city || '',
+      state: profile.location?.region || '',
+      country: profile.location?.country || '',
+      latitude: profile.location?.latitude || null,
+      longitude: profile.location?.longitude || null,
+      timezone: 'UTC',
+      workingHours: profile.businessHours || {},
+      preciseAddress: profile.preciseAddress || '',
+      businessPhone: profile.businessPhone || '',
+      paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
+      bankDetails: profile.bankDetails || {},
+      paymentQrCodeUrl: profile.paymentQrCodeUrl || null,
+      serviceArea: profile.serviceArea || { radius: 0, cities: [] },
+      notifications: profile.notifications || {},
+      privacy: profile.privacy || {},
+      socialMedia: profile.socialMedia || {},
+      portfolioImages: portfolio,
+      certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
+    };
+  };
+
+  // Persist the portfolio independently — no validateProfile() gate, so images
+  // save even when other required fields are blank. (Discoverability still
+  // needs the full info; the main Save enforces that.)
+  const persistPortfolio = async (updatedPortfolio: PortfolioItem[]) => {
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) return;
+    try {
+      await specialistService.updateProfile(buildSpecialistData(updatedPortfolio) as any);
+    } catch (err) {
+      logger.error('Portfolio persist failed:', err);
+      throw err;
+    }
+  };
+
   const handleSave = async () => {
     if (!validateProfile()) {
       // Show specific validation errors
@@ -605,37 +655,7 @@ const SpecialistProfile: React.FC = () => {
       if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
         try {
           // Prepare the specialist profile data for API - only fields backend accepts
-          const specialistData = {
-            businessName: profile.profession || `${profile.firstName} ${profile.lastName}`,
-            bio: profile.bio || '',
-            bioUk: profile.bioUk || '',
-            bioRu: profile.bioRu || '',
-            education: profile.education || '',
-            educationUk: profile.educationUk || '',
-            educationRu: profile.educationRu || '',
-            specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
-            experience: profile.experience || 0,
-            languages: Array.isArray(profile.languages) ? profile.languages : [],
-            address: profile.location?.address || '',
-            city: profile.location?.city || '',
-            state: profile.location?.region || '',
-            country: profile.location?.country || '',
-            latitude: profile.location?.latitude || null,
-            longitude: profile.location?.longitude || null,
-            timezone: 'UTC', // Default timezone
-            workingHours: profile.businessHours || {},
-            preciseAddress: profile.preciseAddress || '',
-            businessPhone: profile.businessPhone || '',
-            paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
-            bankDetails: profile.bankDetails || {},
-            paymentQrCodeUrl: profile.paymentQrCodeUrl || null,
-            serviceArea: profile.serviceArea || { radius: 0, cities: [] },
-            notifications: profile.notifications || {},
-            privacy: profile.privacy || {},
-            socialMedia: profile.socialMedia || {},
-            portfolioImages: Array.isArray(profile.portfolio) ? profile.portfolio : [],
-            certifications: Array.isArray(profile.certifications) ? profile.certifications : []
-          };
+          const specialistData = buildSpecialistData();
 
           logger.debug('💾 Sending specialist data to backend:', specialistData);
           logger.debug('💾 Current profile state before save:', profile);
@@ -865,12 +885,13 @@ const SpecialistProfile: React.FC = () => {
       logger.debug('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
       
       // Add the new image to the portfolio
-      const newPortfolioItem = {
+      const newPortfolioItem: PortfolioItem = {
         id: `portfolio_${Date.now()}`,
         imageUrl: result.imageUrl,
         title: file.name || '',
         description: '',
-        tags: []
+        category: '',
+        dateAdded: new Date().toISOString(),
       };
       
       logger.debug('💼 New portfolio item:', newPortfolioItem);
@@ -878,12 +899,26 @@ const SpecialistProfile: React.FC = () => {
       const updatedPortfolio = [...profile.portfolio, newPortfolioItem];
       logger.debug('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
       handleProfileChange('portfolio', updatedPortfolio);
-      
+
+      // Persist immediately and independently — no need to fill the rest of the
+      // profile first. Discoverability still requires the full info (main Save).
+      await persistPortfolio(updatedPortfolio);
+
       showSuccessNotification(
         language === 'uk' ? 'Зображення успішно додано до портфоліо' :
         language === 'ru' ? 'Изображение успешно добавлено в портфолио' :
         'Image successfully added to portfolio'
       );
+
+      // Gentle reminder if the profile is incomplete (so they won't yet be found in search).
+      const incomplete = !profile.firstName || !profile.lastName || !profile.profession || !profile.preciseAddress || !profile.businessPhone;
+      if (incomplete) {
+        showErrorNotification(
+          language === 'uk' ? 'Щоб зʼявлятися в пошуку, заповніть профіль: адреса, телефон, професія.' :
+          language === 'ru' ? 'Чтобы появляться в поиске, заполните профиль: адрес, телефон, профессия.' :
+          'To appear in search, complete your profile: address, phone, profession.'
+        );
+      }
 
       // Clear the file input
       event.target.value = '';
@@ -2318,9 +2353,10 @@ const SpecialistProfile: React.FC = () => {
                           )}
                           {isEditing && (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 const updatedPortfolio = profile.portfolio.filter((_, i) => i !== index);
                                 handleProfileChange('portfolio', updatedPortfolio);
+                                await persistPortfolio(updatedPortfolio);
                               }}
                               className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             >

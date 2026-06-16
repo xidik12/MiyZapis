@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { crmService, ClientTask } from '../../services/crm.service';
 import { PageLoader } from '@/components/ui';
@@ -143,7 +144,7 @@ const CrmTasks: React.FC = () => {
   };
 
   const handleDeleteTask = async (id: string) => {
-    if (!confirm(t('crm.confirmDeleteTask') || 'Delete this task?')) return;
+    if (!await confirm(t('crm.confirmDeleteTask') || 'Delete this task?')) return;
     try {
       setActing(id);
       await crmService.deleteTask(id);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -214,7 +215,7 @@ const SpecialistFinances: React.FC = () => {
 
   // Delete expense
   const handleDelete = async (id: string) => {
-    if (!confirm(t('finances.confirmDelete') || 'Are you sure you want to delete this expense?')) {
+    if (!await confirm(t('finances.confirmDelete') || 'Are you sure you want to delete this expense?')) {
       return;
     }
 

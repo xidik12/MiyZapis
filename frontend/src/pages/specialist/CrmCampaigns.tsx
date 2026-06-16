@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   crmService,
@@ -377,7 +378,7 @@ const CrmCampaigns: React.FC = () => {
   };
 
   const handleDeleteSegment = async (id: string) => {
-    if (!confirm(t('crm.confirmDeleteSegment') || 'Delete this segment?')) return;
+    if (!await confirm(t('crm.confirmDeleteSegment') || 'Delete this segment?')) return;
     try {
       setActing(id);
       await crmService.deleteSegment(id);
@@ -425,7 +426,7 @@ const CrmCampaigns: React.FC = () => {
       previewCount = seg?.count ?? null;
     }
     const countStr = previewCount !== null ? ` to ${previewCount} client${previewCount !== 1 ? 's' : ''}` : '';
-    if (!confirm((t('crm.confirmSend') || `Send campaign${countStr}? Opted-out clients will be skipped automatically.`) + (previewCount !== null ? ` (${previewCount} recipient${previewCount !== 1 ? 's' : ''})` : ''))) {
+    if (!await confirm((t('crm.confirmSend') || `Send campaign${countStr}? Opted-out clients will be skipped automatically.`) + (previewCount !== null ? ` (${previewCount} recipient${previewCount !== 1 ? 's' : ''})` : ''))) {
       return;
     }
     try {
@@ -450,7 +451,7 @@ const CrmCampaigns: React.FC = () => {
   };
 
   const handleDeleteCampaign = async (id: string) => {
-    if (!confirm(t('crm.confirmDeleteCampaign') || 'Delete this campaign?')) return;
+    if (!await confirm(t('crm.confirmDeleteCampaign') || 'Delete this campaign?')) return;
     try {
       setActing(id);
       await crmService.deleteCampaign(id);

@@ -2,6 +2,7 @@
 // All sections share a period picker (defaults to current month).
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { toast } from 'react-toastify';
 import {
   accountingService,
@@ -419,7 +420,7 @@ const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({
     }
   };
   const del = async () => {
-    if (!confirm(t('accounting.invoices.confirmDelete'))) return;
+    if (!await confirm(t('accounting.invoices.confirmDelete'))) return;
     try { await accountingService.deleteInvoice(invoice.id); onChanged(); }
     catch (err: any) { toast.error(err?.message || t('accounting.invoices.deleteFailed')); }
   };

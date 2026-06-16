@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -223,7 +224,7 @@ const SpecialistPurchasing: React.FC = () => {
   };
 
   const handleDeleteSupplier = async (id: string) => {
-    if (!confirm(t('purchasing.confirmDeleteSupplier') || 'Deactivate this supplier?')) return;
+    if (!await confirm(t('purchasing.confirmDeleteSupplier') || 'Deactivate this supplier?')) return;
     try {
       setDeletingSupplier(id);
       await purchasingService.deleteSupplier(id);
@@ -357,7 +358,7 @@ const SpecialistPurchasing: React.FC = () => {
   };
 
   const handleCancel = async (po: PurchaseOrder) => {
-    if (!confirm(t('purchasing.confirmCancel') || 'Cancel this purchase order?')) return;
+    if (!await confirm(t('purchasing.confirmCancel') || 'Cancel this purchase order?')) return;
     try {
       setBusyOrder(po.id);
       await purchasingService.setStatus(po.id, 'CANCELLED');
@@ -371,7 +372,7 @@ const SpecialistPurchasing: React.FC = () => {
   };
 
   const handleDeletePO = async (po: PurchaseOrder) => {
-    if (!confirm(t('purchasing.confirmDeletePO') || 'Delete this draft purchase order?')) return;
+    if (!await confirm(t('purchasing.confirmDeletePO') || 'Delete this draft purchase order?')) return;
     try {
       setBusyOrder(po.id);
       await purchasingService.deleteOrder(po.id);

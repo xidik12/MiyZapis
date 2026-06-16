@@ -1,5 +1,6 @@
 // Calendar settings — connect/disconnect Google & Apple, manual resync.
 import React, { useEffect, useState } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { toast } from 'react-toastify';
 import { calendarService, type CalendarStatusResponse } from '../../services/calendar.service';
 import { PageLoader } from '@/components/ui';
@@ -43,7 +44,7 @@ const CalendarSettings: React.FC = () => {
   };
 
   const disconnectGoogle = async () => {
-    if (!confirm('Disconnect Google Calendar? Future bookings will stop syncing.')) return;
+    if (!await confirm('Disconnect Google Calendar? Future bookings will stop syncing.')) return;
     try {
       await calendarService.googleDisconnect();
       toast.success('Google Calendar disconnected');
@@ -54,7 +55,7 @@ const CalendarSettings: React.FC = () => {
   };
 
   const disconnectApple = async () => {
-    if (!confirm('Disconnect iCloud Calendar? Future bookings will stop syncing.')) return;
+    if (!await confirm('Disconnect iCloud Calendar? Future bookings will stop syncing.')) return;
     try {
       await calendarService.appleDisconnect();
       toast.success('iCloud Calendar disconnected');

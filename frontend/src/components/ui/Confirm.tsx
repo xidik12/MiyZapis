@@ -82,7 +82,8 @@ const ConfirmDialog: React.FC<ConfirmOptions & { onResolve: (ok: boolean) => voi
   );
 };
 
-export function confirm(options: ConfirmOptions = {}): Promise<boolean> {
+export function confirm(options: ConfirmOptions | string = {}): Promise<boolean> {
+  const opts: ConfirmOptions = typeof options === 'string' ? { message: options } : options;
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = ReactDOM.createRoot(host);
@@ -96,7 +97,74 @@ export function confirm(options: ConfirmOptions = {}): Promise<boolean> {
       }, 0);
     };
 
-    root.render(<ConfirmDialog {...options} onResolve={onResolve} />);
+    root.render(<ConfirmDialog {...opts} onResolve={onResolve} />);
+  });
+}
+
+// --- Styled text-input prompt (replaces window.prompt) ---------------------
+type PromptOptions = {
+  title?: string;
+  message?: string | React.ReactNode;
+  defaultValue?: string;
+  placeholder?: string;
+  confirmText?: string;
+  cancelText?: string;
+};
+
+const PromptDialog: React.FC<PromptOptions & { onResolve: (v: string | null) => void }> = ({
+  title = 'Enter a value',
+  message,
+  defaultValue = '',
+  placeholder = '',
+  confirmText = 'OK',
+  cancelText = 'Cancel',
+  onResolve,
+}) => {
+  const [value, setValue] = React.useState(defaultValue);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onResolve(null); };
+    window.addEventListener('keydown', onKey);
+    setTimeout(() => inputRef.current?.focus(), 0);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onResolve]);
+  return (
+    <div className="modal-overlay" role="dialog" aria-modal="true">
+      <div className="modal-content" style={{ width: '100%', maxWidth: 420 }}>
+        <div className="modal-header">
+          <h2 className="modal-title">{title}</h2>
+          <button aria-label="Close dialog" className="btn btn-ghost" onClick={() => onResolve(null)}><span aria-hidden>✕</span></button>
+        </div>
+        <div className="modal-body">
+          {message && <p style={{ marginBottom: 12 }}>{message}</p>}
+          <input
+            ref={inputRef}
+            className="input w-full"
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') onResolve(value); }}
+          />
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={() => onResolve(null)}>{cancelText}</button>
+          <button className="btn btn-primary text-white" onClick={() => onResolve(value)}>{confirmText}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export function promptInput(options: PromptOptions = {}): Promise<string | null> {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = ReactDOM.createRoot(host);
+  return new Promise((resolve) => {
+    const onResolve = (v: string | null) => {
+      resolve(v);
+      setTimeout(() => { root.unmount(); if (host.parentNode) host.parentNode.removeChild(host); }, 0);
+    };
+    root.render(<PromptDialog {...options} onResolve={onResolve} />);
   });
 }
 

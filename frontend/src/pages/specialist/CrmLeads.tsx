@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   crmService,
@@ -362,7 +363,7 @@ const CrmLeads: React.FC = () => {
   };
 
   const handleConvert = async (lead: Lead) => {
-    if (!confirm(t('crm.confirmConvert') || `Convert "${lead.name}" to a client? This will create a customer account.`)) return;
+    if (!await confirm(t('crm.confirmConvert') || `Convert "${lead.name}" to a client? This will create a customer account.`)) return;
     try {
       setActing(lead.id);
       await crmService.convertLead(lead.id);
@@ -376,7 +377,7 @@ const CrmLeads: React.FC = () => {
   };
 
   const handleDelete = async (lead: Lead) => {
-    if (!confirm(t('crm.confirmDeleteLead') || `Delete lead "${lead.name}"?`)) return;
+    if (!await confirm(t('crm.confirmDeleteLead') || `Delete lead "${lead.name}"?`)) return;
     try {
       setActing(lead.id);
       await crmService.deleteLead(lead.id);

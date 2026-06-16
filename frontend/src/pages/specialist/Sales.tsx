@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm, promptInput } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -257,11 +258,11 @@ const SpecialistSales: React.FC = () => {
   const handleSetOrderStatus = async (order: ProductOrder, status: OrderStatus) => {
     if (
       status === 'FULFILLED' &&
-      !confirm(t('store.confirmFulfil') || 'Mark this order fulfilled? Stock will be deducted.')
+      !await confirm(t('store.confirmFulfil') || 'Mark this order fulfilled? Stock will be deducted.')
     ) {
       return;
     }
-    if (status === 'CANCELLED' && !confirm(t('store.confirmCancel') || 'Cancel this order?')) {
+    if (status === 'CANCELLED' && !await confirm(t('store.confirmCancel') || 'Cancel this order?')) {
       return;
     }
     try {
@@ -316,9 +317,9 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleRedeem = async (card: GiftCard) => {
-    const input = prompt(
-      (t('sales.redeemPrompt') || 'Amount to redeem') + ` (${t('sales.balance') || 'Balance'}: ${num(card.balance)} ${card.currency})`
-    );
+    const input = await promptInput({
+      message: (t('sales.redeemPrompt') || 'Amount to redeem') + ` (${t('sales.balance') || 'Balance'}: ${num(card.balance)} ${card.currency})`,
+    });
     if (input === null) return;
     const amount = parseFloat(input);
     if (isNaN(amount) || amount <= 0) {
@@ -338,7 +339,7 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleCancelGiftCard = async (card: GiftCard) => {
-    if (!confirm(t('sales.confirmCancelGiftCard') || 'Cancel this gift card? Remaining balance will be voided.')) return;
+    if (!await confirm(t('sales.confirmCancelGiftCard') || 'Cancel this gift card? Remaining balance will be voided.')) return;
     try {
       setActing(card.id);
       await salesService.cancelGiftCard(card.id);
@@ -415,7 +416,7 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleDeletePackage = async (id: string) => {
-    if (!confirm(t('sales.confirmDeletePackage') || 'Delete this package definition?')) return;
+    if (!await confirm(t('sales.confirmDeletePackage') || 'Delete this package definition?')) return;
     try {
       setActing(id);
       await salesService.deletePackage(id);
@@ -450,7 +451,7 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleUseCredit = async (cp: CustomerPackage) => {
-    if (!confirm(t('sales.confirmUseCredit') || 'Use one credit from this package?')) return;
+    if (!await confirm(t('sales.confirmUseCredit') || 'Use one credit from this package?')) return;
     try {
       setActing(cp.id);
       await salesService.usePackageCredit(cp.id);
@@ -529,7 +530,7 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleDeletePlan = async (id: string) => {
-    if (!confirm(t('sales.confirmDeletePlan') || 'Delete this membership plan?')) return;
+    if (!await confirm(t('sales.confirmDeletePlan') || 'Delete this membership plan?')) return;
     try {
       setActing(id);
       await salesService.deletePlan(id);
@@ -564,7 +565,7 @@ const SpecialistSales: React.FC = () => {
   };
 
   const handleCancelMembership = async (m: CustomerMembership) => {
-    if (!confirm(t('sales.confirmCancelMembership') || 'Cancel this membership?')) return;
+    if (!await confirm(t('sales.confirmCancelMembership') || 'Cancel this membership?')) return;
     try {
       setActing(m.id);
       await salesService.cancelMembership(m.id);

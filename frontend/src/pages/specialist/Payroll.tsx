@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -342,7 +343,7 @@ const SpecialistPayroll: React.FC = () => {
   };
 
   const handleDelete = async (rec: PayrollRecord) => {
-    if (!confirm(t('payroll.confirmDelete') || 'Delete this draft record?')) return;
+    if (!await confirm(t('payroll.confirmDelete') || 'Delete this draft record?')) return;
     try {
       setBusyRecord(rec.id);
       await payrollService.deleteRecord(rec.id);

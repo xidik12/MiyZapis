@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -225,7 +226,7 @@ const SpecialistInventory: React.FC = () => {
 
   // Delete product
   const handleDelete = async (id: string) => {
-    if (!confirm(t('inventory.confirmDelete') || 'Are you sure you want to delete this product?')) {
+    if (!await confirm(t('inventory.confirmDelete') || 'Are you sure you want to delete this product?')) {
       return;
     }
 
