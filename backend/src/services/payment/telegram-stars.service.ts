@@ -23,25 +23,40 @@ import { specialistSubscriptionService } from './subscription.service';
 // ---------------------------------------------------------------------------
 
 const PAYLOAD_MONTHLY = 'sub:'; // recurring monthly → `sub:<specialist User.id>`
+const PAYLOAD_SIXMONTH = 'sub6:'; // one-time 6-month → `sub6:<specialist User.id>`
 const PAYLOAD_ANNUAL = 'subyr:'; // one-time annual → `subyr:<specialist User.id>`
 const SUBSCRIPTION_PERIOD_SECONDS = 2592000; // 30 days — the only value Telegram allows
-// Annual offer: pay for 12 months, get 18 months of access (12 paid + 4 bonus
-// + the 2-month free trial). See ANNUAL_ACCESS_MONTHS in subscription.service.
-export const ANNUAL_ACCESS_MONTHS = 18;
+// Prepaid bundles grant bonus months on top of what you pay for:
+//   6 months paid → 7 months access (+1 free)
+//   12 months paid → 15 months access (+3 free)
+// (The 2-month signup trial is separate — granted at registration.)
+export const SIXMONTH_ACCESS_MONTHS = 7;
+export const ANNUAL_ACCESS_MONTHS = 15;
 
+// Monthly ≈ $10 to the buyer. 500 Stars ≈ $9.99 in the iOS Stars bundle.
 function monthlyStars(): number {
   const n = Number(process.env.TELEGRAM_STARS_MONTHLY);
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 500;
 }
 
+function sixMonthStars(): number {
+  const n = Number(process.env.TELEGRAM_STARS_SIXMONTH);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : monthlyStars() * 6; // pay 6, get 7
+}
+
 function annualStars(): number {
   const n = Number(process.env.TELEGRAM_STARS_ANNUAL);
-  // Default: 12× the monthly price (you pay a year, you get 18 months).
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : monthlyStars() * 12;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : monthlyStars() * 12; // pay 12, get 15
 }
 
 export function starsPricing() {
-  return { monthly: monthlyStars(), annual: annualStars(), annualAccessMonths: ANNUAL_ACCESS_MONTHS };
+  return {
+    monthly: monthlyStars(),
+    sixMonth: sixMonthStars(),
+    annual: annualStars(),
+    sixMonthAccessMonths: SIXMONTH_ACCESS_MONTHS,
+    annualAccessMonths: ANNUAL_ACCESS_MONTHS,
+  };
 }
 
 export class TelegramStarsService {
@@ -78,16 +93,32 @@ export class TelegramStarsService {
     return link;
   }
 
-  /** One-time annual invoice (no auto-renew) → grants 18 months of access. */
+  /** One-time 6-month invoice (no auto-renew) → grants 7 months of access. */
+  async createSixMonthInvoiceLink(specialistUserId: string): Promise<string> {
+    const stars = sixMonthStars();
+    const link = await this.tg.createInvoiceLink({
+      title: `MiyZapis — 6 months (get ${SIXMONTH_ACCESS_MONTHS})`,
+      description: `Pay for 6 months, get ${SIXMONTH_ACCESS_MONTHS} (1 bonus month). One-time, no auto-renew.`,
+      payload: `${PAYLOAD_SIXMONTH}${specialistUserId}`,
+      provider_token: '',
+      currency: 'XTR',
+      prices: [{ label: `6 months (${SIXMONTH_ACCESS_MONTHS} months access)`, amount: stars }],
+    } as unknown as Parameters<Telegraf['telegram']['createInvoiceLink']>[0]);
+
+    logger.info('Telegram Stars 6-month invoice link created', { specialistUserId, stars });
+    return link;
+  }
+
+  /** One-time annual invoice (no auto-renew) → grants 15 months of access. */
   async createAnnualInvoiceLink(specialistUserId: string): Promise<string> {
     const stars = annualStars();
     const link = await this.tg.createInvoiceLink({
-      title: 'MiyZapis — 1 year (get 18 months)',
-      description: 'Pay for a year, get 18 months total (12 paid + 4 bonus + 2 free). One-time, no auto-renew.',
+      title: `MiyZapis — 1 year (get ${ANNUAL_ACCESS_MONTHS})`,
+      description: `Pay for a year, get ${ANNUAL_ACCESS_MONTHS} months (3 bonus months). One-time, no auto-renew.`,
       payload: `${PAYLOAD_ANNUAL}${specialistUserId}`,
       provider_token: '',
       currency: 'XTR',
-      prices: [{ label: '1 year (18 months access)', amount: stars }],
+      prices: [{ label: `1 year (${ANNUAL_ACCESS_MONTHS} months access)`, amount: stars }],
     } as unknown as Parameters<Telegraf['telegram']['createInvoiceLink']>[0]);
 
     logger.info('Telegram Stars annual invoice link created', { specialistUserId, stars });
@@ -120,9 +151,11 @@ export class TelegramStarsService {
    */
   registerHandlers(bot: Telegraf<any>): void {
     // 1) pre_checkout_query — must be answered within 10s, else payment fails.
-    const parsePayload = (payload: string): { kind: 'monthly' | 'annual'; userId: string } | null => {
-      if (payload.startsWith(PAYLOAD_MONTHLY)) return { kind: 'monthly', userId: payload.slice(PAYLOAD_MONTHLY.length) };
+    const parsePayload = (payload: string): { kind: 'monthly' | 'sixmonth' | 'annual'; userId: string } | null => {
+      // Check the longer 6-month prefix before the monthly prefix (both start with "sub").
+      if (payload.startsWith(PAYLOAD_SIXMONTH)) return { kind: 'sixmonth', userId: payload.slice(PAYLOAD_SIXMONTH.length) };
       if (payload.startsWith(PAYLOAD_ANNUAL)) return { kind: 'annual', userId: payload.slice(PAYLOAD_ANNUAL.length) };
+      if (payload.startsWith(PAYLOAD_MONTHLY)) return { kind: 'monthly', userId: payload.slice(PAYLOAD_MONTHLY.length) };
       return null;
     };
 
@@ -158,14 +191,16 @@ export class TelegramStarsService {
         const { kind, userId: specialistUserId } = parsed;
         const payerId = ctx.from?.id ? String(ctx.from.id) : undefined;
 
-        if (kind === 'annual') {
-          await specialistSubscriptionService.activateAnnualFromTelegram(specialistUserId, {
+        if (kind === 'annual' || kind === 'sixmonth') {
+          const months = kind === 'annual' ? ANNUAL_ACCESS_MONTHS : SIXMONTH_ACCESS_MONTHS;
+          await specialistSubscriptionService.activateFixedTermFromTelegram(specialistUserId, {
+            months,
             telegramChargeId: sp.telegram_payment_charge_id,
             telegramPayerId: payerId,
             amountStars: sp.total_amount,
           });
           await ctx.reply(
-            '✅ Annual plan active — 18 months of unlimited bookings with 0% per-booking fee. ' +
+            `✅ Plan active — ${months} months of unlimited bookings with 0% per-booking fee. ` +
               'No auto-renew; we will remind you before it ends.',
           );
         } else {

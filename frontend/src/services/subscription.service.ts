@@ -7,8 +7,10 @@ import { apiClient } from './api';
 
 export interface StarsPricing {
   monthly: number; // Stars / month (recurring)
+  sixMonth: number; // Stars one-time → sixMonthAccessMonths of access
   annual: number; // Stars one-time → annualAccessMonths of access
-  annualAccessMonths: number; // 18
+  sixMonthAccessMonths: number; // 7 (pay 6, +1 free)
+  annualAccessMonths: number; // 15 (pay 12, +3 free)
 }
 
 export interface SubscriptionStatus {
@@ -27,7 +29,7 @@ class SubscriptionService {
   }
 
   /** Returns a Telegram invoice link the specialist opens to pay with Stars. */
-  async createInvoice(plan: 'monthly' | 'annual'): Promise<string> {
+  async createInvoice(plan: 'monthly' | 'sixmonth' | 'annual'): Promise<string> {
     const res = await apiClient.post<{ invoiceLink: string }>(
       '/crypto-payments/telegram-stars/invoice',
       { plan },

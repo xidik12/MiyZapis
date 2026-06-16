@@ -281,16 +281,17 @@ export class SpecialistSubscriptionService {
   }
 
   /**
-   * Activate the one-time ANNUAL Telegram Stars plan → 18 months of access
-   * (12 paid + 4 bonus + 2 free trial). No auto-renew: nextBillingDate stays
-   * null so the Coinbase billing worker never touches it.
+   * Activate a one-time prepaid Telegram Stars bundle → `months` of access
+   * (e.g. 6-month bundle = 7 months, 1-year bundle = 15 months). No auto-renew:
+   * nextBillingDate stays null so the Coinbase billing worker never touches it.
    */
-  async activateAnnualFromTelegram(
+  async activateFixedTermFromTelegram(
     specialistId: string,
-    opts: { telegramChargeId: string; telegramPayerId?: string; amountStars?: number },
+    opts: { months: number; telegramChargeId: string; telegramPayerId?: string; amountStars?: number },
   ): Promise<void> {
     const now = new Date();
-    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 18, now.getDate());
+    const months = Number.isFinite(opts.months) && opts.months > 0 ? Math.floor(opts.months) : 12;
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
 
     await this.getSubscription(specialistId); // ensure a row exists
 
@@ -332,8 +333,9 @@ export class SpecialistSubscriptionService {
       });
     });
 
-    logger.info('Telegram Stars ANNUAL subscription activated', {
+    logger.info('Telegram Stars prepaid subscription activated', {
       specialistId,
+      months,
       telegramChargeId: opts.telegramChargeId,
       periodEnd,
     });

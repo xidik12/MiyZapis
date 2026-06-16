@@ -18,7 +18,9 @@ router.get('/telegram-stars/pricing', (_req: Request, res: Response) => {
 router.post('/telegram-stars/invoice', authenticateToken, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as unknown as AuthenticatedRequest).user!.id;
-    const plan = req.body?.plan === 'annual' ? 'annual' : 'monthly';
+    const raw = req.body?.plan;
+    const plan: 'monthly' | 'sixmonth' | 'annual' =
+      raw === 'annual' ? 'annual' : raw === 'sixmonth' || raw === '6month' ? 'sixmonth' : 'monthly';
     const specialist = await prisma.specialist.findUnique({ where: { userId }, select: { id: true } });
     if (!specialist) {
       res.status(403).json({ success: false, error: { message: 'Not a specialist account' } });
@@ -27,6 +29,8 @@ router.post('/telegram-stars/invoice', authenticateToken, async (req: Request, r
     const invoiceLink =
       plan === 'annual'
         ? await telegramStarsService.createAnnualInvoiceLink(userId)
+        : plan === 'sixmonth'
+        ? await telegramStarsService.createSixMonthInvoiceLink(userId)
         : await telegramStarsService.createSubscriptionInvoiceLink(userId);
     res.json({ success: true, data: { invoiceLink, plan } });
   } catch (e: unknown) {

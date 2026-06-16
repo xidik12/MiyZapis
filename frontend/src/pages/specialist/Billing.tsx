@@ -19,7 +19,7 @@ const Billing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [pricing, setPricing] = useState<StarsPricing | null>(null);
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
-  const [busy, setBusy] = useState<'monthly' | 'annual' | 'cancel' | null>(null);
+  const [busy, setBusy] = useState<'monthly' | 'sixmonth' | 'annual' | 'cancel' | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,7 +41,7 @@ const Billing: React.FC = () => {
     load();
   }, [load]);
 
-  const subscribe = async (plan: 'monthly' | 'annual') => {
+  const subscribe = async (plan: 'monthly' | 'sixmonth' | 'annual') => {
     setBusy(plan);
     try {
       const link = await subscriptionService.createInvoice(plan);
@@ -142,7 +142,7 @@ const Billing: React.FC = () => {
 
       {/* Plan cards */}
       {pricing && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Monthly */}
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 flex flex-col">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('billing.monthly') || 'Monthly'}</h3>
@@ -150,6 +150,7 @@ const Billing: React.FC = () => {
               <Stars n={pricing.monthly} />
               <span className="text-sm text-gray-500 dark:text-gray-400">/ {t('billing.month') || 'month'}</span>
             </div>
+            <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">≈ $10 / {t('billing.month') || 'month'}</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300 flex-1">
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featUnlimited') || 'Unlimited bookings'}</li>
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featNoFee') || '0% per-booking fee'}</li>
@@ -162,6 +163,30 @@ const Billing: React.FC = () => {
             >
               <StarIcon className="w-5 h-5" active />
               {busy === 'monthly' ? (t('billing.opening') || 'Opening…') : (t('billing.subscribeStars') || 'Subscribe with Telegram Stars')}
+            </button>
+          </div>
+
+          {/* 6 months — +1 free */}
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('billing.sixMonth') || '6 months'}</h3>
+            <div className="mt-2 flex items-baseline gap-2">
+              <Stars n={pricing.sixMonth} />
+            </div>
+            <p className="mt-1 text-sm font-semibold text-primary-600 dark:text-primary-400">
+              {(t('billing.sixMonthDeal') || 'Pay for 6 months, get {{months}} months').replace('{{months}}', String(pricing.sixMonthAccessMonths))}
+            </p>
+            <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300 flex-1">
+              <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featAll') || 'Everything in Monthly'}</li>
+              <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featBonus6') || '+1 free month = 7 total'}</li>
+              <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featOneTime') || 'One-time payment, no auto-renew'}</li>
+            </ul>
+            <button
+              onClick={() => subscribe('sixmonth')}
+              disabled={busy !== null}
+              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50"
+            >
+              <StarIcon className="w-5 h-5" active />
+              {busy === 'sixmonth' ? (t('billing.opening') || 'Opening…') : ((t('billing.getMonths') || 'Get {{months}} months').replace('{{months}}', String(pricing.sixMonthAccessMonths)))}
             </button>
           </div>
 
@@ -180,7 +205,7 @@ const Billing: React.FC = () => {
             </p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300 flex-1">
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featAll') || 'Everything in Monthly'}</li>
-              <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featBonus') || '+4 bonus months + 2 free = 18 total'}</li>
+              <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featBonus') || '+3 free months = 15 total'}</li>
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featOneTime') || 'One-time payment, no auto-renew'}</li>
             </ul>
             <button
@@ -189,7 +214,7 @@ const Billing: React.FC = () => {
               className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-amber-950 bg-amber-400 hover:bg-amber-500 transition-colors disabled:opacity-50"
             >
               <StarIcon className="w-5 h-5" active />
-              {busy === 'annual' ? (t('billing.opening') || 'Opening…') : (t('billing.getAnnual') || 'Get 18 months')}
+              {busy === 'annual' ? (t('billing.opening') || 'Opening…') : ((t('billing.getMonths') || 'Get {{months}} months').replace('{{months}}', String(pricing.annualAccessMonths)))}
             </button>
           </div>
         </div>
