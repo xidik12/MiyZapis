@@ -41,6 +41,22 @@ const Billing: React.FC = () => {
     load();
   }, [load]);
 
+  // Re-fetch status when the tab regains focus — payment happens in Telegram,
+  // so when the specialist comes back we want the new ACTIVE status to show.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible' && user?.id) {
+        subscriptionService.getStatus(user.id).then(setStatus).catch(() => undefined);
+      }
+    };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [user?.id]);
+
   const subscribe = async (plan: 'monthly' | 'sixmonth' | 'annual') => {
     setBusy(plan);
     try {

@@ -197,6 +197,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: BellIcon,
   },
   {
+    name: 'Billing',
+    nameUk: 'Підписка',
+    href: '/specialist/billing',
+    icon: CreditCardIcon,
+    iconActive: CreditCardIcon,
+  },
+  {
     name: 'Settings',
     nameUk: 'Налаштування',
     href: '/specialist/settings',
