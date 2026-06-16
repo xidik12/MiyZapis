@@ -890,6 +890,7 @@ const en: Record<string, string> = {
   'billing.trialActive': 'Your 2-month free trial is active',
   'billing.trialEnds': 'ends',
   'billing.trialOver': 'Your free trial has ended — choose a plan to keep 0% booking fees.',
+  'billing.trialStackNote': 'Lock in a 6-month or 1-year deal now — your remaining free months are added on top.',
   'billing.trialNote': 'Everyone starts with 2 months free. After that a subscription keeps unlimited bookings at 0% per-booking fee; otherwise pay-per-use (20₴ per booking) applies.',
   'billing.monthly': 'Monthly',
   'billing.month': 'month',

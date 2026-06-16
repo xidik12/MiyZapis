@@ -291,13 +291,29 @@ export class SpecialistSubscriptionService {
   ): Promise<void> {
     const now = new Date();
     const months = Number.isFinite(opts.months) && opts.months > 0 ? Math.floor(opts.months) : 12;
-    const periodEnd = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+    let periodEnd = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
 
     await this.getSubscription(specialistId); // ensure a row exists
 
     await prisma.$transaction(async (tx) => {
       const subscription = await tx.specialistSubscription.findFirst({ where: { specialistId } });
       if (!subscription) return;
+
+      // Stack the prepaid term on top of what they already have: the later of
+      // now, the remaining free trial, and any existing paid period — so buying
+      // a 6-month/1-year deal DURING the trial keeps the 2 free months.
+      const user = await tx.user.findUnique({
+        where: { id: specialistId },
+        select: { isInTrial: true, trialEndDate: true },
+      });
+      let base = now;
+      if (user?.isInTrial && user.trialEndDate && user.trialEndDate.getTime() > base.getTime()) {
+        base = user.trialEndDate;
+      }
+      if (subscription.currentPeriodEnd && subscription.currentPeriodEnd.getTime() > base.getTime()) {
+        base = subscription.currentPeriodEnd;
+      }
+      periodEnd = new Date(base.getFullYear(), base.getMonth() + months, base.getDate());
 
       await tx.specialistSubscription.update({
         where: { id: subscription.id },

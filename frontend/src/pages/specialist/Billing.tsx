@@ -153,6 +153,11 @@ const Billing: React.FC = () => {
           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
             {t('billing.trialNote') || 'Everyone starts with 2 months free. After that a subscription keeps unlimited bookings at 0% per-booking fee; otherwise pay-per-use (20₴ per booking) applies.'}
           </p>
+          {inTrial && (
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mt-2">
+              💡 {t('billing.trialStackNote') || 'Lock in a 6-month or 1-year deal now — your remaining free months are added on top.'}
+            </p>
+          )}
         </div>
       )}
 
