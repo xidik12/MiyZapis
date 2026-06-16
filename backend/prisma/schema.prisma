@@ -1751,9 +1751,13 @@ model SpecialistSubscription {
 
   // Telegram Stars recurring subscription: last successful charge id (used to
   // cancel auto-renewal via editUserStarSubscription) + the paying user's tg id.
-  provider          String? // 'TELEGRAM_STARS' | 'COINBASE' | null
+  provider          String? // 'TELEGRAM_STARS' | 'DODO' | 'COINBASE' | null
   telegramChargeId  String?
   telegramPayerId   String? // Telegram user id that paid (for cancel/refund)
+
+  // Dodo Payments (card-on-file subscription with free trial → auto-charge)
+  dodoSubscriptionId String?
+  dodoCustomerId     String?
 
   // Billing cycle
   currentPeriodStart DateTime?

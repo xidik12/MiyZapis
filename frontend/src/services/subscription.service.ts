@@ -11,6 +11,8 @@ export interface StarsPricing {
   annual: number; // Stars one-time → annualAccessMonths of access
   sixMonthAccessMonths: number; // 7 (pay 6, +1 free)
   annualAccessMonths: number; // 15 (pay 12, +3 free)
+  cardEnabled?: boolean; // Dodo card subscription available
+  cardTrialDays?: number; // free trial length for the card plan (e.g. 60)
 }
 
 export interface SubscriptionStatus {
@@ -42,6 +44,22 @@ class SubscriptionService {
 
   async cancel(): Promise<void> {
     const res = await apiClient.post('/crypto-payments/telegram-stars/cancel', {});
+    if (!res.success) throw new Error(res.error?.message || 'Failed to cancel');
+  }
+
+  // --- Dodo card subscription (2-month free trial → auto-charge) ------------
+
+  /** Returns a Dodo hosted-checkout URL to redirect the specialist to. */
+  async createCardCheckout(): Promise<string> {
+    const res = await apiClient.post<{ checkoutUrl: string }>('/crypto-payments/dodo/checkout', {});
+    if (!res.success || !res.data?.checkoutUrl) {
+      throw new Error(res.error?.message || 'Failed to start checkout');
+    }
+    return res.data.checkoutUrl;
+  }
+
+  async cancelCard(): Promise<void> {
+    const res = await apiClient.post('/crypto-payments/dodo/cancel', {});
     if (!res.success) throw new Error(res.error?.message || 'Failed to cancel');
   }
 

@@ -78,6 +78,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^3.3.1",
     "date-fns-tz": "^3.2.0",
+    "dodopayments": "^2.38.1",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
