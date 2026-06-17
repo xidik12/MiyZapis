@@ -24,6 +24,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { store, persistor } from './store';
 import { environment } from './config/environment';
+import { TelegramProvider } from './providers/TelegramProvider';
 import './styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -157,6 +158,7 @@ const initializeApp = () => {
       <ErrorBoundary>
         <Provider store={store}>
           <PersistGate loading={<LoadingComponent />} persistor={persistor}>
+            <TelegramProvider>
             <BrowserRouter
               future={{
                 v7_startTransition: true,
@@ -179,6 +181,7 @@ const initializeApp = () => {
                   style={{ zIndex: 9999 }}
                 />
             </BrowserRouter>
+            </TelegramProvider>
           </PersistGate>
         </Provider>
       </ErrorBoundary>
