@@ -180,11 +180,16 @@ function App() {
   // Telegram Mini App: hardware BackButton navigates within the app.
   useTelegramBackButton();
 
-  // Initialize authentication on app start
+  // Initialize authentication on app start.
+  // Always reconcile the persisted user with /auth/me when a token exists —
+  // not just when logged-out. redux-persist rehydrates isAuthenticated=true for
+  // returning users, so gating on !isAuthenticated meant the stored user object
+  // (which can be missing newer server-side fields like telegramId) was never
+  // refreshed, leaving stale UI until the next full re-login.
   useEffect(() => {
     const initializeAuth = async () => {
       const token = getAuthToken();
-      if (token && !isAuthenticated) {
+      if (token) {
         try {
           await dispatch(getCurrentUser()).unwrap();
         } catch (error) {
@@ -196,7 +201,10 @@ function App() {
     };
 
     initializeAuth();
-  }, [dispatch, isAuthenticated]);
+    // Run once on mount; getCurrentUser keeps isAuthenticated true so we don't
+    // want it in deps (would risk a refetch loop).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
 
   return (
     <ThemeProvider>
