@@ -7,6 +7,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAppDispatch } from '@/hooks/redux';
 import { logout } from '@/store/slices/authSlice';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, ChevronDownIcon } from '@/components/icons';
+import { haptic } from '@/lib/telegram';
 
 type IconType = React.ComponentType<{ className?: string; active?: boolean }>;
 export interface TabItem { nameKey: string; fallback: string; href: string; icon: IconType; }
@@ -65,6 +66,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
     return (
       <Link
         to={item.href}
+        onClick={() => haptic.selection()}
         className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full cursor-pointer select-none"
       >
         {/* Fixed-size icon box. The glyph never swaps (regular variant always) so
@@ -102,7 +104,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
               press no longer shifts it right / overlaps the tabs. */}
           <div className="absolute left-1/2 -translate-x-1/2 -top-4">
             <motion.button
-              onClick={() => setOpen(true)}
+              onClick={() => { haptic.impact('light'); setOpen(true); }}
               whileTap={{ scale: 0.9 }}
               aria-label={t('dashboard.nav.more') || 'Menu'}
               className="relative h-14 w-14 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-[0_8px_20px_-4px_rgba(37,99,235,0.55)] ring-4 ring-white dark:ring-gray-950 flex items-center justify-center cursor-pointer"
@@ -173,7 +175,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                           >
                             <Link
                               to={item.href}
-                              onClick={() => setOpen(false)}
+                              onClick={() => { haptic.selection(); setOpen(false); }}
                               className={`flex items-center gap-3 p-3 rounded-2xl border transition-colors cursor-pointer ${
                                 active
                                   ? 'border-primary-200 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-500/10'

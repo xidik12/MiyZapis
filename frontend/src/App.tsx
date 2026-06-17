@@ -1,5 +1,6 @@
 import React, { useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useTelegramBackButton } from './lib/telegram';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
 import { getAuthToken } from './services/api';
@@ -175,6 +176,9 @@ function App() {
 
   // Update page titles based on routes
   usePageTitle();
+
+  // Telegram Mini App: hardware BackButton navigates within the app.
+  useTelegramBackButton();
 
   // Initialize authentication on app start
   useEffect(() => {

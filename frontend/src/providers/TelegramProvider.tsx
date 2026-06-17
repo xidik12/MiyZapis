@@ -3,6 +3,8 @@ import { useAppDispatch } from '@/hooks/redux';
 import { setTokens, setUser } from '@/store/slices/authSlice';
 import { setAuthTokens } from '@/services/api';
 import { environment } from '@/config/environment';
+import { toast } from 'react-toastify';
+import { haptic, isTelegram } from '@/lib/telegram';
 
 // ---------------------------------------------------------------------------
 // TelegramProvider — makes the main web app run as the bot's Telegram Mini App.
@@ -82,6 +84,20 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
+
+  // Global haptics: fire a notification buzz whenever a success/error/warning
+  // toast appears — covers most "key actions" (saved, booked, paid, failed)
+  // without touching every handler. Telegram-only.
+  useEffect(() => {
+    if (!isTelegram()) return;
+    const unsub = toast.onChange((payload) => {
+      if (payload.status !== 'added') return;
+      if (payload.type === 'success') haptic.notify('success');
+      else if (payload.type === 'error') haptic.notify('error');
+      else if (payload.type === 'warning') haptic.notify('warning');
+    });
+    return () => { try { unsub(); } catch { /* noop */ } };
+  }, []);
 
   if (!ready) {
     return (
