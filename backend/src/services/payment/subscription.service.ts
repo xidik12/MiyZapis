@@ -358,62 +358,6 @@ export class SpecialistSubscriptionService {
   }
 
   /**
-   * Activate / renew a Dodo Payments card subscription (free-trial → auto-charge).
-   * Called from the Dodo webhook. periodEnd comes from Dodo's next_billing_date;
-   * during the trial that's the trial-end date. nextBillingDate is set so OUR
-   * Coinbase worker still ignores it (it skips provider=DODO).
-   */
-  async activateFromDodo(
-    specialistId: string,
-    opts: { dodoSubscriptionId?: string; dodoCustomerId?: string; periodEnd?: Date },
-  ): Promise<void> {
-    const now = new Date();
-    const periodEnd =
-      opts.periodEnd && !Number.isNaN(opts.periodEnd.getTime())
-        ? opts.periodEnd
-        : new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-
-    await this.getSubscription(specialistId);
-
-    await prisma.$transaction(async (tx) => {
-      const subscription = await tx.specialistSubscription.findFirst({ where: { specialistId } });
-      if (!subscription) return;
-      await tx.specialistSubscription.update({
-        where: { id: subscription.id },
-        data: {
-          planType: 'MONTHLY_SUBSCRIPTION',
-          status: 'ACTIVE',
-          provider: 'DODO',
-          dodoSubscriptionId: opts.dodoSubscriptionId ?? subscription.dodoSubscriptionId,
-          dodoCustomerId: opts.dodoCustomerId ?? subscription.dodoCustomerId,
-          monthlyRate: this.PLANS.MONTHLY_SUBSCRIPTION.monthlyRate,
-          transactionFee: this.PLANS.MONTHLY_SUBSCRIPTION.transactionFee,
-          currency: this.PLANS.MONTHLY_SUBSCRIPTION.currency,
-          pendingPlanType: null,
-          planChangeEffectiveDate: null,
-          currentPeriodStart: now,
-          currentPeriodEnd: periodEnd,
-          nextBillingDate: periodEnd,
-          currentMonthTransactions: 0,
-          currentMonthFees: 0,
-          paymentFailures: 0,
-          lastPaymentDate: now,
-        },
-      });
-      await tx.user.update({
-        where: { id: specialistId },
-        data: {
-          subscriptionStatus: 'MONTHLY_SUBSCRIPTION',
-          subscriptionEffectiveDate: now,
-          subscriptionValidUntil: periodEnd,
-        },
-      });
-    });
-
-    logger.info('Dodo subscription activated', { specialistId, periodEnd });
-  }
-
-  /**
    * Downgrade a provider subscription back to PAY_PER_USE (on cancel/expire).
    * Guarded by provider so we never clobber a different active provider.
    */
@@ -602,9 +546,9 @@ export class SpecialistSubscriptionService {
         nextBillingDate: {
           lte: new Date(),
         },
-        // Telegram Stars + Dodo subscriptions renew via their own provider —
+        // Telegram Stars subscriptions renew via their own provider —
         // never bill them through the Coinbase worker.
-        provider: { notIn: ['TELEGRAM_STARS', 'DODO'] },
+        provider: { notIn: ['TELEGRAM_STARS'] },
       },
       include: {
         specialist: {

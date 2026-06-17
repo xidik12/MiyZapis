@@ -5,82 +5,18 @@ import { validateRequest } from '@/middleware/validation';
 import { prisma } from '@/config/database';
 import { AuthenticatedRequest } from '@/types';
 import { telegramStarsService, starsPricing } from '@/services/payment/telegram-stars.service';
-import { dodoService } from '@/services/payment/dodo.service';
-import { logger as appLogger } from '@/utils/logger';
 
 const router = express.Router();
 
 // --- Telegram Stars subscription (specialists) ---------------------------
-// GET pricing (public) — stars for monthly + annual + whether card (Dodo) is on.
+// GET pricing (public) — stars for monthly + 6-month + annual plans.
 router.get('/telegram-stars/pricing', (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
       ...starsPricing(),
-      cardEnabled: dodoService.isConfigured(),
-      cardTrialDays: dodoService.trialDays(),
     },
   });
-});
-
-// --- Dodo Payments card subscription (2-month free trial → auto-charge) ---
-// POST /dodo/checkout → returns a hosted-checkout URL to redirect the specialist to.
-router.post('/dodo/checkout', authenticateToken, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as unknown as AuthenticatedRequest).user!.id;
-    if (!dodoService.isConfigured()) {
-      res.status(503).json({ success: false, error: { message: 'Card payments are not available yet' } });
-      return;
-    }
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, firstName: true, lastName: true, specialist: { select: { id: true } } },
-    });
-    if (!user?.specialist) {
-      res.status(403).json({ success: false, error: { message: 'Not a specialist account' } });
-      return;
-    }
-    const checkoutUrl = await dodoService.createTrialCheckout({
-      id: userId,
-      email: user.email,
-      name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
-    });
-    res.json({ success: true, data: { checkoutUrl } });
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Failed to start checkout';
-    res.status(500).json({ success: false, error: { message: msg } });
-  }
-});
-
-// POST /dodo/cancel → cancel at period end (stays active until then)
-router.post('/dodo/cancel', authenticateToken, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as unknown as AuthenticatedRequest).user!.id;
-    await dodoService.cancelSubscription(userId);
-    res.json({ success: true, data: { ok: true } });
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Failed to cancel';
-    res.status(400).json({ success: false, error: { message: msg } });
-  }
-});
-
-// POST /webhooks/dodo → Standard Webhooks; raw body preserved by server.ts for
-// any path containing "/webhooks/". Verify signature, then apply the event.
-router.post('/webhooks/dodo', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const rawBody = (req as Request & { rawBody?: string }).rawBody || JSON.stringify(req.body);
-    const event = dodoService.verifyAndParse(rawBody, {
-      'webhook-id': req.headers['webhook-id'] as string,
-      'webhook-signature': req.headers['webhook-signature'] as string,
-      'webhook-timestamp': req.headers['webhook-timestamp'] as string,
-    });
-    // Ack fast, then process (Dodo retries on non-2xx).
-    res.json({ received: true });
-    await dodoService.handleEvent(event);
-  } catch (e: unknown) {
-    appLogger.error('Dodo webhook error:', e);
-    if (!res.headersSent) res.status(401).json({ error: 'Invalid signature' });
-  }
 });
 
 // POST /telegram-stars/invoice { plan: 'monthly' | 'annual' } → invoice link

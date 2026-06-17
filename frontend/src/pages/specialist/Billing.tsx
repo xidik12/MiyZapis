@@ -10,7 +10,7 @@ import {
 import { PageLoader } from '@/components/ui';
 import { HelpTip } from '@/components/common/HelpTip';
 import { toast } from 'react-toastify';
-import { CheckCircleIcon, StarIcon, RocketLaunchIcon, CreditCardIcon } from '@/components/icons';
+import { CheckCircleIcon, StarIcon, RocketLaunchIcon } from '@/components/icons';
 import { confirm } from '@/components/ui/Confirm';
 
 const Billing: React.FC = () => {
@@ -20,7 +20,7 @@ const Billing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [pricing, setPricing] = useState<StarsPricing | null>(null);
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
-  const [busy, setBusy] = useState<'monthly' | 'sixmonth' | 'annual' | 'card' | 'cancel' | null>(null);
+  const [busy, setBusy] = useState<'monthly' | 'sixmonth' | 'annual' | 'cancel' | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,17 +71,6 @@ const Billing: React.FC = () => {
     }
   };
 
-  const startCard = async () => {
-    setBusy('card');
-    try {
-      const url = await subscriptionService.createCardCheckout();
-      window.location.href = url; // redirect to Dodo hosted checkout
-    } catch (err) {
-      toast.error((err as Error).message || t('billing.invoiceError') || 'Could not start checkout');
-      setBusy(null);
-    }
-  };
-
   const cancel = async () => {
     const ok = await confirm({
       title: t('billing.cancelTitle') || 'Turn off auto-renewal?',
@@ -93,8 +82,7 @@ const Billing: React.FC = () => {
     if (!ok) return;
     setBusy('cancel');
     try {
-      if (status?.provider === 'DODO') await subscriptionService.cancelCard();
-      else await subscriptionService.cancel();
+      await subscriptionService.cancel();
       toast.success(t('billing.cancelled') || 'Auto-renewal turned off');
       await load();
     } catch (err) {
@@ -178,46 +166,6 @@ const Billing: React.FC = () => {
               💡 {t('billing.trialStackNote') || 'Lock in a 6-month or 1-year deal now — your remaining free months are added on top.'}
             </p>
           )}
-        </div>
-      )}
-
-      {/* Card trial — the recommended "2 months free → auto-charge" path */}
-      {!isSubscribed && pricing?.cardEnabled && (
-        <div className="rounded-2xl border-2 border-primary-300 dark:border-primary-500/40 bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/15 dark:to-gray-900 p-5 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <CreditCardIcon className="w-6 h-6 text-primary-600 dark:text-primary-400 flex-shrink-0" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('billing.cardTitle') || 'Start free — card on file'}
-                </h3>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary-600 text-white">
-                  {t('billing.recommended') || 'Recommended'}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                {(t('billing.cardSubtitle') || '{{months}} months free, then ~$10/month. Renews automatically — cancel anytime before it ends.')
-                  .replace('{{months}}', String(Math.round((pricing.cardTrialDays ?? 60) / 30)))}
-              </p>
-            </div>
-            <button
-              onClick={startCard}
-              disabled={busy !== null}
-              className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50 flex-shrink-0 w-full sm:w-auto"
-            >
-              <CreditCardIcon className="w-5 h-5" />
-              {busy === 'card' ? (t('billing.opening') || 'Opening…') : (t('billing.startFreeTrial') || 'Start 2 months free')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Divider before the Telegram Stars prepaid options */}
-      {!isSubscribed && pricing?.cardEnabled && (
-        <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
-          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-          {t('billing.orPayStars') || 'or prepay with Telegram Stars'}
-          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
         </div>
       )}
 

@@ -54,13 +54,6 @@ const envSchema = z.object({
   WAYFORPAY_MERCHANT_DOMAIN: z.string().optional(),
   WAYFORPAY_MODE: z.string().default('test'), // 'test' or 'live'
 
-  // Dodo Payments (card subscriptions w/ free trial; merchant of record)
-  DODO_PAYMENTS_API_KEY: z.string().optional(),
-  DODO_PAYMENTS_ENVIRONMENT: z.string().default('test_mode'), // 'test_mode' | 'live_mode'
-  DODO_PAYMENTS_WEBHOOK_KEY: z.string().optional(),
-  DODO_PRODUCT_MONTHLY: z.string().optional(), // Dodo product id for the monthly plan
-  DODO_ENABLED: z.string().default('true'), // set 'false' to hide the card option without losing keys
-
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
@@ -215,15 +208,6 @@ export const config = {
     baseUrl: env.WAYFORPAY_MODE === 'live'
       ? 'https://api.wayforpay.com/api'
       : 'https://secure.wayforpay.com/pay',
-  },
-
-  // Dodo Payments
-  dodo: {
-    apiKey: env.DODO_PAYMENTS_API_KEY,
-    environment: env.DODO_PAYMENTS_ENVIRONMENT, // 'test_mode' | 'live_mode'
-    webhookKey: env.DODO_PAYMENTS_WEBHOOK_KEY,
-    productMonthly: env.DODO_PRODUCT_MONTHLY,
-    enabled: env.DODO_ENABLED !== 'false', // off-switch that keeps the keys
   },
 
   // Telegram
