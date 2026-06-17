@@ -12,6 +12,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { apiClient } from '@/services/api';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
+import TelegramMiniAppLogin from '@/components/auth/TelegramMiniAppLogin';
+import { isTelegram } from '@/lib/telegram';
 
 interface LoginFormData {
   email: string;
@@ -326,19 +328,31 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className="mt-6 space-y-3">
-              {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
-                <EnhancedGoogleSignIn
+              {isTelegram() ? (
+                /* Inside Telegram, Google OAuth and the Login Widget can't run
+                   in the webview — use one-tap initData auth instead. */
+                <TelegramMiniAppLogin
                   onSuccess={handleSocialLoginSuccess}
                   onError={handleSocialLoginError}
                   disabled={isLoading}
                 />
-              )}
+              ) : (
+                <>
+                  {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+                    <EnhancedGoogleSignIn
+                      onSuccess={handleSocialLoginSuccess}
+                      onError={handleSocialLoginError}
+                      disabled={isLoading}
+                    />
+                  )}
 
-              <TelegramLogin
-                onSuccess={handleSocialLoginSuccess}
-                onError={handleSocialLoginError}
-                disabled={isLoading}
-              />
+                  <TelegramLogin
+                    onSuccess={handleSocialLoginSuccess}
+                    onError={handleSocialLoginError}
+                    disabled={isLoading}
+                  />
+                </>
+              )}
             </div>
           </div>
         )}

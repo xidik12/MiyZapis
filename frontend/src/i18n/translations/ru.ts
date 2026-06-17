@@ -3086,6 +3086,8 @@ const ru: Record<string, string> = {
   'telegram.link.error': 'Не удалось привязать Telegram',
   'telegram.login.title': 'Войти через Telegram',
   'telegram.login.subtitle': 'Быстрая и безопасная авторизация',
+  'telegram.login.continueWith': 'Продолжить через Telegram',
+  'telegram.login.failed': 'Не удалось авторизоваться через Telegram',
   'auth.google.signIn': 'Войти через Google',
   'auth.google.signingIn': 'Вход...',
   'auth.google.error': 'Ошибка входа через Google',

@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
+import TelegramMiniAppLogin from '@/components/auth/TelegramMiniAppLogin';
+import { isTelegram } from '@/lib/telegram';
 import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 
 interface RegisterFormData {
@@ -176,17 +178,29 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <EnhancedGoogleSignIn
-              onSuccess={handleSocialLoginSuccess}
-              onError={handleSocialLoginError}
-              disabled={isLoading}
-            />
-            
-            <TelegramLogin
-              onSuccess={handleSocialLoginSuccess}
-              onError={handleSocialLoginError}
-              disabled={isLoading}
-            />
+            {isTelegram() ? (
+              /* Inside Telegram, Google OAuth and the Login Widget can't run in
+                 the webview — use one-tap initData auth instead. */
+              <TelegramMiniAppLogin
+                onSuccess={handleSocialLoginSuccess}
+                onError={handleSocialLoginError}
+                disabled={isLoading}
+              />
+            ) : (
+              <>
+                <EnhancedGoogleSignIn
+                  onSuccess={handleSocialLoginSuccess}
+                  onError={handleSocialLoginError}
+                  disabled={isLoading}
+                />
+
+                <TelegramLogin
+                  onSuccess={handleSocialLoginSuccess}
+                  onError={handleSocialLoginError}
+                  disabled={isLoading}
+                />
+              </>
+            )}
           </div>
 
           <div className="relative">

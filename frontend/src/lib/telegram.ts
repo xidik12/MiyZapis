@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { environment } from '@/config/environment';
 
 // ---------------------------------------------------------------------------
 // Telegram Mini App native-feel helpers: haptics + hardware BackButton.
@@ -11,6 +12,36 @@ export const tgWebApp = (): any =>
   typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : undefined;
 
 export const isTelegram = (): boolean => Boolean(tgWebApp()?.initData);
+
+export interface TgWebAppTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+/**
+ * Authenticate the current Telegram Mini App user by validating the signed
+ * initData against the backend. Returns tokens on success, null otherwise.
+ * Google OAuth can't run inside Telegram's webview, so this is the in-app
+ * login path. Shared by TelegramProvider (auto-auth on boot) and the
+ * "Continue with Telegram" button on the login/register pages.
+ */
+export async function authWithTelegramWebApp(): Promise<TgWebAppTokens | null> {
+  const wa = tgWebApp();
+  if (!wa?.initData) return null;
+  const res = await fetch(`${environment.API_URL}/auth-enhanced/telegram/webapp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ initData: wa.initData }),
+  });
+  const data = await res.json();
+  if (data?.success && data?.data?.tokens?.accessToken) {
+    return {
+      accessToken: data.data.tokens.accessToken,
+      refreshToken: data.data.tokens.refreshToken,
+    };
+  }
+  return null;
+}
 
 export const haptic = {
   impact(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'light') {

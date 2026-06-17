@@ -3086,6 +3086,8 @@ const uk: Record<string, string> = {
   'telegram.link.error': 'Не вдалося прив\'язати Telegram',
   'telegram.login.title': 'Увійти через Telegram',
   'telegram.login.subtitle': 'Швидка та безпечна авторизація',
+  'telegram.login.continueWith': 'Продовжити через Telegram',
+  'telegram.login.failed': 'Не вдалося авторизуватися через Telegram',
   'auth.google.signIn': 'Увійти через Google',
   'auth.google.signingIn': 'Вхід...',
   'auth.google.error': 'Помилка входу через Google',

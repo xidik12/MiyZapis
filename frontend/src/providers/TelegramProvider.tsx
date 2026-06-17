@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { setTokens, getCurrentUser } from '@/store/slices/authSlice';
 import { setAuthTokens } from '@/services/api';
-import { environment } from '@/config/environment';
 import { toast } from 'react-toastify';
-import { haptic, isTelegram } from '@/lib/telegram';
+import { haptic, isTelegram, authWithTelegramWebApp } from '@/lib/telegram';
 
 // ---------------------------------------------------------------------------
 // TelegramProvider — makes the main web app run as the bot's Telegram Mini App.
@@ -61,16 +60,10 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${environment.API_URL}/auth-enhanced/telegram/webapp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ initData: wa.initData }),
-        });
-        const data = await res.json();
-        if (!cancelled && data?.success && data?.data?.tokens?.accessToken) {
-          const { tokens } = data.data;
-          setAuthTokens({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
-          dispatch(setTokens({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }));
+        const tokens = await authWithTelegramWebApp();
+        if (!cancelled && tokens) {
+          setAuthTokens(tokens);
+          dispatch(setTokens(tokens));
           // Load the CANONICAL user via /auth/me (correct lowercase userType,
           // matching the rest of the app) — the webapp endpoint returns an
           // uppercase userType that breaks role redirects.

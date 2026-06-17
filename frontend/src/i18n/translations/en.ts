@@ -3086,6 +3086,8 @@ const en: Record<string, string> = {
   'telegram.link.error': 'Failed to link Telegram',
   'telegram.login.title': 'Sign in with Telegram',
   'telegram.login.subtitle': 'Quick and secure authentication',
+  'telegram.login.continueWith': 'Continue with Telegram',
+  'telegram.login.failed': 'Telegram authentication failed',
   'auth.google.signIn': 'Sign in with Google',
   'auth.google.signingIn': 'Signing in...',
   'auth.google.error': 'Google sign-in failed',
