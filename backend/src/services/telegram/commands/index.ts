@@ -243,7 +243,7 @@ export async function handleLinkCode(ctx: BotContext, code: string) {
     });
 
     if (existingUser) {
-      if (existingUser.email?.match(/^telegram_\d+@temp\.com$/)) {
+      if (existingUser.email?.match(/^telegram_\d+@(temp|miyzapis)\.com$/)) {
         await prisma.user.update({
           where: { id: existingUser.id },
           data: { telegramId: null }

@@ -198,8 +198,10 @@ if (bot) {
       });
 
       if (existingUser) {
-        // If the existing account is a bot-created temp account, auto-unlink it
-        if (existingUser.email?.match(/^telegram_\d+@temp\.com$/)) {
+        // If the existing account is an auto-created placeholder (bot temp
+        // account OR mini-app auto-auth account), auto-unlink it so the user
+        // can attach this Telegram to their real account.
+        if (existingUser.email?.match(/^telegram_\d+@(temp|miyzapis)\.com$/)) {
           await prisma.user.update({
             where: { id: existingUser.id },
             data: { telegramId: null }

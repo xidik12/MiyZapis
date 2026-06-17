@@ -391,13 +391,23 @@ router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (re
     });
 
     if (existingTelegramUser) {
-      return res.status(409).json(
-        createErrorResponse(
-          ErrorCodes.DUPLICATE_RESOURCE,
-          'This Telegram account is already linked to another user',
-          req.headers['x-request-id'] as string
-        )
-      );
+      // Auto-created placeholder accounts (bot temp accounts OR mini-app
+      // auto-auth accounts) shouldn't block a real account from claiming the
+      // Telegram link — silently unlink the placeholder and proceed.
+      if (existingTelegramUser.email?.match(/^telegram_\d+@(temp|miyzapis)\.com$/)) {
+        await prisma.user.update({
+          where: { id: existingTelegramUser.id },
+          data: { telegramId: null }
+        });
+      } else {
+        return res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.DUPLICATE_RESOURCE,
+            'This Telegram account is already linked to another user',
+            req.headers['x-request-id'] as string
+          )
+        );
+      }
     }
 
     // Link Telegram account
