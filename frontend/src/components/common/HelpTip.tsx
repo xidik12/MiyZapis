@@ -97,7 +97,7 @@ export const HelpTip: React.FC<HelpTipProps> = ({
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.14, ease: 'easeOut' }}
             style={{ marginLeft: shift }}
-            className="absolute left-0 top-full mt-2 z-50 w-72 max-w-[calc(100vw-1.5rem)] origin-top rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl p-3.5 text-left normal-case"
+            className="absolute left-0 top-full mt-2 z-50 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] max-h-[70vh] overflow-y-auto origin-top rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl p-3.5 text-left normal-case"
           >
             <div className="flex items-start gap-2">
               {title && (
@@ -114,7 +114,10 @@ export const HelpTip: React.FC<HelpTipProps> = ({
                 <XIcon className="w-4 h-4" />
               </button>
             </div>
-            <div className={`text-[13px] leading-relaxed text-gray-600 dark:text-gray-300 tracking-normal ${title ? 'mt-1.5' : ''}`}>
+            {/* whitespace-pre-line renders the \n line breaks in the i18n manual
+                strings (sections, bullet lines and formulas) without needing JSX
+                at every call site. */}
+            <div className={`text-[13px] leading-relaxed text-gray-600 dark:text-gray-300 tracking-normal whitespace-pre-line ${title ? 'mt-1.5' : ''}`}>
               {content}
             </div>
           </motion.div>
