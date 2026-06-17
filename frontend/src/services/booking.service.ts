@@ -163,6 +163,7 @@ export class BookingService {
     paymentConfirmed: boolean;
     completionNotes?: string;
     specialistNotes?: string;
+    totalAmount?: number; // actual amount charged (may differ from the listed price)
   }): Promise<Booking> {
     console.log('📤 BookingService: Completing booking with payment:', bookingId, data);
     const response = await apiClient.post<Booking>(`/bookings/${bookingId}/complete`, data);

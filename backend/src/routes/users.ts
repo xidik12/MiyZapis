@@ -443,6 +443,41 @@ router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (re
   }
 });
 
+// Verify phone via a Telegram-shared contact.
+// No SMS provider is configured, so we trust Telegram: the caller is already
+// JWT-authenticated AND we require the shared contact's user_id to match the
+// account's linked telegramId — only the owner of that Telegram account could be
+// in this session and share that contact. Sets phoneNumber + isPhoneVerified.
+router.post('/phone/verify-telegram', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { phoneNumber, telegramUserId } = req.body ?? {};
+    if (!phoneNumber || !telegramUserId) {
+      return res.status(400).json(
+        createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'phoneNumber and telegramUserId are required', req.headers['x-request-id'] as string)
+      );
+    }
+    const me = await prisma.user.findUnique({ where: { id: userId }, select: { telegramId: true } });
+    if (!me?.telegramId || me.telegramId !== String(telegramUserId)) {
+      return res.status(403).json(
+        createErrorResponse(ErrorCodes.ACCESS_DENIED, 'Shared contact does not match your Telegram account', req.headers['x-request-id'] as string)
+      );
+    }
+    const normalized = String(phoneNumber).replace(/[^\d+]/g, '');
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { phoneNumber: normalized, isPhoneVerified: true },
+      select: { id: true, phoneNumber: true, isPhoneVerified: true },
+    });
+    return res.json(createSuccessResponse({ ...user, message: 'Phone verified via Telegram' }));
+  } catch (error) {
+    logger.error('Verify phone via Telegram error:', error);
+    return res.status(500).json(
+      createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to verify phone', req.headers['x-request-id'] as string)
+    );
+  }
+});
+
 // Unlink Telegram account
 router.post('/telegram/unlink', authenticateToken, validateUnlinkTelegram, async (req: AuthenticatedRequest, res: Response) => {
   try {

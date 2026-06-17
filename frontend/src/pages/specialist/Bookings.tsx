@@ -57,7 +57,7 @@ interface PaymentConfirmationModalProps {
   booking: Booking | null;
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (bookingId: string, paymentConfirmed: boolean, notes?: string) => void;
+  onConfirm: (bookingId: string, paymentConfirmed: boolean, notes?: string, amount?: number) => void;
 }
 
 const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ 
@@ -547,16 +547,24 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
   onConfirm
 }) => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getCurrencySymbol } = useCurrency();
   const [completionNotes, setCompletionNotes] = useState('');
+  const [amount, setAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill the amount with the listed price each time a booking opens.
+  React.useEffect(() => {
+    if (booking) setAmount(String(Number(booking.totalAmount) || 0));
+  }, [booking?.id]);
 
   if (!isOpen || !booking) return null;
 
   const handleConfirmPayment = async () => {
     setIsSubmitting(true);
     try {
-      await onConfirm(booking.id, true, completionNotes);
+      const parsed = Number(amount);
+      const finalAmount = Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+      await onConfirm(booking.id, true, completionNotes, finalAmount);
       onClose();
       setCompletionNotes('');
     } catch (error) {
@@ -618,10 +626,24 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
                 }
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}:</span>
-              <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
+            <div className="flex justify-between items-center gap-3">
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.amountCharged') || 'Amount charged'}:</span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">{getCurrencySymbol(getBookingCurrency(booking))}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-32 pl-7 pr-2 py-1.5 text-right font-bold text-green-600 dark:text-green-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
             </div>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              {t('bookings.amountChargedHint') || 'Edit if the final price differed (discount, extra, or free). This is what counts toward your revenue and the client\'s loyalty points.'}
+            </p>
           </div>
 
           {/* Completion Notes */}
@@ -896,7 +918,7 @@ const SpecialistBookings: React.FC = () => {
     }
   };
 
-  const handlePaymentConfirmation = async (bookingId: string, paymentConfirmed: boolean, notes?: string) => {
+  const handlePaymentConfirmation = async (bookingId: string, paymentConfirmed: boolean, notes?: string, amount?: number) => {
     try {
       if (!paymentConfirmed) {
         // Show a message that payment must be received first
@@ -909,6 +931,7 @@ const SpecialistBookings: React.FC = () => {
       await bookingService.completeBookingWithPayment(bookingId, {
         paymentConfirmed,
         completionNotes: notes,
+        totalAmount: amount,
       });
       // Refresh bookings to show updated status
       const userType = activeTab === 'provider' ? 'specialist' : 'customer';

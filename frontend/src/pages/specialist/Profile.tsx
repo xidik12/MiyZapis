@@ -15,6 +15,7 @@ import { logger } from '@/utils/logger';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, PlusIcon, ShieldCheckIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
+import PhoneVerifyButton from '@/components/common/PhoneVerifyButton';
 
 interface SpecialistProfile {
   id: string;
@@ -1386,8 +1387,9 @@ const SpecialistProfile: React.FC = () => {
                       </div>
 
                       <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
+                        <label htmlFor="phone" className="flex items-center justify-between gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <span>{language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}</span>
+                          <PhoneVerifyButton isVerified={(user as any)?.isPhoneVerified} />
                         </label>
                         <div className="relative">
                           <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />

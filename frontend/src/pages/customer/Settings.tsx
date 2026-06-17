@@ -18,6 +18,7 @@ import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
+import PhoneVerifyButton from '@/components/common/PhoneVerifyButton';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -546,8 +547,9 @@ const CustomerSettings: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('profile.phone')}
+                      <label className="flex items-center justify-between gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <span>{t('profile.phone')}</span>
+                        <PhoneVerifyButton isVerified={(currentUser as any)?.isPhoneVerified} />
                       </label>
                       <input
                         type="tel"

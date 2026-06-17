@@ -445,6 +445,14 @@ export class BookingController {
         updateData.scheduledAt = new Date(updateData.scheduledAt);
       }
 
+      // Only the booking's specialist (or an admin) may set the actual amount
+      // charged at completion — a customer must never be able to change it.
+      if (updateData.totalAmount !== undefined
+          && existingBooking.specialistId !== req.user.id
+          && req.user.userType !== 'ADMIN') {
+        delete updateData.totalAmount;
+      }
+
       const booking = await BookingService.updateBooking(bookingId, updateData);
 
       // Specialists see full data; customers see stripped data for non-confirmed bookings
@@ -833,7 +841,14 @@ export class BookingController {
   static async completeBookingWithPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { bookingId } = req.params;
-      const { paymentConfirmed, completionNotes, specialistNotes } = req.body;
+      const { paymentConfirmed, completionNotes, specialistNotes, totalAmount } = req.body;
+      // Actual amount charged — only honoured for the booking's own specialist
+      // (enforced again in the service). Coerce to a non-negative number.
+      let chargedAmount: number | undefined;
+      if (totalAmount !== undefined && totalAmount !== null && totalAmount !== '') {
+        const n = Number(totalAmount);
+        if (Number.isFinite(n) && n >= 0) chargedAmount = n;
+      }
 
       if (!bookingId) {
         res.status(400).json(
@@ -860,7 +875,7 @@ export class BookingController {
       const booking = await BookingService.completeBookingWithPayment(
         bookingId,
         req.user.id,
-        { paymentConfirmed, completionNotes, specialistNotes }
+        { paymentConfirmed, completionNotes, specialistNotes, totalAmount: chargedAmount }
       );
 
       // Send completion notification to customer

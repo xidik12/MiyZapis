@@ -876,6 +876,14 @@ export class BookingService {
         updatedAt: new Date(),
       };
 
+      // Actual amount charged (set on completion) — coerce to a number so the
+      // Decimal column, revenue stats and loyalty points use the real value.
+      if (updateData.totalAmount !== undefined && updateData.totalAmount !== null) {
+        const n = Number(updateData.totalAmount);
+        if (Number.isFinite(n) && n >= 0) updateData.totalAmount = n;
+        else delete updateData.totalAmount;
+      }
+
       // Set timestamps based on status
       if (data.status) {
         switch (data.status) {
@@ -1692,6 +1700,7 @@ export class BookingService {
       paymentConfirmed: boolean;
       completionNotes?: string;
       specialistNotes?: string;
+      totalAmount?: number; // actual amount charged (may differ from the listed price)
     }
   ): Promise<BookingWithDetails> {
     try {
@@ -1712,14 +1721,21 @@ export class BookingService {
         throw new Error('PAYMENT_NOT_CONFIRMED');
       }
 
-      // Update booking to COMPLETED with notes
+      // Update booking to COMPLETED with notes. If the specialist entered the
+      // actual amount charged, persist it so revenue stats + loyalty points use
+      // the real value (updateBooking validates/coerces it, and awards loyalty
+      // from the updated totalAmount).
       const updateData: Record<string, unknown> = {
         status: 'COMPLETED',
         completionNotes: data.completionNotes,
         specialistNotes: data.specialistNotes,
       };
+      if (data.totalAmount !== undefined && data.totalAmount !== null) {
+        updateData.totalAmount = data.totalAmount;
+      }
 
       const completedBooking = await this.updateBooking(bookingId, updateData);
+      const chargedAmount = data.totalAmount ?? booking.totalAmount;
 
       // Create payment record if payment was confirmed
       if (data.paymentConfirmed) {
@@ -1729,7 +1745,7 @@ export class BookingService {
               id: `pay_${bookingId}_${Date.now()}`,
               bookingId: booking.id,
               userId: booking.customerId,
-              amount: booking.totalAmount,
+              amount: chargedAmount,
               currency: 'USD',
               status: 'SUCCEEDED',
               type: 'FULL_PAYMENT',

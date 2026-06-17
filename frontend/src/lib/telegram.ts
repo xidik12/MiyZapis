@@ -18,6 +18,37 @@ export interface TgWebAppTokens {
   refreshToken: string;
 }
 
+export interface TgContact {
+  phone_number: string;
+  user_id: number;
+  first_name?: string;
+  last_name?: string;
+}
+
+/**
+ * Ask the user to share their phone via Telegram's native contact prompt.
+ * Resolves with the shared contact, or null if unavailable/declined.
+ * (Telegram WebApp 6.9+.) No-op outside Telegram.
+ */
+export function requestTelegramContact(): Promise<TgContact | null> {
+  const wa = tgWebApp();
+  return new Promise((resolve) => {
+    if (!wa || typeof wa.requestContact !== 'function') {
+      resolve(null);
+      return;
+    }
+    try {
+      wa.requestContact((ok: boolean, event: any) => {
+        const contact = event?.responseUnsafe?.contact || event?.response?.contact;
+        if (ok && contact?.phone_number) resolve(contact as TgContact);
+        else resolve(null);
+      });
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 /**
  * Authenticate the current Telegram Mini App user by validating the signed
  * initData against the backend. Returns tokens on success, null otherwise.

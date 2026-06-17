@@ -108,6 +108,13 @@ export const validateUpdateBookingStatus = [
     .optional()
     .isArray()
     .withMessage('Deliverables must be an array'),
+
+  // Actual amount charged, set by the specialist when completing a booking
+  // (the real price can differ from the listed price — discount, extra, free).
+  body('totalAmount')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Amount must be a positive number'),
 ];
 
 // Get bookings validation

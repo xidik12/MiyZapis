@@ -23,6 +23,9 @@ const USER_SELECT = {
   // the Settings "Connected Accounts" badge always reads "Not Connected" and
   // offers a Link button that the backend then rejects as already-linked.
   telegramId: true,
+  // phone fields so Settings can show the number + a "verified" badge.
+  phoneNumber: true,
+  isPhoneVerified: true,
   createdAt: true,
   updatedAt: true,
 } as const;
