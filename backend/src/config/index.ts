@@ -59,6 +59,7 @@ const envSchema = z.object({
   DODO_PAYMENTS_ENVIRONMENT: z.string().default('test_mode'), // 'test_mode' | 'live_mode'
   DODO_PAYMENTS_WEBHOOK_KEY: z.string().optional(),
   DODO_PRODUCT_MONTHLY: z.string().optional(), // Dodo product id for the monthly plan
+  DODO_ENABLED: z.string().default('true'), // set 'false' to hide the card option without losing keys
 
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
@@ -222,6 +223,7 @@ export const config = {
     environment: env.DODO_PAYMENTS_ENVIRONMENT, // 'test_mode' | 'live_mode'
     webhookKey: env.DODO_PAYMENTS_WEBHOOK_KEY,
     productMonthly: env.DODO_PRODUCT_MONTHLY,
+    enabled: env.DODO_ENABLED !== 'false', // off-switch that keeps the keys
   },
 
   // Telegram

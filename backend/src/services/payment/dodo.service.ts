@@ -35,7 +35,7 @@ export class DodoService {
   private _client: DodoPayments | null = null;
 
   isConfigured(): boolean {
-    return Boolean(config.dodo.apiKey && config.dodo.productMonthly);
+    return Boolean(config.dodo.enabled && config.dodo.apiKey && config.dodo.productMonthly);
   }
 
   private get client(): DodoPayments {

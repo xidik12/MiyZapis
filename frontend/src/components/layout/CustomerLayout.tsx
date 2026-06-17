@@ -330,16 +330,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <div className="hidden lg:block" />
 
           <div className="flex items-center space-x-4">
-            {/* Notifications */}
+            {/* Notifications — Settings lives in the nav menu, so it's not duplicated here */}
             <NotificationBell />
-
-            {/* Settings */}
-            <Link
-              to="/customer/settings"
-              className="p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
-            >
-              <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-            </Link>
           </div>
         </header>
 
