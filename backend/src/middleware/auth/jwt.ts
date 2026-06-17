@@ -19,6 +19,10 @@ const USER_SELECT = {
   isActive: true,
   avatar: true,
   loyaltyPoints: true,
+  // telegramId is needed so /auth/me reports the real link state — otherwise
+  // the Settings "Connected Accounts" badge always reads "Not Connected" and
+  // offers a Link button that the backend then rejects as already-linked.
+  telegramId: true,
   createdAt: true,
   updatedAt: true,
 } as const;
