@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
-import { setTokens, setUser } from '@/store/slices/authSlice';
+import { setTokens, getCurrentUser } from '@/store/slices/authSlice';
 import { setAuthTokens } from '@/services/api';
 import { environment } from '@/config/environment';
 import { toast } from 'react-toastify';
@@ -68,10 +68,13 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
         const data = await res.json();
         if (!cancelled && data?.success && data?.data?.tokens?.accessToken) {
-          const { user, tokens } = data.data;
+          const { tokens } = data.data;
           setAuthTokens({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
           dispatch(setTokens({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }));
-          if (user) dispatch(setUser(user));
+          // Load the CANONICAL user via /auth/me (correct lowercase userType,
+          // matching the rest of the app) — the webapp endpoint returns an
+          // uppercase userType that breaks role redirects.
+          try { await dispatch(getCurrentUser()).unwrap(); } catch { /* ignore */ }
         }
       } catch (err) {
         // Silent — fall through to the normal (manual) login UI.

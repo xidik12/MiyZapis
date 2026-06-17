@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTelegramBackButton } from './lib/telegram';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
@@ -197,20 +197,6 @@ function App() {
 
     initializeAuth();
   }, [dispatch, isAuthenticated]);
-
-  // Telegram Mini App: route by role on launch. Specialists land on their
-  // dashboard; customers stay on home/search. Runs once after auto-login.
-  const navigate = useNavigate();
-  const tgRedirectDone = React.useRef(false);
-  useEffect(() => {
-    if (tgRedirectDone.current) return;
-    const inTelegram = typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData;
-    if (!inTelegram || !isAuthenticated || !user) return;
-    tgRedirectDone.current = true;
-    if (user.userType === 'specialist' && window.location.pathname === '/') {
-      navigate('/specialist/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
 
   return (
     <ThemeProvider>
