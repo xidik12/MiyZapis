@@ -268,6 +268,12 @@ const SpecialistOnboarding: React.FC = () => {
 
   const saveService = async () => {
     if (!validateService()) return false;
+    // Create the first service only once. Without this guard, navigating
+    // Schedule → back → First Service → Next re-ran createService, producing a
+    // duplicate (and the duplicate-name failure dead-ended the wizard — it only
+    // "unblocked" by changing the category to a fresh name). The service can be
+    // edited later in Services.
+    if (serviceSaved) return true;
     setSaving(true);
     setError(null);
     try {
