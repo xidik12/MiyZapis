@@ -973,19 +973,11 @@ const SpecialistSettings: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-6">
-                    <ToggleSwitch
-                      enabled={settings.business.acceptOnlinePayments}
-                      onChange={(value) => handleSettingChange('business', 'acceptOnlinePayments', value)}
-                      label={t('settings.acceptOnlinePayments')}
-                      description={t('settings.acceptOnlinePaymentsDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.business.requireDeposit}
-                      onChange={(value) => handleSettingChange('business', 'requireDeposit', value)}
-                      label={t('settings.requireDeposit')}
-                      description={t('settings.requireDepositDesc')}
-                    />
-                    
+                    {/* Online-payment & deposit toggles hidden: MiyZapis takes no
+                        platform payments — clients pay the master directly, so
+                        deposits/online-pay can't be enforced. Pay-at-venue (below)
+                        is the active model. */}
+
                     {/* Cancellation Window Setting */}
                     <div className="py-4 border-b border-gray-200 dark:border-gray-700">
                       <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
