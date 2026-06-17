@@ -2748,3 +2748,74 @@ model Lead {
   @@index([specialistId, stage])
   @@map("leads")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HR SUITE — staff attendance, leave/time-off, shifts. Employees are full
+// specialist accounts linked to a Business via BusinessMember. All additive;
+// ownerId (employer) / businessId / staffUserId are plain indexed columns
+// (no FK) — same convention as the salon & CRM suites above.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// One working day per staff member: clock-in/out + computed minutes.
+model Attendance {
+  id            String    @id @default(cuid())
+  ownerId       String // employer who manages this team (or self, for solo)
+  businessId    String?
+  staffUserId   String // the employee (specialist user) being tracked
+  date          DateTime // normalised to the start of the working day (UTC)
+  clockIn       DateTime?
+  clockOut      DateTime?
+  minutesWorked Int       @default(0) // computed on clock-out
+  status        String    @default("PRESENT") // PRESENT | LATE | ABSENT | ON_LEAVE | HALF_DAY
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([staffUserId, date])
+  @@index([ownerId])
+  @@index([businessId])
+  @@index([staffUserId, date])
+  @@map("attendance_records")
+}
+
+// Time-off request, approved/rejected by the employer.
+model LeaveRequest {
+  id          String    @id @default(cuid())
+  ownerId     String
+  businessId  String?
+  staffUserId String
+  type        String    @default("VACATION") // VACATION | SICK | UNPAID | OTHER
+  startDate   DateTime
+  endDate     DateTime
+  days        Decimal   @default(1)
+  reason      String?
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED | CANCELLED
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNote  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@index([businessId])
+  @@index([staffUserId, status])
+  @@map("leave_requests")
+}
+
+// A scheduled shift for a staff member (feeds "late" detection + payroll hours).
+model StaffShift {
+  id          String   @id @default(cuid())
+  ownerId     String
+  businessId  String?
+  staffUserId String
+  startTime   DateTime
+  endTime     DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([businessId])
+  @@index([staffUserId, startTime])
+  @@map("staff_shifts")
+}

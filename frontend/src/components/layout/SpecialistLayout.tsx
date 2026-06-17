@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { MobileTabBar, TabItem, TabSection } from './MobileTabBar';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon, FunnelIcon, CheckCircleIcon, UserPlusIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon, FunnelIcon, CheckCircleIcon, UserPlusIcon, UserGroupIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -162,6 +162,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: WalletIcon,
   },
   {
+    name: 'Team',
+    nameUk: 'Команда',
+    href: '/specialist/team',
+    icon: UserGroupIcon,
+    iconActive: UserGroupIcon,
+  },
+  {
     name: 'Reviews',
     nameUk: 'Відгуки',
     href: '/specialist/reviews',
@@ -217,7 +224,7 @@ const navigation: SidebarNavItem[] = [
 const NAV_GROUP_OF: Record<string, string> = {
   Dashboard: 'pinned', Bookings: 'pinned',
   'Find Services': 'work', Services: 'work', Clients: 'work', Tasks: 'work', Schedule: 'work', Analytics: 'work',
-  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance',
+  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance', Team: 'finance',
   'Segments & Campaigns': 'growth', Leads: 'growth', Marketing: 'growth', Promote: 'growth', Loyalty: 'growth', Referrals: 'growth', Reviews: 'growth',
   Community: 'account',
 };
@@ -555,6 +562,7 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
     { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: BuildingStorefrontIcon },
     { nameKey: 'dashboard.nav.payroll', fallback: 'Payroll', href: '/specialist/payroll', icon: WalletIcon },
+    { nameKey: 'dashboard.nav.team', fallback: 'Team', href: '/specialist/team', icon: UserGroupIcon },
     { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
   ]},
   { title: 'nav.section.growth', items: [

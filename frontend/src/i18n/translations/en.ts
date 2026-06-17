@@ -4230,6 +4230,119 @@ const en: Record<string, string> = {
   // Misc
   'crm.status': 'Status',
   'crm.optional': 'Optional',
+
+  // ── HR / Team module ──────────────────────────────────────────────────────
+  'nav.team': 'Team',
+  'dashboard.nav.team': 'Team',
+  'team.title': 'Team',
+  'team.subtitle': 'Manage attendance, leaves and shifts',
+  'team.loading': 'Loading team...',
+  'team.loadError': 'Failed to load HR data',
+
+  // Summary stats
+  'team.statStaff': 'Staff',
+  'team.statPresent': 'Present today',
+  'team.statOnLeave': 'On leave today',
+  'team.statPendingLeaves': 'Pending leaves',
+
+  // My day
+  'team.myDay': 'My Day',
+  'team.clockIn': 'Clock in',
+  'team.clockOut': 'Clock out',
+  'team.clockedIn': 'Clocked in',
+  'team.clockedOut': 'Clocked out',
+  'team.clockError': 'Clock action failed',
+  'team.in': 'In',
+  'team.out': 'Out',
+  'team.worked': 'Worked',
+
+  // Leave requests
+  'team.requestLeave': 'Request time off',
+  'team.myLeaves': 'My Leave Requests',
+  'team.noLeaves': 'No leave requests yet',
+  'team.leaveRequested': 'Leave request submitted',
+  'team.leaveCancelled': 'Leave request cancelled',
+  'team.leaveError': 'Failed to process leave request',
+  'team.leaveDatesRequired': 'Please select start and end dates',
+  'team.leaveInvalidDates': 'Start date must be before end date',
+  'team.cancelLeaveTitle': 'Cancel leave request',
+  'team.cancelLeaveMsg': 'Are you sure you want to cancel this leave request?',
+  'team.cancel': 'Cancel',
+  'team.days': 'days',
+  'team.submitRequest': 'Submit request',
+  'team.leaveType': 'Leave type',
+  'team.startDate': 'Start date',
+  'team.endDate': 'End date',
+  'team.reason': 'Reason',
+  'team.reasonPlaceholder': 'Optional reason...',
+  'team.period': 'Period',
+
+  // Leave types
+  'team.leaveType.VACATION': 'Vacation',
+  'team.leaveType.SICK': 'Sick leave',
+  'team.leaveType.UNPAID': 'Unpaid',
+  'team.leaveType.OTHER': 'Other',
+
+  // Leave statuses
+  'team.leaveStatus.PENDING': 'Pending',
+  'team.leaveStatus.APPROVED': 'Approved',
+  'team.leaveStatus.REJECTED': 'Rejected',
+  'team.leaveStatus.CANCELLED': 'Cancelled',
+
+  // Attendance statuses
+  'team.attendStatus.PRESENT': 'Present',
+  'team.attendStatus.LATE': 'Late',
+  'team.attendStatus.ABSENT': 'Absent',
+  'team.attendStatus.ON_LEAVE': 'On leave',
+  'team.attendStatus.HALF_DAY': 'Half day',
+
+  // Roster
+  'team.rosterTitle': 'Roster & Today\'s Attendance',
+  'team.noStaff': 'No staff members found',
+  'team.noRecord': 'No record',
+  'team.you': 'You',
+  'team.colName': 'Name',
+  'team.colRole': 'Role',
+  'team.colClockIn': 'Clock In',
+  'team.colClockOut': 'Clock Out',
+  'team.colStatus': 'Status',
+  'team.staffMember': 'Staff member',
+  'team.date': 'Date',
+  'team.note': 'Note',
+  'team.notePlaceholder': 'Optional note...',
+
+  // Manual attendance
+  'team.setAttendance': 'Set attendance',
+  'team.attendanceSaved': 'Attendance saved',
+  'team.attendanceError': 'Failed to save attendance',
+
+  // Leave approvals
+  'team.pendingApprovals': 'Pending Leave Approvals',
+  'team.pendingApprovalsHint': 'Leave requests waiting for your review',
+  'team.noPendingLeaves': 'No pending leave requests',
+  'team.leaveApproved': 'Leave approved',
+  'team.leaveRejected': 'Leave rejected',
+  'team.review': 'Review',
+  'team.approve': 'Approve',
+  'team.reject': 'Reject',
+  'team.reviewLeave': 'Review Leave Request',
+  'team.reviewNote': 'Review note',
+  'team.reviewNotePlaceholder': 'Optional note to the employee...',
+
+  // Shifts
+  'team.shiftsTitle': 'Upcoming Shifts',
+  'team.shiftsHint': 'Scheduled shifts for the next two weeks',
+  'team.noShifts': 'No shifts scheduled',
+  'team.scheduleShift': 'Schedule shift',
+  'team.shiftCreated': 'Shift scheduled',
+  'team.shiftDeleted': 'Shift deleted',
+  'team.shiftError': 'Failed to process shift',
+  'team.shiftFieldsRequired': 'Please fill in all required fields',
+  'team.shiftInvalidTimes': 'Start time must be before end time',
+  'team.deleteShiftTitle': 'Delete shift',
+  'team.deleteShiftMsg': 'Are you sure you want to delete this shift?',
+  'team.shiftStart': 'Start time',
+  'team.shiftEnd': 'End time',
 };
 
 export default en;
