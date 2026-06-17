@@ -176,7 +176,7 @@ export const Header: React.FC = () => {
                 {/* Notifications */}
                 <div className="relative" ref={notificationRef}>
                   <button
-                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsUserMenuOpen(false); }}
                     className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300 mobile-touch-target"
                   >
                     <BellIcon
@@ -198,7 +198,7 @@ export const Header: React.FC = () => {
                 {/* User menu */}
                 <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationOpen(false); }}
                     className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-700/80 transition-all duration-300 mobile-touch-target"
                   >
                     {user?.avatar ? (

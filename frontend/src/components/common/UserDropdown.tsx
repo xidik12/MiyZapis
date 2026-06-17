@@ -46,26 +46,26 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   const menuItems = user.userType === 'specialist' ? specialistMenuItems : customerMenuItems;
 
   return (
-    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+    <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 z-[60] overflow-hidden">
       {/* User info */}
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40">
         <div className="flex items-center space-x-3">
           {user.avatar ? (
             <img
               src={user.avatar}
               alt={`${user.firstName} ${user.lastName}`}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
             />
           ) : (
-            <UserCircleIcon className="w-10 h-10 text-gray-500 dark:text-gray-400" />
+            <UserCircleIcon className="w-10 h-10 text-gray-400 dark:text-gray-500 flex-shrink-0" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
               {user.firstName} {user.lastName}
             </p>
-            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
             {user.userType === 'customer' && (user.loyaltyPoints || 0) > 0 && (
-              <p className="text-xs text-primary-600 font-medium">
+              <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">
                 {user.loyaltyPoints} points
               </p>
             )}
@@ -74,30 +74,30 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
       </div>
 
       {/* Menu items */}
-      <div className="py-2">
+      <div className="py-1.5">
         {menuItems.map((item) => (
           <Link
             key={item.href}
             to={item.href}
             onClick={handleLinkClick}
-            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+            className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
-            <item.icon className="w-5 h-5 mr-3 text-gray-500 dark:text-gray-400" />
-            {item.label}
+            <item.icon className="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+            <span className="truncate">{item.label}</span>
           </Link>
         ))}
       </div>
 
       {/* Logout */}
-      <div className="border-t border-gray-200 py-2">
+      <div className="border-t border-gray-100 dark:border-gray-800 py-1.5">
         <button
           onClick={() => {
             onLogout();
             onClose();
           }}
-          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+          className="flex items-center w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors"
         >
-          <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
+          <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3 flex-shrink-0" />
           {t('userMenu.signOut')}
         </button>
       </div>
