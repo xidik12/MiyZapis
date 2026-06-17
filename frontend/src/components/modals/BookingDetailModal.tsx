@@ -103,7 +103,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Status Badge */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${statusColors[booking.status as keyof typeof statusColors] || statusColors.PENDING} text-center sm:text-left`}>
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
+              {t(`dashboard.booking.status.${booking.status}`) || (booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase())}
             </span>
             <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left">
               #{booking.id.substring(0, 8)}...

@@ -259,7 +259,20 @@ const CustomerLoyalty: React.FC = () => {
     if (b.includes('10%')) return t('loyalty.benefit.bonusPoints10') || benefit;
     if (b.includes('exclusive services')) return t('loyalty.benefit.exclusiveServices') || benefit;
     if (b.includes('free cancellation')) return t('loyalty.benefit.freeCancellation') || benefit;
+    if (b.includes('vip support')) return t('loyalty.benefit.vipSupport') || benefit;
+    if (b.includes('early access')) return t('loyalty.benefit.earlyAccess') || benefit;
     return benefit;
+  };
+
+  // Translate the tier display name (Bronze/Silver/Gold/Platinum). Keep the raw
+  // name for getTierSkin() — only the user-facing label is localised.
+  const translateTier = (name?: string): string => {
+    const k = (name || '').toLowerCase();
+    if (k.includes('bronze')) return t('loyalty.tier.bronze') || name || '';
+    if (k.includes('silver')) return t('loyalty.tier.silver') || name || '';
+    if (k.includes('gold')) return t('loyalty.tier.gold') || name || '';
+    if (k.includes('platinum')) return t('loyalty.tier.platinum') || name || '';
+    return name || '';
   };
 
   // Tier skin mapping for gamified look
@@ -368,7 +381,7 @@ const CustomerLoyalty: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentTierShort') || 'Current Tier'}</p>
                 <p className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {loyaltyStats?.currentTier?.name || 'Bronze'}
+                  {translateTier(loyaltyStats?.currentTier?.name) || 'Bronze'}
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
@@ -398,7 +411,7 @@ const CustomerLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {(t('loyalty.progressTo') || 'Progress to') + ' ' + loyaltyStats.nextTier.name}
+                {(t('loyalty.progressTo') || 'Progress to') + ' ' + translateTier(loyaltyStats.nextTier.name)}
               </h3>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {Math.round(getTierProgress())}%
@@ -414,8 +427,8 @@ const CustomerLoyalty: React.FC = () => {
               </div>
 
               <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>{loyaltyStats.currentTier?.name} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
-                <span>{loyaltyStats.nextTier.name} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+                <span>{translateTier(loyaltyStats.currentTier?.name)} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
+                <span>{translateTier(loyaltyStats.nextTier.name)} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
               </div>
             </div>
           </div>
@@ -618,7 +631,7 @@ const CustomerLoyalty: React.FC = () => {
                           <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>
                           <div className="flex items-center space-x-2">
                             <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                              {loyaltyStats?.currentTier?.name || 'BRONZE'}
+                              {translateTier(loyaltyStats?.currentTier?.name) || 'BRONZE'}
                             </p>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${skin.chipBg}`}>
                               <TrophyIcon className="h-3 w-3 mr-1" active />
@@ -627,7 +640,7 @@ const CustomerLoyalty: React.FC = () => {
                           </div>
                           <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/60 dark:bg-gray-700/60 text-gray-800 dark:text-gray-200">
                             {(() => {
-                              const nextName = loyaltyStats?.nextTier?.name;
+                              const nextName = translateTier(loyaltyStats?.nextTier?.name);
                               const nextMin = loyaltyStats?.nextTier?.minPoints || 0;
                               const curPts = loyaltyProfile?.currentPoints || 0;
                               const toNext = Math.max(0, nextMin - curPts);
@@ -695,7 +708,7 @@ const CustomerLoyalty: React.FC = () => {
                             <div key={tier.id} className="absolute" style={{ left: `calc(${leftPct}% - 8px)` }}>
                               <div className={`h-4 w-4 rounded-full border-2 ${isCurrent ? 'bg-primary-500 border-primary-600' : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500'}`}></div>
                               <div className="mt-1 text-center w-20 -ml-8">
-                                <div className={`text-[10px] sm:text-xs font-medium ${isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>{tier.name}</div>
+                                <div className={`text-[10px] sm:text-xs font-medium ${isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>{translateTier(tier.name)}</div>
                                 <div className="text-[10px] text-gray-500 dark:text-gray-400">{formatPoints(min)} {t('loyalty.pointsShort') || 'pts'}</div>
                               </div>
                             </div>
@@ -733,7 +746,7 @@ const CustomerLoyalty: React.FC = () => {
                                 isNextTier ? 'text-yellow-700 dark:text-yellow-300' :
                                 'text-gray-900 dark:text-white'
                               }`}>
-                                {tier.name}
+                                {translateTier(tier.name)}
                               </h5>
                               {isCurrentTier && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-600 text-white">

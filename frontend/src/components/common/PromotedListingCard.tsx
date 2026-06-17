@@ -178,7 +178,9 @@ export function PromotedListingCard({ item, className = '' }: Props) {
               className="mt-auto pt-2.5 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 w-full sm:w-auto"
               style={{ backgroundColor: accent, color: ctaText }}
             >
-              {item.ctaLabel || t('promote.bookCta') || t('common.book') || 'Записатись'}
+              {/* Always use the translated CTA so it follows the user's language —
+                  a stored per-ad ctaLabel is single-language and ignored the toggle. */}
+              {t('promote.bookCta') || t('common.book') || 'Book'}
             </Link>
           </div>
         </div>
