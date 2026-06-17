@@ -6,7 +6,7 @@ import { UserIcon, WrenchScrewdriverIcon, BuildingOfficeIcon, XIcon as XMarkIcon
 interface UserTypeSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectUserType: (userType: 'customer' | 'specialist' | 'business') => void;
+  onSelectUserType: (userType: 'customer' | 'specialist' | 'business', businessName?: string) => void;
   userEmail?: string;
   userName?: string;
 }
@@ -20,6 +20,8 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [businessNameError, setBusinessNameError] = useState(false);
 
   if (!isOpen) return null;
 
@@ -27,7 +29,11 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
     if (!agreeToTerms) {
       return; // Don't proceed if terms not accepted
     }
-    onSelectUserType(userType);
+    if (userType === 'business' && !businessName.trim()) {
+      setBusinessNameError(true);
+      return; // Business owners must name their business so we can create it
+    }
+    onSelectUserType(userType, userType === 'business' ? businessName.trim() : undefined);
   };
 
   return (
@@ -171,6 +177,24 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
                 </div>
               </div>
             </button>
+
+            {/* Business name — required when registering as a business */}
+            <div>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => { setBusinessName(e.target.value); if (e.target.value.trim()) setBusinessNameError(false); }}
+                placeholder={t('auth.register.businessNamePlaceholder') || 'Business / salon name (for business accounts)'}
+                className={`w-full px-4 py-2.5 rounded-xl border-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  businessNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'
+                }`}
+              />
+              {businessNameError && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {t('auth.register.businessNameRequired') || 'Enter a business name to register as a business'}
+                </p>
+              )}
+            </div>
 
             {/* Business / Salon Option */}
             <button

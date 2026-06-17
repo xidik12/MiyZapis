@@ -139,22 +139,23 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
     }
   };
 
-  const handleUserTypeSelection = async (userType: 'customer' | 'specialist' | 'business') => {
+  const handleUserTypeSelection = async (userType: 'customer' | 'specialist' | 'business', businessName?: string) => {
     try {
       if (!pendingGoogleData) {
         throw new Error('No pending Google data');
       }
 
       // A "Business / Salon" owner is a specialist account that also owns a
-      // Business (mirrors the email register flow). Register as specialist, then
-      // route them to the Businesses page to create their salon.
+      // Business (mirrors the email register flow). Register as specialist and
+      // pass the business name so the backend creates the Business immediately.
       const isBusiness = userType === 'business';
       const registerType = isBusiness ? 'specialist' : userType;
 
       // Dispatch Google login with selected user type
       await dispatch(googleLogin({
         credential: pendingGoogleData.credential as string,
-        userType: registerType
+        userType: registerType,
+        ...(isBusiness && businessName ? { businessName } : {}),
       })).unwrap();
 
       setShowUserTypeModal(false);

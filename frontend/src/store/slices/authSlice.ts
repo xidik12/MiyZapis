@@ -54,9 +54,9 @@ export const register = createAsyncThunk(
 
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
-  async ({ credential, userType }: { credential: string; userType?: 'customer' | 'specialist' }, { rejectWithValue }) => {
+  async ({ credential, userType, businessName }: { credential: string; userType?: 'customer' | 'specialist'; businessName?: string }, { rejectWithValue }) => {
     try {
-      const response = await authService.googleAuth(credential, userType);
+      const response = await authService.googleAuth(credential, userType, businessName);
       const res = response as any;
       if (res.requiresUserTypeSelection) {
         // Return special response indicating user type selection is needed

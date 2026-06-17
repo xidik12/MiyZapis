@@ -634,7 +634,7 @@ export class AuthService {
   }
 
   // Google OAuth authentication
-  static async authenticateWithGoogle(googleData: GoogleAuthData, userType?: string): Promise<{
+  static async authenticateWithGoogle(googleData: GoogleAuthData, userType?: string, businessName?: string): Promise<{
     user: Omit<User, 'password'>;
     tokens: { accessToken: string; refreshToken: string; expiresIn: number };
     isNewUser: boolean;
@@ -790,6 +790,18 @@ export class AuthService {
             userId: user.id,
             businessName: 'Empty - needs setup'
           });
+        }
+
+        // If they signed up as a Business/Salon via Google, create the Business
+        // with this user as OWNER — mirrors the email registration flow so an
+        // OAuth "Business" account isn't left as a plain specialist.
+        if (businessName && businessName.trim()) {
+          try {
+            const business = await BusinessService.create(user.id, { name: businessName.trim() });
+            logger.info('Created business for new Google owner', { userId: user.id, businessId: business.id });
+          } catch (bizError) {
+            logger.error('Failed to create business during Google auth', { userId: user.id, error: bizError });
+          }
         }
 
         // Send localized welcome email for new users

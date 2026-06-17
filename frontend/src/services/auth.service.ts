@@ -73,11 +73,14 @@ export class AuthService {
   }
 
   // Google authentication
-  async googleAuth(credential: string, userType?: 'customer' | 'specialist'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }> {
+  async googleAuth(credential: string, userType?: 'customer' | 'specialist', businessName?: string): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }> {
     try {
       const payload: any = { credential };
       if (userType) {
         payload.userType = userType;
+      }
+      if (businessName) {
+        payload.businessName = businessName;
       }
       
       const response = await apiClient.post<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: Record<string, unknown> }>('/auth-enhanced/google', payload);

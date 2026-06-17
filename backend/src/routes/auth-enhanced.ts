@@ -264,7 +264,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
       );
     }
 
-    const { credential, userType } = req.body;
+    const { credential, userType, businessName } = req.body;
 
     // Verify Google credential
     const ticket = await googleClient.verifyIdToken({
@@ -290,7 +290,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
       picture: payload.picture!,
     };
 
-    const result = await AuthService.authenticateWithGoogle(googleData, userType);
+    const result = await AuthService.authenticateWithGoogle(googleData, userType, businessName);
 
     res.json(createSuccessResponse(result));
   } catch (error: unknown) {
@@ -298,8 +298,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
     logger.error('Google authentication error:', {
       error: err.message,
       stack: err.stack,
-      googleEmail: payload?.email,
-      userType,
+      userType: req.body?.userType,
       requestId: req.id
     });
 
