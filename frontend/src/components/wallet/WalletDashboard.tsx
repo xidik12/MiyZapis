@@ -12,6 +12,7 @@ import {
 import { InlineLoader } from '@/components/ui';
 import WalletBalance from './WalletBalance';
 import WalletTransactionHistory from './WalletTransactionHistory';
+import SpendingSummaryCard from './SpendingSummaryCard';
 import { referralService } from '../../services/referral.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -110,6 +111,9 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+          {/* Spending history — what the customer has spent on completed visits
+              (payments go directly to the master; this is informational). */}
+          <SpendingSummaryCard />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Wallet Balance */}
             <div className="lg:col-span-1">
