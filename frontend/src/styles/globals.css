@@ -1232,3 +1232,10 @@
     @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-opacity duration-200;
   }
 }
+
+/* Print: isolate a .print-area (barcode labels, POS receipt) — hide everything else. */
+@media print {
+  body * { visibility: hidden !important; }
+  .print-area, .print-area * { visibility: visible !important; }
+  .print-area { position: absolute !important; left: 0; top: 0; width: 100%; }
+}

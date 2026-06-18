@@ -15,6 +15,8 @@ import {
 } from '../../services/inventory.service';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
+import BarcodeScanner from '@/components/common/BarcodeScanner';
+import LabelPrintModal from '@/components/common/LabelPrintModal';
 import {
   PlusIcon,
   PencilIcon,
@@ -101,6 +103,8 @@ const SpecialistInventory: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [barcodeLooking, setBarcodeLooking] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [labelsOpen, setLabelsOpen] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   // Upload a product photo and store its URL on the form.
@@ -381,14 +385,29 @@ const SpecialistInventory: React.FC = () => {
               {t('inventory.subtitle') || 'Track stock levels and product costs'}
             </p>
           </div>
-          <button
-            onClick={handleAddProduct}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
-          >
-            <PlusIcon className="h-5 w-5" />
-            {t('inventory.addProduct') || 'Add Product'}
-          </button>
+          <div className="w-full sm:w-auto flex gap-2">
+            <button
+              onClick={() => setLabelsOpen(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
+            >
+              {t('labels.printLabels') || 'Print labels'}
+            </button>
+            <button
+              onClick={handleAddProduct}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            >
+              <PlusIcon className="h-5 w-5" />
+              {t('inventory.addProduct') || 'Add Product'}
+            </button>
+          </div>
         </div>
+
+        <BarcodeScanner
+          isOpen={scanOpen}
+          onClose={() => setScanOpen(false)}
+          onDetected={(code) => { setFormData((prev) => ({ ...prev, barcode: code })); handleBarcodeLookup(code); }}
+        />
+        <LabelPrintModal isOpen={labelsOpen} onClose={() => setLabelsOpen(false)} products={products} />
 
         {/* Summary Cards */}
         {summary && (
@@ -805,15 +824,20 @@ const SpecialistInventory: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {t('inventory.barcode') || 'Barcode'}
                     </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.barcode}
-                      onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                      onBlur={(e) => handleBarcodeLookup(e.target.value)}
-                      placeholder={t('inventory.barcodePlaceholder') || 'Scan or type — EAN/UPC'}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={formData.barcode}
+                        onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                        onBlur={(e) => handleBarcodeLookup(e.target.value)}
+                        placeholder={t('inventory.barcodePlaceholder') || 'Scan or type — EAN/UPC'}
+                        className="flex-1 min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                      />
+                      <button type="button" onClick={() => setScanOpen(true)} className="flex-shrink-0 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-gray-200 dark:hover:bg-gray-600">
+                        {t('pos.scan') || 'Scan'}
+                      </button>
+                    </div>
                     {barcodeLooking && (
                       <p className="mt-1 text-xs text-gray-400">{t('common.loading') || 'Looking up…'}</p>
                     )}

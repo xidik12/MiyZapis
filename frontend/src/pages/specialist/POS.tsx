@@ -5,6 +5,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { inventoryService, Product } from '@/services/inventory.service';
 import { storeService } from '@/services/store.service';
+import BarcodeScanner from '@/components/common/BarcodeScanner';
 
 type PayMethod = 'CASH' | 'CARD' | 'OTHER';
 interface CartLine { product: Product; qty: number }
@@ -22,6 +23,7 @@ const POS: React.FC = () => {
   const [search, setSearch] = useState('');
   const [barcode, setBarcode] = useState('');
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [scanOpen, setScanOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<PayMethod>('CASH');
   const [submitting, setSubmitting] = useState(false);
@@ -125,16 +127,27 @@ const POS: React.FC = () => {
           placeholder={t('pos.search') || 'Search products…'}
           className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
         />
-        <input
-          type="text"
-          inputMode="numeric"
-          value={barcode}
-          onChange={(e) => setBarcode(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleBarcode(barcode); }}
-          placeholder={t('pos.scanBarcode') || 'Scan barcode (Enter)…'}
-          className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
-        />
+        <div className="flex gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleBarcode(barcode); }}
+            placeholder={t('pos.scanBarcode') || 'Scan barcode (Enter)…'}
+            className="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+          />
+          <button
+            type="button"
+            onClick={() => setScanOpen(true)}
+            className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm"
+          >
+            {t('pos.scan') || 'Scan'}
+          </button>
+        </div>
       </div>
+
+      <BarcodeScanner isOpen={scanOpen} onClose={() => setScanOpen(false)} onDetected={(code) => handleBarcode(code)} />
 
       {/* Product grid */}
       {loading ? (
