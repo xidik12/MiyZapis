@@ -44,12 +44,14 @@ export interface InventorySummary {
   totalProducts: number;
   totalStockValue: number;
   lowStockCount: number;
+  expiringSoonCount: number;
   currency: string;
 }
 
 export interface InventoryFilters {
   type?: ProductType;
   lowStock?: boolean;
+  expiringSoon?: boolean;
   search?: string;
 }
 

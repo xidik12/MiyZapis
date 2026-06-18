@@ -13,8 +13,12 @@ export type StockReason = typeof STOCK_REASONS[number];
 export interface InventoryFilters {
   type?: ProductType;
   lowStock?: boolean;
+  expiringSoon?: boolean; // expired or expiring within EXPIRY_SOON_DAYS
   search?: string;
 }
+
+// A product is "expiring soon" if its expiry is within this many days (or past).
+export const EXPIRY_SOON_DAYS = 30;
 
 export interface CreateProductData {
   sku?: string | null;
@@ -54,6 +58,7 @@ export interface InventorySummary {
   totalProducts: number;
   totalStockValue: number;
   lowStockCount: number;
+  expiringSoonCount: number;
   currency: string;
 }
 
@@ -79,8 +84,15 @@ export class InventoryService {
       where.OR = [
         { name: { contains: term, mode: 'insensitive' } },
         { sku: { contains: term, mode: 'insensitive' } },
+        { barcode: { contains: term, mode: 'insensitive' } },
         { description: { contains: term, mode: 'insensitive' } },
       ];
+    }
+
+    if (filters.expiringSoon) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() + EXPIRY_SOON_DAYS);
+      where.expiryDate = { not: null, lte: cutoff };
     }
 
     const products = await prisma.product.findMany({
@@ -225,7 +237,10 @@ export class InventoryService {
 
     let totalStockValue = 0;
     let lowStockCount = 0;
+    let expiringSoonCount = 0;
     const currencies = new Set<string>();
+    const expiryCutoff = new Date();
+    expiryCutoff.setDate(expiryCutoff.getDate() + EXPIRY_SOON_DAYS);
 
     for (const p of products) {
       const stockQty = toNumber(p.stockQty);
@@ -236,6 +251,9 @@ export class InventoryService {
       if (reorderLevel > 0 && stockQty <= reorderLevel) {
         lowStockCount += 1;
       }
+      if (p.expiryDate && p.expiryDate <= expiryCutoff) {
+        expiringSoonCount += 1;
+      }
       currencies.add(p.currency || 'UAH');
     }
 
@@ -245,6 +263,7 @@ export class InventoryService {
       totalProducts: products.length,
       totalStockValue,
       lowStockCount,
+      expiringSoonCount,
       currency,
     };
   }

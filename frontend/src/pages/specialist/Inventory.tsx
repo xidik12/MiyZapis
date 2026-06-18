@@ -152,12 +152,13 @@ const SpecialistInventory: React.FC = () => {
   // Filters
   const [filterType, setFilterType] = useState<ProductType | ''>('');
   const [filterLowStock, setFilterLowStock] = useState(false);
+  const [filterExpiring, setFilterExpiring] = useState(false);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType, filterLowStock, search]);
+  }, [filterType, filterLowStock, filterExpiring, search]);
 
   const loadData = async () => {
     try {
@@ -165,6 +166,7 @@ const SpecialistInventory: React.FC = () => {
       const filters: Record<string, unknown> = {};
       if (filterType) filters.type = filterType;
       if (filterLowStock) filters.lowStock = true;
+      if (filterExpiring) filters.expiringSoon = true;
       if (search.trim()) filters.search = search.trim();
 
       const [productsResponse, summaryResponse] = await Promise.all([
@@ -185,6 +187,16 @@ const SpecialistInventory: React.FC = () => {
   const isLowStock = (p: Product): boolean => {
     const reorder = num(p.reorderLevel);
     return reorder > 0 && num(p.stockQty) <= reorder;
+  };
+
+  // Expiry badge info: null if no/far-off expiry, else expired (red) or soon (amber).
+  const expiryInfo = (p: Product): { label: string; cls: string } | null => {
+    const raw = (p as any).expiryDate;
+    if (!raw) return null;
+    const days = Math.ceil((new Date(raw).getTime() - Date.now()) / 86400000);
+    if (days < 0) return { label: t('inventory.expired') || 'Expired', cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' };
+    if (days <= 30) return { label: (t('inventory.expiringDays') || 'Exp. {{d}}d').replace('{{d}}', String(days)), cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' };
+    return null;
   };
 
   // Open modal for new product
@@ -360,6 +372,7 @@ const SpecialistInventory: React.FC = () => {
   const clearFilters = () => {
     setFilterType('');
     setFilterLowStock(false);
+    setFilterExpiring(false);
     setSearch('');
   };
 
@@ -462,6 +475,23 @@ const SpecialistInventory: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Expiring soon */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+              <div className="flex items-center gap-4">
+                <div className={`flex-shrink-0 p-3 rounded-xl ${(summary.expiringSoonCount ?? 0) > 0 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
+                  <ExclamationTriangleIcon className={`h-6 w-6 ${(summary.expiringSoonCount ?? 0) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('inventory.expiringSoon') || 'Expiring soon'}
+                  </p>
+                  <p className={`text-2xl font-bold truncate tabular-nums ${(summary.expiringSoonCount ?? 0) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
+                    {summary.expiringSoonCount ?? 0}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -508,6 +538,17 @@ const SpecialistInventory: React.FC = () => {
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                   {t('inventory.lowStockOnly') || 'Low stock only'}
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer py-2 sm:py-0">
+                <input
+                  type="checkbox"
+                  checked={filterExpiring}
+                  onChange={(e) => setFilterExpiring(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 flex-shrink-0"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  {t('inventory.expiringOnly') || 'Expiring soon'}
                 </span>
               </label>
               <button
@@ -600,6 +641,7 @@ const SpecialistInventory: React.FC = () => {
                                 {t('inventory.lowStock') || 'Low'}
                               </span>
                             )}
+                            {(() => { const e = expiryInfo(product); return e ? (<span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${e.cls}`}>{e.label}</span>) : null; })()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
                             {formatPrice(num(product.costPrice), productCurrency)}
@@ -695,6 +737,7 @@ const SpecialistInventory: React.FC = () => {
                                 {t('inventory.lowStock') || 'Low'}
                               </span>
                             )}
+                            {(() => { const e = expiryInfo(product); return e ? (<span className={`flex-shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${e.cls}`}>{e.label}</span>) : null; })()}
                           </dd>
                         </div>
                         <div className="flex items-start justify-between gap-3">

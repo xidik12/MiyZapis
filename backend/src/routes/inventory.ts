@@ -145,11 +145,12 @@ router.delete('/services/:serviceId/consumables/:productId', async (req: Request
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
-    const { type, lowStock, search } = req.query;
+    const { type, lowStock, expiringSoon, search } = req.query;
 
     const products = await InventoryService.list(ownerId, {
       type: type && PRODUCT_TYPES.includes(type as ProductType) ? (type as ProductType) : undefined,
       lowStock: lowStock === 'true',
+      expiringSoon: expiringSoon === 'true',
       search: typeof search === 'string' ? search : undefined,
     });
 
