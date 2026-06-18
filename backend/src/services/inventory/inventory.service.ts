@@ -18,27 +18,33 @@ export interface InventoryFilters {
 
 export interface CreateProductData {
   sku?: string | null;
+  barcode?: string | null;
   name: string;
   description?: string | null;
+  imageUrl?: string | null;
   type?: ProductType;
   unit?: string;
   costPrice?: number;
   salePrice?: number | null;
   stockQty?: number;
   reorderLevel?: number;
+  expiryDate?: string | Date | null;
   currency?: string;
   businessId?: string | null;
 }
 
 export interface UpdateProductData {
   sku?: string | null;
+  barcode?: string | null;
   name?: string;
   description?: string | null;
+  imageUrl?: string | null;
   type?: ProductType;
   unit?: string;
   costPrice?: number;
   salePrice?: number | null;
   reorderLevel?: number;
+  expiryDate?: string | Date | null;
   currency?: string;
   isActive?: boolean;
   businessId?: string | null;
@@ -107,14 +113,17 @@ export class InventoryService {
         ownerId,
         businessId: data.businessId ?? null,
         sku: data.sku?.trim() || null,
+        barcode: data.barcode?.trim() || null,
         name: data.name.trim(),
         description: data.description?.trim() || null,
+        imageUrl: data.imageUrl?.trim() || null,
         type: data.type && PRODUCT_TYPES.includes(data.type) ? data.type : 'CONSUMABLE',
         unit: data.unit?.trim() || 'unit',
         costPrice: data.costPrice != null ? data.costPrice : 0,
         salePrice: data.salePrice != null ? data.salePrice : null,
         stockQty: data.stockQty != null ? data.stockQty : 0,
         reorderLevel: data.reorderLevel != null ? data.reorderLevel : 0,
+        expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
         currency: data.currency || 'UAH',
       },
     });
@@ -127,13 +136,16 @@ export class InventoryService {
 
     const updateData: Prisma.ProductUpdateInput = {};
     if (data.sku !== undefined) updateData.sku = data.sku?.trim() || null;
+    if (data.barcode !== undefined) updateData.barcode = data.barcode?.trim() || null;
     if (data.name !== undefined) updateData.name = data.name.trim();
     if (data.description !== undefined) updateData.description = data.description?.trim() || null;
+    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl?.trim() || null;
     if (data.type !== undefined && PRODUCT_TYPES.includes(data.type)) updateData.type = data.type;
     if (data.unit !== undefined) updateData.unit = data.unit?.trim() || 'unit';
     if (data.costPrice !== undefined) updateData.costPrice = data.costPrice;
     if (data.salePrice !== undefined) updateData.salePrice = data.salePrice;
     if (data.reorderLevel !== undefined) updateData.reorderLevel = data.reorderLevel;
+    if (data.expiryDate !== undefined) updateData.expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
     if (data.currency !== undefined) updateData.currency = data.currency;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
     if (data.businessId !== undefined) updateData.businessId = data.businessId ?? null;
@@ -142,6 +154,25 @@ export class InventoryService {
       where: { id },
       data: updateData,
     });
+  }
+
+  // Look up a product by barcode. Returns the owner's own product (for POS), and
+  // when they don't have it yet, a match from the platform-wide catalog (any
+  // product anyone has entered with that barcode) so adding it can auto-fill
+  // name/image — the shared product data we collect across all shops.
+  static async lookupByBarcode(ownerId: string, barcode: string) {
+    const code = (barcode || '').trim();
+    if (!code) return { own: null, catalog: null };
+    const own = await prisma.product.findFirst({ where: { ownerId, barcode: code } });
+    let catalog: { name: string; description: string | null; imageUrl: string | null; unit: string } | null = null;
+    if (!own) {
+      catalog = await prisma.product.findFirst({
+        where: { barcode: code },
+        select: { name: true, description: true, imageUrl: true, unit: true },
+        orderBy: { updatedAt: 'desc' },
+      });
+    }
+    return { own, catalog };
   }
 
   // Delete a product, ownership-scoped. Returns false if not found/owned.

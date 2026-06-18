@@ -13,14 +13,17 @@ export interface Product {
   ownerId: string;
   businessId?: string | null;
   sku?: string | null;
+  barcode?: string | null;
   name: string;
   description?: string | null;
+  imageUrl?: string | null;
   type: ProductType;
   unit: string;
   costPrice: number | string;
   salePrice?: number | string | null;
   stockQty: number | string;
   reorderLevel: number | string;
+  expiryDate?: string | null;
   currency: string;
   isActive: boolean;
   createdAt: string;
@@ -52,28 +55,40 @@ export interface InventoryFilters {
 
 export interface CreateProductData {
   sku?: string;
+  barcode?: string | null;
   name: string;
   description?: string;
+  imageUrl?: string | null;
   type?: ProductType;
   unit?: string;
   costPrice?: number;
   salePrice?: number | null;
   stockQty?: number;
   reorderLevel?: number;
+  expiryDate?: string | null;
   currency?: string;
 }
 
 export interface UpdateProductData {
   sku?: string;
+  barcode?: string | null;
   name?: string;
   description?: string;
+  imageUrl?: string | null;
   type?: ProductType;
   unit?: string;
   costPrice?: number;
   salePrice?: number | null;
   reorderLevel?: number;
+  expiryDate?: string | null;
   currency?: string;
   isActive?: boolean;
+}
+
+// Resolve a scanned/typed barcode → own product (for POS) + catalog auto-fill.
+export interface BarcodeLookup {
+  own: Product | null;
+  catalog: { name: string; description: string | null; imageUrl: string | null; unit: string } | null;
 }
 
 export interface AdjustStockData {
@@ -138,6 +153,27 @@ export class InventoryService {
     }
 
     return response.data;
+  }
+
+  // Resolve a barcode → own product (POS) + catalog auto-fill data.
+  async lookupBarcode(barcode: string): Promise<BarcodeLookup> {
+    const response = await apiClient.get<BarcodeLookup>(`/inventory/lookup?barcode=${encodeURIComponent(barcode)}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Barcode lookup failed');
+    }
+    return response.data;
+  }
+
+  // Upload a product photo; returns the stored URL (saved in our uploads/DB).
+  async uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('files', file);
+    const response = await apiClient.post<any>('/files/upload?purpose=product', formData);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to upload image');
+    }
+    const f = Array.isArray(response.data) ? response.data[0] : response.data;
+    return f.url || f.path;
   }
 
   // Create product

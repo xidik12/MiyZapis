@@ -161,6 +161,26 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /lookup?barcode= — resolve a scanned/typed barcode. Returns the owner's
+// own product (for POS) and, if they don't have it, a catalog match (name/image
+// from the platform-wide product data) to auto-fill a new product.
+// NOTE: must be declared before GET /:id so "lookup" isn't read as an id.
+router.get('/lookup', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const barcode = (req.query.barcode as string) || '';
+    if (!barcode.trim()) {
+      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'barcode is required', requestId(req)));
+      return;
+    }
+    res.json(createSuccessResponse(await InventoryService.lookupByBarcode(ownerId, barcode)));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error looking up barcode:', error);
+    res.status(500).json(createErrorResponse('INVENTORY_ERROR', err.message, requestId(req)));
+  }
+});
+
 // GET /:id — single product (ownership-scoped)
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -184,7 +204,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
-    const { sku, name, description, type, unit, costPrice, salePrice, stockQty, reorderLevel, currency, businessId } = req.body;
+    const { sku, barcode, name, description, imageUrl, type, unit, costPrice, salePrice, stockQty, reorderLevel, expiryDate, currency, businessId } = req.body;
 
     // Validate name
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -224,14 +244,17 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     const product = await InventoryService.create(ownerId, {
       sku,
+      barcode,
       name,
       description,
+      imageUrl,
       type,
       unit,
       costPrice: cost,
       salePrice: sale,
       stockQty: qty,
       reorderLevel: reorder,
+      expiryDate: expiryDate || null,
       currency,
       businessId: businessId ?? null,
     });
@@ -249,7 +272,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
-    const { sku, name, description, type, unit, costPrice, salePrice, reorderLevel, currency, isActive, businessId } = req.body;
+    const { sku, barcode, name, description, imageUrl, type, unit, costPrice, salePrice, reorderLevel, expiryDate, currency, isActive, businessId } = req.body;
 
     if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
       res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Name cannot be empty', requestId(req)));
@@ -279,13 +302,16 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
 
     const product = await InventoryService.update(ownerId, req.params.id, {
       sku,
+      barcode,
       name,
       description,
+      imageUrl,
       type,
       unit,
       costPrice: cost,
       salePrice: salePrice === null ? null : sale,
       reorderLevel: reorder,
+      expiryDate,
       currency,
       isActive,
       businessId,

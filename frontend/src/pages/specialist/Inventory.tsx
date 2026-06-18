@@ -43,27 +43,33 @@ const num = (v: number | string | null | undefined): number => {
 
 interface ProductFormData {
   sku: string;
+  barcode: string;
   name: string;
   description: string;
+  imageUrl: string;
   type: ProductType;
   unit: string;
   costPrice: string;
   salePrice: string;
   stockQty: string;
   reorderLevel: string;
+  expiryDate: string;
   currency: string;
 }
 
 const initialFormData: ProductFormData = {
   sku: '',
+  barcode: '',
   name: '',
   description: '',
+  imageUrl: '',
   type: 'CONSUMABLE',
   unit: 'unit',
   costPrice: '',
   salePrice: '',
   stockQty: '0',
   reorderLevel: '0',
+  expiryDate: '',
   currency: 'UAH',
 };
 
@@ -93,7 +99,46 @@ const SpecialistInventory: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [submitting, setSubmitting] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [barcodeLooking, setBarcodeLooking] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Upload a product photo and store its URL on the form.
+  const handleImageUpload = async (file: File) => {
+    setImageUploading(true);
+    try {
+      const url = await inventoryService.uploadImage(file);
+      setFormData((prev) => ({ ...prev, imageUrl: url }));
+    } catch (err) {
+      toast.error((err as Error).message || t('inventory.imageUploadFailed') || 'Image upload failed');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  // When a barcode is entered, auto-fill name/image from the platform catalog
+  // if this owner doesn't already stock it.
+  const handleBarcodeLookup = async (code: string) => {
+    if (!code.trim()) return;
+    setBarcodeLooking(true);
+    try {
+      const { own, catalog } = await inventoryService.lookupBarcode(code.trim());
+      if (own) {
+        toast.info(t('inventory.barcodeExists') || 'You already stock this product');
+      } else if (catalog) {
+        setFormData((prev) => ({
+          ...prev,
+          name: prev.name || catalog.name || '',
+          description: prev.description || catalog.description || '',
+          imageUrl: prev.imageUrl || catalog.imageUrl || '',
+          unit: prev.unit && prev.unit !== 'unit' ? prev.unit : (catalog.unit || 'unit'),
+        }));
+        toast.success(t('inventory.barcodeAutofill') || 'Auto-filled from catalog');
+      }
+    } catch { /* non-fatal */ } finally {
+      setBarcodeLooking(false);
+    }
+  };
 
   // Adjust modal
   const [adjustProduct, setAdjustProduct] = useState<Product | null>(null);
@@ -150,14 +195,17 @@ const SpecialistInventory: React.FC = () => {
     setEditingProduct(product);
     setFormData({
       sku: product.sku || '',
+      barcode: (product as any).barcode || '',
       name: product.name,
       description: product.description || '',
+      imageUrl: (product as any).imageUrl || '',
       type: product.type,
       unit: product.unit || 'unit',
       costPrice: String(num(product.costPrice)),
       salePrice: product.salePrice != null ? String(num(product.salePrice)) : '',
       stockQty: String(num(product.stockQty)),
       reorderLevel: String(num(product.reorderLevel)),
+      expiryDate: (product as any).expiryDate ? String((product as any).expiryDate).slice(0, 10) : '',
       currency: product.currency || 'UAH',
     });
     setIsModalOpen(true);
@@ -186,13 +234,16 @@ const SpecialistInventory: React.FC = () => {
       if (editingProduct) {
         const data: UpdateProductData = {
           sku: formData.sku.trim() || undefined,
+          barcode: formData.barcode.trim() || null,
           name: formData.name.trim(),
           description: formData.description.trim() || undefined,
+          imageUrl: formData.imageUrl.trim() || null,
           type: formData.type,
           unit: formData.unit.trim() || 'unit',
           costPrice,
           salePrice,
           reorderLevel: parseFloat(formData.reorderLevel || '0'),
+          expiryDate: formData.expiryDate || null,
           currency: formData.currency,
         };
         await inventoryService.updateProduct(editingProduct.id, data);
@@ -200,14 +251,17 @@ const SpecialistInventory: React.FC = () => {
       } else {
         const data: CreateProductData = {
           sku: formData.sku.trim() || undefined,
+          barcode: formData.barcode.trim() || null,
           name: formData.name.trim(),
           description: formData.description.trim() || undefined,
+          imageUrl: formData.imageUrl.trim() || null,
           type: formData.type,
           unit: formData.unit.trim() || 'unit',
           costPrice,
           salePrice,
           stockQty: parseFloat(formData.stockQty || '0'),
           reorderLevel: parseFloat(formData.reorderLevel || '0'),
+          expiryDate: formData.expiryDate || null,
           currency: formData.currency,
         };
         await inventoryService.createProduct(data);
@@ -742,6 +796,71 @@ const SpecialistInventory: React.FC = () => {
                         <option key={type} value={type}>{getTypeLabel(type)}</option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Barcode + Expiry */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('inventory.barcode') || 'Barcode'}
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.barcode}
+                      onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                      onBlur={(e) => handleBarcodeLookup(e.target.value)}
+                      placeholder={t('inventory.barcodePlaceholder') || 'Scan or type — EAN/UPC'}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                    />
+                    {barcodeLooking && (
+                      <p className="mt-1 text-xs text-gray-400">{t('common.loading') || 'Looking up…'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('inventory.expiryDate') || 'Expiry date'}
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.expiryDate}
+                      onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Product photo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('inventory.photo') || 'Product photo'}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {formData.imageUrl ? (
+                      <img src={formData.imageUrl} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
+                        {t('inventory.noPhoto') || 'No photo'}
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <label className="inline-flex items-center px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-colors">
+                        {imageUploading ? (t('inventory.uploading') || 'Uploading…') : (t('inventory.choosePhoto') || 'Choose photo')}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={imageUploading}
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }}
+                        />
+                      </label>
+                      {formData.imageUrl && (
+                        <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="text-xs text-red-600 dark:text-red-400 hover:underline text-left">
+                          {t('common.remove') || 'Remove'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

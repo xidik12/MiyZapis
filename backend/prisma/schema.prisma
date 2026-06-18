@@ -2280,14 +2280,17 @@ model Product {
   ownerId      String // user who owns the inventory (solo or business owner)
   businessId   String? // null for solo specialists
   sku          String?
+  barcode      String? // EAN/UPC/etc. — for scanning + label printing + catalog lookup
   name         String
   description  String?
+  imageUrl     String? // product photo (stored in our uploads/DB)
   type         String   @default("CONSUMABLE") // CONSUMABLE | RETAIL
   unit         String   @default("unit") // unit | ml | g | pack
   costPrice    Decimal  @default(0)
   salePrice    Decimal? // for RETAIL items
   stockQty     Decimal  @default(0)
   reorderLevel Decimal  @default(0) // low-stock threshold
+  expiryDate   DateTime? // nearest batch expiry (v1: per-product; batch/lot tracking is a future enhancement)
   currency     String   @default("UAH")
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
@@ -2297,6 +2300,7 @@ model Product {
 
   @@index([ownerId])
   @@index([businessId])
+  @@index([barcode])
   @@map("products")
 }
 
