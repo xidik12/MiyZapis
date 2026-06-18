@@ -151,7 +151,7 @@ const HomePage: React.FC = () => {
 
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap';
+      link.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap';
       link.setAttribute('data-mz-fonts', '1');
       document.head.appendChild(link);
     }
@@ -264,7 +264,7 @@ const HomePage: React.FC = () => {
   return (
     <div
       className="min-h-screen w-full prevent-overflow"
-      style={{ fontFamily: "'Work Sans', 'Inter', system-ui, sans-serif" }}
+      style={{ fontFamily: "'Manrope', 'Inter', system-ui, sans-serif" }}
     >
       <PublicSeo
         title={t('seo.homeTitle') || 'МійЗапис — знайдіть спеціаліста та забронюйте онлайн'}
@@ -311,7 +311,7 @@ const HomePage: React.FC = () => {
           50%     { transform: translateY(-12px); }
         }
         .mz-heading {
-          font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+          font-family: 'Manrope', 'Inter', system-ui, sans-serif;
         }
         /* Content is visible by default; the scroll reveal only ENHANCES it,
            so sections never ship blank in a headless render or hidden tab. */

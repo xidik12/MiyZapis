@@ -143,8 +143,8 @@
   /* Headings use the Outfit display face with tight tracking platform-wide
      (was only on the home page) for a more distinctive, editorial feel. */
   h1, h2, h3, h4, .mz-heading {
-    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.015em;
+    font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 
   body {
