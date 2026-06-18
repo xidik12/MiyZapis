@@ -1,0 +1,4 @@
+
+# Capacitor native projects (regenerable via: npx cap add ios && npx cap add android && npx cap sync)
+/ios
+/android

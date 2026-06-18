@@ -1,6 +1,7 @@
 import React, { useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTelegramBackButton } from './lib/telegram';
+import { useCapacitorShell } from './lib/capacitor';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
 import { getAuthToken } from './services/api';
@@ -181,6 +182,7 @@ function App() {
 
   // Telegram Mini App: hardware BackButton navigates within the app.
   useTelegramBackButton();
+  useCapacitorShell();
 
   // Initialize authentication on app start.
   // Always reconcile the persisted user with /auth/me when a token exists —
