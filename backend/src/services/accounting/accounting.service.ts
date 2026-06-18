@@ -31,6 +31,8 @@ export interface ProfitLossSummary {
     pendingBookingsRevenue: number;       // not yet recognised; informational
     invoicesPaid: number;
     invoicesPaidRevenue: number;
+    retailSales: number;                  // fulfilled retail/POS product orders
+    retailSalesRevenue: number;
   };
   expenses: {
     total: number;
@@ -87,8 +89,8 @@ export class AccountingService {
     // business rollup the owner is the caller; for self it's just the caller.
     const ownerIds = userIds;
 
-    // Income side: completed bookings within the period.
-    const [completedAgg, pendingAgg, paidInvoiceAgg] = await Promise.all([
+    // Income side: completed bookings + fulfilled retail/POS sales in the period.
+    const [completedAgg, pendingAgg, paidInvoiceAgg, retailAgg] = await Promise.all([
       prisma.booking.aggregate({
         where: {
           specialistId: { in: userIds },
@@ -111,6 +113,16 @@ export class AccountingService {
           specialistId: { in: userIds },
           status: 'PAID',
           paidAt: { gte: from, lte: to },
+        },
+        _sum: { total: true },
+        _count: true,
+      }),
+      // Retail / POS sales = fulfilled product orders (fulfilled at = updatedAt).
+      prisma.productOrder.aggregate({
+        where: {
+          ownerId: { in: ownerIds },
+          status: 'FULFILLED',
+          updatedAt: { gte: from, lte: to },
         },
         _sum: { total: true },
         _count: true,
@@ -200,7 +212,8 @@ export class AccountingService {
     const completedRevenue = Number(completedAgg._sum.totalAmount ?? 0);
     const pendingRevenue = Number(pendingAgg._sum.totalAmount ?? 0);
     const paidInvoiceRevenue = Number(paidInvoiceAgg._sum.total ?? 0);
-    const grossIncome = completedRevenue + paidInvoiceRevenue;
+    const retailRevenue = Number(retailAgg._sum.total ?? 0);
+    const grossIncome = completedRevenue + paidInvoiceRevenue + retailRevenue;
 
     return {
       period: { from: from.toISOString(), to: to.toISOString() },
@@ -211,6 +224,8 @@ export class AccountingService {
         pendingBookingsRevenue: pendingRevenue,
         invoicesPaid: paidInvoiceAgg._count,
         invoicesPaidRevenue: paidInvoiceRevenue,
+        retailSales: retailAgg._count,
+        retailSalesRevenue: retailRevenue,
       },
       expenses: {
         total: totalExpenses,

@@ -6,6 +6,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { analyticsService, bookingService, specialistService } from '../../services';
+import { storeService } from '@/services/store.service';
 import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
 import TrialStatusBanner from '../../components/trial/TrialStatusBanner';
@@ -96,12 +97,13 @@ const SpecialistDashboard: React.FC = () => {
         setLoading(true);
         
         // Load data from multiple sources with retry logic - prioritize bookings API for accuracy
-        const [analyticsData, upcomingBookingsData, completedBookingsData, profileData, noShowBookingsData] = await Promise.allSettled([
+        const [analyticsData, upcomingBookingsData, completedBookingsData, profileData, noShowBookingsData, storeSummaryData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'specialist'), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
           retryRequest(() => specialistService.getProfile(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'NO_SHOW' }, 'specialist'), 2, 1000),
+          retryRequest(() => storeService.getSummary(), 1, 800),
         ]);
 
         if (analyticsData.status === 'rejected') {
@@ -157,8 +159,14 @@ const SpecialistDashboard: React.FC = () => {
               return sum + convertedAmount;
             }, 0) * 100) / 100;
             
-            // For now, use total revenue as monthly revenue (can be refined later)
-            stats.monthlyRevenue = totalRevenue;
+            // Revenue = completed bookings + this month's retail/POS sales
+            // (converted from the shop's currency into the display currency).
+            let retailRevenue = 0;
+            if (storeSummaryData.status === 'fulfilled' && storeSummaryData.value) {
+              const s = storeSummaryData.value as { monthSalesTotal?: number; currency?: string };
+              retailRevenue = convertPrice(Number(s.monthSalesTotal || 0), (s.currency as any) || 'UAH');
+            }
+            stats.monthlyRevenue = Math.round((totalRevenue + retailRevenue) * 100) / 100;
             
             // Calculate completion rate based on completed vs total (real calculation only)
             if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
