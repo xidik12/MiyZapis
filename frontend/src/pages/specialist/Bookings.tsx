@@ -1176,10 +1176,10 @@ const SpecialistBookings: React.FC = () => {
 
         {/* Tab Navigation */}
         <div className="mb-6">
-          <nav className="flex space-x-4 sm:space-x-8" aria-label="Tabs">
+          <nav className="flex overflow-x-auto scrollbar-hide border-b border-gray-200 dark:border-gray-700" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('provider')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-shrink-0 py-2 px-3 sm:px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'provider'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -1189,7 +1189,7 @@ const SpecialistBookings: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('customer')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-shrink-0 py-2 px-3 sm:px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'customer'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -1308,11 +1308,11 @@ const SpecialistBookings: React.FC = () => {
         {/* Bulk Actions */}
         {selectedBookings.length > 0 && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 {selectedBookings.length} {t('bookings.selected')}
               </p>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleBulkStatusChange('confirmed')}
                   className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
@@ -1371,24 +1371,26 @@ const SpecialistBookings: React.FC = () => {
                     onChange={(e) => handleSelectBooking(booking.id, e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
-                      {booking.customer 
+                  <div className="flex items-center min-w-0">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3 flex-shrink-0">
+                      {booking.customer
                         ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}`
                         : (booking.customerName?.split(' ').map(n => n[0]).join('') || 'U')
                       }
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                        {booking.customer 
-                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                          : (booking.customerName || 'Unknown Customer')
-                        }
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2 min-w-0">
+                        <span className="truncate">
+                          {booking.customer
+                            ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
+                            : (booking.customerName || 'Unknown Customer')
+                          }
+                        </span>
                         {booking.customer?.loyaltyPoints != null && (
                           <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                         )}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         ID: #{booking.id}
                       </p>
                     </div>

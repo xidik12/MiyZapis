@@ -166,20 +166,22 @@ const Tabs: React.FC<{ current: Tab; onChange: (t: Tab) => void }> = ({ current,
     ['settings', t('profile.tax.section')],
   ];
   return (
-    <div className="flex gap-1 mb-4 border-b border-gray-200 dark:border-gray-700">
-      {tabs.map(([k, l]) => (
-        <button
-          key={k}
-          onClick={() => onChange(k)}
-          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-            current === k
-              ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-        >
-          {l}
-        </button>
-      ))}
+    <div className="overflow-x-auto scrollbar-hide">
+      <div className="flex flex-nowrap gap-1 mb-4 border-b border-gray-200 dark:border-gray-700">
+        {tabs.map(([k, l]) => (
+          <button
+            key={k}
+            onClick={() => onChange(k)}
+            className={`whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              current === k
+                ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -220,12 +222,12 @@ const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
         {data.expenses.byCategory.length === 0 && <p className="text-sm text-gray-500">{t('accounting.pnl.noExpenses')}</p>}
         <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {data.expenses.byCategory.map((row) => (
-            <div key={row.category} className="flex justify-between py-2 text-sm">
-              <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{categoryLabel(row.category, t)}</div>
-                <div className="text-xs text-gray-500">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}</div>
+            <div key={row.category} className="flex justify-between gap-3 py-2 text-sm">
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{categoryLabel(row.category, t)}</div>
+                <div className="text-xs text-gray-500 break-words">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}</div>
               </div>
-              <div className="font-mono text-gray-900 dark:text-gray-100">{fmtMoney(row.total, c)}</div>
+              <div className="flex-shrink-0 font-mono tabular-nums text-gray-900 dark:text-gray-100">{fmtMoney(row.total, c)}</div>
             </div>
           ))}
         </div>
@@ -290,11 +292,11 @@ const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
           : <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {data.lines.map((l, i) => (
                 <div key={i} className="py-3">
-                  <div className="flex justify-between text-sm">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{l.name}</div>
-                    <div className="font-mono text-gray-900 dark:text-gray-100">{fmtMoney(l.amount)}</div>
+                  <div className="flex justify-between gap-3 text-sm">
+                    <div className="min-w-0 font-medium text-gray-900 dark:text-gray-100 truncate">{l.name}</div>
+                    <div className="flex-shrink-0 font-mono tabular-nums text-gray-900 dark:text-gray-100">{fmtMoney(l.amount)}</div>
                   </div>
-                  <div className="text-xs text-gray-500">{l.description}</div>
+                  <div className="text-xs text-gray-500 break-words">{l.description}</div>
                 </div>
               ))}
             </div>}
@@ -493,11 +495,13 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <button onClick={() => setLines([...lines, { description: '', quantity: 1, unitPrice: 0 }])} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded">{t('accounting.invoices.modal.addLine')}</button>
             </div>
             {lines.map((l, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 mb-2">
-                <input className="col-span-6 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" placeholder={t('accounting.invoices.modal.description')} value={l.description} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], description: e.target.value }; setLines(c); }} />
-                <input className="col-span-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.qty')} value={l.quantity} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], quantity: Number(e.target.value) }; setLines(c); }} />
-                <input className="col-span-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.unitPrice')} value={l.unitPrice} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], unitPrice: Number(e.target.value) }; setLines(c); }} />
-                <button onClick={() => setLines(lines.filter((_, j) => j !== i))} className="col-span-1 text-red-500 hover:text-red-700">×</button>
+              <div key={i} className="flex flex-col gap-2 mb-2 sm:grid sm:grid-cols-12">
+                <input className="w-full sm:col-span-6 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" placeholder={t('accounting.invoices.modal.description')} value={l.description} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], description: e.target.value }; setLines(c); }} />
+                <div className="flex gap-2 sm:contents">
+                  <input className="flex-1 sm:col-span-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.qty')} value={l.quantity} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], quantity: Number(e.target.value) }; setLines(c); }} />
+                  <input className="flex-1 sm:col-span-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.unitPrice')} value={l.unitPrice} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], unitPrice: Number(e.target.value) }; setLines(c); }} />
+                  <button onClick={() => setLines(lines.filter((_, j) => j !== i))} className="flex-shrink-0 sm:col-span-1 text-red-500 hover:text-red-700 px-1">×</button>
+                </div>
               </div>
             ))}
           </div>
@@ -508,9 +512,9 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-3 text-sm space-y-1">
-            <div className="flex justify-between"><span>{t('accounting.invoices.modal.subtotal')}</span><span className="font-mono">{fmtMoney(totals.subtotal, currency)}</span></div>
-            <div className="flex justify-between text-gray-500"><span>{t('accounting.invoices.modal.tax')} ({taxRatePct}%)</span><span className="font-mono">{fmtMoney(totals.tax, currency)}</span></div>
-            <div className="flex justify-between font-semibold text-base"><span>{t('accounting.invoices.modal.total')}</span><span className="font-mono">{fmtMoney(totals.total, currency)}</span></div>
+            <div className="flex justify-between gap-3"><span className="flex-shrink-0">{t('accounting.invoices.modal.subtotal')}</span><span className="min-w-0 truncate text-right font-mono tabular-nums">{fmtMoney(totals.subtotal, currency)}</span></div>
+            <div className="flex justify-between gap-3 text-gray-500"><span className="flex-shrink-0">{t('accounting.invoices.modal.tax')} ({taxRatePct}%)</span><span className="min-w-0 truncate text-right font-mono tabular-nums">{fmtMoney(totals.tax, currency)}</span></div>
+            <div className="flex justify-between gap-3 font-semibold text-base"><span className="flex-shrink-0">{t('accounting.invoices.modal.total')}</span><span className="min-w-0 truncate text-right font-mono tabular-nums">{fmtMoney(totals.total, currency)}</span></div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
@@ -645,7 +649,7 @@ const SettingsPanel: React.FC = () => {
 const Stat: React.FC<{ label: string; value: string; hint?: string; positive?: boolean; negative?: boolean }> = ({ label, value, hint, positive, negative }) => (
   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
     <div className="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wider">{label}</div>
-    <div className={`text-xl font-bold ${positive ? 'text-green-600' : negative ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{value}</div>
+    <div className={`text-xl font-bold truncate tabular-nums ${positive ? 'text-green-600' : negative ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{value}</div>
     {hint && <div className="text-xs text-gray-500">{hint}</div>}
   </div>
 );
@@ -658,9 +662,9 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 );
 
 const RowKV: React.FC<{ k: string; v: string; muted?: boolean }> = ({ k, v, muted }) => (
-  <div className="flex justify-between py-1 text-sm">
-    <span className={muted ? 'text-gray-500' : 'text-gray-700 dark:text-gray-200'}>{k}</span>
-    <span className={`font-mono ${muted ? 'text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{v}</span>
+  <div className="flex justify-between gap-3 py-1 text-sm">
+    <span className={`flex-shrink-0 ${muted ? 'text-gray-500' : 'text-gray-700 dark:text-gray-200'}`}>{k}</span>
+    <span className={`min-w-0 truncate text-right font-mono tabular-nums ${muted ? 'text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{v}</span>
   </div>
 );
 

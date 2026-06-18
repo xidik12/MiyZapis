@@ -814,30 +814,30 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-4">
             {dashboardData.upcomingAppointments.map((appointment: any) => (
               <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-semibold text-sm">
                       {(appointment.customerName || 'U').split(' ').map((n: string) => n[0]).join('')}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{appointment.customerName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{appointment.serviceName}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{appointment.customerName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{appointment.serviceName}</p>
+                    <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 dark:text-gray-400">
                       <span>{appointment.time}</span>
                       <span>•</span>
                       <span>{appointment.duration}</span>
                       <span>•</span>
                       <span className={appointment.type === 'online' ? 'text-primary-600' : 'text-secondary-600'}>
-                        {appointment.type === 'online' 
-                          ? `🔗 ${t('dashboard.specialist.online')}` 
+                        {appointment.type === 'online'
+                          ? `🔗 ${t('dashboard.specialist.online')}`
                           : `🏢 ${t('dashboard.specialist.offline')}`
                         }
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 flex-shrink-0">
                   <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-all duration-200">
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>

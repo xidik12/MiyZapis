@@ -745,7 +745,7 @@ const SpecialistSchedule: React.FC = () => {
           </div>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* View Toggle */}
           <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
             <button
@@ -1238,11 +1238,11 @@ const SpecialistSchedule: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center">
-            <div className="p-2 bg-red-100 dark:bg-red-900 rounded-xl">
+            <div className="p-2 bg-red-100 dark:bg-red-900 rounded-xl flex-shrink-0">
               <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.blockedSlots')}</p>
+            <div className="ml-3 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">{t('schedule.blockedSlots')}</p>
               <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {availabilityBlocks.filter(b => !b.isAvailable).length}
               </p>
@@ -1252,11 +1252,11 @@ const SpecialistSchedule: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm col-span-2 sm:col-span-1">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-xl">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-xl flex-shrink-0">
               <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.totalSlots')}</p>
+            <div className="ml-3 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">{t('schedule.totalSlots')}</p>
               <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{availabilityBlocks.length}</p>
             </div>
           </div>

@@ -493,7 +493,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  CATEGORIES SECTION                                           */}
       {/* ============================================================ */}
-      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow overflow-x-hidden bg-gray-50 dark:bg-gray-900">
         <div>
           <div
             ref={catReveal.ref}
@@ -893,7 +893,7 @@ const HomePage: React.FC = () => {
       {/* ============================================================ */}
       {/*  BROWSE BY CITY                                               */}
       {/* ============================================================ */}
-      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow bg-gray-50 dark:bg-gray-800">
+      <section className="py-10 sm:py-12 lg:py-14 w-full prevent-overflow overflow-x-hidden bg-gray-50 dark:bg-gray-800">
         <div>
           <div
             ref={citiesReveal.ref}

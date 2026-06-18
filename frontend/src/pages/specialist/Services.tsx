@@ -902,8 +902,8 @@ const SpecialistServices: React.FC = () => {
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
     <div className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg hover:border-gray-300 dark:hover:border-gray-700 cursor-pointer transition-all duration-200 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
-        <div className="flex-1">
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
+        <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               {getLocalizedText(service, 'name')}
@@ -949,11 +949,11 @@ const SpecialistServices: React.FC = () => {
             </span>
           </div>
         </div>
-        <div className="text-right ml-4 mt-2 sm:mt-0">
-          <div className="text-xl sm:text-2xl font-bold text-primary-600 mb-2">
+        <div className="text-right flex-shrink-0 sm:ml-4 sm:mt-0">
+          <div className="text-xl sm:text-2xl font-bold text-primary-600 mb-2 tabular-nums">
             {service.basePrice && !isNaN(Number(service.basePrice)) ? formatPrice(Number(service.basePrice), getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate max-w-[120px]">
             {getLocalizedText(service, 'category')}
           </div>
         </div>

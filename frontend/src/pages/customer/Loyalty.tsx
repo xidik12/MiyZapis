@@ -426,9 +426,9 @@ const CustomerLoyalty: React.FC = () => {
                 ></div>
               </div>
 
-              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>{translateTier(loyaltyStats.currentTier?.name)} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
-                <span>{translateTier(loyaltyStats.nextTier.name)} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+              <div className="flex flex-wrap justify-between gap-1 text-sm text-gray-600 dark:text-gray-400">
+                <span className="shrink-0">{translateTier(loyaltyStats.currentTier?.name)} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
+                <span className="shrink-0">{translateTier(loyaltyStats.nextTier.name)} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
               </div>
             </div>
           </div>

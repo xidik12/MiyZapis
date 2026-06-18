@@ -620,7 +620,7 @@ const SearchPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-row gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-row flex-wrap gap-2 sm:gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
               className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
