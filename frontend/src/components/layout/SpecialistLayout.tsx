@@ -127,6 +127,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: ArchiveBoxIcon,
   },
   {
+    name: 'POS',
+    nameUk: 'Каса',
+    href: '/specialist/pos',
+    icon: BuildingStorefrontIcon,
+    iconActive: BuildingStorefrontIcon,
+  },
+  {
     name: 'Sales',
     nameUk: 'Продажі',
     href: '/specialist/sales',
@@ -224,7 +231,7 @@ const navigation: SidebarNavItem[] = [
 const NAV_GROUP_OF: Record<string, string> = {
   Dashboard: 'pinned', Bookings: 'pinned',
   'Find Services': 'work', Services: 'work', Clients: 'work', Tasks: 'work', Schedule: 'work', Analytics: 'work',
-  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance', Team: 'finance',
+  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', POS: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance', Team: 'finance',
   'Segments & Campaigns': 'growth', Leads: 'growth', Marketing: 'growth', Promote: 'growth', Loyalty: 'growth', Referrals: 'growth', Reviews: 'growth',
   Community: 'account',
 };

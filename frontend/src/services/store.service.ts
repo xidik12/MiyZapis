@@ -101,6 +101,20 @@ export class StoreService {
     return response.data;
   }
 
+  // ---- POS: instant in-person counter sale ----
+  async posSale(data: {
+    items: { productId: string; quantity: number }[];
+    paymentMethod?: 'CASH' | 'CARD' | 'OTHER';
+    customerName?: string;
+    note?: string;
+  }): Promise<ProductOrder> {
+    const response = await apiClient.post<ProductOrder>('/store/pos/sale', data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to record sale');
+    }
+    return response.data;
+  }
+
   // ---- Owner order management ----
   async getSummary(): Promise<StoreSummary> {
     const response = await apiClient.get<StoreSummary>('/store/orders/summary');

@@ -294,6 +294,80 @@ export class StoreService {
     });
   }
 
+  // In-person point-of-sale: an instant counter sale. Creates a FULFILLED order
+  // and deducts stock immediately, recording the payment method. Payment is
+  // taken in person (cash/card) — the platform does not process it.
+  static async posSale(ownerId: string, input: {
+    items: { productId: string; quantity: number }[];
+    paymentMethod?: string; // CASH | CARD | OTHER
+    customerName?: string;
+    note?: string;
+  }) {
+    if (!Array.isArray(input.items) || input.items.length === 0) {
+      throw new StoreServiceError('EMPTY_ORDER', 'Sale must contain at least one item');
+    }
+
+    const qtyByProduct = new Map<string, number>();
+    for (const item of input.items) {
+      const productId = item.productId?.trim();
+      const quantity = Number(item.quantity);
+      if (!productId) throw new StoreServiceError('INVALID_ITEM', 'Each item must reference a product');
+      if (!Number.isFinite(quantity) || quantity <= 0) throw new StoreServiceError('INVALID_QUANTITY', 'Quantity must be positive');
+      qtyByProduct.set(productId, (qtyByProduct.get(productId) || 0) + quantity);
+    }
+
+    const productIds = Array.from(qtyByProduct.keys());
+    const products = await prisma.product.findMany({ where: { id: { in: productIds }, ownerId } });
+    const productById = new Map(products.map((p) => [p.id, p]));
+
+    let currency = 'UAH';
+    let subtotal = 0;
+    let businessId: string | null = null;
+    const lineItems: { productId: string; name: string; quantity: number; unitPrice: number }[] = [];
+
+    for (const productId of productIds) {
+      const product = productById.get(productId);
+      if (!product) throw new StoreServiceError('PRODUCT_NOT_FOUND', 'Product not found in your inventory');
+      if (!product.isActive) throw new StoreServiceError('NOT_ACTIVE', `"${product.name}" is not available`);
+      const quantity = qtyByProduct.get(productId)!;
+      const stockQty = toNumber(product.stockQty);
+      if (quantity > stockQty) throw new StoreServiceError('INSUFFICIENT_STOCK', `Not enough stock for "${product.name}"`);
+      const unitPrice = toNumber(product.salePrice ?? product.costPrice);
+      subtotal += unitPrice * quantity;
+      currency = product.currency || currency;
+      businessId = product.businessId ?? businessId;
+      lineItems.push({ productId, name: product.name, quantity, unitPrice });
+    }
+
+    const total = subtotal;
+    const method = (input.paymentMethod || 'CASH').toUpperCase();
+    const note = `[POS:${method}]${input.note ? ' ' + input.note.trim() : ''}`;
+
+    const order = await prisma.productOrder.create({
+      data: {
+        ownerId,
+        businessId,
+        customerName: input.customerName?.trim() || 'Walk-in',
+        orderNumber: generateOrderNumber(),
+        status: 'FULFILLED',
+        fulfilment: 'PICKUP',
+        currency,
+        subtotal,
+        total,
+        note,
+        items: { create: lineItems.map((li) => ({ productId: li.productId, name: li.name, quantity: li.quantity, unitPrice: li.unitPrice })) },
+      },
+      include: { items: true },
+    });
+
+    // Deduct stock for each line (reason SALE), referencing this order.
+    for (const li of lineItems) {
+      await InventoryService.adjustStock(ownerId, li.productId, -li.quantity, 'SALE', ownerId, order.id);
+    }
+
+    return order;
+  }
+
   // Owner dashboard summary: count of pending orders + total of FULFILLED
   // orders this calendar month.
   static async summary(ownerId: string): Promise<StoreSummary> {

@@ -140,6 +140,35 @@ ownerRouter.post('/orders/:id/status', async (req: Request, res: Response): Prom
   }
 });
 
+// POS — instant in-person counter sale. Body: { items: [{productId, quantity}],
+// paymentMethod?, customerName?, note? }. Creates a FULFILLED order + deducts stock.
+ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    let order;
+    try {
+      order = await StoreService.posSale(ownerId, {
+        items: req.body?.items,
+        paymentMethod: req.body?.paymentMethod,
+        customerName: req.body?.customerName,
+        note: req.body?.note,
+      });
+    } catch (svcError: unknown) {
+      if (svcError instanceof StoreServiceError) {
+        res.status(statusForServiceError(svcError.code)).json(createErrorResponse('VALIDATION_ERROR', svcError.message, requestId(req)));
+        return;
+      }
+      throw svcError;
+    }
+    logger.info(`POS sale ${order.orderNumber} by owner ${ownerId}, total ${order.total}`);
+    res.status(201).json(createSuccessResponse(order));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error in POS sale:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
+
 // ===========================================================================
 // PUBLIC ROUTES — registered BEFORE the guarded ownerRouter is mounted, so the
 // ownerRouter's blanket authenticateToken middleware never runs for anonymous
