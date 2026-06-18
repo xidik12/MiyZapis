@@ -3763,6 +3763,7 @@ const en: Record<string, string> = {
   'scan.permissionDenied': 'Camera access is blocked. Allow camera permission for this site (and enable Camera for your browser in your system settings), then try again.',
   'scan.noCamera': 'No camera found. Type the barcode instead.',
   'scan.notSupported': 'Scanning needs a secure (https) connection and a camera.',
+  'scan.cameraBusy': 'The camera is in use by another app. Close it and try again.',
   'scan.cameraError': 'Camera unavailable',
   'labels.title': 'Print barcode labels',
   'labels.printLabels': 'Print labels',

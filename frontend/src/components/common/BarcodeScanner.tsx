@@ -8,14 +8,14 @@ interface BarcodeScannerProps {
   onDetected: (code: string) => void;
 }
 
-// Camera barcode scanner (ZXing). Explicitly acquires the camera via
-// getUserMedia (preferring the rear camera) so the permission prompt fires
-// reliably, then decodes the live stream. Surfaces a clear, retryable error and
-// degrades gracefully — the user can always type the barcode instead.
+// Camera barcode scanner (ZXing). Uses decodeFromConstraints — a single call
+// that requests the camera (triggering the permission prompt), attaches the
+// stream to the <video>, and decodes continuously. Prefers the rear camera.
+// On any failure it shows a clear, retryable message; the user can always type
+// the barcode instead.
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDetected }) => {
   const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
@@ -23,64 +23,55 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
   const stopAll = useCallback(() => {
     try { controlsRef.current?.stop(); } catch { /* noop */ }
     controlsRef.current = null;
-    streamRef.current?.getTracks().forEach((tk) => { try { tk.stop(); } catch { /* noop */ } });
-    streamRef.current = null;
+    // Belt-and-braces: release any stream still attached to the video.
+    const v = videoRef.current;
+    const s = v?.srcObject as MediaStream | null;
+    if (s) { s.getTracks().forEach((tk) => { try { tk.stop(); } catch { /* noop */ } }); }
+    if (v) v.srcObject = null;
   }, []);
 
   const start = useCallback(async () => {
     setError(null);
     setStarting(true);
-    let stream: MediaStream;
+
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setError(t('scan.notSupported') || 'Scanning needs a secure (https) connection and a camera.');
+      setStarting(false);
+      return;
+    }
+
     try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw Object.assign(new Error('unsupported'), { name: 'NotSupportedError' });
-      }
-      // Prefer the rear camera ('ideal' so it still works on front-only devices).
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
-        audio: false,
-      });
+      const reader = new BrowserMultiFormatReader();
+      const controls = await reader.decodeFromConstraints(
+        { video: { facingMode: { ideal: 'environment' } }, audio: false },
+        videoRef.current!,
+        (result, _err, ctrl) => {
+          if (result) {
+            const text = result.getText();
+            try { ctrl.stop(); } catch { /* noop */ }
+            stopAll();
+            onDetected(text);
+            onClose();
+          }
+        },
+      );
+      controlsRef.current = controls;
+      setStarting(false);
     } catch (e: any) {
       const name = e?.name || '';
       let msg: string;
-      if (name === 'NotAllowedError' || name === 'SecurityError') {
+      if (name === 'NotAllowedError' || name === 'SecurityError' || name === 'PermissionDeniedError') {
         msg = t('scan.permissionDenied') || 'Camera access is blocked. Allow camera permission for this site (and enable Camera for your browser in your system settings), then try again.';
       } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError') {
         msg = t('scan.noCamera') || 'No camera found. Type the barcode instead.';
-      } else if (name === 'NotSupportedError') {
-        msg = t('scan.notSupported') || 'Scanning needs a secure (https) connection and a camera.';
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        msg = t('scan.cameraBusy') || 'The camera is in use by another app. Close it and try again.';
       } else {
         msg = e?.message || t('scan.cameraError') || 'Camera unavailable';
       }
       setError(msg);
       setStarting(false);
-      return;
     }
-
-    streamRef.current = stream;
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      try { await videoRef.current.play(); } catch { /* autoplay quirks */ }
-    }
-
-    try {
-      const reader = new BrowserMultiFormatReader();
-      const controls = await reader.decodeFromStream(stream, videoRef.current!, (result, _err, ctrl) => {
-        if (result) {
-          const text = result.getText();
-          try { ctrl.stop(); } catch { /* noop */ }
-          stopAll();
-          onDetected(text);
-          onClose();
-        }
-      });
-      controlsRef.current = controls;
-      setStarting(false);
-    } catch (e: any) {
-      setError(e?.message || t('scan.cameraError') || 'Camera unavailable');
-      setStarting(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t, onDetected, onClose, stopAll]);
 
   useEffect(() => {
