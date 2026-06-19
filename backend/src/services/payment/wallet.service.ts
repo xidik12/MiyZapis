@@ -1,5 +1,6 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { num } from '@/utils/money';
 
 export interface WalletTransactionData {
   userId: string;
@@ -325,7 +326,7 @@ export class WalletService {
       await tx.booking.update({
         where: { id: bookingId },
         data: {
-          walletAmountUsed: booking.walletAmountUsed + appliedAmount,
+          walletAmountUsed: num(booking.walletAmountUsed) + num(appliedAmount),
         },
       });
 
@@ -508,11 +509,11 @@ export class WalletService {
 
     const credits = summary
       .filter(s => ['CREDIT', 'REFUND'].includes(s.type))
-      .reduce((sum, s) => sum + (s._sum.amount || 0), 0);
+      .reduce((sum, s) => sum + num(s._sum.amount), 0);
 
     const debits = summary
       .filter(s => s.type === 'DEBIT')
-      .reduce((sum, s) => sum + (s._sum.amount || 0), 0);
+      .reduce((sum, s) => sum + num(s._sum.amount), 0);
 
     return {
       balance: user.walletBalance,

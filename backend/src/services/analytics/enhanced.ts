@@ -1,5 +1,6 @@
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import { num } from '@/utils/money';
 
 export interface AnalyticsFilters {
   startDate?: Date;
@@ -550,7 +551,7 @@ export class EnhancedAnalyticsService {
       }
       
       acc[category].bookingCount += cat._count.serviceId;
-      acc[category].revenue += cat._sum.totalAmount || 0;
+      acc[category].revenue += num(cat._sum.totalAmount);
       
       return acc;
     }, {} as Record<string, { bookingCount: number; revenue: number }>);

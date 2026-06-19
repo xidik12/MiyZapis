@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { convertCurrency } from '@/utils/currency';
+import { num } from '@/utils/money';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 
 // Booking statuses that generate revenue
@@ -356,10 +357,10 @@ export class AnalyticsService {
           };
         }
         acc[serviceId].bookings.push(booking);
-        acc[serviceId].revenue += Number(booking.totalAmount);
+        acc[serviceId].revenue = num(acc[serviceId].revenue) + num(booking.totalAmount);
         if (booking.review) {
           acc[serviceId].reviewCount++;
-          acc[serviceId].averageRating += booking.review.rating;
+          acc[serviceId].averageRating = num(acc[serviceId].averageRating) + num(booking.review.rating);
         }
         return acc;
       }, {} as Record<string, Record<string, unknown>>);
@@ -378,7 +379,7 @@ export class AnalyticsService {
         summary: {
           totalServices: servicePerformance.length,
           bestPerforming: servicePerformance[0] || null,
-          totalRevenue: servicePerformance.reduce((sum, service) => sum + service.revenue, 0)
+          totalRevenue: servicePerformance.reduce((sum, service) => sum + num(service.revenue), 0)
         }
       };
     } catch (error) {
@@ -480,7 +481,7 @@ export class AnalyticsService {
           };
         }
         acc[customerId].bookingCount++;
-        acc[customerId].totalSpent += Number(booking.totalAmount);
+        acc[customerId].totalSpent = num(acc[customerId].totalSpent) + num(booking.totalAmount);
         if (booking.createdAt < acc[customerId].firstBooking) {
           acc[customerId].firstBooking = booking.createdAt;
         }
@@ -925,7 +926,7 @@ export class AnalyticsService {
     const grouped = this.groupDataByPeriod(reviews, period, 'createdAt');
     return grouped.map(group => ({
       period: group.period,
-      averageRating: group.items.reduce((sum, item) => sum + item.rating, 0) / group.items.length,
+      averageRating: group.items.reduce((sum, item) => sum + num(item.rating), 0) / group.items.length,
       count: group.count
     }));
   }

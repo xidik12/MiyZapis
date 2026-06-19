@@ -1,5 +1,6 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { num } from '@/utils/money';
 import { coinbaseCommerceService } from './coinbase.service';
 
 export interface SubscriptionPlan {
@@ -573,7 +574,7 @@ export class SpecialistSubscriptionService {
 
         successfulSubIds.push(subscription.id);
         processedSubscriptions++;
-        totalRevenue += subscription.monthlyRate;
+        totalRevenue += num(subscription.monthlyRate);
 
         logger.info('Monthly billing processed', {
           specialistId: subscription.specialistId,

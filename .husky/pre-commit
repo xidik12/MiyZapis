@@ -1,0 +1,31 @@
+# Decimal-concat guard.
+# A `+` on a Prisma Decimal (whose valueOf() returns a STRING) silently
+# CONCATENATES instead of adding — "666" + "21000" => "66621000". That class of
+# bug shipped a ₴66.6M expenses figure once; it does not get to merge again.
+#
+# This lints ONLY the staged backend *.ts files, and ONLY the
+# restrict-plus-operands rule (via .eslintrc.money.cjs), so it's fast and is not
+# blocked by the repo's unrelated pre-existing lint debt. Frontend money types
+# lie (Decimals arrive as strings typed `number`), so type-aware lint can't catch
+# them there — use num()/sumBy() from src/utils/money instead.
+
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep '^backend/.*\.ts$' || true)
+[ -z "$staged" ] && exit 0
+
+# Strip the backend/ prefix: eslint runs from backend/ so its plugins, tsconfig
+# and the money config all resolve correctly.
+rel=$(printf '%s\n' "$staged" | sed 's#^backend/##')
+
+echo "🔍 Decimal-concat lint on staged backend files…"
+( cd backend && printf '%s\n' "$rel" | xargs ./node_modules/.bin/eslint --no-eslintrc -c .eslintrc.money.cjs )
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo ""
+  echo "❌ Commit blocked: a '+' on a money/Decimal value (string-concat bug)."
+  echo "   Replace it with num()/sumBy()/addMoney() from src/utils/money, then re-commit."
+  echo "   (To bypass in a genuine false positive: git commit --no-verify)"
+  exit 1
+fi
+
+exit 0

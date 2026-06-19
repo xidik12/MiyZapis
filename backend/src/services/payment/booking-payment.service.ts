@@ -1,5 +1,6 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { num } from '@/utils/money';
 import { coinbaseCommerceService } from './coinbase.service';
 import { coinbaseOnrampService } from './coinbase-onramp.service';
 import { walletService } from './wallet.service';
@@ -401,7 +402,7 @@ export class BookingPaymentService {
       .filter(p => p.status === 'PAID')
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    const paidAmount = booking.walletAmountUsed + paidCryptoAmount;
+    const paidAmount = num(booking.walletAmountUsed) + paidCryptoAmount;
     const remainingAmount = Math.max(0, booking.depositAmount - paidAmount);
 
     return {
