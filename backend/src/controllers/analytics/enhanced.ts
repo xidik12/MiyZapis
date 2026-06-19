@@ -485,7 +485,8 @@ export class EnhancedAnalyticsController {
 
       grouped[key].bookings += 1;
       if (booking.status === 'COMPLETED') {
-        grouped[key].revenue += booking.totalAmount;
+        // totalAmount is a Prisma Decimal — coerce or += concatenates strings.
+        grouped[key].revenue += Number(booking.totalAmount);
       }
     });
 

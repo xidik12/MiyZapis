@@ -213,15 +213,15 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
   const calculateEarnings = () => {
     const referralEarnings = walletTransactions
       .filter(t => t.reason === 'REFERRAL_REWARD')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const loyaltyEarnings = walletTransactions
       .filter(t => t.reason === 'LOYALTY_POINTS_CONVERTED')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const forfeitureEarnings = walletTransactions
       .filter(t => t.reason === 'FORFEITURE_SPLIT')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalEarnings = referralEarnings + loyaltyEarnings + forfeitureEarnings;
 

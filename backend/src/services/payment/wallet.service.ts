@@ -53,8 +53,10 @@ export class WalletService {
         throw new Error('User not found');
       }
 
-      const balanceBefore = user.walletBalance;
-      const newBalance = balanceBefore + data.amount;
+      // walletBalance is a Prisma Decimal (valueOf() is a STRING) — coerce or
+      // `+` concatenates ("100" + 50 → "10050") instead of adding.
+      const balanceBefore = Number(user.walletBalance);
+      const newBalance = balanceBefore + Number(data.amount);
 
       // Create wallet transaction
       const transaction = await tx.walletTransaction.create({

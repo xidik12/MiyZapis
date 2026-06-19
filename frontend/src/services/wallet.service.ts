@@ -115,11 +115,11 @@ export class WalletService {
 
       const credits = allTransactions.transactions
         .filter(t => ['CREDIT', 'REFUND'].includes(t.type) && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + Number(t.amount), 0);
 
       const debits = allTransactions.transactions
         .filter(t => t.type === 'DEBIT' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + Number(t.amount), 0);
 
       const pending = allTransactions.transactions.filter(t => t.status === 'PENDING').length;
 
