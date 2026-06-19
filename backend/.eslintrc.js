@@ -30,5 +30,10 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'quote-props': ['error', 'as-needed'],
+    // Money/Decimal guard: `+` on a Prisma Decimal (whose valueOf() is a string)
+    // silently CONCATENATES ("666"+"21000"="66621000"). This type-aware rule
+    // flags it — keep it ON, and prefer the coercing helpers in src/utils/money
+    // (num / sumBy) for all monetary arithmetic.
+    '@typescript-eslint/restrict-plus-operands': ['error', { allowAny: false, allowBoolean: false, allowNullish: false }],
   },
 };

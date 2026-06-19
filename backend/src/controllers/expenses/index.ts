@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
+import { num, sumBy } from '@/utils/money';
 import { AuthenticatedRequest } from '@/types';
 
 const prisma = new PrismaClient();
@@ -135,10 +136,9 @@ export class ExpenseController {
         orderBy: { date: 'asc' }
       });
 
-      // Calculate totals. exp.amount is a Prisma Decimal whose valueOf() is a
-      // STRING — using `+` directly concatenates ("666"+"21000"="66621000"),
-      // so coerce every amount with Number() before summing.
-      const totalExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+      // sumBy()/num() coerce Decimal amounts — never use raw `+` on money
+      // (Decimal valueOf() is a string, so `+` concatenates). See utils/money.
+      const totalExpenses = sumBy(expenses, (exp) => exp.amount);
       const totalCount = expenses.length;
       const expenseCurrencies = new Set(expenses.map(exp => exp.currency || 'UAH'));
       const summaryCurrency = expenseCurrencies.size === 1
@@ -150,7 +150,7 @@ export class ExpenseController {
       expenses.forEach(exp => {
         const current = categoryMap.get(exp.category) || { amount: 0, count: 0 };
         categoryMap.set(exp.category, {
-          amount: current.amount + Number(exp.amount),
+          amount: current.amount + num(exp.amount),
           count: current.count + 1
         });
       });
@@ -168,7 +168,7 @@ export class ExpenseController {
         const monthKey = new Date(exp.date).toLocaleString('default', { month: 'short', year: 'numeric' });
         const current = monthMap.get(monthKey) || { amount: 0, count: 0 };
         monthMap.set(monthKey, {
-          amount: current.amount + Number(exp.amount),
+          amount: current.amount + num(exp.amount),
           count: current.count + 1
         });
       });
@@ -184,7 +184,7 @@ export class ExpenseController {
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const thisMonthExpenses = expenses
         .filter(exp => new Date(exp.date) >= currentMonthStart)
-        .reduce((sum, exp) => sum + Number(exp.amount), 0);
+        .reduce((sum, exp) => sum + num(exp.amount), 0);
 
       res.json(createSuccessResponse({
         totalExpenses,

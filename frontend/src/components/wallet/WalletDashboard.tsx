@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { sumBy } from '@/utils/money';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import {
@@ -211,17 +212,10 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
   }, []);
 
   const calculateEarnings = () => {
-    const referralEarnings = walletTransactions
-      .filter(t => t.reason === 'REFERRAL_REWARD')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const loyaltyEarnings = walletTransactions
-      .filter(t => t.reason === 'LOYALTY_POINTS_CONVERTED')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const forfeitureEarnings = walletTransactions
-      .filter(t => t.reason === 'FORFEITURE_SPLIT')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+    // sumBy() coerces each amount — money fields arrive as strings (see utils/money).
+    const referralEarnings = sumBy(walletTransactions.filter(t => t.reason === 'REFERRAL_REWARD'), t => t.amount);
+    const loyaltyEarnings = sumBy(walletTransactions.filter(t => t.reason === 'LOYALTY_POINTS_CONVERTED'), t => t.amount);
+    const forfeitureEarnings = sumBy(walletTransactions.filter(t => t.reason === 'FORFEITURE_SPLIT'), t => t.amount);
 
     const totalEarnings = referralEarnings + loyaltyEarnings + forfeitureEarnings;
 
