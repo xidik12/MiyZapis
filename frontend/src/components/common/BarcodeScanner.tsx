@@ -8,12 +8,13 @@ interface BarcodeScannerProps {
   onDetected: (code: string) => void;
 }
 
-// Camera barcode scanner (ZXing). Acquires the camera with an explicit
-// getUserMedia call (so the permission prompt fires and we can read the precise
-// error), then hands the live stream to ZXing to decode. Auto-tries on open and
-// exposes a "Start camera" / "Try again" button — that button is a fresh user
-// gesture, which some mobile browsers (notably iOS Safari) require to surface
-// the permission prompt. The user can always type the barcode instead.
+// Camera barcode scanner (ZXing). The first getUserMedia call is gated behind an
+// explicit "Start camera" tap — NEVER auto-started. iOS Safari (and Telegram's
+// in-app webview) only surface the camera permission prompt from inside a real
+// user gesture; calling getUserMedia from a useEffect on open throws
+// NotAllowedError WITHOUT ever asking, and can poison the site's permission
+// state. So we wait for the tap, then request, then read the precise error. The
+// user can always type the barcode instead.
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDetected }) => {
   const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -21,6 +22,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
   const streamRef = useRef<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [started, setStarted] = useState(false);
 
   const stopAll = useCallback(() => {
     try { controlsRef.current?.stop(); } catch { /* noop */ }
@@ -32,6 +34,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
 
   const start = useCallback(async () => {
     setError(null);
+    setStarted(true);
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
       setError(t('scan.notSupported') || 'Scanning needs a secure (https) connection and a camera.');
       return;
@@ -80,10 +83,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
     }
   }, [t, onDetected, onClose, stopAll]);
 
+  // Do NOT auto-start — gate the camera request behind the user's tap (below).
   useEffect(() => {
     if (!isOpen) return;
     setScanning(false);
-    start();
+    setStarted(false);
+    setError(null);
     return () => stopAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -96,7 +101,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
         <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] flex items-center justify-center">
           <video ref={videoRef} className="w-full h-full object-cover" muted playsInline autoPlay />
           {scanning && !error && <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-red-500/80 shadow-[0_0_12px_rgba(239,68,68,0.8)]" />}
-          {!scanning && !error && <span className="absolute text-white/70 text-sm">{t('scan.starting') || 'Starting camera…'}</span>}
+          {!started && !error && <span className="absolute text-white/70 text-sm px-6 text-center">{t('scan.tapToStart') || 'Tap “Start camera” to scan'}</span>}
+          {started && !scanning && !error && <span className="absolute text-white/70 text-sm">{t('scan.starting') || 'Starting camera…'}</span>}
         </div>
 
         {error ? (
@@ -106,6 +112,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
               {t('scan.retry') || 'Try again'}
             </button>
           </>
+        ) : !started ? (
+          <button onClick={start} className="mt-3 w-full py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors">
+            {t('scan.start') || 'Start camera'}
+          </button>
         ) : (
           <p className="mt-3 text-sm text-white/80 text-center">{t('scan.aim') || 'Point the camera at a barcode'}</p>
         )}

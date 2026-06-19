@@ -3758,6 +3758,8 @@ const en: Record<string, string> = {
   'pos.newSale': 'New sale',
   'pos.scan': 'Scan',
   'scan.aim': 'Point the camera at a barcode',
+  'scan.start': 'Start camera',
+  'scan.tapToStart': 'Tap “Start camera” to scan',
   'scan.starting': 'Starting camera…',
   'scan.retry': 'Try again',
   'scan.permissionDenied': 'Camera access is blocked. Allow camera permission for this site (and enable Camera for your browser in your system settings), then try again.',
