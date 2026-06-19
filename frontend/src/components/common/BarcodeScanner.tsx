@@ -1,6 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+// Without format hints + TRY_HARDER the multi-format reader shows live video but
+// rarely locks onto a 1D retail barcode. Restrict to the formats shops actually
+// use (EAN/UPC/CODE128/…) and let it work harder per frame.
+const SCAN_HINTS = new Map<DecodeHintType, unknown>([
+  [DecodeHintType.TRY_HARDER, true],
+  [DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+    BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
+    BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.CODE_93,
+    BarcodeFormat.ITF, BarcodeFormat.CODABAR,
+    BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX,
+  ]],
+]);
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -44,7 +59,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
     try {
       // Explicit, gesture-friendly permission request (prefer the rear camera).
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
+        // Higher resolution — 1D barcodes need enough pixels across the bars to
+        // decode. Rear camera preferred where there is one.
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
         audio: false,
       });
     } catch (e: any) {
@@ -65,7 +86,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onDete
 
     streamRef.current = stream;
     try {
-      const reader = new BrowserMultiFormatReader();
+      const reader = new BrowserMultiFormatReader(SCAN_HINTS, { delayBetweenScanAttempts: 100 });
       const controls = await reader.decodeFromStream(stream, videoRef.current!, (result, _err, ctrl) => {
         if (result) {
           const text = result.getText();
