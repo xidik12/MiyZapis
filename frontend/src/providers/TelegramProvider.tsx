@@ -35,24 +35,32 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const wa = tg();
     if (!wa) return;
 
-    // Chrome: ready + full height + theme.
+    // IMPORTANT: telegram-web-app.js creates a window.Telegram.WebApp stub on the
+    // PLAIN WEBSITE too (no initData). Only treat this as Telegram — and only
+    // touch the dark class / tg styling — when there's real initData. Otherwise
+    // the stub's default colorScheme ('light') was wiping the user's manual
+    // light/dark choice owned by ThemeContext.
+    const inTelegram = Boolean(wa.initData);
+
     try {
       wa.ready?.();
       wa.expand?.();
-      document.body.classList.add('tg-webapp');
-      const apply = () => {
-        if (wa.colorScheme === 'dark') document.documentElement.classList.add('dark');
-        else if (wa.colorScheme === 'light') document.documentElement.classList.remove('dark');
-        try {
-          wa.setHeaderColor?.('secondary_bg_color');
-          if (wa.themeParams?.bg_color) wa.setBackgroundColor?.(wa.themeParams.bg_color);
-        } catch { /* older clients */ }
-      };
-      apply();
-      wa.onEvent?.('themeChanged', apply);
+      if (inTelegram) {
+        document.body.classList.add('tg-webapp');
+        const apply = () => {
+          if (wa.colorScheme === 'dark') document.documentElement.classList.add('dark');
+          else if (wa.colorScheme === 'light') document.documentElement.classList.remove('dark');
+          try {
+            wa.setHeaderColor?.('secondary_bg_color');
+            if (wa.themeParams?.bg_color) wa.setBackgroundColor?.(wa.themeParams.bg_color);
+          } catch { /* older clients */ }
+        };
+        apply();
+        wa.onEvent?.('themeChanged', apply);
+      }
     } catch { /* ignore */ }
 
-    if (!wa.initData) {
+    if (!inTelegram) {
       setReady(true);
       return;
     }
