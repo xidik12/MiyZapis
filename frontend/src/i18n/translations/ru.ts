@@ -3718,6 +3718,8 @@ const ru: Record<string, string> = {
   'inventory.sku': 'Артикул',
   'inventory.barcode': 'Штрих-код',
   'inventory.barcodePlaceholder': 'Отсканируйте или введите — EAN/UPC',
+  'inventory.generateBarcode': 'Сгенерировать',
+  'inventory.barcodeHint': 'Нет штрих-кода на товаре? Нажмите «Сгенерировать», затем распечатайте этикетку и наклейте.',
   'inventory.expiryDate': 'Срок годности',
   'inventory.expired': 'Просрочено',
   'inventory.expiringDays': 'Ист. {{d}}д',

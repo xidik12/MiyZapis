@@ -17,6 +17,7 @@ import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
 import BarcodeScanner from '@/components/common/BarcodeScanner';
 import LabelPrintModal from '@/components/common/LabelPrintModal';
+import { generateEan13 } from '@/utils/barcode';
 import {
   PlusIcon,
   PencilIcon,
@@ -880,10 +881,19 @@ const SpecialistInventory: React.FC = () => {
                       <button type="button" onClick={() => setScanOpen(true)} className="flex-shrink-0 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-gray-200 dark:hover:bg-gray-600">
                         {t('pos.scan') || 'Scan'}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, barcode: generateEan13(products.map((p) => p.barcode || '')) }))}
+                        className="flex-shrink-0 px-3 py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                      >
+                        {t('inventory.generateBarcode') || 'Generate'}
+                      </button>
                     </div>
-                    {barcodeLooking && (
-                      <p className="mt-1 text-xs text-gray-400">{t('common.loading') || 'Looking up…'}</p>
-                    )}
+                    <p className="mt-1 text-xs text-gray-400">
+                      {barcodeLooking
+                        ? (t('common.loading') || 'Looking up…')
+                        : (t('inventory.barcodeHint') || 'No barcode on the product? Tap Generate, then print a label to stick on.')}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

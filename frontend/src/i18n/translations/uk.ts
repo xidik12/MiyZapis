@@ -3718,6 +3718,8 @@ const uk: Record<string, string> = {
   'inventory.sku': 'Артикул',
   'inventory.barcode': 'Штрих-код',
   'inventory.barcodePlaceholder': 'Скануйте або введіть — EAN/UPC',
+  'inventory.generateBarcode': 'Згенерувати',
+  'inventory.barcodeHint': 'Немає штрих-коду на товарі? Натисніть «Згенерувати», потім роздрукуйте етикетку та наклейте.',
   'inventory.expiryDate': 'Термін придатності',
   'inventory.expired': 'Прострочено',
   'inventory.expiringDays': 'Зак. {{d}}д',

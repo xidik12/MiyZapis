@@ -3718,6 +3718,8 @@ const en: Record<string, string> = {
   'inventory.sku': 'SKU',
   'inventory.barcode': 'Barcode',
   'inventory.barcodePlaceholder': 'Scan or type — EAN/UPC',
+  'inventory.generateBarcode': 'Generate',
+  'inventory.barcodeHint': 'No barcode on the product? Tap Generate, then print a label to stick on.',
   'inventory.expiryDate': 'Expiry date',
   'inventory.expired': 'Expired',
   'inventory.expiringDays': 'Exp. {{d}}d',
