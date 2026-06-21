@@ -1579,8 +1579,10 @@ export class SpecialistController {
         return;
       }
 
-      const specialist = await prisma.specialist.findUnique({
-        where: { slug },
+      // Resolve by slug OR id — the public booking link / QR falls back to the
+      // specialist id when no slug exists yet, so /s/<id> must work too.
+      const specialist = await prisma.specialist.findFirst({
+        where: { OR: [{ slug }, { id: slug }] },
         include: {
           user: {
             select: {

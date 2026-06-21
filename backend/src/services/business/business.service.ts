@@ -106,8 +106,10 @@ export class BusinessService {
 
   // Public-facing — no auth needed. Returns active business + its public-facing specialists.
   static async getBySlug(slug: string) {
+    // Resolve by slug OR id — the public /biz link & QR fall back to the id when
+    // no slug exists, so /biz/<id> must resolve too.
     return prisma.business.findFirst({
-      where: { slug, isActive: true },
+      where: { isActive: true, OR: [{ slug }, { id: slug }] },
       include: {
         members: {
           where: { isActive: true, role: { in: ['OWNER', 'SPECIALIST'] } },
