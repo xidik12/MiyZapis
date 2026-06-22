@@ -1096,6 +1096,8 @@ const ru: Record<string, string> = {
   'bookings.noBookingsFound': 'Бронирований не найдено',
   'bookings.paymentConfirmation': 'Подтверждение платежа',
   'bookings.completeBooking': 'Завершить бронирование',
+  'bookings.markedCompleted': 'Бронирование отмечено как завершённое',
+  'bookings.statusUpdated': 'Статус обновлён',
   'bookings.amountCharged': 'Сумма к оплате',
   'bookings.amountChargedHint': 'Измените, если итоговая цена отличалась (скидка, доплата или бесплатно). Именно эта сумма учитывается в вашем доходе и бонусах клиента.',
   'bookings.hasCustomerPaid': 'Заплатил ли клиент?',

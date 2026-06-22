@@ -1096,6 +1096,8 @@ const uk: Record<string, string> = {
   'bookings.noBookingsFound': 'Бронювань не знайдено',
   'bookings.paymentConfirmation': 'Підтвердження оплати',
   'bookings.completeBooking': 'Завершити бронювання',
+  'bookings.markedCompleted': 'Бронювання позначено як завершене',
+  'bookings.statusUpdated': 'Статус оновлено',
   'bookings.amountCharged': 'Сума до сплати',
   'bookings.amountChargedHint': 'Змініть, якщо підсумкова ціна відрізнялася (знижка, доплата або безкоштовно). Саме ця сума враховується у вашому доході та бонусах клієнта.',
   'bookings.hasCustomerPaid': 'Чи заплатив клієнт?',

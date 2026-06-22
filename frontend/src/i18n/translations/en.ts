@@ -1097,6 +1097,8 @@ const en: Record<string, string> = {
   'bookings.noBookingsFound': 'No bookings found',
   'bookings.paymentConfirmation': 'Payment Confirmation',
   'bookings.completeBooking': 'Complete Booking',
+  'bookings.markedCompleted': 'Booking marked as completed',
+  'bookings.statusUpdated': 'Status updated',
   'bookings.amountCharged': 'Amount charged',
   'bookings.amountChargedHint': 'Edit if the final price differed (discount, extra, or free). This is what counts toward your revenue and the client\'s loyalty points.',
   'bookings.hasCustomerPaid': 'Has the customer paid?',

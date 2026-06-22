@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
-import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
+import { fetchBookings, updateBookingStatus, cancelBooking, updateBookingLocal } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
 import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XIcon as XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
@@ -34,6 +34,20 @@ const statusColors = {
   cancelled: 'bg-red-100 text-red-800 border-red-200',
   inProgress: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
+};
+
+// Pull a human-readable message out of whatever an API call threw — a plain
+// Error, an Axios-style error, or our { error: { message } } body. Never returns
+// "undefined" (the old `${err.message}` bug when the shape didn't match).
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  const e = error as any;
+  return (
+    e?.response?.data?.error?.message ||
+    e?.response?.data?.message ||
+    e?.error?.message ||
+    (typeof e?.message === 'string' ? e.message : '') ||
+    fallback
+  );
 };
 
 interface FilterState {
@@ -905,16 +919,18 @@ const SpecialistBookings: React.FC = () => {
       }));
       
       if (updateBookingStatus.fulfilled.match(result)) {
-        // Refresh bookings so the item moves between status groups without manual reload
+        // Store is already updated optimistically by the thunk; refresh to be sure
+        // the item moves between status groups without a manual reload.
+        toast.success(t('bookings.statusUpdated') || 'Status updated');
         const userType = activeTab === 'provider' ? 'specialist' : 'customer';
         dispatch(fetchBookings({ filters: {}, userType }));
-        // Optionally show a success toast here
       } else {
         console.error('❌ Failed to update booking status:', result.payload);
-        // Optionally show an error toast here
+        toast.error(extractErrorMessage(result.payload, t('specialist.bookings.toast.error')));
       }
     } catch (error: unknown) {
       console.error('❌ Failed to update booking status:', error);
+      toast.error(extractErrorMessage(error, t('specialist.bookings.toast.error')));
     }
   };
 
@@ -933,13 +949,15 @@ const SpecialistBookings: React.FC = () => {
         completionNotes: notes,
         totalAmount: amount,
       });
-      // Refresh bookings to show updated status
+      // Update the list instantly (optimistic), then refresh from the server.
+      dispatch(updateBookingLocal({ bookingId, status: 'COMPLETED' as BookingStatus }));
+      toast.success(t('bookings.markedCompleted') || 'Booking marked as completed');
       const userType = activeTab === 'provider' ? 'specialist' : 'customer';
       dispatch(fetchBookings({ filters: {}, userType }));
-      
+
     } catch (error: unknown) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      toast.error(`${t('specialist.bookings.toast.error')}: ${(error as any).message}`);
+      toast.error(extractErrorMessage(error, t('specialist.bookings.toast.error')));
     }
   };
   

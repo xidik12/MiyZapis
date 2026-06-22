@@ -1711,8 +1711,10 @@ export class BookingService {
         throw new Error('SPECIALIST_NOT_AUTHORIZED');
       }
 
-      // Verify booking is in a state that can be completed
-      if (!['CONFIRMED', 'IN_PROGRESS'].includes(booking.status)) {
+      // Verify booking is in a state that can be completed. PENDING is allowed:
+      // completing it is an implicit confirm+complete (the specialist did the
+      // service without formally confirming first — common for walk-ins).
+      if (!['PENDING', 'CONFIRMED', 'IN_PROGRESS'].includes(booking.status)) {
         throw new Error('BOOKING_NOT_IN_PROGRESS');
       }
 

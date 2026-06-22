@@ -926,7 +926,7 @@ export class BookingController {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
-            'Only confirmed or in-progress bookings can be completed',
+            'Only pending, confirmed or in-progress bookings can be completed',
             req.headers['x-request-id'] as string
           )
         );
