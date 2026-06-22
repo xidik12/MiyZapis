@@ -138,6 +138,61 @@ export class SpecialistService {
     return slug;
   }
 
+  /**
+   * Ensure a specialist has a slug, generating + saving one if missing. Safe to
+   * call from any creation path (registration, Google auth, staff, telegram) so
+   * a specialist never ends up with a null slug (which broke their public
+   * booking link/QR). Idempotent: returns the existing slug if already set.
+   */
+  static async ensureSlug(specialistId: string): Promise<string | null> {
+    const s = await prisma.specialist.findUnique({
+      where: { id: specialistId },
+      select: { id: true, slug: true, businessName: true, user: { select: { firstName: true, lastName: true } } },
+    });
+    if (!s) return null;
+    if (s.slug) return s.slug;
+
+    const base =
+      s.businessName ||
+      [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') ||
+      'specialist';
+
+    // Retry on the rare unique-constraint race (two specialists, same base name).
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const slug = await SpecialistService.generateSlug(base, s.id);
+      try {
+        await prisma.specialist.update({ where: { id: s.id }, data: { slug } });
+        return slug;
+      } catch (e: unknown) {
+        if ((e as { code?: string })?.code === 'P2002') continue; // slug taken — regenerate
+        throw e;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * One-shot, idempotent backfill: give every slug-less specialist a slug.
+   * Runs on server boot; after the first pass it's a no-op (the query returns
+   * zero rows), so it's cheap to leave in place.
+   */
+  static async backfillMissingSlugs(): Promise<number> {
+    const missing = await prisma.specialist.findMany({
+      where: { OR: [{ slug: null }, { slug: '' }] },
+      select: { id: true },
+    });
+    let fixed = 0;
+    for (const m of missing) {
+      try {
+        if (await SpecialistService.ensureSlug(m.id)) fixed++;
+      } catch (e) {
+        logger.warn('Specialist slug backfill failed', { id: m.id, error: (e as Error).message });
+      }
+    }
+    if (fixed > 0) logger.info(`Backfilled ${fixed} specialist slug(s)`);
+    return fixed;
+  }
+
   private static parseJsonField<T>(field: string | null, defaultValue: T): T {
     if (!field) return defaultValue;
     try {

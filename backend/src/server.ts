@@ -34,6 +34,7 @@ import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { startMarketingWorker } from '@/workers/marketing.worker';
 import { initializeVapid } from '@/services/push';
+import { SpecialistService } from '@/services/specialist';
 
 // Create Express app
 const app = express();
@@ -484,6 +485,11 @@ const startServer = async () => {
       } catch (e) {
         logger.warn('Failed to start subscription worker', { error: (e as Error)?.message });
       }
+
+      // Backfill any specialists missing a public slug (idempotent — a no-op
+      // after the first pass). Heals accounts created before slug-on-signup.
+      SpecialistService.backfillMissingSlugs().catch((e) =>
+        logger.warn('Specialist slug backfill failed', { error: (e as Error)?.message }));
 
       // Start marketing automation worker
       try {

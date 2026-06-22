@@ -5,6 +5,7 @@ import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
+import { SpecialistService } from '@/services/specialist';
 // Use basic email service for verification emails
 import { emailService } from '@/services/email';
 import {
@@ -160,7 +161,7 @@ export class AuthService {
       // Create specialist profile if user is a specialist
       if (data.userType === 'SPECIALIST') {
         try {
-          await prisma.specialist.create({
+          const createdSpecialist = await prisma.specialist.create({
             data: {
               userId: user.id,
               businessName: '',
@@ -180,6 +181,10 @@ export class AuthService {
               }),
             },
           });
+          // Give them a public slug immediately (derived from their name since
+          // businessName is empty at signup) so their booking link/QR work.
+          await SpecialistService.ensureSlug(createdSpecialist.id).catch((e) =>
+            logger.warn('ensureSlug failed at registration', { userId: user.id, error: (e as Error).message }));
           logger.info('Created specialist profile for new user', { userId: user.id });
         } catch (specError) {
           logger.error('Failed to create specialist profile during registration', { userId: user.id, error: specError });
@@ -762,7 +767,7 @@ export class AuthService {
         // Create specialist profile if user is a specialist
         if (validUserType === 'SPECIALIST') {
           try {
-            await prisma.specialist.create({
+            const createdSpecialist = await prisma.specialist.create({
               data: {
                 userId: user.id,
                 businessName: '',
@@ -782,6 +787,8 @@ export class AuthService {
                 }),
               },
             });
+            await SpecialistService.ensureSlug(createdSpecialist.id).catch((e) =>
+              logger.warn('ensureSlug failed at Google signup', { userId: user.id, error: (e as Error).message }));
           } catch (specError) {
             logger.error('Failed to create specialist profile during Google auth', { userId: user.id, error: specError });
           }
