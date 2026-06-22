@@ -509,6 +509,21 @@ export async function handleBookingAction(ctx: BotContext, action: string, booki
         }
         break;
 
+      case 'complete':
+        // Quick "it happened" from the awaiting-review prompt. Uses the dedicated
+        // completion path (validates the specialist owns it; allows PENDING/
+        // CONFIRMED/IN_PROGRESS). Payment is taken in person, so confirm it here.
+        await BookingService.completeBookingWithPayment(bookingId, ctx.session.user.id as string, {
+          paymentConfirmed: true,
+        });
+        await ctx.reply('\u2705 Marked as completed.');
+        break;
+
+      case 'noshow':
+        await BookingService.updateBooking(bookingId, { status: 'NO_SHOW' } as any);
+        await ctx.reply('\ud83d\udeab Marked as no-show.');
+        break;
+
       case 'reschedule':
         ctx.session.state = 'reschedule_booking';
         ctx.session.tempData = { bookingId };

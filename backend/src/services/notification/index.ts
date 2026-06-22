@@ -486,6 +486,42 @@ export class NotificationService {
     }
   }
 
+  // Build the Telegram inline keyboard for actionable notifications. Returns
+  // undefined for non-actionable types (so a plain message is sent). Callback
+  // data matches the bot's `booking_action_<action>_<bookingId>` route.
+  private buildTelegramActionKeyboard(
+    data: NotificationData,
+    lang: string
+  ): { inline_keyboard: { text: string; callback_data: string }[][] } | undefined {
+    const bookingId = (data.data as Record<string, unknown> | undefined)?.bookingId as string | undefined;
+    if (!bookingId) return undefined;
+    const L = (en: string, uk: string, ru: string) => (lang === 'uk' ? uk : lang === 'ru' ? ru : en);
+
+    if (data.type === 'BOOKING_REQUEST') {
+      return {
+        inline_keyboard: [[
+          { text: L('✅ Confirm', '✅ Підтвердити', '✅ Подтвердить'), callback_data: `booking_action_confirm_${bookingId}` },
+          { text: L('❌ Decline', '❌ Відхилити', '❌ Отклонить'), callback_data: `booking_action_cancel_${bookingId}` },
+        ]],
+      };
+    }
+
+    if (data.type === 'BOOKING_AWAITING_REVIEW') {
+      // Completed/No-show are specialist-only actions — don't show them to the
+      // customer (their copy is informational).
+      const actorRole = (data.data as Record<string, unknown> | undefined)?.actorRole;
+      if (actorRole === 'CUSTOMER') return undefined;
+      return {
+        inline_keyboard: [[
+          { text: L('✅ Completed', '✅ Відбулося', '✅ Состоялось'), callback_data: `booking_action_complete_${bookingId}` },
+          { text: L('🚫 No-show', '🚫 Не прийшов', '🚫 Не пришёл'), callback_data: `booking_action_noshow_${bookingId}` },
+        ]],
+      };
+    }
+
+    return undefined;
+  }
+
   private async sendTelegramNotification(
     user: Record<string, unknown>,
     data: NotificationData,
@@ -499,10 +535,17 @@ export class NotificationService {
 
       const message = `*${data.title}*\n\n${data.message}`;
 
+      // Quick-action inline buttons so the user can act straight from the chat
+      // (Confirm/Decline a request, mark a past booking Completed/No-show)
+      // instead of opening the app. Callback data matches the bot's
+      // `booking_action_<action>_<bookingId>` handler.
+      const replyMarkup = this.buildTelegramActionKeyboard(data, String(user.language || 'en'));
+
       await axios.post(`https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`, {
         chat_id: user.telegramId,
         text: message,
-        parse_mode: 'Markdown'
+        parse_mode: 'Markdown',
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {})
       });
 
       // Update notification status
