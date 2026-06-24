@@ -68,16 +68,40 @@ export const Footer: React.FC = () => {
         {/* Legal & Contact links */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6 xs:mb-8">
           <Link
+            to="/how-it-works"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.howItWorks') || 'How it works'}
+          </Link>
+          <Link
+            to="/faq"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.faq') || 'FAQ'}
+          </Link>
+          <Link
             to="/terms"
             className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
           >
             {t('footer.termsOfService')}
           </Link>
           <Link
+            to="/user-agreement"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.userAgreement') || 'User Agreement'}
+          </Link>
+          <Link
             to="/privacy"
             className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
           >
             {t('footer.privacyPolicy')}
+          </Link>
+          <Link
+            to="/refund-policy"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.refundPolicy') || 'Refunds & Cancellations'}
           </Link>
           <Link
             to="/contact"

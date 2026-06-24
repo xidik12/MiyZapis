@@ -105,6 +105,10 @@ const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const TrialInfoPage = React.lazy(() => import('./pages/TrialInfoPage'));
+const FaqPage = React.lazy(() => import('./pages/FaqPage'));
+const UserAgreementPage = React.lazy(() => import('./pages/UserAgreementPage'));
+const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
+const RefundPolicyPage = React.lazy(() => import('./pages/RefundPolicyPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
@@ -778,7 +782,7 @@ function App() {
           <Route path="/loyalty" element={<Navigate to="/customer/loyalty" replace />} />
           <Route path="/favorites" element={<Navigate to="/customer/favorites" replace />} />
           <Route path="/settings" element={<Navigate to="/customer/settings" replace />} />
-          <Route path="/help" element={<Navigate to="/customer/support" replace />} />
+          <Route path="/help" element={<Navigate to="/faq" replace />} />
           <Route path="/history" element={<Navigate to="/customer/bookings" replace />} />
           <Route path="/reviews" element={<Navigate to="/customer/reviews" replace />} />
           <Route path="/payments" element={<Navigate to="/customer/payments" replace />} />
@@ -918,6 +922,34 @@ function App() {
             <MainLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <ContactPage />
+              </Suspense>
+            </MainLayout>
+          } />
+          <Route path="/faq" element={
+            <MainLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <FaqPage />
+              </Suspense>
+            </MainLayout>
+          } />
+          <Route path="/how-it-works" element={
+            <MainLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <HowItWorksPage />
+              </Suspense>
+            </MainLayout>
+          } />
+          <Route path="/user-agreement" element={
+            <MainLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <UserAgreementPage />
+              </Suspense>
+            </MainLayout>
+          } />
+          <Route path="/refund-policy" element={
+            <MainLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <RefundPolicyPage />
               </Suspense>
             </MainLayout>
           } />

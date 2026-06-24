@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const PrivacyPage: React.FC = () => {
   const { t, language } = useLanguage();
   const localeMap = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU' };
-  const lastUpdated = new Date().toLocaleDateString(localeMap[language] || 'en-US', {
+  const lastUpdated = new Date('2026-06-01').toLocaleDateString(localeMap[language] || 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -114,9 +114,8 @@ const PrivacyPage: React.FC = () => {
           <h2>{t('privacy.contactInfo.title')}</h2>
           <p>{t('privacy.contactInfo.text')}</p>
           <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mt-6">
-            <p className="mb-2"><strong>{t('privacy.contactInfo.email')}</strong> privacy@miyzapys.com</p>
-            <p className="mb-2"><strong>{t('privacy.contactInfo.address')}</strong> Kyiv, Ukraine</p>
-            <p className="mb-0"><strong>{t('privacy.contactInfo.phone')}</strong> +380 (44) 123-4567</p>
+            <p className="mb-2"><strong>{t('privacy.contactInfo.email')}</strong> privacy@miyzapis.com</p>
+            <p className="mb-0"><strong>{t('privacy.contactInfo.address')}</strong> Kyiv, Ukraine</p>
           </div>
 
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 mt-8">
