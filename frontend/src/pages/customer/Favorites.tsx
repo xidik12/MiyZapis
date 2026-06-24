@@ -27,9 +27,22 @@ import { Pagination } from '@/types';
 // Note: Use active prop for filled icons: <Icon active />
 
 const CustomerFavorites: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+
+  const HELP = {
+    en: {
+      overview: 'Specialists and services you\'ve saved with the heart icon.\n\n• Specialists tab — shows people you\'ve favourited. Tap "View Profile" to see their full page or "Book Now" to go straight to booking.\n• Services tab — shows specific services you\'ve saved. Price and duration are shown on each card.\n• Search bar — filters your favourites by name, specialty, or category.\n• Remove — tap the red heart icon on any card to un-save it.\n• Counts next to each tab show how many items you\'ve saved.\n\nTip: bookmark specialists you visit regularly so you can find and re-book them in seconds instead of searching every time.',
+    },
+    uk: {
+      overview: 'Спеціалісти та послуги, які ви зберегли за допомогою іконки серця.\n\n• Вкладка «Спеціалісти» — люди, яких ви додали в обрані. «Переглянути профіль» → повна сторінка, «Записатись» → одразу на бронювання.\n• Вкладка «Послуги» — конкретні послуги, які ви зберегли. На кожній картці вказані ціна та тривалість.\n• Рядок пошуку — фільтрує обране за ім\'ям, спеціалізацією або категорією.\n• Видалити — натисніть червоне серце на картці, щоб прибрати з обраних.\n• Цифри біля вкладок показують кількість збережених.\n\nПорада: зберігайте спеціалістів, до яких ходите регулярно — так ви знайдете їх і запишетесь за секунди.',
+    },
+    ru: {
+      overview: 'Специалисты и услуги, которые вы сохранили иконкой сердца.\n\n• Вкладка «Специалисты» — люди, добавленные в избранное. «Просмотреть профиль» → полная страница, «Записаться» → сразу на бронирование.\n• Вкладка «Услуги» — конкретные услуги, которые вы сохранили. На каждой карточке указаны цена и длительность.\n• Строка поиска — фильтрует избранное по имени, специализации или категории.\n• Удалить — нажмите красное сердце на карточке, чтобы убрать из избранного.\n• Цифры рядом с вкладками показывают количество сохранённых.\n\nСовет: сохраняйте специалистов, к которым ходите регулярно — так вы найдёте их и запишетесь за секунды.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
   const dispatch = useAppDispatch();
   
   // Redux state
@@ -225,7 +238,7 @@ const CustomerFavorites: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {t('customer.favorites.title')}
             </h1>
-            <HelpTip title={t('help.favorites.title') || 'Favourites'} content={t('help.favorites.body') || "Specialists you've saved for quick re-booking."} />
+            <HelpTip title={language === 'uk' ? 'Обрані' : language === 'ru' ? 'Избранное' : 'Favourites'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-300">
             {t('customer.favorites.subtitle')}

@@ -15,6 +15,45 @@ import { logger } from '@/utils/logger';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, PlusIcon, ShieldCheckIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
+
+const PROFILE_HELP = {
+  en: {
+    overview:
+      'Profile — your public specialist page\n\nThis is what clients see when they visit your booking page. A complete profile builds trust and increases bookings.\n\nTabs:\n• Personal — name, email, phone (verifiable), bio, location (city/region shown publicly), precise address & business phone (shown only after booking confirmation), WhatsApp, parking & access info.\n• Professional — profession/title, years of experience, education, languages you speak, specialties.\n• Business — default working hours per day of week (template for schedule generation).\n• Payment — accepted payment methods; bank details & payment QR shown to client after booking.\n• Portfolio — photos of your work; displayed in a gallery on your public profile.\n\nProfile completion bar shows which fields are still empty.',
+    personalFields:
+      'Personal info fields\n\n• First / Last name — shown on your public profile and all booking confirmations.\n• Email — used for login and notifications. Not shown publicly unless you enable "Show email" in Privacy.\n• Phone — your personal number. Verify it with the "Verify" button to get a verified badge. Not shown publicly unless enabled in Privacy.\n• Bio — a short description of yourself shown to clients.\n• Location (city/region) — shown publicly so clients know your area.\n• Precise address — exact address where you work. Shown ONLY to confirmed clients, not publicly.\n• Business phone — the number clients should call for appointment questions. Also shown only to confirmed clients.\n• WhatsApp number — optional, shown to confirmed clients for easy messaging.\n• Parking info / Access instructions — optional logistics info shown to confirmed clients.',
+    portfolio:
+      'Portfolio\n\nUpload photos of your work to show clients what to expect.\n\n• Supported: JPG, PNG, WebP — up to 5MB each.\n• Photos appear in a gallery on your public profile page.\n• To remove a photo, hover over it and click the delete button.\n• Portfolio saves independently — you don\'t need to click the main Save button.',
+    payment:
+      'Payment tab\n\nThis info is shared with clients after booking confirmation.\n\n• Payment methods — tick which methods you accept (cash, card, bank transfer, online, crypto).\n• Bank details — bank name, account holder name, account number, IBAN, SWIFT, notes.\n• Payment QR — upload a QR code (e.g. Monobank link) clients can scan to pay you.',
+    verification:
+      'Phone verification\n\nVerifying your phone number adds a verified badge to your profile, which increases client confidence.\n\nClick "Verify" next to your phone number. A code is sent via SMS or Telegram. Enter the code to complete verification.',
+  },
+  uk: {
+    overview:
+      'Профіль — ваша публічна сторінка спеціаліста\n\nЦе те, що бачать клієнти на вашій сторінці бронювання. Повний профіль підвищує довіру та збільшує кількість записів.\n\nВкладки:\n• Особисте — ім\'я, email, телефон (верифікація), біо, локація (місто/регіон відображаються публічно), точна адреса та робочий телефон (відображаються лише після підтвердження бронювання), WhatsApp, паркування та інструкції доступу.\n• Професійне — спеціалізація/посада, роки досвіду, освіта, мови, спеціальності.\n• Бізнес — графік роботи за днями тижня (шаблон для генерації розкладу).\n• Оплата — прийнятні методи оплати; банківські реквізити та QR-код оплати відображаються клієнту після бронювання.\n• Портфоліо — фото ваших робіт; відображаються в галереї на публічному профілі.\n\nПанель заповненості профілю показує, які поля ще порожні.',
+    personalFields:
+      'Поля особистої інформації\n\n• Ім\'я / Прізвище — відображаються в публічному профілі та всіх підтвердженнях бронювань.\n• Email — використовується для входу та сповіщень. Не відображається публічно, якщо не увімкнено "Показувати email" в Конфіденційності.\n• Телефон — ваш особистий номер. Верифікуйте натисканням "Верифікувати" для отримання значка. Публічно не відображається без дозволу.\n• Біо — короткий опис, який бачать клієнти.\n• Локація (місто/регіон) — відображається публічно, щоб клієнти знали вашу зону роботи.\n• Точна адреса — де ви приймаєте. Відображається ЛИШЕ підтвердженим клієнтам, не публічно.\n• Робочий телефон — номер для дзвінків клієнтів. Теж лише для підтверджених клієнтів.\n• WhatsApp — необов\'язково, для підтверджених клієнтів.\n• Паркування / Інструкції доступу — необов\'язкова логістична інформація для підтверджених клієнтів.',
+    portfolio:
+      'Портфоліо\n\nЗавантажте фото своїх робіт, щоб клієнти знали, чого очікувати.\n\n• Підтримувані формати: JPG, PNG, WebP — до 5МБ кожне.\n• Фото відображаються в галереї на публічній сторінці профілю.\n• Щоб видалити фото, наведіть на нього курсор і натисніть кнопку видалення.\n• Портфоліо зберігається незалежно — натискати основну кнопку "Зберегти" не потрібно.',
+    payment:
+      'Вкладка оплати\n\nЦя інформація передається клієнтам після підтвердження бронювання.\n\n• Методи оплати — позначте, які методи приймаєте (готівка, картка, банківський переказ, онлайн, крипто).\n• Банківські реквізити — назва банку, власник рахунку, номер рахунку, IBAN, SWIFT, примітки.\n• QR-код оплати — завантажте QR-код (наприклад, посилання Monobank) для миттєвої оплати.',
+    verification:
+      'Верифікація телефону\n\nВерифікація номера телефону додає значок верифікації до вашого профілю, що підвищує довіру клієнтів.\n\nНатисніть "Верифікувати" поруч із номером телефону. Код надсилається через SMS або Telegram. Введіть код для завершення верифікації.',
+  },
+  ru: {
+    overview:
+      'Профиль — ваша публичная страница специалиста\n\nЭто то, что видят клиенты на вашей странице бронирования. Полный профиль повышает доверие и увеличивает количество записей.\n\nВкладки:\n• Личное — имя, email, телефон (верификация), био, локация (город/регион отображаются публично), точный адрес и рабочий телефон (только после подтверждения бронирования), WhatsApp, парковка и инструкции доступа.\n• Профессиональное — специализация/должность, годы опыта, образование, языки, специальности.\n• Бизнес — график работы по дням недели (шаблон для генерации расписания).\n• Оплата — принимаемые методы оплаты; банковские реквизиты и QR-код оплаты отображаются клиенту после бронирования.\n• Портфолио — фото ваших работ; отображаются в галерее на публичном профиле.\n\nПанель заполненности профиля показывает, какие поля ещё пусты.',
+    personalFields:
+      'Поля личной информации\n\n• Имя / Фамилия — отображаются в публичном профиле и всех подтверждениях бронирований.\n• Email — используется для входа и уведомлений. Не отображается публично, если не включено "Показывать email" в Конфиденциальности.\n• Телефон — ваш личный номер. Верифицируйте нажав "Верифицировать" для получения значка. Публично не отображается без разрешения.\n• Био — краткое описание, которое видят клиенты.\n• Локация (город/регион) — отображается публично, чтобы клиенты знали вашу зону работы.\n• Точный адрес — где вы принимаете. Отображается ТОЛЬКО подтверждённым клиентам, не публично.\n• Рабочий телефон — номер для звонков клиентов. Тоже только для подтверждённых клиентов.\n• WhatsApp — необязательно, для подтверждённых клиентов.\n• Парковка / Инструкции доступа — необязательная логистическая информация для подтверждённых клиентов.',
+    portfolio:
+      'Портфолио\n\nЗагрузите фото своих работ, чтобы клиенты знали, чего ожидать.\n\n• Поддерживаемые форматы: JPG, PNG, WebP — до 5МБ каждый.\n• Фото отображаются в галерее на публичной странице профиля.\n• Чтобы удалить фото, наведите на него курсор и нажмите кнопку удаления.\n• Портфолио сохраняется независимо — нажимать основную кнопку "Сохранить" не нужно.',
+    payment:
+      'Вкладка оплаты\n\nЭта информация передаётся клиентам после подтверждения бронирования.\n\n• Методы оплаты — отметьте, какие методы принимаете (наличные, карта, банковский перевод, онлайн, крипто).\n• Банковские реквизиты — название банка, держатель счёта, номер счёта, IBAN, SWIFT, заметки.\n• QR-код оплаты — загрузите QR-код (например, ссылку Monobank) для мгновенной оплаты.',
+    verification:
+      'Верификация телефона\n\nВерификация номера телефона добавляет значок верификации к вашему профилю, что повышает доверие клиентов.\n\nНажмите "Верифицировать" рядом с номером телефона. Код отправляется через SMS или Telegram. Введите код для завершения верификации.',
+  },
+};
 import PhoneVerifyButton from '@/components/common/PhoneVerifyButton';
 
 interface SpecialistProfile {
@@ -288,6 +327,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
 
 const SpecialistProfile: React.FC = () => {
   const { language, t } = useLanguage();
+  const h = (PROFILE_HELP as any)[language] || PROFILE_HELP.en;
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   
@@ -1126,7 +1166,7 @@ const SpecialistProfile: React.FC = () => {
                       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
                         {profile.firstName} {profile.lastName}
                       </h1>
-                      <HelpTip title={t('help.specProfile.title') || 'Profile'} content={t('help.specProfile.body') || 'Your public profile — photo, bio, specialties and contact.'} />
+                      <HelpTip title={t('help.specProfile.title') || 'Profile'} content={h.overview} />
                     </div>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
                       {profile.profession || t('specialist.professionNotSpecified') || 'Profession not specified'}
@@ -1275,9 +1315,12 @@ const SpecialistProfile: React.FC = () => {
                 <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'}
+                        </h2>
+                        <HelpTip title={language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'} content={h.personalFields} />
+                      </div>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {language === 'uk' ? 'Основні дані вашого профілю' : language === 'ru' ? 'Основные данные вашего профиля' : 'Basic information about you'}
                       </p>
@@ -1388,7 +1431,10 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label htmlFor="phone" className="flex items-center justify-between gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <span>{language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}</span>
+                          <span className="flex items-center gap-1">
+                            {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
+                            <HelpTip title={language === 'uk' ? 'Верифікація телефону' : language === 'ru' ? 'Верификация телефона' : 'Phone verification'} content={h.verification} size={14} />
+                          </span>
                           <PhoneVerifyButton isVerified={(user as any)?.isPhoneVerified} />
                         </label>
                         <div className="relative">
@@ -2046,9 +2092,12 @@ const SpecialistProfile: React.FC = () => {
                 <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'}
+                        </h2>
+                        <HelpTip title={language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'} content={h.payment} />
+                      </div>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {language === 'uk'
                           ? 'Налаштуйте способи оплати та реквізити'
@@ -2277,9 +2326,12 @@ const SpecialistProfile: React.FC = () => {
                 <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio'}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio'}
+                        </h2>
+                        <HelpTip title={language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio'} content={h.portfolio} />
+                      </div>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {language === 'uk' ? 'Покажіть свої роботи та досягнення' : language === 'ru' ? 'Покажите свои работы и достижения' : 'Showcase your work and achievements'}
                       </p>

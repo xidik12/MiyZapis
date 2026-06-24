@@ -21,6 +21,64 @@ import {
 } from '@/components/icons';
 import { CodeBracketIcon } from '@heroicons/react/24/outline';
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const PROMOTE_HELP = {
+  en: {
+    overview:
+      'Promote\n\nBoosting your profile places it at the top of MiyZapis search and discovery results, so new clients find you first.\n\n' +
+      'How boosting works:\n' +
+      '• Enable "Featured" and choose a duration: 7, 30, or 90 days\n' +
+      '• Your listing appears highlighted above non-boosted specialists\n' +
+      '• The boost expires automatically at the end of the period\n' +
+      '• Currently free during launch; paid boosts are coming\n\n' +
+      'Acquisition metrics (below the boost toggle):\n' +
+      '• Total bookings — all bookings received across all sources\n' +
+      '• New clients — first-time clients (never booked you before)\n\n' +
+      'By-source breakdown:\n' +
+      '• Discovery — clients who found you via MiyZapis search / category pages\n' +
+      '• Embed — bookings from your embedded booking widget on your own website\n' +
+      '• Direct — clients who opened your booking link directly (e.g. from your Instagram bio)\n' +
+      '• Marketplace — bookings from other marketplace integrations',
+  },
+  uk: {
+    overview:
+      'Просування\n\nПідвищення рейтингу розміщує ваш профіль у топі пошуку MiyZapis, щоб нові клієнти знаходили вас першими.\n\n' +
+      'Як працює підвищення:\n' +
+      '• Увімкніть "Рекомендований" та оберіть тривалість: 7, 30 або 90 днів\n' +
+      '• Ваше оголошення відображається над нерекламованими спеціалістами\n' +
+      '• Підвищення автоматично завершується після закінчення терміну\n' +
+      '• Наразі безкоштовно під час запуску; платне просування незабаром\n\n' +
+      'Показники залучення (під перемикачем):\n' +
+      '• Всього записів — всі записи з усіх джерел\n' +
+      '• Нові клієнти — ті, хто записувався до вас вперше\n\n' +
+      'Розбивка за джерелами:\n' +
+      '• Discovery — клієнти, які знайшли вас через пошук MiyZapis / сторінки категорій\n' +
+      '• Embed — записи через вбудований віджет бронювання на вашому сайті\n' +
+      '• Direct — клієнти, які відкрили ваше посилання напряму (напр., з Instagram bio)\n' +
+      '• Marketplace — записи з інших маркетплейс-інтеграцій',
+  },
+  ru: {
+    overview:
+      'Продвижение\n\nПовышение рейтинга размещает ваш профиль в топе поиска MiyZapis, чтобы новые клиенты находили вас первыми.\n\n' +
+      'Как работает повышение:\n' +
+      '• Включите "Рекомендованный" и выберите длительность: 7, 30 или 90 дней\n' +
+      '• Ваше объявление отображается над нерекламируемыми специалистами\n' +
+      '• Повышение автоматически завершается по истечении срока\n' +
+      '• Сейчас бесплатно во время запуска; платное продвижение скоро\n\n' +
+      'Показатели привлечения (под переключателем):\n' +
+      '• Всего записей — все записи из всех источников\n' +
+      '• Новые клиенты — те, кто записывался к вам впервые\n\n' +
+      'Разбивка по источникам:\n' +
+      '• Discovery — клиенты, нашедшие вас через поиск MiyZapis / страницы категорий\n' +
+      '• Embed — записи через встроенный виджет бронирования на вашем сайте\n' +
+      '• Direct — клиенты, открывшие вашу ссылку напрямую (напр., из Instagram bio)\n' +
+      '• Marketplace — записи из других маркетплейс-интеграций',
+  },
+};
+
 // Boost-length presets (days).
 const DAY_PRESETS = [7, 30, 90];
 
@@ -59,7 +117,8 @@ const SOURCE_META: Record<
 const SOURCE_ORDER: BookingSourceKey[] = ['DISCOVERY', 'EMBED', 'DIRECT', 'MARKETPLACE'];
 
 const Promote: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (PROMOTE_HELP as Record<string, typeof PROMOTE_HELP.en>)[language] || PROMOTE_HELP.en;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -135,7 +194,7 @@ const Promote: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {t('promote.title') || 'Promote'}
             </h1>
-            <HelpTip title={t('help.promote.title') || 'Promote'} content={t('help.promote.body') || 'Boost your visibility — get featured and attract new clients.'} />
+            <HelpTip title={t('help.promote.title') || 'Promote'} content={h.overview} />
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {t('promote.subtitle') ||

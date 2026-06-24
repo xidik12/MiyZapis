@@ -20,6 +20,39 @@ import {
 import { PageLoader } from '@/components/ui';
 import { HelpTip } from '@/components/common/HelpTip';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const BUSINESSES_HELP = {
+  en: {
+    overview:
+      'Businesses — salons, studios & locations\n\nThis page lets you create or join business profiles. A business groups multiple specialists under one public booking page.\n\nUse cases:\n• Solo specialist — you don\'t need a business profile unless you want a shared page with colleagues.\n• Salon / studio — create one business, add staff and let clients book any team member.\n• Multi-location — create one business per location.\n\nAfter creating, use the tabs inside a business to manage members, staff and settings.\n\nYour role in this business:\n• Owner — full control: add/remove members, manage settings, see revenue.\n• Manager — same as Owner minus sensitive account actions.\n• Specialist — can be booked, sees own calendar; cannot manage others.',
+    members:
+      'Members & invitations\n\nMembers are real MiyZapis accounts that joined this business.\n\n• Invite — enter their registered email. If they already have an account they join immediately; otherwise an email invite is sent.\n• Roles: Owner / Manager / Specialist. Roles can be changed any time from the ⋯ menu.\n• To remove a member, use the ⋯ menu and choose "Remove". Their personal account is unaffected — they only lose access to this business.',
+    staff:
+      'Staff — managed profiles vs invited members\n\nTwo kinds of people appear in the Staff tab:\n\n• Managed staff (badge "Managed") — platform-created profiles that you fully control. You set their schedule, services and prices. They don\'t have their own login. Use these for employees who don\'t use MiyZapis independently.\n• Invited members (no badge) — real MiyZapis users who joined via invite. They control their own profile and calendar. You can remove their membership but cannot edit their account.\n\nFor managed staff you can:\n• Edit profile — name, photo, bio.\n• Schedule — set which days and hours they work.\n• Services & prices — override which services they offer and at what price.\n• Clone — duplicate a managed profile (useful for creating similar staff profiles quickly).',
+    currency:
+      'Business currency\n\nSets the default currency for business-level revenue reporting. Individual services still use their own per-service currency.\n\nCommon values: UAH, USD, EUR.\n\nThis does not override service prices — it only affects how the overview dashboard totals are formatted.',
+  },
+  uk: {
+    overview:
+      'Бізнеси — салони, студії та локації\n\nЦя сторінка дозволяє створювати або приєднуватися до бізнес-профілів. Бізнес об\'єднує кількох спеціалістів під однією публічною сторінкою бронювання.\n\nВипадки використання:\n• Самозайнятий спеціаліст — бізнес-профіль не потрібен, якщо ви не хочете спільну сторінку з колегами.\n• Салон / студія — створіть один бізнес, додайте персонал, і клієнти зможуть обирати будь-якого члена команди.\n• Кілька локацій — створіть окремий бізнес для кожної локації.\n\nПісля створення використовуйте вкладки всередині бізнесу для управління членами, персоналом та налаштуваннями.\n\nВаша роль у бізнесі:\n• Власник — повний контроль: додавання/видалення учасників, управління налаштуваннями, перегляд виручки.\n• Менеджер — те саме, що Власник, крім конфіденційних дій акаунту.\n• Спеціаліст — може приймати бронювання, бачить власний календар; не може керувати іншими.',
+    members:
+      'Учасники та запрошення\n\nУчасники — це реальні акаунти MiyZapis, які приєдналися до цього бізнесу.\n\n• Запросити — введіть зареєстрований email. Якщо акаунт існує — приєднається одразу; інакше надсилається запрошення на email.\n• Ролі: Власник / Менеджер / Спеціаліст. Ролі можна змінювати в будь-який час через меню ⋯.\n• Щоб видалити учасника, скористайтеся меню ⋯ і виберіть "Видалити". Їхній особистий акаунт не постраждає — вони лише втратять доступ до цього бізнесу.',
+    staff:
+      'Персонал — керовані профілі та запрошені учасники\n\nДва типи людей відображаються на вкладці Персонал:\n\n• Керований персонал (позначка "Керований") — профілі, створені платформою, якими ви повністю управляєте. Ви встановлюєте їхній розклад, послуги та ціни. У них немає власного входу. Використовуйте для співробітників, які не користуються MiyZapis самостійно.\n• Запрошені учасники (без позначки) — реальні користувачі MiyZapis, що приєдналися через запрошення. Вони контролюють свій профіль і календар. Ви можете видалити їх з бізнесу, але не можете редагувати їхній акаунт.\n\nДля керованого персоналу ви можете:\n• Редагувати профіль — ім\'я, фото, біо.\n• Розклад — встановити робочі дні та години.\n• Послуги та ціни — визначити, які послуги вони надають і за якими цінами.\n• Клонувати — дублювати керований профіль (зручно для швидкого створення схожих профілів персоналу).',
+    currency:
+      'Валюта бізнесу\n\nВстановлює валюту за замовчуванням для звітності про доходи на рівні бізнесу. Окремі послуги все одно використовують власну валюту.\n\nПоширені значення: UAH, USD, EUR.\n\nЦе не перевизначає ціни на послуги — впливає лише на форматування підсумків у панелі огляду.',
+  },
+  ru: {
+    overview:
+      'Бизнесы — салоны, студии и локации\n\nЭта страница позволяет создавать или присоединяться к бизнес-профилям. Бизнес объединяет нескольких специалистов под одной публичной страницей бронирования.\n\nСлучаи использования:\n• Самозанятый специалист — бизнес-профиль не нужен, если вы не хотите общую страницу с коллегами.\n• Салон / студия — создайте один бизнес, добавьте персонал, и клиенты смогут выбирать любого члена команды.\n• Несколько локаций — создайте отдельный бизнес для каждой локации.\n\nПосле создания используйте вкладки внутри бизнеса для управления членами, персоналом и настройками.\n\nВаша роль в бизнесе:\n• Владелец — полный контроль: добавление/удаление участников, управление настройками, просмотр выручки.\n• Менеджер — то же, что Владелец, кроме конфиденциальных действий аккаунта.\n• Специалист — может принимать бронирования, видит собственный календарь; не может управлять другими.',
+    members:
+      'Участники и приглашения\n\nУчастники — это реальные аккаунты MiyZapis, присоединившиеся к этому бизнесу.\n\n• Пригласить — введите зарегистрированный email. Если аккаунт существует — присоединится сразу; иначе отправляется приглашение на email.\n• Роли: Владелец / Менеджер / Специалист. Роли можно менять в любое время через меню ⋯.\n• Чтобы удалить участника, воспользуйтесь меню ⋯ и выберите "Удалить". Их личный аккаунт не пострадает — они только потеряют доступ к этому бизнесу.',
+    staff:
+      'Персонал — управляемые профили и приглашённые участники\n\nДва типа людей отображаются на вкладке Персонал:\n\n• Управляемый персонал (значок "Управляемый") — профили, созданные платформой, которыми вы полностью управляете. Вы устанавливаете их расписание, услуги и цены. У них нет собственного входа. Используйте для сотрудников, которые не пользуются MiyZapis самостоятельно.\n• Приглашённые участники (без значка) — реальные пользователи MiyZapis, присоединившиеся через приглашение. Они контролируют свой профиль и календарь. Вы можете удалить их из бизнеса, но не можете редактировать их аккаунт.\n\nДля управляемого персонала вы можете:\n• Редактировать профиль — имя, фото, био.\n• Расписание — установить рабочие дни и часы.\n• Услуги и цены — определить, какие услуги они предлагают и по каким ценам.\n• Клонировать — дублировать управляемый профиль (удобно для быстрого создания похожих профилей персонала).',
+    currency:
+      'Валюта бизнеса\n\nУстанавливает валюту по умолчанию для отчётности о доходах на уровне бизнеса. Отдельные услуги по-прежнему используют собственную валюту.\n\nРаспространённые значения: UAH, USD, EUR.\n\nЭто не переопределяет цены услуг — влияет только на форматирование итогов в панели обзора.',
+  },
+};
 import { BookingShareCard } from '../../components/sharing/BookingShareCard';
 
 const Businesses: React.FC = () => {
@@ -32,7 +65,8 @@ const Businesses: React.FC = () => {
 
 // ────────────────────────────────────────────────────────────────────────
 const BusinessList: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (BUSINESSES_HELP as any)[language] || BUSINESSES_HELP.en;
   const [memberships, setMemberships] = useState<BusinessMember[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -53,7 +87,7 @@ const BusinessList: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('businesses.title')}</h1>
-              <HelpTip title={t('help.businesses.title') || 'Businesses'} content={t('help.businesses.body') || 'Manage your salon/business locations and staff.'} />
+              <HelpTip title={t('help.businesses.title') || 'Businesses'} content={h.overview} />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('businesses.subtitle')}</p>
           </div>
@@ -318,7 +352,8 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
 };
 
 const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: () => void }> = ({ business, canManage, onReload }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const hm = (BUSINESSES_HELP as any)[language] || BUSINESSES_HELP.en;
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invites, setInvites] = useState<BusinessInvite[]>([]);
   const members = business.members ?? [];
@@ -339,7 +374,10 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{members.length} {t('businesses.members.memberCount')}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{members.length} {t('businesses.members.memberCount')}</h2>
+          <HelpTip title={t('businesses.members.memberCount')} content={hm.members} size={15} />
+        </div>
         {canManage && <button onClick={() => setInviteOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('businesses.members.invite')}</button>}
       </div>
 
@@ -528,7 +566,8 @@ const emptyHours = (): WorkingHours =>
   DAYS.reduce((acc, d) => { acc[d] = { isWorking: false, start: '09:00', end: '17:00' }; return acc; }, {} as WorkingHours);
 
 const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ business, canManage }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const hs = (BUSINESSES_HELP as any)[language] || BUSINESSES_HELP.en;
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -575,7 +614,10 @@ const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ busine
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('businesses.staff.title')}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('businesses.staff.title')}</h2>
+          <HelpTip title={t('businesses.staff.title')} content={hs.staff} size={15} />
+        </div>
         <button onClick={() => setAddOpen(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('businesses.staff.addEmployee')}</button>
       </div>
 

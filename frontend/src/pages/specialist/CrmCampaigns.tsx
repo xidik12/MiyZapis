@@ -120,19 +120,31 @@ const campaignStatusBadgeClass = (status: SegmentCampaign['status']): string => 
 
 // ---- Filter form sub-component ----------------------------------------------
 
+interface CampaignsHelpContent {
+  overview: string;
+  lapsedDays: string;
+  activeWithin: string;
+  minSpent: string;
+  minBookings: string;
+}
+
 interface FilterFormProps {
   values: Pick<SegmentFormData, 'minSpent' | 'maxSpent' | 'lapsedDays' | 'activeWithinDays' | 'minBookings' | 'hasEmail' | 'hasPhone'>;
   onChange: (patch: Partial<Pick<SegmentFormData, 'minSpent' | 'maxSpent' | 'lapsedDays' | 'activeWithinDays' | 'minBookings' | 'hasEmail' | 'hasPhone'>>) => void;
   inputClass: string;
   labelClass: string;
   t: (key: string) => string | undefined;
+  helpContent: CampaignsHelpContent;
 }
 
-const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, labelClass, t }) => (
+const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, labelClass, t, helpContent }) => (
   <div className="space-y-3">
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
-        <label className={labelClass}>{t('crm.minSpent') || 'Min spent'}</label>
+        <label className={`${labelClass} flex items-center gap-1`}>
+          {t('crm.minSpent') || 'Min spent'}
+          <HelpTip size={15} title={t('crm.minSpent') || 'Min spent'} content={helpContent.minSpent} />
+        </label>
         <input
           type="number" step="0.01" min="0"
           value={values.minSpent}
@@ -156,7 +168,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, l
       <div>
         <label className={`${labelClass} flex items-center gap-1`}>
           {t('crm.lapsedDays') || 'Lapsed (days)'}
-          <HelpTip size={15} title={t('help.tip.lapsedDays.title') || 'Lapsed days'} content={t('help.tip.lapsedDays.body') || "Clients whose last visit was more than N days ago. Use this to target customers who haven't returned recently."} />
+          <HelpTip size={15} title={t('help.tip.lapsedDays.title') || 'Lapsed days'} content={helpContent.lapsedDays} />
         </label>
         <input
           type="number" step="1" min="0"
@@ -167,7 +179,10 @@ const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, l
         />
       </div>
       <div>
-        <label className={labelClass}>{t('crm.activeWithinDays') || 'Active within (days)'}</label>
+        <label className={`${labelClass} flex items-center gap-1`}>
+          {t('crm.activeWithinDays') || 'Active within (days)'}
+          <HelpTip size={15} title={t('crm.activeWithinDays') || 'Active within (days)'} content={helpContent.activeWithin} />
+        </label>
         <input
           type="number" step="1" min="0"
           value={values.activeWithinDays}
@@ -178,7 +193,10 @@ const FilterForm: React.FC<FilterFormProps> = ({ values, onChange, inputClass, l
       </div>
     </div>
     <div>
-      <label className={labelClass}>{t('crm.minBookings') || 'Min bookings'}</label>
+      <label className={`${labelClass} flex items-center gap-1`}>
+        {t('crm.minBookings') || 'Min bookings'}
+        <HelpTip size={15} title={t('crm.minBookings') || 'Min bookings'} content={helpContent.minBookings} />
+      </label>
       <input
         type="number" step="1" min="0"
         value={values.minBookings}
@@ -282,8 +300,85 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ filter }) => {
 
 // ---- Main component ---------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const CAMPAIGNS_HELP = {
+  en: {
+    overview:
+      'Segments & Campaigns\n\nSegments are saved filters that group your clients by behaviour. Campaigns send a one-time email or Telegram message to a segment (or an ad-hoc filter).\n\n' +
+      'Segment filter fields:\n' +
+      '• Min spent / Max spent — total lifetime spend in your account currency (₴ by default)\n' +
+      '• Lapsed (days) — last visit was MORE than N days ago (e.g. 60 = clients you haven\'t seen in 2 months)\n' +
+      '• Active within (days) — last visit was WITHIN the last N days (e.g. 30 = visited in the past month)\n' +
+      '• Min bookings — has at least N completed bookings total\n' +
+      '• Has email / Has phone — only include clients with that contact on file\n\n' +
+      'How a campaign works:\n' +
+      '1. Create a segment (or use ad-hoc filters)\n' +
+      '2. Create a campaign, pick a channel (email / Telegram / both), write your message\n' +
+      '3. Click "Send campaign" — the system matches clients, skips opted-out contacts, and delivers the message\n\n' +
+      'Statuses: draft · sending · sent · failed',
+    lapsedDays:
+      'Lapsed days\n\nIncludes clients whose last visit was MORE than N days ago.\n\nExample: enter 60 to target clients you haven\'t seen in over 2 months.\n\nLeave empty to ignore this filter.',
+    activeWithin:
+      'Active within (days)\n\nIncludes clients whose last visit was WITHIN the last N days.\n\nExample: enter 30 to target clients who visited in the past month.\n\nLeave empty to ignore this filter.',
+    minSpent:
+      'Min spent\n\nMinimum lifetime total spend (in ₴ by default).\n\nExample: enter 1000 to target clients who have spent at least ₴1,000 total.',
+    minBookings:
+      'Min bookings\n\nMinimum number of completed bookings.\n\nExample: enter 3 to target clients with 3 or more visits.',
+  },
+  uk: {
+    overview:
+      'Сегменти та кампанії\n\nСегменти — збережені фільтри, що групують клієнтів за поведінкою. Кампанії надсилають одноразовий email або Telegram-повідомлення сегменту (або довільному фільтру).\n\n' +
+      'Поля фільтра:\n' +
+      '• Мін. витрати / Макс. витрати — загальні витрати за весь час у валюті акаунту (₴ за замовчуванням)\n' +
+      '• Неактивних (днів) — останній візит був БІЛЬШЕ ніж N днів тому (напр., 60 = клієнти, яких не було 2 місяці)\n' +
+      '• Активні за (днів) — останній візит був ПРОТЯГОМ останніх N днів (напр., 30 = відвідали за минулий місяць)\n' +
+      '• Мін. записів — щонайменше N завершених бронювань загалом\n' +
+      '• Є email / Є телефон — тільки клієнти з відповідним контактом\n\n' +
+      'Як працює кампанія:\n' +
+      '1. Створіть сегмент (або використайте довільний фільтр)\n' +
+      '2. Створіть кампанію, оберіть канал (email / Telegram / обидва), напишіть повідомлення\n' +
+      '3. Натисніть "Надіслати кампанію" — система підбере клієнтів, пропустить тих, хто відмовився від розсилки, і доставить повідомлення\n\n' +
+      'Статуси: чернетка · надсилається · надіслано · помилка',
+    lapsedDays:
+      'Неактивних (днів)\n\nВключає клієнтів, останній візит яких був БІЛЬШЕ ніж N днів тому.\n\nПриклад: введіть 60, щоб охопити клієнтів, яких не було понад 2 місяці.\n\nЗалиште порожнім, щоб не враховувати цей фільтр.',
+    activeWithin:
+      'Активні за (днів)\n\nВключає клієнтів, останній візит яких був ПРОТЯГОМ останніх N днів.\n\nПриклад: введіть 30, щоб охопити клієнтів, які відвідали вас за минулий місяць.\n\nЗалиште порожнім, щоб не враховувати цей фільтр.',
+    minSpent:
+      'Мін. витрати\n\nМінімальна загальна сума витрат за весь час (у ₴ за замовчуванням).\n\nПриклад: введіть 1000, щоб охопити клієнтів, які витратили щонайменше ₴1 000.',
+    minBookings:
+      'Мін. записів\n\nМінімальна кількість завершених бронювань.\n\nПриклад: введіть 3, щоб охопити клієнтів з 3 і більше візитами.',
+  },
+  ru: {
+    overview:
+      'Сегменты и кампании\n\nСегменты — сохранённые фильтры, группирующие клиентов по поведению. Кампании отправляют одноразовое email или Telegram-сообщение сегменту (или произвольному фильтру).\n\n' +
+      'Поля фильтра:\n' +
+      '• Мин. расходы / Макс. расходы — общие расходы за всё время в валюте аккаунта (₴ по умолчанию)\n' +
+      '• Неактивных (дней) — последний визит был БОЛЕЕ чем N дней назад (напр., 60 = клиенты, которых не было 2 месяца)\n' +
+      '• Активны за (дней) — последний визит был В ТЕЧЕНИЕ последних N дней (напр., 30 = посещали за прошлый месяц)\n' +
+      '• Мин. записей — не менее N завершённых бронирований всего\n' +
+      '• Есть email / Есть телефон — только клиенты с соответствующим контактом\n\n' +
+      'Как работает кампания:\n' +
+      '1. Создайте сегмент (или используйте произвольный фильтр)\n' +
+      '2. Создайте кампанию, выберите канал (email / Telegram / оба), напишите сообщение\n' +
+      '3. Нажмите "Отправить кампанию" — система подберёт клиентов, пропустит отказавшихся от рассылки и доставит сообщение\n\n' +
+      'Статусы: черновик · отправляется · отправлено · ошибка',
+    lapsedDays:
+      'Неактивных (дней)\n\nВключает клиентов, последний визит которых был БОЛЕЕ чем N дней назад.\n\nПример: введите 60, чтобы охватить клиентов, которых не было более 2 месяцев.\n\nОставьте пустым, чтобы не учитывать этот фильтр.',
+    activeWithin:
+      'Активны за (дней)\n\nВключает клиентов, последний визит которых был В ТЕЧЕНИЕ последних N дней.\n\nПример: введите 30, чтобы охватить клиентов, посещавших вас за прошлый месяц.\n\nОставьте пустым, чтобы не учитывать этот фильтр.',
+    minSpent:
+      'Мин. расходы\n\nМинимальная общая сумма расходов за всё время (в ₴ по умолчанию).\n\nПример: введите 1000, чтобы охватить клиентов, потративших не менее ₴1 000.',
+    minBookings:
+      'Мин. записей\n\nМинимальное количество завершённых бронирований.\n\nПример: введите 3, чтобы охватить клиентов с 3 и более визитами.',
+  },
+};
+
 const CrmCampaigns: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (CAMPAIGNS_HELP as Record<string, CampaignsHelpContent>)[language] || CAMPAIGNS_HELP.en;
 
   const [tab, setTab] = useState<Tab>('segments');
   const [loading, setLoading] = useState(true);
@@ -497,7 +592,7 @@ const CrmCampaigns: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('crm.segmentsAndCampaigns') || 'Segments & Campaigns'}
               </h1>
-              <HelpTip title={t('help.segments.title') || 'Segments & Campaigns'} content={t('help.segments.body') || 'Build customer segments and send email campaigns.'} />
+              <HelpTip title={t('help.segments.title') || 'Segments & Campaigns'} content={h.overview} />
             </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('crm.segmentsAndCampaignsSubtitle') || 'Build audiences and send targeted email campaigns'}
@@ -805,6 +900,7 @@ const CrmCampaigns: React.FC = () => {
                     inputClass={inputClass}
                     labelClass={labelClass}
                     t={t}
+                    helpContent={h}
                   />
                 </div>
 
@@ -960,6 +1056,7 @@ const CrmCampaigns: React.FC = () => {
                       inputClass={inputClass}
                       labelClass={labelClass}
                       t={t}
+                      helpContent={h}
                     />
                   )}
                 </div>

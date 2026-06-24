@@ -25,10 +25,23 @@ import { waitlistService, type WaitlistEntry } from '@/services/waitlist.service
 
 
 const CustomerBookings: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  const HELP = {
+    en: {
+      overview: 'All your bookings and waitlist entries in one place.\n\nBooking statuses:\n• Pending — your request was sent, waiting for the specialist to confirm.\n• Confirmed — the specialist accepted. Your slot is reserved.\n• Completed — the visit is done. You can leave a review.\n• Cancelled — the booking was cancelled (by you or the specialist).\n• No-show — you didn\'t attend the appointment.\n\nActions:\n• View Details — tap to see full info, add notes, or cancel.\n• Cancel — only available while the booking is Pending or Confirmed.\n• Leave Review — appears after a booking is Completed.\n• Book Again — re-books the same service with the same specialist.\n\nWaitlist — if a time slot is full, you can join the waitlist. When a slot opens, your entry changes to "Slot Available" (amber banner) and you can book immediately.',
+    },
+    uk: {
+      overview: 'Усі ваші записи та черги в одному місці.\n\nСтатуси запису:\n• Очікує — ваш запит надіслано, чекаємо підтвердження від спеціаліста.\n• Підтверджено — спеціаліст прийняв. Ваш час зарезервовано.\n• Завершено — відвідування відбулось. Можна залишити відгук.\n• Скасовано — запис скасовано (вами або спеціалістом).\n• Не з\'явився — ви не прийшли на запис.\n\nДії:\n• Деталі — натисніть, щоб переглянути повну інформацію або скасувати.\n• Скасувати — доступно лише для статусів «Очікує» або «Підтверджено».\n• Залишити відгук — з\'являється після завершення запису.\n• Записатись знову — повторює ту саму послугу у того ж спеціаліста.\n\nЧерга — якщо бажаний час зайнятий, ви можете стати в чергу. Коли місце звільниться, картка стане бурштиновою «Місце доступне» і ви зможете одразу забронювати.',
+    },
+    ru: {
+      overview: 'Все ваши записи и очереди в одном месте.\n\nСтатусы записи:\n• Ожидает — запрос отправлен, ждём подтверждения от специалиста.\n• Подтверждено — специалист принял. Ваше время зарезервировано.\n• Завершено — посещение состоялось. Можно оставить отзыв.\n• Отменено — запись отменена (вами или специалистом).\n• Не явился — вы не пришли на запись.\n\nДействия:\n• Детали — нажмите для просмотра полной информации или отмены.\n• Отменить — доступно только для статусов «Ожидает» или «Подтверждено».\n• Оставить отзыв — появляется после завершения записи.\n• Записаться снова — повторяет ту же услугу у того же специалиста.\n\nОчередь — если нужное время занято, вы можете встать в очередь. Когда место освободится, карточка станет янтарной «Место доступно» и можно сразу бронировать.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
 
   // Redux state
   const { bookings, isLoading, error } = useSelector((state: RootState) => state.booking);
@@ -340,7 +353,7 @@ const CustomerBookings: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
                 {t('customer.bookings.title')}
               </h1>
-              <HelpTip title={t('help.customerBookings.title') || 'My bookings'} content={t('help.customerBookings.body') || 'View and manage your appointments — reschedule or cancel.'} />
+              <HelpTip title={language === 'uk' ? 'Мої записи' : language === 'ru' ? 'Мои записи' : 'My Bookings'} content={h.overview} />
             </div>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               {t('customer.bookings.subtitle')}

@@ -3,6 +3,40 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { HelpTip } from '@/components/common/HelpTip';
+
+const TEAM_HELP = {
+  en: {
+    overview:
+      'Team — attendance, leave & shifts\n\nThis page is the HR hub for you and your business staff.\n\nWhat you can do here:\n\nAs a specialist (employee):\n• Clock In / Clock Out — record your work hours for today. Clock In opens your attendance; Clock Out closes it.\n• Request leave — submit a vacation, sick day or other leave request for your employer to approve.\n• View my leaves — see all your leave requests and their status (Pending / Approved / Rejected).\n\nAs a business owner / manager (employer sections):\n• Roster — see today\'s attendance status for all staff.\n• Pending leaves — review and approve or reject leave requests.\n• Shifts — schedule future shifts for staff members.\n• Manual attendance — correct or add attendance records retroactively.\n\nRelation to Payroll:\nAttendance records and shift data feed into payroll calculations. Accurate clock-in/out data ensures correct hour totals.',
+    clockInOut:
+      'Clock In / Clock Out\n\n• Clock In — tap to record when you started work today. Only one clock-in per day.\n• Clock Out — tap when you finish. The system calculates total minutes worked.\n• Status — Присутній (Present), Запізнився (Late), Відсутній (Absent), У відпустці (On Leave), Пів дня (Half Day).\n\nIf you forgot to clock in or out, your manager can add or correct the record using Manual Attendance.',
+    leaveRequest:
+      'Leave request\n\nSubmit time-off requests that your manager will approve or reject.\n\n• Type — Vacation (відпустка), Sick leave (лікарняний), Day off (відгул), Other.\n• Start date / End date — the date range for your leave.\n• Reason — optional note for your manager.\n\nOnce submitted, the request shows as Pending until reviewed. You can cancel a Pending request yourself.',
+    shifts:
+      'Shifts (employer only)\n\nSchedule upcoming work periods for staff members.\n\n• Staff member — who this shift is for.\n• Start / End time — the planned work window.\n• Note — optional internal comment.\n\nShifts are informational and used for planning; they do not replace clock-in/out attendance.',
+  },
+  uk: {
+    overview:
+      'Команда — відвідуваність, відпустки та зміни\n\nЦя сторінка — HR-центр для вас і вашого персоналу.\n\nЩо ви можете тут робити:\n\nЯк спеціаліст (співробітник):\n• Прийшов / Пішов — фіксуйте робочі години на сьогодні. "Прийшов" відкриває вашу відвідуваність; "Пішов" закриває її.\n• Запит на відпустку — подайте заявку на відпустку, лікарняний або інший тип відсутності для затвердження.\n• Мої відпустки — перегляньте всі ваші запити та їхній статус (Очікує / Затверджено / Відхилено).\n\nЯк власник / менеджер бізнесу (розділи роботодавця):\n• Розклад — переглядайте статус відвідуваності всього персоналу на сьогодні.\n• Очікуючі відпустки — переглядайте та затверджуйте або відхиляйте запити.\n• Зміни — плануйте майбутні зміни для співробітників.\n• Ручна відвідуваність — виправляйте або додавайте записи про відвідуваність.\n\nЗв\'язок із зарплатою:\nДані про відвідуваність та зміни використовуються у розрахунках зарплати. Точні дані забезпечують правильний підрахунок годин.',
+    clockInOut:
+      'Прийшов / Пішов\n\n• Прийшов — натисніть, щоб зафіксувати початок роботи сьогодні. Лише один раз на день.\n• Пішов — натисніть, коли закінчите. Система підраховує загальну кількість відпрацьованих хвилин.\n• Статус — Присутній, Запізнився, Відсутній, У відпустці, Пів дня.\n\nЯкщо ви забули відмітити прихід або відхід, менеджер може додати або виправити запис через Ручну відвідуваність.',
+    leaveRequest:
+      'Запит на відпустку\n\nПодайте заявку на відсутність, яку менеджер затвердить або відхилить.\n\n• Тип — Відпустка, Лікарняний, Відгул, Інше.\n• Дата початку / Дата кінця — діапазон вашої відсутності.\n• Причина — необов\'язкова примітка для менеджера.\n\nПісля подачі заявка відображається як "Очікує" до перевірки. Ви можете самостійно скасувати заявку зі статусом "Очікує".',
+    shifts:
+      'Зміни (лише для роботодавців)\n\nПлануйте майбутні робочі периоди для співробітників.\n\n• Співробітник — для кого ця зміна.\n• Початок / Кінець — запланований робочий час.\n• Примітка — необов\'язковий внутрішній коментар.\n\nЗміни носять інформаційний характер і використовуються для планування; вони не замінюють відмітки про прихід/відхід.',
+  },
+  ru: {
+    overview:
+      'Команда — посещаемость, отпуска и смены\n\nЭта страница — HR-центр для вас и вашего персонала.\n\nЧто вы можете здесь делать:\n\nКак специалист (сотрудник):\n• Пришёл / Ушёл — фиксируйте рабочие часы за сегодня. "Пришёл" открывает вашу посещаемость; "Ушёл" закрывает её.\n• Запрос отпуска — подайте заявку на отпуск, больничный или другой тип отсутствия на утверждение.\n• Мои отпуска — просматривайте все ваши запросы и их статус (Ожидает / Утверждено / Отклонено).\n\nКак владелец / менеджер бизнеса (разделы работодателя):\n• Расписание — просматривайте статус посещаемости всего персонала на сегодня.\n• Ожидающие отпуска — просматривайте и утверждайте или отклоняйте запросы.\n• Смены — планируйте будущие смены для сотрудников.\n• Ручная посещаемость — исправляйте или добавляйте записи о посещаемости.\n\nСвязь с зарплатой:\nДанные о посещаемости и сменах используются в расчётах зарплаты. Точные данные обеспечивают правильный подсчёт часов.',
+    clockInOut:
+      'Пришёл / Ушёл\n\n• Пришёл — нажмите, чтобы зафиксировать начало работы сегодня. Только один раз в день.\n• Ушёл — нажмите, когда закончите. Система подсчитывает общее количество отработанных минут.\n• Статус — Присутствует, Опоздал, Отсутствует, В отпуске, Полдня.\n\nЕсли вы забыли отметить приход или уход, менеджер может добавить или исправить запись через Ручную посещаемость.',
+    leaveRequest:
+      'Запрос отпуска\n\nПодайте заявку на отсутствие, которую менеджер утвердит или отклонит.\n\n• Тип — Отпуск, Больничный, Отгул, Другое.\n• Дата начала / Дата окончания — диапазон вашего отсутствия.\n• Причина — необязательная заметка для менеджера.\n\nПосле подачи заявка отображается как "Ожидает" до проверки. Вы можете самостоятельно отменить заявку со статусом "Ожидает".',
+    shifts:
+      'Смены (только для работодателей)\n\nПланируйте будущие рабочие периоды для сотрудников.\n\n• Сотрудник — для кого эта смена.\n• Начало / Конец — запланированное рабочее время.\n• Заметка — необязательный внутренний комментарий.\n\nСмены носят информационный характер и используются для планирования; они не заменяют отметки о приходе/уходе.',
+  },
+};
 import { PageLoader } from '@/components/ui';
 import {
   hrService,
@@ -80,7 +114,8 @@ const ATTEND_STATUS_BADGE: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const SpecialistTeam: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (TEAM_HELP as any)[language] || TEAM_HELP.en;
 
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HrSummary | null>(null);
@@ -392,9 +427,12 @@ const SpecialistTeam: React.FC = () => {
 
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            {t('team.title')}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              {t('team.title')}
+            </h1>
+            <HelpTip title={t('team.title')} content={h.overview} />
+          </div>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             {t('team.subtitle')}
           </p>
@@ -439,6 +477,7 @@ const SpecialistTeam: React.FC = () => {
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
             <ClockIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('team.myDay')}</h2>
+            <HelpTip title={t('team.myDay')} content={h.clockInOut} size={15} />
           </div>
           <div className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -495,8 +534,9 @@ const SpecialistTeam: React.FC = () => {
 
         {/* ── My Leave Requests ─────────────────────────────────────────── */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('team.myLeaves')}</h2>
+            <HelpTip title={t('team.myLeaves')} content={h.leaveRequest} size={15} />
           </div>
           {myLeaves.length === 0 ? (
             <div className="p-8 text-center">

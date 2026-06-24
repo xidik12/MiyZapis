@@ -46,8 +46,58 @@ const isOverdue = (dueDate?: string | null): boolean => {
 
 // ---- Main component ---------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const TASKS_HELP = {
+  en: {
+    overview:
+      'Tasks\n\nPersonal follow-up reminders — things you need to do for or about your clients.\n\n' +
+      'Task statuses:\n' +
+      '• Open — not done yet; shown in the "Open" tab\n' +
+      '• Done — completed; moved to the "Done" tab\n\n' +
+      'Click the checkbox on a task to mark it done (or reopen it).\n\n' +
+      'Due date — optional deadline. Tasks past their due date are highlighted in red ("Overdue").\n\n' +
+      'Client ID (optional) — link a task to a specific client so their name appears on the card. Find the ID by opening the client\'s card in the Clients section.\n\n' +
+      'Examples of tasks:\n' +
+      '• "Call Olena to confirm Friday appointment"\n' +
+      '• "Send formula to Ira after colour correction"\n' +
+      '• "Offer VIP discount to top 5 clients this month"',
+  },
+  uk: {
+    overview:
+      'Завдання\n\nОсобисті нагадування для роботи з клієнтами — справи, які потрібно зробити.\n\n' +
+      'Статуси завдань:\n' +
+      '• Відкрите — ще не виконано; відображається у вкладці "Відкриті"\n' +
+      '• Виконане — завершено; переміщується у вкладку "Виконані"\n\n' +
+      'Натисніть на прапорець, щоб позначити завдання як виконане (або скасувати це).\n\n' +
+      'Дата виконання — необов\'язковий дедлайн. Прострочені завдання виділяються червоним ("Прострочено").\n\n' +
+      'ID клієнта (необов\'язково) — прив\'язує завдання до конкретного клієнта, щоб його ім\'я відображалося на картці. ID знаходиться у розділі "Клієнти".\n\n' +
+      'Приклади завдань:\n' +
+      '• "Зателефонувати Олені, підтвердити запис на п\'ятницю"\n' +
+      '• "Надіслати Ірі формулу після корекції кольору"\n' +
+      '• "Запропонувати знижку VIP топ-5 клієнтам цього місяця"',
+  },
+  ru: {
+    overview:
+      'Задачи\n\nЛичные напоминания для работы с клиентами — дела, которые нужно сделать.\n\n' +
+      'Статусы задач:\n' +
+      '• Открытая — ещё не выполнена; отображается во вкладке "Открытые"\n' +
+      '• Выполненная — завершена; перемещается во вкладку "Выполненные"\n\n' +
+      'Нажмите на флажок, чтобы отметить задачу как выполненную (или отменить это).\n\n' +
+      'Дата выполнения — необязательный дедлайн. Просроченные задачи выделяются красным ("Просрочено").\n\n' +
+      'ID клиента (необязательно) — привязывает задачу к конкретному клиенту, чтобы его имя отображалось на карточке. ID находится в разделе "Клиенты".\n\n' +
+      'Примеры задач:\n' +
+      '• "Позвонить Елене, подтвердить запись на пятницу"\n' +
+      '• "Отправить Ире формулу после коррекции цвета"\n' +
+      '• "Предложить скидку VIP топ-5 клиентам этого месяца"',
+  },
+};
+
 const CrmTasks: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (TASKS_HELP as Record<string, typeof TASKS_HELP.en>)[language] || TASKS_HELP.en;
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('open');
   const [loading, setLoading] = useState(true);
@@ -183,7 +233,7 @@ const CrmTasks: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('crm.tasks') || 'Tasks'}
               </h1>
-              <HelpTip title={t('help.tasks.title') || 'Tasks'} content={t('help.tasks.body') || 'Follow-up reminders, optionally linked to a client.'} />
+              <HelpTip title={t('help.tasks.title') || 'Tasks'} content={h.overview} />
             </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('crm.tasksSubtitle') || 'Track follow-ups and to-dos for your clients'}

@@ -24,8 +24,48 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { BookingShareCard } from '../../components/sharing/BookingShareCard';
 import { HelpTip } from '@/components/common/HelpTip';
 
+const SETTINGS_HELP = {
+  en: {
+    overview:
+      'Settings — account, profile & preferences\n\nThis page has two groups:\n\nProfile & Business (left sidebar):\n• Profile — your avatar/photo and public booking link (slug).\n• Personal Info — name, email, phone (with phone verification), bio, precise address, business phone, WhatsApp, parking info, access instructions.\n• Professional — profession/specialty, years of experience, education, languages, specialties.\n• Working Hours — default weekly availability template used to auto-generate schedule slots.\n• Payment Details — accepted payment methods, bank details (bank name, account name, account number, IBAN, SWIFT, notes), payment QR code.\n• Portfolio — upload work photos shown on your public profile.\n\nApp Settings:\n• Account — auto-accept bookings, instant bookings, profile visibility in search.\n• Security — set or change password.\n• Connected Accounts — link/unlink your Telegram account.\n• Notifications — email, push and SMS preferences.\n• Privacy — control what clients can see (phone, email, address).\n• Business — global cancellation window; how many hours before appointment a client can cancel free.\n• Language — interface language (Ukrainian / English / Russian).',
+    workingHours:
+      'Working Hours (Settings → Working Hours)\n\nThis is your default weekly schedule template — NOT individual bookings.\n\nHow it works:\n• Mark each day as working or not, and set start/end times.\n• This template is used by the "Generate from working hours" button on the Schedule page to auto-create availability blocks for future weeks.\n• Changing these hours does NOT retroactively change existing availability blocks — you must regenerate or edit manually.\n\nExample: Mon–Fri 09:00–18:00, Sat 10:00–15:00, Sun closed.',
+    slug:
+      'Public booking link (slug)\n\nYour slug is the unique URL path clients use to find and book you:\nhttps://miyzapis.com/s/YOUR-SLUG\n\nRules:\n• Lowercase letters, numbers and hyphens only.\n• Must be unique across the platform.\n• Changing it breaks existing links — notify your clients if you do.',
+    payment:
+      'Payment details\n\nThis information is shown to clients on booking confirmation so they know how to pay you.\n\n• Accepted methods — tick which payment methods you accept (cash, card, bank transfer, online, crypto).\n• Bank details — fill in for bank transfer clients: bank name, account holder name, account number, IBAN, SWIFT/BIC, optional notes.\n• Payment QR code — upload a QR image (e.g. Monobank, PrivatBank link) clients can scan to pay instantly.\n\nThese details appear on booking confirmations.',
+    privacy:
+      'Privacy settings\n\nControl what clients can see on your public profile:\n• Show phone number — if off, clients cannot see your personal phone.\n• Show email — if off, email is hidden.\n• Allow direct messages — whether clients can message you outside bookings.\n• Show last seen — activity indicator.\n\nYour precise address, parking info and access instructions (from Personal Info) are shown to clients only after booking confirmation.',
+  },
+  uk: {
+    overview:
+      'Налаштування — акаунт, профіль та вподобання\n\nЦя сторінка має дві групи:\n\nПрофіль та бізнес (ліва бічна панель):\n• Профіль — ваша аватарка та публічне посилання для бронювання (slug).\n• Особиста інформація — ім\'я, email, телефон (з верифікацією), біо, точна адреса, робочий телефон, WhatsApp, інфо про паркування, інструкції доступу.\n• Професійне — спеціалізація, досвід, освіта, мови, спеціальності.\n• Графік роботи — шаблон тижневої доступності для автоматичної генерації слотів розкладу.\n• Реквізити оплати — прийнятні методи оплати, банківські реквізити (банк, власник рахунку, номер рахунку, IBAN, SWIFT, примітки), QR-код оплати.\n• Портфоліо — завантажте фото робіт для публічного профілю.\n\nНалаштування застосунку:\n• Акаунт — автоприйняття бронювань, миттєве бронювання, видимість у пошуку.\n• Безпека — встановити або змінити пароль.\n• Підключені акаунти — прив\'язати/від\'язати Telegram.\n• Сповіщення — налаштування email, push та SMS.\n• Конфіденційність — що бачать клієнти (телефон, email, адреса).\n• Бізнес — глобальне вікно скасування; за скільки годин до прийому клієнт може скасувати безкоштовно.\n• Мова — мова інтерфейсу.',
+    workingHours:
+      'Графік роботи (Налаштування → Графік роботи)\n\nЦе шаблон вашого тижневого розкладу — НЕ окремі бронювання.\n\nЯк це працює:\n• Позначте кожен день як робочий або вихідний і вкажіть час початку/завершення.\n• Цей шаблон використовується кнопкою "Згенерувати з робочих годин" на сторінці Розкладу для автоматичного створення блоків доступності на майбутні тижні.\n• Зміна цих годин НЕ впливає ретроактивно на існуючі блоки — потрібно перегенерувати або редагувати вручну.\n\nПриклад: Пн–Пт 09:00–18:00, Сб 10:00–15:00, Нд вихідний.',
+    slug:
+      'Публічне посилання для бронювання (slug)\n\nВаш slug — це унікальний URL-шлях, за яким клієнти знаходять і бронюють вас:\nhttps://miyzapis.com/s/ВАШ-SLUG\n\nПравила:\n• Лише малі латинські літери, цифри та дефіси.\n• Має бути унікальним на платформі.\n• Зміна slug ламає існуючі посилання — повідомте клієнтів, якщо зміните.',
+    payment:
+      'Реквізити оплати\n\nЦя інформація відображається клієнтам після підтвердження бронювання, щоб вони знали, як оплатити.\n\n• Методи оплати — позначте, які методи ви приймаєте (готівка, картка, банківський переказ, онлайн, крипто).\n• Банківські реквізити — для клієнтів, які платять переказом: назва банку, власник рахунку, номер рахунку, IBAN, SWIFT/BIC, примітки.\n• QR-код оплати — завантажте QR-зображення (наприклад, посилання Monobank або PrivatBank) для миттєвої оплати скануванням.\n\nЦі дані з\'являються в підтвердженнях бронювання.',
+    privacy:
+      'Налаштування конфіденційності\n\nКеруйте тим, що бачать клієнти у вашому публічному профілі:\n• Показувати номер телефону — якщо вимкнено, клієнти не бачать ваш особистий телефон.\n• Показувати email — якщо вимкнено, email приховано.\n• Дозволити прямі повідомлення — чи можуть клієнти писати вам поза бронюваннями.\n• Показувати останній вхід — індикатор активності.\n\nТочна адреса, інфо про паркування та інструкції доступу відображаються клієнтам лише після підтвердження бронювання.',
+  },
+  ru: {
+    overview:
+      'Настройки — аккаунт, профиль и предпочтения\n\nЭта страница имеет две группы:\n\nПрофиль и бизнес (левая боковая панель):\n• Профиль — ваш аватар и публичная ссылка для бронирования (slug).\n• Личная информация — имя, email, телефон (с верификацией), био, точный адрес, рабочий телефон, WhatsApp, информация о парковке, инструкции доступа.\n• Профессиональное — специализация, опыт, образование, языки, специальности.\n• График работы — шаблон еженедельной доступности для автоматической генерации слотов расписания.\n• Реквизиты оплаты — принимаемые методы оплаты, банковские реквизиты (банк, держатель счёта, номер счёта, IBAN, SWIFT, заметки), QR-код оплаты.\n• Портфолио — загрузите фото работ для публичного профиля.\n\nНастройки приложения:\n• Аккаунт — автоприём бронирований, мгновенное бронирование, видимость в поиске.\n• Безопасность — установить или изменить пароль.\n• Подключённые аккаунты — привязать/отвязать Telegram.\n• Уведомления — настройки email, push и SMS.\n• Конфиденциальность — что видят клиенты (телефон, email, адрес).\n• Бизнес — глобальное окно отмены; за сколько часов до приёма клиент может отменить бесплатно.\n• Язык — язык интерфейса.',
+    workingHours:
+      'График работы (Настройки → График работы)\n\nЭто шаблон вашего еженедельного расписания — НЕ отдельные бронирования.\n\nКак это работает:\n• Отметьте каждый день как рабочий или выходной и укажите время начала/окончания.\n• Этот шаблон используется кнопкой "Сгенерировать из рабочих часов" на странице Расписания для автоматического создания блоков доступности на будущие недели.\n• Изменение этих часов НЕ влияет ретроактивно на существующие блоки — нужно перегенерировать или редактировать вручную.\n\nПример: Пн–Пт 09:00–18:00, Сб 10:00–15:00, Вс выходной.',
+    slug:
+      'Публичная ссылка для бронирования (slug)\n\nВаш slug — уникальный URL-путь, по которому клиенты находят и бронируют вас:\nhttps://miyzapis.com/s/ВАШ-SLUG\n\nПравила:\n• Только строчные латинские буквы, цифры и дефисы.\n• Должен быть уникальным на платформе.\n• Изменение slug ломает существующие ссылки — предупредите клиентов, если измените.',
+    payment:
+      'Реквизиты оплаты\n\nЭта информация отображается клиентам после подтверждения бронирования.\n\n• Методы оплаты — отметьте, какие методы вы принимаете (наличные, карта, банковский перевод, онлайн, крипто).\n• Банковские реквизиты — для клиентов, платящих переводом: название банка, держатель счёта, номер счёта, IBAN, SWIFT/BIC, заметки.\n• QR-код оплаты — загрузите QR-изображение (например, ссылку Monobank или PrivatBank) для мгновенной оплаты сканированием.\n\nЭти данные появляются в подтверждениях бронирования.',
+    privacy:
+      'Настройки конфиденциальности\n\nУправляйте тем, что видят клиенты в вашем публичном профиле:\n• Показывать номер телефона — если выключено, клиенты не видят ваш личный телефон.\n• Показывать email — если выключено, email скрыт.\n• Разрешить прямые сообщения — могут ли клиенты писать вам вне бронирований.\n• Показывать последний вход — индикатор активности.\n\nТочный адрес, информация о парковке и инструкции доступа отображаются клиентам только после подтверждения бронирования.',
+  },
+};
+
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
+  const h = (SETTINGS_HELP as any)[language] || SETTINGS_HELP.en;
   const { currency, setCurrency } = useCurrency();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
@@ -334,7 +374,7 @@ const SpecialistSettings: React.FC = () => {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {t('settings.title')}
                 </h1>
-                <HelpTip title={t('help.settings.title') || 'Settings'} content={t('help.settings.body') || 'Your account, business profile, language and preferences.'} />
+                <HelpTip title={t('help.settings.title') || 'Settings'} content={h.overview} />
               </div>
               <p className="text-gray-600 dark:text-gray-400">
                 {t('settings.subtitle')}
@@ -491,6 +531,12 @@ const SpecialistSettings: React.FC = () => {
                     </div>
 
                     {/* Share & Embed booking widget */}
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {language === 'uk' ? 'Публічне посилання' : language === 'ru' ? 'Публичная ссылка' : 'Public booking link'}
+                      </p>
+                      <HelpTip title={language === 'uk' ? 'Публічне посилання (slug)' : language === 'ru' ? 'Публичная ссылка (slug)' : 'Public booking link (slug)'} content={h.slug} size={14} />
+                    </div>
                     <BookingShareCard
                       slug={specialist?.slug}
                       id={specialist?.id || user?.id}
@@ -525,22 +571,46 @@ const SpecialistSettings: React.FC = () => {
 
                 {/* Working Hours Tab */}
                 {activeTab === 'working-hours' && !specialistProfile.loading && (
-                  <WorkingHoursTab
-                    profile={specialistProfile.profile}
-                    onProfileChange={specialistProfile.handleProfileChange}
-                    saving={specialistProfile.saving}
-                    onSave={specialistProfile.handleSave}
-                  />
+                  <>
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-3 mb-4 flex items-start gap-2">
+                      <HelpTip title={language === 'uk' ? 'Графік роботи' : language === 'ru' ? 'График работы' : 'Working Hours'} content={h.workingHours} />
+                      <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+                        {language === 'uk'
+                          ? 'Шаблон тижневої доступності. Використовується для автоматичної генерації слотів розкладу.'
+                          : language === 'ru'
+                          ? 'Шаблон еженедельной доступности. Используется для автоматической генерации слотов расписания.'
+                          : 'Weekly availability template. Used to auto-generate schedule slots.'}
+                      </p>
+                    </div>
+                    <WorkingHoursTab
+                      profile={specialistProfile.profile}
+                      onProfileChange={specialistProfile.handleProfileChange}
+                      saving={specialistProfile.saving}
+                      onSave={specialistProfile.handleSave}
+                    />
+                  </>
                 )}
 
                 {/* Payment Details Tab */}
                 {activeTab === 'payment-details' && !specialistProfile.loading && (
-                  <PaymentDetailsTab
-                    profile={specialistProfile.profile}
-                    onProfileChange={specialistProfile.handleProfileChange}
-                    saving={specialistProfile.saving}
-                    onSave={specialistProfile.handleSave}
-                  />
+                  <>
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-3 mb-4 flex items-start gap-2">
+                      <HelpTip title={language === 'uk' ? 'Реквізити оплати' : language === 'ru' ? 'Реквизиты оплаты' : 'Payment Details'} content={h.payment} />
+                      <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+                        {language === 'uk'
+                          ? 'Банківські реквізити та QR-код, які клієнти бачать після підтвердження бронювання.'
+                          : language === 'ru'
+                          ? 'Банковские реквизиты и QR-код, которые клиенты видят после подтверждения бронирования.'
+                          : 'Bank details and QR code shown to clients after booking confirmation.'}
+                      </p>
+                    </div>
+                    <PaymentDetailsTab
+                      profile={specialistProfile.profile}
+                      onProfileChange={specialistProfile.handleProfileChange}
+                      saving={specialistProfile.saving}
+                      onSave={specialistProfile.handleSave}
+                    />
+                  </>
                 )}
 
                 {/* Portfolio Tab */}
@@ -922,10 +992,13 @@ const SpecialistSettings: React.FC = () => {
                 {activeTab === 'privacy' && (
                 <div id="privacy" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
-                      <ShieldCheckIcon className="w-5 h-5 mr-2" />
-                      {t('settings.privacy')}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                        <ShieldCheckIcon className="w-5 h-5 mr-2" />
+                        {t('settings.privacy')}
+                      </h3>
+                      <HelpTip title={t('settings.privacy')} content={h.privacy} size={15} />
+                    </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {t('settings.privacyDescription')}
                     </p>

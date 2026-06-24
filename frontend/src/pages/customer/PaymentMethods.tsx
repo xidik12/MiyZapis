@@ -12,6 +12,20 @@ import { CreditCardIcon, PlusIcon, PencilIcon, TrashIcon } from '@/components/ic
 const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();
   const currentUser = useAppSelector(selectUser);
+
+  const HELP = {
+    en: {
+      overview: 'Save card details for convenience — so you don\'t have to type them each time.\n\nImportant to know:\n• Payments are collected IN PERSON at the time of your appointment. The platform does NOT charge your card automatically.\n• We only store the last 4 digits of your card number — never the full number, CVV, or PIN.\n• Card data is encrypted and stored in compliance with PCI DSS security standards.\n• You can set one card as Default, which will be pre-selected in future booking flows.\n\nTo add a card: tap "Add Payment Method", enter the card details, and save. To remove a card, tap the trash icon on the card row.',
+    },
+    uk: {
+      overview: 'Збережіть дані картки для зручності — щоб не вводити їх щоразу.\n\nВажливо знати:\n• Оплата здійснюється ОСОБИСТО під час відвідування. Платформа НЕ списує кошти з картки автоматично.\n• Ми зберігаємо лише останні 4 цифри номеру картки — повний номер, CVV та PIN не зберігаються.\n• Дані карток зашифровані та відповідають стандарту безпеки PCI DSS.\n• Можна позначити одну картку як «Основну» — вона підставлятиметься автоматично при оформленні записів.\n\nДодати картку: натисніть «Додати спосіб оплати», введіть дані та збережіть. Видалити — іконка кошика в рядку картки.',
+    },
+    ru: {
+      overview: 'Сохраните данные карты для удобства — чтобы не вводить их каждый раз.\n\nВажно знать:\n• Оплата производится ЛИЧНО во время посещения. Платформа НЕ списывает средства с карты автоматически.\n• Мы храним только последние 4 цифры номера карты — полный номер, CVV и PIN не сохраняются.\n• Данные карт зашифрованы и соответствуют стандарту безопасности PCI DSS.\n• Можно пометить одну карту как «Основную» — она будет подставляться автоматически при оформлении записей.\n\nДобавить карту: нажмите «Добавить способ оплаты», введите данные и сохраните. Удалить — иконка корзины в строке карты.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
+
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodRecord[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethodRecord | null>(null);
@@ -130,7 +144,7 @@ const PaymentMethods: React.FC = () => {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
             </h1>
-            <HelpTip title={t('help.paymentMethods.title') || 'Payment methods'} content={t('help.paymentMethods.body') || 'Manage the cards and methods you pay with.'} />
+            <HelpTip title={language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
             {language === 'uk'

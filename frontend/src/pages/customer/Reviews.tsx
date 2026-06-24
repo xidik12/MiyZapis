@@ -10,8 +10,21 @@ import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 
 const CustomerReviews: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const currentUser = useAppSelector(selectUser);
+
+  const HELP = {
+    en: {
+      overview: 'All the reviews you\'ve written for specialists you\'ve visited.\n\n• Stats bar at the top shows your average rating across all reviews and the total count.\n• Each card shows the rating (1–5 stars), your comment, the specialist\'s name and the service.\n• Reactions — you can like or dislike a review to show agreement.\n• Specialist response — if a specialist replied to your review, their response appears below your comment.\n• Report — flag a review if the content is incorrect or inappropriate.\n• Filters — sort by rating, date, or filter to show only reviews with comments.\n\nYou can leave a review from My Bookings → any Completed booking → Leave Review.',
+    },
+    uk: {
+      overview: 'Усі відгуки, які ви написали про відвіданих спеціалістів.\n\n• Статистика вгорі показує вашу середню оцінку та загальну кількість відгуків.\n• Кожна картка містить оцінку (1–5 зірок), ваш коментар, ім\'я спеціаліста та назву послуги.\n• Реакції — ви можете лайкнути або дизлайкнути відгук.\n• Відповідь спеціаліста — якщо спеціаліст відповів на ваш відгук, відповідь показується нижче.\n• Поскаржитись — позначте відгук, якщо вміст некоректний або неприйнятний.\n• Фільтри — сортуйте за оцінкою, датою або показуйте лише відгуки з коментарями.\n\nЗалишити відгук можна в Моїх записах → будь-який завершений запис → Залишити відгук.',
+    },
+    ru: {
+      overview: 'Все отзывы, которые вы написали о посещённых специалистах.\n\n• Статистика вверху показывает вашу среднюю оценку и общее количество отзывов.\n• Каждая карточка содержит оценку (1–5 звёзд), ваш комментарий, имя специалиста и название услуги.\n• Реакции — вы можете лайкнуть или дизлайкнуть отзыв.\n• Ответ специалиста — если специалист ответил на ваш отзыв, ответ отображается ниже.\n• Пожаловаться — отметьте отзыв, если содержимое некорректно или неприемлемо.\n• Фильтры — сортируйте по оценке, дате или показывайте только отзывы с комментариями.\n\nОставить отзыв можно в разделе «Мои записи» → любая завершённая запись → Оставить отзыв.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
@@ -245,7 +258,7 @@ const CustomerReviews: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {t('customer.nav.reviews')}
             </h1>
-            <HelpTip title={t('help.custReviews.title') || 'My reviews'} content={t('help.custReviews.body') || "Reviews you've left for specialists you've visited."} />
+            <HelpTip title={language === 'uk' ? 'Мої відгуки' : language === 'ru' ? 'Мои отзывы' : 'My Reviews'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('reviews.subtitle') || 'View and manage your reviews'}

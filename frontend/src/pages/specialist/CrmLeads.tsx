@@ -258,8 +258,55 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
 // Main page
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const LEADS_HELP = {
+  en: {
+    overview:
+      'Leads\n\nA lead is a potential client who has not booked yet — an inquiry, a walk-in enquiry, or someone you want to follow up with.\n\n' +
+      'Difference from a Client: a lead has no confirmed booking. Once they book, use "Convert to client" (✓ button) to move them to your Clients list.\n\n' +
+      'Pipeline stages:\n' +
+      '• New — just added, no contact yet\n' +
+      '• Contacted — you reached out\n' +
+      '• Qualified — confirmed interest, ready to book\n' +
+      '• Won — they booked (convert them!)\n' +
+      '• Lost — no longer interested\n\n' +
+      'To move a lead: use the stage dropdown on the card, or edit the lead and change the Stage field.\n\n' +
+      'Pipeline value = sum of Deal values for all non-lost leads.',
+  },
+  uk: {
+    overview:
+      'Ліди\n\nЛід — потенційний клієнт, який ще не зробив запис: запит, телефонне звернення або людина, якій ви хочете передзвонити.\n\n' +
+      'Відмінність від клієнта: лід не має підтвердженого бронювання. Коли він запишеться — натисніть "Конвертувати в клієнта" (кнопка ✓), щоб перемістити його до списку клієнтів.\n\n' +
+      'Етапи воронки:\n' +
+      '• Новий — щойно додано, контакту ще не було\n' +
+      '• Зв\'язалися — ви вийшли на зв\'язок\n' +
+      '• Кваліфікований — підтвердив інтерес, готовий до запису\n' +
+      '• Виграний — записався (конвертуйте!)\n' +
+      '• Втрачений — більше не зацікавлений\n\n' +
+      'Щоб змінити етап: скористайтеся випадаючим списком на картці або відредагуйте ліда.\n\n' +
+      'Вартість воронки = сума значень угод для всіх не втрачених лідів.',
+  },
+  ru: {
+    overview:
+      'Лиды\n\nЛид — потенциальный клиент, который ещё не записался: запрос, звонок или человек, которому вы хотите перезвонить.\n\n' +
+      'Отличие от клиента: у лида нет подтверждённого бронирования. Когда он запишется — нажмите "Конвертировать в клиента" (кнопка ✓).\n\n' +
+      'Этапы воронки:\n' +
+      '• Новый — только добавлен, контакта ещё не было\n' +
+      '• Связались — вы вышли на связь\n' +
+      '• Квалифицированный — подтвердил интерес, готов к записи\n' +
+      '• Выигранный — записался (конвертируйте!)\n' +
+      '• Потерянный — больше не заинтересован\n\n' +
+      'Чтобы изменить этап: используйте выпадающий список на карточке или отредактируйте лида.\n\n' +
+      'Стоимость воронки = сумма значений сделок для всех не потерянных лидов.',
+  },
+};
+
 const CrmLeads: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (LEADS_HELP as Record<string, typeof LEADS_HELP.en>)[language] || LEADS_HELP.en;
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -427,7 +474,7 @@ const CrmLeads: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('crm.leads') || 'Leads'}
               </h1>
-              <HelpTip title={t('help.leads.title') || 'Leads'} content={t('help.leads.body') || 'Capture prospects and move them through a pipeline.'} />
+              <HelpTip title={t('help.leads.title') || 'Leads'} content={h.overview} />
             </div>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {t('crm.leadsSubtitle') || 'Track prospects through your pipeline'}

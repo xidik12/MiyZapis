@@ -369,6 +369,19 @@ const CustomerDashboard: React.FC = () => {
     }
   };
 
+  const HELP = {
+    en: {
+      overview: 'Your personal dashboard — everything at a glance.\n\n• Next appointment — shows your nearest upcoming booking with a live countdown when it\'s less than 24 hours away.\n• Stats cards — Total Spent sums all your completed bookings (converted to your display currency). Loyalty Points are your current spendable balance.\n• Quick actions — "Find Specialists" opens the search, "My Bookings" shows your full history.\n• Recent Bookings — your last completed visits. Tap "Book Again" on any to re-book the same service.\n• Favourite Specialists — quick access to specialists you\'ve saved. Tap the eye icon to view their profile or the chat icon to message them.\n• Loyalty Progress — shows your current tier (Bronze → Silver → Gold → Platinum) and how many points you need to reach the next one.',
+    },
+    uk: {
+      overview: 'Ваш особистий дашборд — усе найважливіше в одному місці.\n\n• Наступний запис — показує найближчий майбутній запис і зворотній відлік, коли до нього залишилось менше 24 годин.\n• Статистика — «Витрачено всього» підсумовує всі завершені записи (конвертовано у вашу валюту). «Бонусні бали» — поточний баланс, який ви можете використати.\n• Швидкі дії — «Знайти спеціалістів» відкриває пошук, «Мої записи» показує всю вашу історію.\n• Останні записи — ваші нещодавні завершені відвідування. Натисніть «Записатись знову» на будь-якому, щоб повторити послугу.\n• Улюблені спеціалісти — швидкий доступ до збережених спеціалістів. Іконка ока → профіль, іконка чату → повідомлення.\n• Програма лояльності — показує ваш поточний рівень (Бронза → Срібло → Золото → Платина) та скільки балів потрібно до наступного.',
+    },
+    ru: {
+      overview: 'Ваш личный дашборд — всё важное в одном месте.\n\n• Ближайшая запись — показывает ваш следующий визит и обратный отсчёт, когда до него осталось менее 24 часов.\n• Статистика — «Потрачено всего» суммирует все завершённые записи (конвертировано в вашу валюту). «Бонусные баллы» — текущий баланс для использования.\n• Быстрые действия — «Найти специалистов» открывает поиск, «Мои записи» показывает всю историю.\n• Последние записи — ваши недавние завершённые посещения. Нажмите «Записаться снова», чтобы повторить услугу.\n• Любимые специалисты — быстрый доступ к сохранённым специалистам. Иконка глаза → профиль, иконка чата → сообщения.\n• Программа лояльности — текущий уровень (Бронза → Серебро → Золото → Платина) и сколько баллов нужно до следующего.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
+
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour < 12) return t('dashboard.welcome.morning');
@@ -445,7 +458,7 @@ const CustomerDashboard: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {getGreeting()}, {user?.firstName}! 👋
                 </h1>
-                <HelpTip title={t('help.customerDashboard.title') || 'Dashboard'} content={t('help.customerDashboard.body') || 'Your upcoming appointments, favourites and loyalty points at a glance.'} />
+                <HelpTip title={language === 'uk' ? 'Дашборд' : language === 'ru' ? 'Дашборд' : 'Dashboard'} content={h.overview} />
               </div>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(

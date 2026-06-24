@@ -17,8 +17,21 @@ interface BadgeWithStatus extends LoyaltyBadge {
 
 const CustomerBadges: React.FC = () => {
   const { theme: _theme } = useTheme();
-  const { t } = useLanguage();
-  
+  const { t, language } = useLanguage();
+
+  const HELP = {
+    en: {
+      overview: 'Your badge collection — achievements you unlock by using the platform.\n\nHow badges work:\n• Each badge has a criteria shown on the card (e.g. "Complete 5 bookings", "Leave 3 reviews").\n• Locked badges (grey, padlock icon) show what you still need to do.\n• In-progress badges show a progress bar so you can track how close you are.\n• Earned badges show the date you unlocked them.\n\nStats at the top:\n• Badges Earned — number of badges you\'ve unlocked so far.\n• Badge Points — total points from all earned badges (separate from loyalty points).\n• Completion Rate — the percentage of all available badges you\'ve earned so far.\n\nRarity levels: Common → Rare → Epic → Legendary. Rarer badges are harder to earn and worth more points.\n\nFilters: narrow by Category (achievement, milestone, social, loyalty, streak…) or by Rarity.',
+    },
+    uk: {
+      overview: 'Ваша колекція бейджів — досягнення, які ви отримуєте, користуючись платформою.\n\nЯк це працює:\n• Кожен бейдж має умову отримання (наприклад: «Завершіть 5 записів», «Залиште 3 відгуки»).\n• Заблоковані бейджі (сірі, із замком) показують, що ще потрібно зробити.\n• Бейджі «в процесі» мають смугу прогресу — так ви бачите, наскільки близько до мети.\n• Отримані бейджі відображають дату розблокування.\n\nСтатистика вгорі:\n• Отримано бейджів — скільки ви вже розблокували.\n• Бали за бейджі — загальна сума балів з усіх отриманих бейджів (не плутайте з балами лояльності).\n• Відсоток виконання — частка всіх доступних бейджів, яку ви вже отримали.\n\nРівні рідкісності: Звичайний → Рідкісний → Епічний → Легендарний.\n\nФільтри: за категорією (досягнення, етап, соціальні, лояльність, серія…) або за рідкісністю.',
+    },
+    ru: {
+      overview: 'Ваша коллекция значков — достижения, которые вы получаете, пользуясь платформой.\n\nКак это работает:\n• У каждого значка есть условие получения (например: «Завершите 5 записей», «Оставьте 3 отзыва»).\n• Заблокированные значки (серые, со значком замка) показывают, что ещё нужно сделать.\n• Значки «в процессе» имеют полосу прогресса — видно, насколько вы близки к цели.\n• Полученные значки отображают дату разблокировки.\n\nСтатистика вверху:\n• Получено значков — сколько вы уже разблокировали.\n• Баллы за значки — общая сумма баллов из всех полученных значков (не путать с баллами лояльности).\n• Процент выполнения — доля всех доступных значков, которую вы уже получили.\n\nУровни редкости: Обычный → Редкий → Эпический → Легендарный.\n\nФильтры: по категории (достижение, этап, социальные, лояльность, серия…) или по редкости.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
+
   const [loading, setLoading] = useState(true);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [badges, setBadges] = useState<BadgeWithStatus[]>([]);
@@ -136,7 +149,7 @@ const CustomerBadges: React.FC = () => {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Badge Collection
             </h1>
-            <HelpTip title={t('help.badges.title') || 'Badges'} content={t('help.badges.body') || "Achievements you've unlocked as you use the platform."} />
+            <HelpTip title={language === 'uk' ? 'Бейджі' : language === 'ru' ? 'Значки' : 'Badges'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
             Unlock achievements and show off your accomplishments

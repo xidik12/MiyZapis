@@ -1009,8 +1009,61 @@ const EmptyState: React.FC = () => {
 // Main Component
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const CLIENTS_HELP = {
+  en: {
+    overview:
+      'My Clients\n\nYour full client book — everyone who has ever booked you through MiyZapis.\n\n' +
+      '• Client = a person who completed at least one booking with you\n' +
+      '• Active (green badge) = booked at least once in the last 90 days\n' +
+      '• Lapsed (grey badge) = no visit in 90+ days\n\n' +
+      'Each card shows:\n' +
+      '• Bookings — total number of visits\n' +
+      '• Total Spent — cumulative spend in the client\'s currency (may differ from your display currency)\n' +
+      '• Avg / Visit — total spent ÷ number of bookings\n\n' +
+      'Expand a card (▼) to:\n' +
+      '• Assign colour-coded tags (VIP, Allergy, etc.)\n' +
+      '• Add private notes: general · allergy · preference · formula\n' +
+      '• Toggle marketing consent per channel (email, SMS, push)',
+  },
+  uk: {
+    overview:
+      'Мої клієнти\n\nПовна клієнтська база — всі, хто хоч раз записувався до вас через MiyZapis.\n\n' +
+      '• Клієнт = людина, що здійснила щонайменше одне бронювання\n' +
+      '• Активний (зелений значок) = відвідував(-ла) протягом останніх 90 днів\n' +
+      '• Неактивний (сірий) = не було візиту 90+ днів\n\n' +
+      'Картка показує:\n' +
+      '• Записи — загальна кількість візитів\n' +
+      '• Витрачено — сума в валюті клієнта (може відрізнятися від вашої відображуваної валюти)\n' +
+      '• Середній чек — загальна сума ÷ кількість візитів\n\n' +
+      'Розгорніть картку (▼), щоб:\n' +
+      '• Призначити кольорові теги (VIP, Алергія тощо)\n' +
+      '• Додати приватні нотатки: загальні · алергія · побажання · формула\n' +
+      '• Керувати дозволами на маркетинг (email, SMS, push)',
+  },
+  ru: {
+    overview:
+      'Мои клиенты\n\nПолная клиентская база — все, кто хоть раз записывался к вам через MiyZapis.\n\n' +
+      '• Клиент = человек, совершивший хотя бы одно бронирование\n' +
+      '• Активный (зелёный значок) = посещал(-а) в течение последних 90 дней\n' +
+      '• Неактивный (серый) = не было визита 90+ дней\n\n' +
+      'Карточка показывает:\n' +
+      '• Записи — общее количество визитов\n' +
+      '• Потрачено — сумма в валюте клиента (может отличаться от вашей отображаемой валюты)\n' +
+      '• Средний чек — общая сумма ÷ количество визитов\n\n' +
+      'Разверните карточку (▼), чтобы:\n' +
+      '• Назначить цветные теги (VIP, Аллергия и т.д.)\n' +
+      '• Добавить личные заметки: общие · аллергия · пожелания · формула\n' +
+      '• Управлять согласием на маркетинг (email, SMS, push)',
+  },
+};
+
 const SpecialistClients: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (CLIENTS_HELP as Record<string, typeof CLIENTS_HELP.en>)[language] || CLIENTS_HELP.en;
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -1270,7 +1323,7 @@ const SpecialistClients: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                   {t('clients.title') || 'My Clients'}
                 </h1>
-                <HelpTip title={t('help.clients.title') || 'Clients'} content={t('help.clients.body') || 'Your client book: history, spend, tags, notes and consent.'} />
+                <HelpTip title={t('help.clients.title') || 'Clients'} content={h.overview} />
               </div>
               <p className="text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
                 {t('clients.subtitle') || 'Manage and view your client relationships'}

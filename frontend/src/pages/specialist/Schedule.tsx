@@ -21,6 +21,27 @@ import { findBookingConflicts } from '../../utils/bookingConflicts';
 import { downloadICalFile, openInGoogleCalendar, exportMultipleBookings } from '../../utils/calendarExport';
 import { HelpTip } from '@/components/common/HelpTip';
 
+const SCHEDULE_HELP = {
+  en: {
+    overview:
+      'Schedule — your availability calendar\n\nThis page lets you control when clients can book you. Add time blocks to mark yourself available (green) or blocked (red).\n\nHow it works:\n• Available block — opens that time for client bookings. Slot length is determined by each service\'s duration.\n• Blocked block — marks the time as busy (lunch, personal, holiday). Clients cannot book during blocked periods.\n• Recurring — tick "Repeat weekly" and pick days to create the same block every week automatically.\n• Generate from working hours — if you have working hours set in Settings, tap this prompt to auto-fill your weekly availability in one click.\n\nViews:\n• Cards — weekly column layout, grouped by hour. Hours with activity auto-expand.\n• Month — full calendar overview.\n\nNote on times: times are stored and displayed as you enter them (device timezone). Bookings show in the same clock, so keep your device timezone consistent.',
+    block:
+      'Time block\n\n• Date — the day this block applies.\n• Start / End time — the window you are available or blocked.\n• Available for booking — ON = clients can book during this window; OFF = time is reserved and not bookable.\n• Reason — optional label shown when the block is blocked (e.g. "Lunch", "Holiday").\n• Repeat weekly — creates the identical block on the selected days every week going forward.',
+  },
+  uk: {
+    overview:
+      'Розклад — ваш календар доступності\n\nЦя сторінка дозволяє контролювати, коли клієнти можуть вас записати. Додайте блоки часу, щоб позначити себе доступним (зелений) або зайнятим (червоний).\n\nЯк це працює:\n• Доступний блок — відкриває цей час для бронювання клієнтами. Тривалість слота визначається тривалістю кожної послуги.\n• Заблокований блок — позначає час як зайнятий (обід, особисте, вихідний). Клієнти не можуть бронювати у цей час.\n• Повторення — увімкніть "Повторювати щотижня" і оберіть дні, щоб автоматично створювати однаковий блок щотижня.\n• Згенерувати з робочих годин — якщо у Налаштуваннях вказані робочі години, натисніть підказку, щоб автоматично заповнити тижневу доступність одним кліком.\n\nВиди:\n• Картки — тижневий вигляд за колонками, згрупований по годинах.\n• Місяць — повний огляд календаря.\n\nПримітка щодо часу: час зберігається і відображається так, як ви його вводите (часовий пояс пристрою). Дотримуйтесь однакового часового поясу на пристрої.',
+    block:
+      'Блок часу\n\n• Дата — день, на який діє блок.\n• Початок / Кінець — вікно доступності або зайнятості.\n• Доступний для бронювання — УВІМК = клієнти можуть бронювати; ВИМК = час зарезервований, бронювання недоступне.\n• Причина — необов\'язкова мітка для заблокованого часу (наприклад, "Обід", "Вихідний").\n• Повторювати щотижня — створює однаковий блок у вибрані дні кожного тижня.',
+  },
+  ru: {
+    overview:
+      'Расписание — ваш календарь доступности\n\nЭта страница позволяет управлять временем, когда клиенты могут вас записать. Добавляйте блоки времени, чтобы отмечать себя доступным (зелёный) или занятым (красный).\n\nКак это работает:\n• Доступный блок — открывает это время для бронирования клиентами. Длина слота определяется продолжительностью каждой услуги.\n• Заблокированный блок — отмечает время как занятое (обед, личное, выходной). Клиенты не могут бронировать в это время.\n• Повторение — включите "Повторять еженедельно" и выберите дни, чтобы автоматически создавать одинаковый блок каждую неделю.\n• Сгенерировать из рабочих часов — если в Настройках указаны рабочие часы, нажмите подсказку, чтобы автоматически заполнить еженедельную доступность одним кликом.\n\nВиды:\n• Карточки — еженедельный вид по колонкам, сгруппированный по часам.\n• Месяц — полный обзор календаря.\n\nПримечание о времени: время хранится и отображается так, как вы его вводите (часовой пояс устройства). Поддерживайте одинаковый часовой пояс на устройстве.',
+    block:
+      'Блок времени\n\n• Дата — день, на который действует блок.\n• Начало / Конец — окно доступности или занятости.\n• Доступен для бронирования — ВКЛ = клиенты могут бронировать; ВЫКЛ = время зарезервировано, бронирование недоступно.\n• Причина — необязательная метка для заблокированного времени (например, "Обед", "Выходной").\n• Повторять еженедельно — создаёт одинаковый блок в выбранные дни каждую неделю.',
+  },
+};
+
 interface CalendarBlock {
   id: string;
   startDateTime: Date;
@@ -48,7 +69,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   preSelectedDate,
   preSelectedTime
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const hm = (SCHEDULE_HELP as any)[language] || SCHEDULE_HELP.en;
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
@@ -205,6 +227,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
                 />
                 <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
+                <HelpTip title={t('schedule.availableForBooking')} content={hm.block} size={15} />
               </label>
             </div>
 
@@ -279,7 +302,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
 };
 
 const SpecialistSchedule: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (SCHEDULE_HELP as any)[language] || SCHEDULE_HELP.en;
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const bookings = useAppSelector((state: RootState) => state.booking.bookings);
@@ -741,7 +765,7 @@ const SpecialistSchedule: React.FC = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
-            <HelpTip title={t('help.schedule.title') || 'Schedule'} content={t('help.schedule.body') || 'Set your working hours and availability.'} />
+            <HelpTip title={t('help.schedule.title') || 'Schedule'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
         </div>

@@ -9,6 +9,7 @@ import { calculateTier} from '../../utils/formatPoints';
 import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as CameraIcon, EyeIcon, BuildingOfficeIcon, DocumentCheckIcon } from '@/components/icons';
 import { ContentLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { HelpTip } from '@/components/common/HelpTip';
 
 interface Address {
   id: string;
@@ -177,6 +178,19 @@ const CustomerProfile: React.FC = () => {
     }
   };
 
+  const HELP = {
+    en: {
+      overview: 'Your profile — a read-only summary of your account information.\n\n• Name & contact — your registered email, phone, and account type. To edit these, tap "Settings" (the button top-right).\n• Loyalty sidebar — shows your current tier (Bronze / Silver / Gold / Platinum), your bonus points balance, and total amount spent. Points are earned every time you complete a booking.\n• Addresses — saved locations you\'ve added in Settings for faster checkout.\n• Quick Actions — shortcuts to Settings, Payment Methods, and the Loyalty Programme.',
+    },
+    uk: {
+      overview: 'Ваш профіль — огляд основних даних облікового запису.\n\n• Ім\'я та контакти — зареєстрована пошта, телефон і тип акаунту. Щоб редагувати, натисніть «Налаштування» (кнопка вгорі праворуч).\n• Програма лояльності — поточний рівень (Бронза / Срібло / Золото / Платина), баланс бонусних балів та загальна сума витрат. Бали нараховуються після кожного завершеного запису.\n• Адреси — збережені місця з Налаштувань для швидкого оформлення.\n• Швидкі дії — ярлики до Налаштувань, Способів оплати та Програми лояльності.',
+    },
+    ru: {
+      overview: 'Ваш профиль — обзор основных данных учётной записи.\n\n• Имя и контакты — зарегистрированная почта, телефон и тип аккаунта. Для редактирования нажмите «Настройки» (кнопка вверху справа).\n• Программа лояльности — текущий уровень (Бронза / Серебро / Золото / Платина), баланс бонусных баллов и общая сумма трат. Баллы начисляются после каждой завершённой записи.\n• Адреса — сохранённые адреса из Настроек для быстрого оформления.\n• Быстрые действия — ярлыки к Настройкам, Способам оплаты и Программе лояльности.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 relative">
       {/* Success/Error Notifications */}
@@ -246,9 +260,12 @@ const CustomerProfile: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                      {currentUser?.firstName} {currentUser?.lastName}
-                    </h1>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+                        {currentUser?.firstName} {currentUser?.lastName}
+                      </h1>
+                      <HelpTip title={language === 'uk' ? 'Мій профіль' : language === 'ru' ? 'Мой профиль' : 'My Profile'} content={h.overview} />
+                    </div>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
                       {t('profile.customer') || 'Customer'}
                     </p>

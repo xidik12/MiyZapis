@@ -9,12 +9,34 @@ import {
 } from '@/services/subscription.service';
 import { PageLoader } from '@/components/ui';
 import { HelpTip } from '@/components/common/HelpTip';
+
+const BILLING_HELP = {
+  en: {
+    overview:
+      'Subscription — how MiyZapis billing works\n\nMiyZapis charges specialists (not clients) for using the platform.\n\nFree trial:\n• Every new specialist gets 2 months free. No card required.\n• Trial stacking — if you subscribe while still in trial, your remaining free months are added on top of the plan period.\n\nAfter the trial ends:\n• Subscribe to keep 0% per-booking fee and unlimited bookings.\n• No subscription → pay-per-use: 20₴ per completed booking.\n\nPlans:\n• Monthly — auto-renews each month; cancel anytime.\n• 6 months — one-time payment, get 7 months access (+1 free).\n• 1 year (Best value) — one-time payment, get 15 months access (+3 free).\n\nPayment method — Telegram Stars (⭐):\nAll payments go through Telegram\'s built-in payment system. Stars are Telegram\'s in-app currency. Clicking "Subscribe" opens Telegram with a pre-filled invoice — approve the payment there.\n\nThe page refreshes automatically when you return after paying.',
+    stars:
+      'What are Telegram Stars?\n\nTelegram Stars (⭐) are Telegram\'s virtual currency, used for in-app purchases inside Telegram Mini Apps.\n\n• You buy Stars inside the Telegram app (Settings → Telegram Stars).\n• 1 Star ≈ $0.013 (price varies by country and package).\n• Monthly plan ≈ $10/month in Stars.\n\nPayment happens entirely inside Telegram — MiyZapis never sees your payment card details.',
+  },
+  uk: {
+    overview:
+      'Підписка — як працює оплата MiyZapis\n\nMiyZapis стягує плату зі спеціалістів (не з клієнтів) за використання платформи.\n\nБезкоштовний пробний період:\n• Кожен новий спеціаліст отримує 2 місяці безкоштовно. Картка не потрібна.\n• Стекінг пробного периоду — якщо ви оформите підписку під час пробного периоду, залишок безкоштовних місяців додається зверху до терміну плану.\n\nПісля закінчення пробного периоду:\n• Оформіть підписку, щоб зберегти 0% комісії за бронювання та необмежену кількість бронювань.\n• Без підписки → оплата за використання: 20₴ за кожне виконане бронювання.\n\nПлани:\n• Щомісяця — автоматично поновлюється щомісяця; скасуйте будь-коли.\n• 6 місяців — одноразовий платіж, доступ на 7 місяців (+1 місяць безкоштовно).\n• 1 рік (Найвигідніше) — одноразовий платіж, доступ на 15 місяців (+3 місяці безкоштовно).\n\nСпосіб оплати — Telegram Stars (⭐):\nВсі платежі проходять через вбудовану платіжну систему Telegram. Stars — внутрішня валюта Telegram. Натиснувши "Підписатися", Telegram відкриється з готовим рахунком — підтвердіть оплату там.\n\nСторінка автоматично оновлюється, коли ви повертаєтесь після оплати.',
+    stars:
+      'Що таке Telegram Stars?\n\nTelegram Stars (⭐) — віртуальна валюта Telegram, яка використовується для покупок всередині міні-застосунків Telegram.\n\n• Купуйте зірки в застосунку Telegram (Налаштування → Telegram Stars).\n• 1 зірка ≈ $0.013 (ціна залежить від країни та пакету).\n• Місячний план ≈ $10/місяць у зірках.\n\nОплата відбувається повністю всередині Telegram — MiyZapis ніколи не бачить дані вашої картки.',
+  },
+  ru: {
+    overview:
+      'Подписка — как работает оплата MiyZapis\n\nMiyZapis взимает плату со специалистов (не с клиентов) за использование платформы.\n\nБесплатный пробный период:\n• Каждый новый специалист получает 2 месяца бесплатно. Карта не нужна.\n• Стекинг пробного периода — если вы оформите подписку в течение пробного периода, остаток бесплатных месяцев добавляется поверх срока плана.\n\nПосле окончания пробного периода:\n• Оформите подписку, чтобы сохранить 0% комиссии за бронирование и неограниченное количество бронирований.\n• Без подписки → оплата за использование: 20₴ за каждое выполненное бронирование.\n\nПланы:\n• Ежемесячный — автоматически продлевается каждый месяц; отменить можно в любое время.\n• 6 месяцев — единовременный платёж, доступ на 7 месяцев (+1 месяц бесплатно).\n• 1 год (Лучшая цена) — единовременный платёж, доступ на 15 месяцев (+3 месяца бесплатно).\n\nСпособ оплаты — Telegram Stars (⭐):\nВсе платежи проходят через встроенную платёжную систему Telegram. Stars — внутренняя валюта Telegram. Нажав "Подписаться", Telegram откроется с готовым счётом — подтвердите оплату там.\n\nСтраница автоматически обновляется, когда вы возвращаетесь после оплаты.',
+    stars:
+      'Что такое Telegram Stars?\n\nTelegram Stars (⭐) — виртуальная валюта Telegram, используемая для покупок внутри мини-приложений Telegram.\n\n• Покупайте звёзды в приложении Telegram (Настройки → Telegram Stars).\n• 1 звезда ≈ $0.013 (цена зависит от страны и пакета).\n• Ежемесячный план ≈ $10/месяц в звёздах.\n\nОплата происходит полностью внутри Telegram — MiyZapis никогда не видит данные вашей карты.',
+  },
+};
 import { toast } from 'react-toastify';
 import { CheckCircleIcon, StarIcon, RocketLaunchIcon } from '@/components/icons';
 import { confirm } from '@/components/ui/Confirm';
 
 const Billing: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (BILLING_HELP as any)[language] || BILLING_HELP.en;
   const user = useAppSelector(selectUser);
 
   const [loading, setLoading] = useState(true);
@@ -119,7 +141,7 @@ const Billing: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('billing.title') || 'Subscription'}</h1>
-            <HelpTip title={t('billing.title') || 'Subscription'} content={t('billing.help') || ''} />
+            <HelpTip title={t('billing.title') || 'Subscription'} content={h.overview} />
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {t('billing.subtitle') || 'Unlimited bookings with 0% per-booking fee. Pay with Telegram Stars.'}
@@ -249,9 +271,12 @@ const Billing: React.FC = () => {
         </div>
       )}
 
-      <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
-        {t('billing.starsNote') || 'Payments are processed in Telegram Stars inside the Telegram app.'}
-      </p>
+      <div className="flex items-center justify-center gap-1.5">
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+          {t('billing.starsNote') || 'Payments are processed in Telegram Stars inside the Telegram app.'}
+        </p>
+        <HelpTip title="Telegram Stars" content={h.stars} size={14} />
+      </div>
     </div>
   );
 };

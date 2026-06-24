@@ -16,7 +16,20 @@ interface Notification {
 }
 
 const CustomerNotifications: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const HELP = {
+    en: {
+      overview: 'All your alerts and updates in one feed.\n\nNotification types:\n• Booking — confirmations, cancellations, and reminders for your appointments.\n• System — platform updates, policy changes, and announcements.\n• Unread — filter to see only notifications you haven\'t opened yet.\n\nActions:\n• Mark as read — hover a notification and tap the eye icon to mark it read.\n• Mark all read — button top-right clears the unread count in one tap.\n• Delete — tap the × icon to permanently remove a notification.\n\nThe coloured bar on the left edge shows priority: red = high, yellow = medium, blue = low.',
+    },
+    uk: {
+      overview: 'Усі ваші сповіщення в одному місці.\n\nТипи сповіщень:\n• Записи — підтвердження, скасування та нагадування про ваші відвідування.\n• Системні — оновлення платформи, зміни правил та оголошення.\n• Непрочитані — фільтр, щоб бачити лише ті, що ви ще не відкривали.\n\nДії:\n• Позначити як прочитане — наведіть на сповіщення та натисніть іконку ока.\n• Позначити всі — кнопка вгорі праворуч скидає лічильник непрочитаних.\n• Видалити — натисніть × для постійного видалення сповіщення.\n\nКольорова смуга зліва показує пріоритет: червона = високий, жовта = середній, синя = низький.',
+    },
+    ru: {
+      overview: 'Все ваши уведомления в одном месте.\n\nТипы уведомлений:\n• Записи — подтверждения, отмены и напоминания о посещениях.\n• Системные — обновления платформы, изменения правил и объявления.\n• Непрочитанные — фильтр для просмотра только непрочитанных.\n\nДействия:\n• Отметить прочитанным — наведите на уведомление и нажмите иконку глаза.\n• Отметить все — кнопка вверху справа сбрасывает счётчик непрочитанных.\n• Удалить — нажмите × для постоянного удаления уведомления.\n\nЦветная полоса слева показывает приоритет: красная = высокий, жёлтая = средний, синяя = низкий.',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'payment' | 'review' | 'system'>('all');
@@ -174,7 +187,7 @@ const CustomerNotifications: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {t('dashboard.nav.notifications') || 'Notifications'}
             </h1>
-            <HelpTip title={t('help.custNotifications.title') || 'Notifications'} content={t('help.custNotifications.body') || 'Your alerts about bookings, reminders and offers.'} />
+            <HelpTip title={language === 'uk' ? 'Сповіщення' : language === 'ru' ? 'Уведомления' : 'Notifications'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {t('notifications.subtitle') || 'Stay updated with your bookings and activity'}

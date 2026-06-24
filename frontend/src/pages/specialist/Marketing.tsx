@@ -20,6 +20,58 @@ import {
 } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
 
+// ---------------------------------------------------------------------------
+// Help content — trilingual
+// ---------------------------------------------------------------------------
+
+const MARKETING_HELP = {
+  en: {
+    overview:
+      'Marketing\n\nAutomated messages sent to your clients on your behalf — no manual work needed once set up.\n\n' +
+      'Three automation types:\n' +
+      '• Win-back — sends a message to clients who haven\'t visited in N days (default 60). Reminds lapsed clients you exist.\n' +
+      '• Rebooking — sends a reminder to clients N days after their last visit (default 30) suggesting they book again.\n' +
+      '• Birthday — sends a birthday greeting on the client\'s birthday (requires birthday data on file).\n\n' +
+      'Per-card controls:\n' +
+      '• Toggle on/off — enables or disables that automation\n' +
+      '• Lapsed days / Rebook days — the number of days that triggers the message\n' +
+      '• Channel — Telegram, Email, or Both\n' +
+      '• Message template — your custom message text; leave blank for the default\n\n' +
+      '"Run now" button — immediately processes all enabled automations and sends messages to any clients who currently qualify. Useful to backfill after first setup.\n\n' +
+      'Last run — timestamp of the last time that automation was processed.',
+  },
+  uk: {
+    overview:
+      'Маркетинг\n\nАвтоматичні повідомлення, що надсилаються клієнтам від вашого імені — після налаштування ніяких ручних дій не потрібно.\n\n' +
+      'Три типи автоматизації:\n' +
+      '• Повернення — надсилає повідомлення клієнтам, які не відвідували вас N днів (за замовчуванням 60). Нагадує неактивним клієнтам про вас.\n' +
+      '• Повторний запис — надсилає нагадування клієнту через N днів після останнього візиту (за замовчуванням 30) з пропозицією записатися знову.\n' +
+      '• День народження — надсилає привітання у день народження клієнта (потрібна дата народження в профілі).\n\n' +
+      'Елементи керування на картці:\n' +
+      '• Перемикач вкл/вимк — вмикає або вимикає автоматизацію\n' +
+      '• Днів неактивності / Днів до повторного запису — кількість днів, після якої надсилається повідомлення\n' +
+      '• Канал — Telegram, Email або обидва\n' +
+      '• Шаблон повідомлення — ваш текст; залиште порожнім для стандартного\n\n' +
+      'Кнопка "Запустити зараз" — негайно обробляє всі увімкнені автоматизації та надсилає повідомлення клієнтам, які наразі відповідають умовам. Корисно після першого налаштування.\n\n' +
+      'Остання обробка — час останнього запуску цієї автоматизації.',
+  },
+  ru: {
+    overview:
+      'Маркетинг\n\nАвтоматические сообщения, отправляемые клиентам от вашего имени — после настройки никаких ручных действий не нужно.\n\n' +
+      'Три типа автоматизации:\n' +
+      '• Возврат — отправляет сообщение клиентам, не посещавшим вас N дней (по умолчанию 60). Напоминает неактивным клиентам о вас.\n' +
+      '• Повторная запись — отправляет напоминание клиенту через N дней после последнего визита (по умолчанию 30) с предложением записаться снова.\n' +
+      '• День рождения — отправляет поздравление в день рождения клиента (требуется дата рождения в профиле).\n\n' +
+      'Элементы управления на карточке:\n' +
+      '• Переключатель вкл/выкл — включает или отключает автоматизацию\n' +
+      '• Дней неактивности / Дней до повторной записи — количество дней, после которого отправляется сообщение\n' +
+      '• Канал — Telegram, Email или оба\n' +
+      '• Шаблон сообщения — ваш текст; оставьте пустым для стандартного\n\n' +
+      'Кнопка "Запустить сейчас" — немедленно обрабатывает все включённые автоматизации и отправляет сообщения клиентам, которые сейчас соответствуют условиям. Полезно после первоначальной настройки.\n\n' +
+      'Последняя обработка — время последнего запуска этой автоматизации.',
+  },
+};
+
 // Per-type accent + icon for the card header.
 const TYPE_META: Record<
   MarketingType,
@@ -81,7 +133,8 @@ const Toggle: React.FC<{
 );
 
 const Marketing: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (MARKETING_HELP as Record<string, typeof MARKETING_HELP.en>)[language] || MARKETING_HELP.en;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<MarketingType | null>(null);
@@ -195,7 +248,7 @@ const Marketing: React.FC = () => {
                 <SparklesIcon className="h-7 w-7 text-primary-500 flex-shrink-0" />
                 {t('marketing.title')}
               </h1>
-              <HelpTip title={t('help.marketing.title') || 'Marketing'} content={t('help.marketing.body') || 'Automated win-back, rebooking and birthday messages.'} />
+              <HelpTip title={t('help.marketing.title') || 'Marketing'} content={h.overview} />
             </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">{t('marketing.subtitle')}</p>
           </div>

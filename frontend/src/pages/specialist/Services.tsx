@@ -18,6 +18,69 @@ import { reviewsService } from '../../services/reviews.service';
 import { inventoryService, Product, ServiceConsumable } from '../../services/inventory.service';
 import { HelpTip } from '@/components/common/HelpTip';
 
+const SERVICES_HELP = {
+  en: {
+    overview:
+      'Services — what you offer clients\n\nThis page is your service catalogue. Each service becomes a bookable option on your public profile. Clients pick a service, choose a time slot, and confirm a booking.\n\nHow to use:\n1. Tap "Add service" to create a new service.\n2. Fill in name, description, price, currency and duration.\n3. Optional: set deposit/cancellation policy, loyalty points, discounts, prep/cleanup time, group mode.\n4. Activate the service — only active services appear on your public booking page.\n\nKey terms:\n• Active / Inactive — inactive services are hidden from clients but kept in your list.\n• Base price — the price clients see and pay (or the deposit base).\n• Currency — per-service currency; shown to clients in that currency.\n• Duration (min) — how long the booking slot lasts.\n• Group session — allows multiple participants per booking.',
+    price:
+      'Price & currency\n\n• Price — the full amount a client pays for this service.\n• Currency — UAH, USD or EUR. Each service can have its own currency. Clients see the price in the currency you set here.\n\nFormula: booking total = price × (1 - discount%) or price - fixed discount',
+    duration:
+      'Duration (minutes)\n\nHow long this service takes. The system uses this to block the correct time slot in your calendar and prevent double-bookings.\n\nExample: a 90-minute massage creates a 1h 30m slot.\n\nTip: add prep or cleanup time (below) to buffer around the appointment without reducing the visible service duration.',
+    deposit:
+      'Deposit & cancellation policy\n\nRequire deposit — when ON, clients must pay a deposit to confirm the booking (policy layer; actual charging depends on your payment setup).\n\n• Deposit type — PERCENT: % of the service price. FIXED: flat amount in the service currency.\n• Deposit value — the percentage or fixed amount.\n• Cancellation window (hours) — how many hours before the appointment a client can cancel for free. After this window, the no-show fee applies.\n• No-show fee type / value — same PERCENT/FIXED logic as deposit; charged when a client misses the appointment or cancels too late.',
+    loyaltyPoints:
+      'Loyalty points pricing\n\nEnable to let clients pay with loyalty points they have earned.\n\n• Points required — how many points this service costs.\n• Points only — when ON, clients can ONLY use points (no cash option). When OFF, points are an alternative payment method alongside cash.',
+    prepCleanup:
+      'Prep & cleanup time\n\n• Prep time (min) — buffer before the appointment (e.g., setting up equipment). Blocks the calendar before the slot.\n• Cleanup time (min) — buffer after the appointment (e.g., cleaning the room). Blocks the calendar after the slot.\n• Rebook cycle (days) — minimum days before the same client can rebook this service (e.g., "7" means once a week maximum).',
+    group:
+      'Group session\n\nWhen enabled, multiple clients can book the same time slot.\n\n• Max participants — upper limit per booking slot.\n• Min participants — booking only confirmed when at least this many participants join.',
+    consumables:
+      'Consumables\n\nLink inventory products that are automatically deducted from your stock when a booking for this service is marked completed.\n\nExample: "Hair colour" service uses 50g of colour product → add the product and set quantity 50. Stock updates automatically.',
+    discount:
+      'Discount\n\nOptional time-limited price reduction shown to clients on your booking page.\n\n• Type — PERCENTAGE (e.g. 20%) or FIXED amount.\n• Value — the discount amount or percentage.\n• Valid from / until — date range during which the discount is active.',
+  },
+  uk: {
+    overview:
+      'Послуги — що ви пропонуєте клієнтам\n\nЦя сторінка — ваш каталог послуг. Кожна послуга стає доступною для бронювання на вашому публічному профілі. Клієнти обирають послугу, час і підтверджують запис.\n\nЯк користуватися:\n1. Натисніть "Додати послугу".\n2. Заповніть назву, опис, ціну, валюту та тривалість.\n3. За бажанням: встановіть депозит/умови скасування, бали лояльності, знижки, час підготовки/прибирання, групову сесію.\n4. Активуйте послугу — лише активні послуги відображаються на сторінці бронювання.\n\nОсновні терміни:\n• Активна / Неактивна — неактивні послуги приховані від клієнтів, але зберігаються у списку.\n• Базова ціна — сума, яку бачить і платить клієнт.\n• Валюта — на рівні послуги: UAH, USD або EUR.\n• Тривалість (хв) — скільки часу займає бронювання.\n• Групова сесія — дозволяє кільком учасникам бронювати один часовий слот.',
+    price:
+      'Ціна та валюта\n\n• Ціна — повна сума, яку платить клієнт за послугу.\n• Валюта — UAH, USD або EUR. Кожна послуга може мати свою валюту. Клієнт бачить ціну у вибраній валюті.\n\nФормула: сума бронювання = ціна × (1 - знижка%) або ціна - фіксована знижка',
+    duration:
+      'Тривалість (хвилини)\n\nСкільки часу займає ця послуга. Система використовує це, щоб заблокувати правильний часовий слот у вашому календарі та запобігти подвійному бронюванню.\n\nПриклад: масаж 90 хвилин — слот 1 год 30 хв.\n\nПорада: додайте час підготовки або прибирання (нижче), щоб створити буфер навколо прийому, не скорочуючи видиму тривалість послуги.',
+    deposit:
+      'Депозит та умови скасування\n\nВимагати депозит — коли УВІМК, клієнти мають сплатити депозит для підтвердження бронювання.\n\n• Тип депозиту — ВІДСОТОК: % від ціни послуги. ФІКСОВАНИЙ: фіксована сума у валюті послуги.\n• Розмір депозиту — відсоток або фіксована сума.\n• Вікно скасування (год) — скільки годин до прийому клієнт може скасувати безкоштовно. Після цього застосовується штраф за неявку.\n• Тип / розмір штрафу за неявку — та сама логіка ВІДСОТОК/ФІКСОВАНИЙ; стягується, коли клієнт не з\'явився або скасував занадто пізно.',
+    loyaltyPoints:
+      'Ціноутворення балів лояльності\n\nУвімкніть, щоб клієнти могли оплачувати послугу накопиченими балами.\n\n• Необхідна кількість балів — скільки балів коштує ця послуга.\n• Тільки бали — коли УВІМК, клієнти можуть оплатити ЛИШЕ балами. Коли ВИМК — бали є альтернативним способом оплати.',
+    prepCleanup:
+      'Час підготовки та прибирання\n\n• Час підготовки (хв) — буфер перед прийомом (наприклад, підготовка обладнання). Блокує календар перед слотом.\n• Час прибирання (хв) — буфер після прийому. Блокує календар після слота.\n• Цикл повторного запису (дні) — мінімальна кількість днів, перш ніж той самий клієнт може знову забронювати цю послугу.',
+    group:
+      'Групова сесія\n\nКоли увімкнено, кілька клієнтів можуть бронювати один і той самий часовий слот.\n\n• Макс. учасників — максимальна кількість учасників на слот.\n• Мін. учасників — бронювання підтверджується лише коли зберуться принаймні стільки учасників.',
+    consumables:
+      'Витратні матеріали\n\nПов\'яжіть товари з інвентарю, які автоматично списуються зі складу після позначення бронювання як виконаного.\n\nПриклад: послуга "Фарбування волосся" використовує 50г фарби → додайте товар і вкажіть кількість 50. Залишок оновлюється автоматично.',
+    discount:
+      'Знижка\n\nНеобов\'язкове зниження ціни на певний час, яке відображається клієнтам на вашій сторінці бронювання.\n\n• Тип — ВІДСОТОК (наприклад, 20%) або ФІКСОВАНА сума.\n• Розмір — сума або відсоток знижки.\n• Дійсна з / по — діапазон дат, протягом якого знижка активна.',
+  },
+  ru: {
+    overview:
+      'Услуги — что вы предлагаете клиентам\n\nЭта страница — ваш каталог услуг. Каждая услуга становится доступной для бронирования на вашем публичном профиле. Клиенты выбирают услугу, время и подтверждают запись.\n\nКак пользоваться:\n1. Нажмите "Добавить услугу".\n2. Заполните название, описание, цену, валюту и длительность.\n3. По желанию: установите депозит/условия отмены, баллы лояльности, скидки, время подготовки/уборки, групповую сессию.\n4. Активируйте услугу — только активные услуги отображаются на странице бронирования.\n\nОсновные термины:\n• Активная / Неактивная — неактивные услуги скрыты от клиентов, но хранятся в списке.\n• Базовая цена — сумма, которую видит и платит клиент.\n• Валюта — на уровне услуги: UAH, USD или EUR.\n• Длительность (мин) — сколько времени занимает бронирование.\n• Групповая сессия — позволяет нескольким участникам бронировать один временной слот.',
+    price:
+      'Цена и валюта\n\n• Цена — полная сумма, которую платит клиент за услугу.\n• Валюта — UAH, USD или EUR. Каждая услуга может иметь свою валюту. Клиент видит цену в выбранной валюте.\n\nФормула: сумма бронирования = цена × (1 - скидка%) или цена - фиксированная скидка',
+    duration:
+      'Длительность (минуты)\n\nСколько времени занимает эта услуга. Система использует это для блокировки нужного временного слота в вашем календаре и предотвращения двойного бронирования.\n\nПример: массаж 90 минут — слот 1 ч 30 мин.\n\nСовет: добавьте время подготовки или уборки (ниже), чтобы создать буфер вокруг приёма, не уменьшая видимую длительность услуги.',
+    deposit:
+      'Депозит и условия отмены\n\nТребовать депозит — когда ВКЛ, клиенты должны оплатить депозит для подтверждения бронирования.\n\n• Тип депозита — ПРОЦЕНТ: % от цены услуги. ФИКСИРОВАННЫЙ: фиксированная сумма в валюте услуги.\n• Размер депозита — процент или фиксированная сумма.\n• Окно отмены (ч) — за сколько часов до приёма клиент может отменить бесплатно. После этого применяется штраф за неявку.\n• Тип / размер штрафа за неявку — та же логика ПРОЦЕНТ/ФИКСИРОВАННЫЙ; взимается когда клиент не явился или отменил слишком поздно.',
+    loyaltyPoints:
+      'Ценообразование баллов лояльности\n\nВключите, чтобы клиенты могли оплачивать услугу накопленными баллами.\n\n• Необходимое количество баллов — сколько баллов стоит эта услуга.\n• Только баллы — когда ВКЛ, клиенты могут оплатить ТОЛЬКО баллами. Когда ВЫКЛ — баллы являются альтернативным способом оплаты.',
+    prepCleanup:
+      'Время подготовки и уборки\n\n• Время подготовки (мин) — буфер перед приёмом (например, подготовка оборудования). Блокирует календарь перед слотом.\n• Время уборки (мин) — буфер после приёма. Блокирует календарь после слота.\n• Цикл повторного бронирования (дни) — минимальное количество дней, прежде чем тот же клиент сможет снова забронировать эту услугу.',
+    group:
+      'Групповая сессия\n\nКогда включено, несколько клиентов могут бронировать один и тот же временной слот.\n\n• Макс. участников — максимальное количество участников на слот.\n• Мин. участников — бронирование подтверждается только когда соберётся хотя бы столько участников.',
+    consumables:
+      'Расходные материалы\n\nСвяжите товары из инвентаря, которые автоматически списываются со склада после отметки бронирования как выполненного.\n\nПример: услуга "Окрашивание волос" использует 50г краски → добавьте товар и укажите количество 50. Остаток обновляется автоматически.',
+    discount:
+      'Скидка\n\nНеобязательное снижение цены на определённое время, отображаемое клиентам на вашей странице бронирования.\n\n• Тип — ПРОЦЕНТ (например, 20%) или ФИКСИРОВАННАЯ сумма.\n• Размер — сумма или процент скидки.\n• Действительна с / по — диапазон дат, в течение которого скидка активна.',
+  },
+};
+
 interface Service {
   id: string;
   name: string;
@@ -88,7 +151,8 @@ interface ConsumableRow {
 }
 
 const ServiceConsumablesEditor: React.FC<{ serviceId: string }> = ({ serviceId }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const hc = (SERVICES_HELP as any)[language] || SERVICES_HELP.en;
   const [products, setProducts] = useState<Product[]>([]);
   const [rows, setRows] = useState<ConsumableRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,9 +231,12 @@ const ServiceConsumablesEditor: React.FC<{ serviceId: string }> = ({ serviceId }
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
       <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {t('consumables.title') || 'Consumables'}
-        </label>
+        <div className="flex items-center gap-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {t('consumables.title') || 'Consumables'}
+          </label>
+          <HelpTip title={t('consumables.title') || 'Consumables'} content={hc.consumables} size={14} />
+        </div>
         {saved && (
           <span className="text-xs text-green-600 dark:text-green-400">
             {t('consumables.saved') || 'Saved'}
@@ -259,6 +326,7 @@ const ServiceConsumablesEditor: React.FC<{ serviceId: string }> = ({ serviceId }
 
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
+  const h = (SERVICES_HELP as any)[language] || SERVICES_HELP.en;
   const { formatPrice, convertPrice, currency, getCurrencySymbol } = useCurrency();
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
@@ -1032,7 +1100,7 @@ const SpecialistServices: React.FC = () => {
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                     {t('services.title')}
                   </h1>
-                  <HelpTip title={t('help.services.title') || 'Services'} content={t('help.services.body') || 'Add or edit the services you offer, with price and duration.'} />
+                  <HelpTip title={t('help.services.title') || 'Services'} content={h.overview} />
                 </div>
                 <p className="text-gray-600 dark:text-gray-300">
                   {t('services.subtitle')}
@@ -1415,9 +1483,12 @@ const SpecialistServices: React.FC = () => {
 
               {/* Group Session */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {t('serviceForm.groupSettings') || 'Group Session Settings'}
-                </h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {t('serviceForm.groupSettings') || 'Group Session Settings'}
+                  </h3>
+                  <HelpTip title={t('serviceForm.groupSettings') || 'Group Session'} content={h.group} size={15} />
+                </div>
                 <div className="flex items-center mb-4">
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -1480,7 +1551,10 @@ const SpecialistServices: React.FC = () => {
 
               {/* Pricing & Duration */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.pricing')}</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('serviceForm.pricing')}</h3>
+                  <HelpTip title={t('serviceForm.pricing')} content={h.price} size={15} />
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1508,9 +1582,12 @@ const SpecialistServices: React.FC = () => {
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('serviceForm.duration')} *
-                    </label>
+                    <div className="flex items-center gap-1 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('serviceForm.duration')} *
+                      </label>
+                      <HelpTip title={t('serviceForm.duration')} content={h.duration} size={14} />
+                    </div>
                     <input
                       type="number"
                       value={formData.duration}
@@ -1526,9 +1603,12 @@ const SpecialistServices: React.FC = () => {
                 {/* Prep Time, Cleanup Time, Rebook Reminder */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('services.prepTime') || 'Prep Time (min)'}
-                    </label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('services.prepTime') || 'Prep Time (min)'}
+                      </label>
+                      <HelpTip title={t('services.prepTime') || 'Prep & Cleanup'} content={h.prepCleanup} size={14} />
+                    </div>
                     <input
                       type="number"
                       min="0"
@@ -1619,7 +1699,10 @@ const SpecialistServices: React.FC = () => {
 
               {/* Loyalty Points Pricing */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.loyaltyPointsPricing')}</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('serviceForm.loyaltyPointsPricing')}</h3>
+                  <HelpTip title={t('serviceForm.loyaltyPointsPricing')} content={h.loyaltyPoints} size={15} />
+                </div>
 
                 {/* Enable Loyalty Points */}
                 <div className="mb-4">
@@ -1697,7 +1780,10 @@ const SpecialistServices: React.FC = () => {
 
               {/* Service Discounts */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.serviceDiscounts')}</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('serviceForm.serviceDiscounts')}</h3>
+                  <HelpTip title={t('serviceForm.serviceDiscounts')} content={h.discount} size={15} />
+                </div>
 
                 {/* Enable Discounts */}
                 <div className="mb-4">
@@ -1853,7 +1939,10 @@ const SpecialistServices: React.FC = () => {
                   payments yet, so nothing is charged here. Amounts are recorded
                   on the booking for a future payments module to collect. */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{t('policy.title') || 'Deposit & cancellation policy'}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('policy.title') || 'Deposit & cancellation policy'}</h3>
+                  <HelpTip title={t('policy.title') || 'Deposit & cancellation policy'} content={h.deposit} size={15} />
+                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('policy.subtitle') || 'Protect against no-shows. No payment is taken yet — amounts are recorded and collected later.'}</p>
 
                 {/* Require deposit */}

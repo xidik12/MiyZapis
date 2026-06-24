@@ -381,6 +381,19 @@ const CustomerSettings: React.FC = () => {
     }
   };
 
+  const HELP = {
+    en: {
+      overview: 'All your account preferences in one place. Use the sidebar to jump between sections.\n\n• Account — edit your name, email, phone, date of birth, profile photo, and preferred language/currency.\n• Password & Security — set or change your password. Google-login users can add a password here.\n• Connected Accounts — link or unlink Google and Telegram for quick sign-in and notifications.\n• Notifications — choose which updates you receive by email, push (browser), or SMS.\n• Privacy — control whether your profile is public or private, and whether specialists can leave reviews about you.\n• Language & Currency — switch the interface language (Ukrainian / English / Russian) and the currency shown throughout the app (₴ UAH / $ USD / € EUR). Also set light/dark/system theme here.\n• Payment Methods — redirects to the dedicated Payments page.\n• Addresses — save home, work, or other addresses (stored locally on this device).',
+    },
+    uk: {
+      overview: 'Усі налаштування акаунту в одному місці. Використовуйте бічне меню для переходу між розділами.\n\n• Акаунт — ім\'я, email, телефон, дата народження, фото профілю, мова та валюта.\n• Пароль та безпека — встановіть або змініть пароль. Користувачі Google можуть додати пароль тут.\n• Підключені акаунти — прив\'язка або відключення Google та Telegram для швидкого входу та сповіщень.\n• Сповіщення — оберіть, які оновлення отримувати: email, push (браузер) або SMS.\n• Конфіденційність — публічний чи приватний профіль, дозвіл залишати відгуки про вас.\n• Мова та валюта — мова інтерфейсу (🇺🇦/🇺🇸/🇷🇺), валюта (₴/$/€), світла/темна/системна тема.\n• Способи оплати — перехід на окрему сторінку оплати.\n• Адреси — збереження домашньої, робочої та інших адрес (зберігаються локально на цьому пристрої).',
+    },
+    ru: {
+      overview: 'Все настройки аккаунта в одном месте. Используйте боковое меню для перехода между разделами.\n\n• Аккаунт — имя, email, телефон, дата рождения, фото профиля, язык и валюта.\n• Пароль и безопасность — установите или измените пароль. Пользователи Google могут добавить пароль здесь.\n• Подключённые аккаунты — привязка или отключение Google и Telegram для быстрого входа и уведомлений.\n• Уведомления — выберите, какие обновления получать: email, push (браузер) или SMS.\n• Конфиденциальность — публичный или приватный профиль, разрешение оставлять отзывы о вас.\n• Язык и валюта — язык интерфейса (🇺🇦/🇺🇸/🇷🇺), валюта (₴/$/€), светлая/тёмная/системная тема.\n• Способы оплаты — переход на отдельную страницу оплаты.\n• Адреса — сохранение домашнего, рабочего и других адресов (хранятся локально на этом устройстве).',
+    },
+  };
+  const h = (HELP as any)[language] || HELP.en;
+
   const sections = [
     { id: 'account', label: t('customer.settings.account'), icon: UserCircleIcon },
     { id: 'password', label: t('customer.settings.passwordSecurity'), icon: ShieldCheckIcon },
@@ -401,7 +414,7 @@ const CustomerSettings: React.FC = () => {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {t('customer.settings.title')}
             </h1>
-            <HelpTip title={t('help.customerSettings.title') || 'Settings'} content={t('help.customerSettings.body') || 'Manage your profile, language, currency and notifications.'} />
+            <HelpTip title={language === 'uk' ? 'Налаштування' : language === 'ru' ? 'Настройки' : 'Settings'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('customer.settings.subtitle')}
