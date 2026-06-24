@@ -440,7 +440,7 @@ const HomePage: React.FC = () => {
                     // Contained inside the photo (bottom band) — never clipped.
                     <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
                       {sp.avatar ? (
-                        <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0" />
+                        <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                       ) : (
                         <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
                           {name?.charAt(0) || 'M'}
@@ -453,7 +453,7 @@ const HomePage: React.FC = () => {
                       {rating != null ? (
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <StarIcon className="w-4 h-4 text-amber-400" active />
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{Number(rating).toFixed(1)}</span>
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">{Number(rating).toFixed(1)}</span>
                         </div>
                       ) : (
                         <CheckBadgeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
@@ -501,7 +501,7 @@ const HomePage: React.FC = () => {
           >
             <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10">
               <div>
-                <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-balance">
                   {t('categories.title')}
                 </h2>
                 <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
@@ -537,7 +537,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer"
+                        className="group flex-none w-[220px] min-[400px]:w-[260px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-[400px]:p-5 transition duration-200 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer active:scale-[0.96]"
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${accent.chip}`}>
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
@@ -549,7 +549,7 @@ const HomePage: React.FC = () => {
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
                         {category.serviceCount != null && (
-                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400">
+                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400 tabular-nums">
                             {category.serviceCount as number} {t('services.count')}
                           </span>
                         )}
@@ -568,7 +568,7 @@ const HomePage: React.FC = () => {
                       <Link
                         key={category.id as string}
                         to={`/search?category=${slug}`}
-                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 p-6 transition-colors duration-200 hover:border-gray-300 dark:hover:border-gray-700 hover-lift cursor-pointer"
+                        className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 p-6 transition duration-200 hover:border-gray-300 dark:hover:border-gray-700 hover-lift cursor-pointer active:scale-[0.96]"
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${accent.chip}`}>
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
@@ -580,7 +580,7 @@ const HomePage: React.FC = () => {
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
                         </p>
                         {category.serviceCount != null && (
-                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400">
+                          <span className="text-sm font-medium text-sky-600 dark:text-sky-400 tabular-nums">
                             {category.serviceCount as number} {t('services.count')}
                           </span>
                         )}
@@ -603,7 +603,7 @@ const HomePage: React.FC = () => {
           className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${howReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="text-center mb-8 sm:mb-10">
-            <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
+            <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0 text-balance">
               {t('howItWorks.title')}
             </h2>
             <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
@@ -689,7 +689,7 @@ const HomePage: React.FC = () => {
             className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${servicesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
-              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
+              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0 text-balance">
                 {t('popularServices.title')}
               </h2>
               <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
@@ -716,7 +716,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={service.id}
                     to={`/booking/${service.id}`}
-                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 transition-colors duration-150 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer"
+                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 transition duration-150 hover:border-gray-300 dark:hover:border-gray-600 hover-lift cursor-pointer active:scale-[0.96]"
                   >
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                       {service.name}
@@ -730,16 +730,16 @@ const HomePage: React.FC = () => {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-1">
                         <StarIcon className="w-4 h-4 text-amber-400" active />
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium tabular-nums">
                           {(service.specialist?.rating ?? service.rating ?? 0).toFixed(1)}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center text-xs">
+                        <span className="flex items-center text-xs tabular-nums">
                           <ClockIcon className="w-3.5 h-3.5 mr-1" />
                           {service.duration} {t('time.minutes')}
                         </span>
-                        <span className="font-semibold text-sky-600 dark:text-sky-400 text-sm">
+                        <span className="font-semibold text-sky-600 dark:text-sky-400 text-sm tabular-nums">
                           {formatPrice(service.basePrice || service.price || 0, service.currency || 'USD')}
                         </span>
                       </div>
@@ -780,7 +780,7 @@ const HomePage: React.FC = () => {
           className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${specReveal.isVisible ? 'visible' : ''}`}
         >
           <div className="text-center mb-8 sm:mb-10">
-            <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
+            <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0 text-balance">
               {t('featuredSpecialists.title')}
             </h2>
             <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
@@ -818,7 +818,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={specialist.id as string}
                     to={`/specialist/${specialist.id}`}
-                    className="group flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors duration-200 hover:border-sky-300 dark:hover:border-sky-700 hover-lift cursor-pointer"
+                    className="group flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition duration-200 hover:border-sky-300 dark:hover:border-sky-700 hover-lift cursor-pointer active:scale-[0.96]"
                   >
                     {/* Avatar + identity (compact — looks intentional with or without a photo) */}
                     <div className="flex items-center gap-4">
@@ -826,7 +826,7 @@ const HomePage: React.FC = () => {
                         <img
                           src={specialist.avatar as string}
                           alt={displayName}
-                          className="h-16 w-16 rounded-full object-cover flex-shrink-0"
+                          className="h-16 w-16 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10"
                         />
                       ) : (
                         <span className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center text-xl font-semibold flex-shrink-0">
@@ -851,11 +851,11 @@ const HomePage: React.FC = () => {
                       {(specialist.averageRating ?? specialist.rating) != null ? (
                         <div className="flex items-center gap-1">
                           <StarIcon className="w-4 h-4 text-amber-400" active />
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                             {Number(specialist.averageRating ?? specialist.rating).toFixed(1)}
                           </span>
                           {specialist.reviewCount != null && (
-                            <span className="text-xs text-gray-400 dark:text-gray-500">({specialist.reviewCount as number})</span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">({specialist.reviewCount as number})</span>
                           )}
                         </div>
                       ) : (
@@ -900,7 +900,7 @@ const HomePage: React.FC = () => {
             className={`!max-w-6xl mx-auto mobile-container prevent-overflow reveal-up ${citiesReveal.isVisible ? 'visible' : ''}`}
           >
             <div className="text-center mb-10 sm:mb-12">
-              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0">
+              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 px-2 sm:px-0 text-balance">
                 {t('browseByCities.title')}
               </h2>
               <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0">
@@ -960,7 +960,7 @@ const HomePage: React.FC = () => {
                           ? 'text-sky-600 dark:text-sky-400'
                           : 'text-gray-500 dark:text-gray-400'
                       }`}>
-                        {city.specialistsCount} {t('browseByCities.specialists')}
+                        <span className="tabular-nums">{city.specialistsCount}</span> {t('browseByCities.specialists')}
                       </span>
                     </Link>
                     );
@@ -1011,7 +1011,7 @@ const HomePage: React.FC = () => {
                           ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20'
                           : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/20'
                       }`}>
-                        {city.specialistsCount} {t('browseByCities.specialists')}
+                        <span className="tabular-nums">{city.specialistsCount}</span> {t('browseByCities.specialists')}
                       </span>
                     </Link>
                     );
@@ -1058,7 +1058,7 @@ const HomePage: React.FC = () => {
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10">
               <div className="px-2 sm:px-0">
-                <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-balance">
                   {t('community.title')}
                 </h2>
                 <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-2xl">
@@ -1118,13 +1118,13 @@ const HomePage: React.FC = () => {
                       {post.excerpt}
                     </p>
                     {post.type === 'SALE' && post.price != null && (
-                      <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-3">
+                      <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-3 tabular-nums">
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
                       </p>
                     )}
                     <div className="flex justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
                       <span>{post.author.firstName}</span>
-                      <span>
+                      <span className="tabular-nums">
                         {post.likeCount} {t('community.likes')} &middot; {post.commentCount} {t('community.comments')}
                       </span>
                     </div>
@@ -1180,7 +1180,7 @@ const HomePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left content */}
             <div className="text-white px-2 sm:px-0">
-              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-5">
+              <h2 className="mz-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-5 text-balance">
                 {t('forSpecialists.title')}
               </h2>
               <p className="text-base sm:text-lg text-sky-100/80 mb-7 sm:mb-8 leading-relaxed max-w-lg">
@@ -1330,7 +1330,7 @@ const HomePage: React.FC = () => {
               background: 'radial-gradient(ellipse at center, #0284C7 0%, transparent 70%)',
             }} />
 
-            <h2 className="mz-heading relative text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 sm:px-0">
+            <h2 className="mz-heading relative text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 sm:px-0 text-balance">
               {t('cta.title')}
             </h2>
             <p className="relative text-base sm:text-lg text-gray-500 dark:text-gray-400 mb-8 px-2 sm:px-0 max-w-xl mx-auto">

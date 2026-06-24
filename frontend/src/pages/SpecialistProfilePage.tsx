@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -403,7 +404,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {specialist.user?.firstName} {specialist.user?.lastName}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 sm:gap-3">
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 sm:gap-3 tabular-nums">
                   <span className="inline-flex items-center gap-0.5 sm:gap-1"><StarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400" active />{(specialist.rating || 0).toFixed(1)}</span>
                   {typeof specialist.completedBookings === 'number' && (
                     <span className="items-center gap-0.5 sm:gap-1 hidden sm:inline-flex"><CalendarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{specialist.completedBookings} {t('specialist.completedJobs') || 'Completed'}</span>
@@ -486,7 +487,7 @@ const SpecialistProfilePage: React.FC = () => {
               </div>
               
               <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-balance">
                   {specialist.user?.firstName} {specialist.user?.lastName}
                 </h1>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
@@ -496,7 +497,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <div className="flex items-center justify-center sm:justify-start mt-2">
                   <div className="flex items-center">
                     {renderStars(specialist.rating || 0)}
-                    <span className="ml-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    <span className="ml-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 tabular-nums">
                       {specialist.rating || 0} ({specialist.reviewCount || 0} {t('reviews.reviews')})
                     </span>
                   </div>
@@ -667,7 +668,7 @@ const SpecialistProfilePage: React.FC = () => {
                           <img
                             src={finalImageUrl}
                             alt={`Portfolio ${index + 1}`}
-                            className="w-full h-full object-cover transition-transform cursor-pointer"
+                            className="w-full h-full object-cover transition-transform cursor-pointer ring-1 ring-inset ring-black/10 dark:ring-white/10"
                             loading="lazy"
                             onClick={() => setLightbox({ open: true, images: (lightbox.images?.length ? lightbox.images : portfolioImages.map((p:any)=>p.imageUrl||p)), index })}
                             onError={(e) => {
@@ -702,7 +703,7 @@ const SpecialistProfilePage: React.FC = () => {
                           <img
                             src={getAbsoluteImageUrl(photo.beforeUrl)}
                             alt="Before"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                             loading="lazy"
                           />
                           <span className="absolute bottom-1 left-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-white">
@@ -713,7 +714,7 @@ const SpecialistProfilePage: React.FC = () => {
                           <img
                             src={getAbsoluteImageUrl(photo.afterUrl)}
                             alt="After"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                             loading="lazy"
                           />
                           <span className="absolute bottom-1 left-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-white">
@@ -741,8 +742,8 @@ const SpecialistProfilePage: React.FC = () => {
 
             {/* Lightbox */}
             {lightbox.open && lightbox.images.length > 0 && (
-              <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
-                <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
+                <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
                   <button className="absolute -top-10 right-0 text-white/80 hover:text-white" onClick={() => setLightbox({ ...lightbox, open: false })}>✕</button>
                   <img src={getAbsoluteImageUrl(lightbox.images[lightbox.index])} alt="Portfolio" className="w-full h-auto rounded-xl shadow-2xl" />
                   <div className="flex justify-between mt-3">
@@ -755,8 +756,8 @@ const SpecialistProfilePage: React.FC = () => {
                       onClick={() => setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length })}
                     >Next</button>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
 
             {/* Services */}
@@ -780,13 +781,13 @@ const SpecialistProfilePage: React.FC = () => {
                           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                             {service.description}
                           </p>
-                          <div className="flex items-center mt-2 text-xs sm:text-sm text-gray-500">
+                          <div className="flex items-center mt-2 text-xs sm:text-sm text-gray-500 tabular-nums">
                             <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             <span>{service.duration} {t('time.minutes')}</span>
                           </div>
                         </div>
                         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start mt-2 sm:mt-0 sm:ml-4 sm:text-right">
-                          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
                             {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
                           </p>
                           {isOwnProfile ? (
@@ -845,7 +846,7 @@ const SpecialistProfilePage: React.FC = () => {
                           )}
                         </div>
                         <div className="flex items-center justify-between mt-3">
-                          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
                             {formatPrice(product.salePrice || 0, (product.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                           </p>
                           <button
@@ -883,7 +884,7 @@ const SpecialistProfilePage: React.FC = () => {
                             onChange={(e) => setCartQty(line.product.id, parseInt(e.target.value || '0', 10), line.product.stockQty)}
                             className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
                           />
-                          <span className="w-24 text-right font-medium text-gray-900 dark:text-white">
+                          <span className="w-24 text-right font-medium text-gray-900 dark:text-white tabular-nums">
                             {formatPrice(line.product.salePrice * line.quantity, (cartCurrency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                           </span>
                         </div>
@@ -891,7 +892,7 @@ const SpecialistProfilePage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between mb-4 text-base font-bold text-gray-900 dark:text-white">
                       <span>{t('sales.total') || 'Total'}</span>
-                      <span>{formatPrice(cartTotal, (cartCurrency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
+                      <span className="tabular-nums">{formatPrice(cartTotal, (cartCurrency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
                     </div>
 
                     <form onSubmit={handlePlaceOrder} className="space-y-3">
@@ -961,7 +962,7 @@ const SpecialistProfilePage: React.FC = () => {
             {/* Reviews */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
-                {t('reviews.title')} ({specialist.reviewCount ?? reviews.length})
+                {t('reviews.title')} <span className="tabular-nums">({specialist.reviewCount ?? reviews.length})</span>
               </h2>
               
               {(specialist.reviewCount ?? reviews.length) > 0 ? (
@@ -990,7 +991,7 @@ const SpecialistProfilePage: React.FC = () => {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2 mt-1">
-                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 tabular-nums">
                               {new Date(review.createdAt).toLocaleDateString()}
                             </p>
                             {review.isVerified && (
@@ -1155,7 +1156,7 @@ const SpecialistProfilePage: React.FC = () => {
                     <img
                       src={getAbsoluteImageUrl(specialist.paymentQrCodeUrl)}
                       alt={t('specialist.paymentQr') || 'Payment QR code'}
-                      className="w-32 h-32 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                      className="w-32 h-32 rounded-lg border border-gray-200 dark:border-gray-700 object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                     />
                   </div>
                 )}
@@ -1171,7 +1172,7 @@ const SpecialistProfilePage: React.FC = () => {
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex justify-between items-start">
                   <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-words">{t('specialist.completedJobs')}</span>
-                  <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm ml-2">
+                  <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm ml-2 tabular-nums">
                     {specialist.completedBookings || 0}
                   </span>
                 </div>

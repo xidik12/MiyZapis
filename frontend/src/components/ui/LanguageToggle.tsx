@@ -13,7 +13,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({ className = '' }
       {/* Ukrainian */}
       <button
         onClick={() => setLanguage('uk')}
-        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-2 py-1 rounded-full text-xs font-medium transition duration-300 active:scale-[0.96] whitespace-nowrap ${
           language === 'uk'
             ? 'bg-primary-600 text-white'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -25,7 +25,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({ className = '' }
       {/* English */}
       <button
         onClick={() => setLanguage('en')}
-        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-2 py-1 rounded-full text-xs font-medium transition duration-300 active:scale-[0.96] whitespace-nowrap ${
           language === 'en'
             ? 'bg-primary-600 text-white'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -37,7 +37,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({ className = '' }
       {/* Russian */}
       <button
         onClick={() => setLanguage('ru')}
-        className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-2 py-1 rounded-full text-xs font-medium transition duration-300 active:scale-[0.96] whitespace-nowrap ${
           language === 'ru'
             ? 'bg-red-500 text-white shadow-md'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'

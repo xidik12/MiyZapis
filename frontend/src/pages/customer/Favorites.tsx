@@ -395,8 +395,8 @@ const CustomerFavorites: React.FC = () => {
                             </div>
                             <button
                               onClick={() => handleRemoveSpecialist(specialist.id)}
-                              className="text-red-500 hover:text-red-700"
-                              title={t('customer.favorites.removeFromFavorites')}
+                              aria-label={t('customer.favorites.removeFromFavorites')}
+                              className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 transition active:scale-[0.96]"
                             >
                               <HeartIcon className="h-5 w-5" active />
                             </button>
@@ -407,7 +407,7 @@ const CustomerFavorites: React.FC = () => {
                             <div className="flex items-center space-x-2 mb-3">
                               <div className="flex items-center space-x-1">
                                 <StarIcon className="h-4 w-4 text-yellow-400" active />
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                                   {specialist.rating.toFixed(1)}
                                 </span>
                               </div>
@@ -444,13 +444,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewSpecialist(specialist.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.viewProfile')}
                             </button>
                             <button
                               onClick={() => navigate(`/search?specialist=${specialist.id}`)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition-all duration-200"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.bookNow')}
                             </button>
@@ -567,7 +567,7 @@ const CustomerFavorites: React.FC = () => {
                               <ClockIcon className="h-4 w-4 mr-1" />
                               <span>{service.duration} min</span>
                             </div>
-                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white tabular-nums">
                               {formatPrice(service.price, ((service as any).currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
                             </div>
                           </div>
@@ -576,13 +576,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewService(service.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.viewDetails')}
                             </button>
                             <button
                               onClick={() => handleBookService(service.id)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition-all duration-200"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.bookNow')}
                             </button>

@@ -30,8 +30,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       onClick={toggleTheme}
       className={`
         relative inline-flex items-center justify-center
-        transition-all duration-300
-        hover:scale-110 active:scale-95
+        transition duration-300
+        hover:scale-110 active:scale-[0.96]
         group
         ${sizeClasses[size]}
         ${className}

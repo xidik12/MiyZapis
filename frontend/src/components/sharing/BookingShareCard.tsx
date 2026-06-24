@@ -177,7 +177,7 @@ export const BookingShareCard: React.FC<BookingShareCardProps> = ({
             <button
               type="button"
               onClick={() => doCopy(bookingUrl, 'link')}
-              className="shrink-0 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm font-medium transition-colors"
+              className="shrink-0 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm font-medium transition active:scale-[0.96]"
             >
               {copied === 'link' ? t('share.copied') || 'Copied!' : t('share.copyLink') || 'Copy link'}
             </button>
@@ -216,7 +216,7 @@ export const BookingShareCard: React.FC<BookingShareCardProps> = ({
                   key={b.key}
                   type="button"
                   onClick={b.onClick}
-                  className={`rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${b.classes}`}
+                  className={`rounded-xl px-3 py-2.5 text-sm font-medium transition active:scale-[0.96] ${b.classes}`}
                 >
                   {b.label}
                 </button>
@@ -244,7 +244,7 @@ export const BookingShareCard: React.FC<BookingShareCardProps> = ({
             <button
               type="button"
               onClick={() => doCopy(embedSnippet, 'embed')}
-              className="absolute top-2 right-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 text-xs font-medium transition-colors"
+              className="absolute top-2 right-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 text-xs font-medium transition active:scale-[0.96]"
             >
               {copied === 'embed' ? t('share.copied') || 'Copied!' : t('share.copyCode') || 'Copy code'}
             </button>

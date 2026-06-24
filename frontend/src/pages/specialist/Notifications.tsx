@@ -235,7 +235,7 @@ const SpecialistNotifications: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">
             {t('notifications.subtitle')}
             {unreadCount > 0 && (
-              <span className="ml-2 inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-red-100/80 text-red-800 dark:bg-red-900/40 dark:text-red-200 border border-red-200/50 dark:border-red-800/50 shadow-sm animate-scale-in">
+              <span className="ml-2 inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-red-100/80 text-red-800 dark:bg-red-900/40 dark:text-red-200 border border-red-200/50 dark:border-red-800/50 shadow-sm animate-scale-in tabular-nums">
                 {unreadCount} {t('notifications.unread')}
               </span>
             )}
@@ -245,7 +245,7 @@ const SpecialistNotifications: React.FC = () => {
           <button
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
-            className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 active:scale-95 flex items-center space-x-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition flex items-center space-x-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.96] disabled:active:scale-100"
           >
             <CheckIcon className="w-4 h-4" />
             <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
@@ -268,7 +268,7 @@ const SpecialistNotifications: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key as any)}
-              className={`flex-1 min-w-fit py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
+              className={`flex-1 min-w-fit py-2.5 px-4 rounded-xl font-semibold text-sm transition active:scale-[0.96] ${
                 filter === tab.key
                   ? 'bg-primary-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:text-gray-900 dark:hover:text-gray-200'
@@ -276,7 +276,7 @@ const SpecialistNotifications: React.FC = () => {
             >
               {tab.label}
               {tab.key === 'unread' && unreadCount > 0 && (
-                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-lg bg-red-500 text-white animate-pulse">
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-lg bg-red-500 text-white animate-pulse tabular-nums">
                   {unreadCount}
                 </span>
               )}
@@ -377,7 +377,7 @@ const SpecialistNotifications: React.FC = () => {
                       }`}>
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold tabular-nums">
                         {notification.timestamp}
                       </p>
                     </div>
@@ -386,16 +386,18 @@ const SpecialistNotifications: React.FC = () => {
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
+                        className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
                         title={t('notifications.markAsRead')}
+                        aria-label={t('notifications.markAsRead')}
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
                     )}
                     <button
                       onClick={() => deleteNotification(notification.id)}
-                      className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
+                      className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
                       title={t('notifications.delete')}
+                      aria-label={t('notifications.delete')}
                     >
                       <XMarkIcon className="w-5 h-5" />
                     </button>

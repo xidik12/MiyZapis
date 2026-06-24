@@ -105,7 +105,7 @@ const Billing: React.FC = () => {
   const Stars = ({ n }: { n: number }) => (
     <span className="inline-flex items-center gap-1">
       <StarIcon className="w-5 h-5 text-amber-400" active />
-      <span className="font-bold">{n.toLocaleString()}</span>
+      <span className="font-bold tabular-nums">{n.toLocaleString()}</span>
     </span>
   );
 
@@ -137,13 +137,13 @@ const Billing: React.FC = () => {
                 {autoRenews ? (t('billing.activeMonthly') || 'Monthly subscription active') : (t('billing.activeAnnual') || 'Annual plan active')}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-                {(autoRenews ? (t('billing.renewsOn') || 'Renews on') : (t('billing.validUntil') || 'Valid until'))} {fmtDate(validUntil)}
+                {(autoRenews ? (t('billing.renewsOn') || 'Renews on') : (t('billing.validUntil') || 'Valid until'))} <span className="tabular-nums">{fmtDate(validUntil)}</span>
               </p>
               {autoRenews && (
                 <button
                   onClick={cancel}
                   disabled={busy === 'cancel'}
-                  className="mt-2 text-sm font-medium text-error-600 dark:text-error-400 hover:underline disabled:opacity-50"
+                  className="mt-2 text-sm font-medium text-error-600 dark:text-error-400 hover:underline disabled:opacity-50 transition active:scale-[0.96]"
                 >
                   {t('billing.cancelAutoRenew') || 'Turn off auto-renewal'}
                 </button>
@@ -179,7 +179,7 @@ const Billing: React.FC = () => {
               <Stars n={pricing.monthly} />
               <span className="text-sm text-gray-500 dark:text-gray-400">/ {t('billing.month') || 'month'}</span>
             </div>
-            <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">≈ $10 / {t('billing.month') || 'month'}</p>
+            <p className="mt-1 text-sm text-gray-400 dark:text-gray-500 tabular-nums">≈ $10 / {t('billing.month') || 'month'}</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300 flex-1">
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featUnlimited') || 'Unlimited bookings'}</li>
               <li className="flex gap-2"><CheckCircleIcon className="w-4 h-4 text-success-500 flex-shrink-0 mt-0.5" />{t('billing.featNoFee') || '0% per-booking fee'}</li>
@@ -188,7 +188,7 @@ const Billing: React.FC = () => {
             <button
               onClick={() => subscribe('monthly')}
               disabled={busy !== null}
-              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50"
+              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
             >
               <StarIcon className="w-5 h-5" active />
               {busy === 'monthly' ? (t('billing.opening') || 'Opening…') : (t('billing.subscribeStars') || 'Subscribe with Telegram Stars')}
@@ -212,7 +212,7 @@ const Billing: React.FC = () => {
             <button
               onClick={() => subscribe('sixmonth')}
               disabled={busy !== null}
-              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50"
+              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
             >
               <StarIcon className="w-5 h-5" active />
               {busy === 'sixmonth' ? (t('billing.opening') || 'Opening…') : ((t('billing.getMonths') || 'Get {{months}} months').replace('{{months}}', String(pricing.sixMonthAccessMonths)))}
@@ -240,7 +240,7 @@ const Billing: React.FC = () => {
             <button
               onClick={() => subscribe('annual')}
               disabled={busy !== null}
-              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-amber-950 bg-amber-400 hover:bg-amber-500 transition-colors disabled:opacity-50"
+              className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-amber-950 bg-amber-400 hover:bg-amber-500 transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
             >
               <StarIcon className="w-5 h-5" active />
               {busy === 'annual' ? (t('billing.opening') || 'Opening…') : ((t('billing.getMonths') || 'Get {{months}} months').replace('{{months}}', String(pricing.annualAccessMonths)))}

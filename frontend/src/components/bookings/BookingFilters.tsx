@@ -116,7 +116,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = React.memo(({
             </select>
             <button
               onClick={onSortOrderToggle}
-              className="px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 dark:text-white text-sm min-w-[3rem] flex items-center justify-center font-bold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md"
+              className="px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 dark:text-white text-sm min-w-[3rem] flex items-center justify-center font-bold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 hover:scale-110 active:scale-[0.96] hover:shadow-md"
               title={sortOrder === 'asc' ? t('filters.ascending') : t('filters.descending')}
             >
               {sortOrder === 'asc' ? '↑' : '↓'}

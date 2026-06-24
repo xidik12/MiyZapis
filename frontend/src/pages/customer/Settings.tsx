@@ -1,4 +1,5 @@
 import React, { useState, useEffect} from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -417,7 +418,7 @@ const CustomerSettings: React.FC = () => {
                   <button
                     key={section.id}
                     onClick={() => { setActiveSection(section.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition-all duration-200 ${
+                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition duration-200 active:scale-[0.96] ${
                       activeSection === section.id
                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-r-2 border-primary-700 dark:border-primary-500'
                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -473,7 +474,7 @@ const CustomerSettings: React.FC = () => {
                           />
                           <label
                             htmlFor="customer-settings-avatar-upload"
-                            className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-all duration-200 ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                            className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition duration-200 active:scale-[0.96] ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                           >
                             <CameraIcon className="w-4 h-4 inline mr-2" />
                             {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
@@ -483,7 +484,7 @@ const CustomerSettings: React.FC = () => {
                             <button
                               onClick={handleImageRemove}
                               disabled={isUploadingImage}
-                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition duration-200 active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
                               {t('actions.remove') || 'Remove'}
@@ -616,7 +617,7 @@ const CustomerSettings: React.FC = () => {
                     <button
                       onClick={handleSaveAccountSettings}
                       disabled={loading}
-                      className="bg-primary-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-primary-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-700 transition duration-200 active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         language === 'uk' ? 'Збереження...' :
@@ -652,7 +653,7 @@ const CustomerSettings: React.FC = () => {
                           </p>
                           <button
                             onClick={() => setShowSetPasswordModal(true)}
-                            className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-xl text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                            className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-xl text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition active:scale-[0.96]"
                           >
                             {t('customer.settings.setPassword')}
                           </button>
@@ -1101,7 +1102,7 @@ const CustomerSettings: React.FC = () => {
                     </p>
                     <Link
                       to="/payments"
-                      className="inline-flex items-center bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
+                      className="inline-flex items-center bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition active:scale-[0.96]"
                     >
                       <CreditCardIcon className="h-4 w-4 mr-2" />
                       {language === 'uk' ? 'Перейти до способів оплати' : language === 'ru' ? 'Перейти к способам оплаты' : 'Go to Payment Methods'}
@@ -1119,7 +1120,7 @@ const CustomerSettings: React.FC = () => {
                     </h2>
                     <button
                       onClick={handleAddAddress}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition active:scale-[0.96] flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('customer.settings.addAddress')}
@@ -1133,7 +1134,7 @@ const CustomerSettings: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noAddresses')}</p>
                         <button
                           onClick={handleAddAddress}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                          className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition active:scale-[0.96] flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           {t('customer.settings.addFirstAddress')}
@@ -1184,8 +1185,8 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Address Modal */}
       {showAddAddressModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
               {t('customer.settings.addAddress')}
@@ -1325,20 +1326,20 @@ const CustomerSettings: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddAddressModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-xl transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-xl transition active:scale-[0.96]"
                 >
                   {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors shadow-sm"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition active:scale-[0.96] shadow-sm"
                 >
                   {t('customer.settings.addAddress')}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Set Password Modal */}

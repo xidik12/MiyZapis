@@ -535,7 +535,7 @@ const SpecialistEarnings: React.FC = () => {
         <button
           onClick={handleExportReport}
           disabled={isExporting}
-          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 hover:shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.96] disabled:active:scale-100"
         >
           <DocumentArrowDownIcon className="w-5 h-5" />
           <span>{isExporting ? t('earnings.exporting') : t('earnings.exportReport')}</span>
@@ -563,7 +563,7 @@ const SpecialistEarnings: React.FC = () => {
 
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalEarnings')}</p>
@@ -581,7 +581,7 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonth')}</p>
@@ -599,7 +599,7 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.pending')}</p>
@@ -617,7 +617,7 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.lastPayout')}</p>
@@ -638,7 +638,7 @@ const SpecialistEarnings: React.FC = () => {
 
       {/* Additional Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.completedBookings')}</p>
@@ -656,7 +656,7 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.activeClients')}</p>
@@ -674,7 +674,7 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
@@ -692,14 +692,14 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.monthlyGrowth')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-xl sm:text-2xl font-bold ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-xl sm:text-2xl font-bold tabular-nums ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                 </p>
               )}
@@ -713,14 +713,14 @@ const SpecialistEarnings: React.FC = () => {
 
       {/* Expense and Profit Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalExpenses')}</p>
               {loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-red-600">
+                <p className="text-xl sm:text-2xl font-bold text-red-600 tabular-nums">
                   {formatPrice(totalExpensesConverted, currency)}
                 </p>
               )}
@@ -731,14 +731,14 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonthExpenses')}</p>
               {loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold text-red-600">
+                <p className="text-xl sm:text-2xl font-bold text-red-600 tabular-nums">
                   {formatPrice(thisMonthExpensesConverted, currency)}
                 </p>
               )}
@@ -749,14 +749,14 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.netProfit')}</p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-xl sm:text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-xl sm:text-2xl font-bold tabular-nums ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatPrice(netProfit, currency)}
                 </p>
               )}
@@ -767,14 +767,14 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.profitMargin')}</p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-xl sm:text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-xl sm:text-2xl font-bold tabular-nums ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {earningsData.totalEarnings > 0 ? `${profitMargin.toFixed(1)}%` : '0%'}
                 </p>
               )}
@@ -800,7 +800,7 @@ const SpecialistEarnings: React.FC = () => {
       {/* Detailed Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6 md:mb-8">
         {/* Monthly Earnings Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('earnings.monthlyEarnings')}</h3>
             <div className="flex flex-wrap gap-2">
@@ -808,7 +808,7 @@ const SpecialistEarnings: React.FC = () => {
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
-                  className={`px-3 py-1 text-sm rounded-xl transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-xl transition active:scale-[0.96] ${
                     selectedPeriod === period
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -852,7 +852,7 @@ const SpecialistEarnings: React.FC = () => {
                           className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-xl flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
-                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0, currency)}</span>
+                          <span className="text-white text-sm font-semibold shadow-sm tabular-nums">{formatPrice(item.earnings || 0, currency)}</span>
                         </div>
                       </div>
                     </div>
@@ -874,7 +874,7 @@ const SpecialistEarnings: React.FC = () => {
         </div>
 
         {/* Recent Earnings */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('earnings.recentCompletedServices')}</h3>
           <div className="space-y-4">
             {loading.payments ? (
@@ -920,7 +920,7 @@ const SpecialistEarnings: React.FC = () => {
       </div>
 
       {/* Earnings Analytics Summary */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('earnings.detailedAnalytics')}</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -933,7 +933,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{(earningsData.conversionRate || 0).toFixed(1)}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{(earningsData.conversionRate || 0).toFixed(1)}%</span>
                 )}
               </div>
               <div className="flex justify-between gap-2">
@@ -941,7 +941,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.repeatCustomers || 0}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{earningsData.repeatCustomers || 0}%</span>
                 )}
               </div>
               <div className="flex justify-between gap-2">
@@ -949,7 +949,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
                 )}
               </div>
             </div>
@@ -995,7 +995,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`font-medium tabular-nums ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                   </span>
                 )}

@@ -2,6 +2,7 @@
 // All sections share a period picker (defaults to current month).
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { toast } from 'react-toastify';
 import {
@@ -110,7 +111,7 @@ const ScopeToggle: React.FC<{ scope: AccountingScope; onChange: (s: AccountingSc
         <button
           key={k}
           onClick={() => onChange(k)}
-          className={`px-3 py-1.5 font-medium transition-colors ${
+          className={`px-3 py-1.5 font-medium transition active:scale-[0.96] ${
             scope === k
               ? 'bg-primary-600 text-white'
               : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -149,7 +150,7 @@ const PeriodPicker: React.FC<{ from: Date; to: Date; onChange: (f: Date, t: Date
       </label>
       <div className="flex gap-1 ml-auto">
         {[['mtd', t('accounting.period.thisMonth')], ['last_month', t('accounting.period.lastMonth')], ['qtd', t('accounting.period.quarter')], ['ytd', t('accounting.period.year')]].map(([k, l]) => (
-          <button key={k} onClick={() => setPreset(k as any)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600">{l}</button>
+          <button key={k} onClick={() => setPreset(k as any)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96]">{l}</button>
         ))}
       </div>
     </div>
@@ -172,7 +173,7 @@ const Tabs: React.FC<{ current: Tab; onChange: (t: Tab) => void }> = ({ current,
           <button
             key={k}
             onClick={() => onChange(k)}
-            className={`whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 -mb-px transition active:scale-[0.96] ${
               current === k
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -355,7 +356,7 @@ const InvoicesPanel: React.FC = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('accounting.invoices.title')}</h2>
-        <button onClick={() => setCreating(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700">{t('accounting.invoices.new')}</button>
+        <button onClick={() => setCreating(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-primary-700 transition active:scale-[0.96]">{t('accounting.invoices.new')}</button>
       </div>
 
       {loading ? <PageLoader /> : invoices.length === 0
@@ -428,9 +429,9 @@ const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({
   };
   return (
     <div className="flex gap-1 text-xs">
-      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">{t('accounting.invoices.markSent')}</button>}
-      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200">{t('accounting.invoices.markPaid')}</button>}
-      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">{t('accounting.invoices.delete')}</button>}
+      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition active:scale-[0.96]">{t('accounting.invoices.markSent')}</button>}
+      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition active:scale-[0.96]">{t('accounting.invoices.markPaid')}</button>}
+      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition active:scale-[0.96]">{t('accounting.invoices.delete')}</button>}
     </div>
   );
 };
@@ -473,11 +474,11 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('accounting.invoices.modal.title')}</h3>
-          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} aria-label={t('common.close')} className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none transition active:scale-[0.96]">×</button>
         </div>
 
         <div className="space-y-3">
@@ -492,7 +493,7 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('accounting.invoices.modal.lineItems')}</label>
-              <button onClick={() => setLines([...lines, { description: '', quantity: 1, unitPrice: 0 }])} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded">{t('accounting.invoices.modal.addLine')}</button>
+              <button onClick={() => setLines([...lines, { description: '', quantity: 1, unitPrice: 0 }])} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded transition active:scale-[0.96]">{t('accounting.invoices.modal.addLine')}</button>
             </div>
             {lines.map((l, i) => (
               <div key={i} className="flex flex-col gap-2 mb-2 sm:grid sm:grid-cols-12">
@@ -500,7 +501,7 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="flex gap-2 sm:contents">
                   <input className="flex-1 sm:col-span-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.qty')} value={l.quantity} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], quantity: Number(e.target.value) }; setLines(c); }} />
                   <input className="flex-1 sm:col-span-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" type="number" placeholder={t('accounting.invoices.modal.unitPrice')} value={l.unitPrice} onChange={(e) => { const c = [...lines]; c[i] = { ...c[i], unitPrice: Number(e.target.value) }; setLines(c); }} />
-                  <button onClick={() => setLines(lines.filter((_, j) => j !== i))} className="flex-shrink-0 sm:col-span-1 text-red-500 hover:text-red-700 px-1">×</button>
+                  <button onClick={() => setLines(lines.filter((_, j) => j !== i))} aria-label="Remove line" className="flex-shrink-0 sm:col-span-1 text-red-500 hover:text-red-700 w-10 h-10 flex items-center justify-center transition active:scale-[0.96]">×</button>
                 </div>
               </div>
             ))}
@@ -518,12 +519,12 @@ const InvoiceForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded">{t('common.cancel')}</button>
-            <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50">{saving ? t('accounting.invoices.modal.saving') : t('accounting.invoices.modal.create')}</button>
+            <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded transition active:scale-[0.96]">{t('common.cancel')}</button>
+            <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100">{saving ? t('accounting.invoices.modal.saving') : t('accounting.invoices.modal.create')}</button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -560,7 +561,7 @@ const ExportPanel: React.FC<{ from: Date; to: Date }> = ({ from, to }) => {
           {t('accounting.export.expenses')}
         </label>
       </div>
-      <button onClick={download} disabled={busy || (!includeIncome && !includeExpenses)} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50">
+      <button onClick={download} disabled={busy || (!includeIncome && !includeExpenses)} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100">
         {busy ? t('accounting.export.downloading') : t('accounting.export.download')}
       </button>
     </div>
@@ -636,7 +637,7 @@ const SettingsPanel: React.FC = () => {
         <button
           onClick={save}
           disabled={saving}
-          className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
         >
           {saving ? t('businesses.settings.saving') : t('businesses.settings.save')}
         </button>

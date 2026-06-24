@@ -194,7 +194,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <img
                   src={getAbsoluteImageUrl(user.avatar)}
                   alt={`${user.firstName} ${user.lastName}`}
-                  className="w-10 h-10 rounded-xl object-cover"
+                  className="w-10 h-10 rounded-xl object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                 />
               ) : (
                 <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
@@ -212,14 +212,14 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 </p>
                 {user?.loyaltyPoints && user.loyaltyPoints > 0 && (
                   <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">
-                    {user.loyaltyPoints} {t('dashboard.customer.loyaltyPoints')}
+                    <span className="tabular-nums">{user.loyaltyPoints}</span> {t('dashboard.customer.loyaltyPoints')}
                   </p>
                 )}
               </div>
             </div>
             <button
               onClick={onToggle}
-              className="lg:hidden p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition active:scale-[0.96]"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -351,7 +351,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             {/* Logout button */}
             <button
               onClick={handleLogout}
-              className="w-full group flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
+              className="w-full group flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 active:scale-[0.96]"
             >
               <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500" />
               <span>Logout</span>
@@ -376,7 +376,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition active:scale-[0.96]"
         >
           <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         </button>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { useAppSelector } from '../../hooks/redux';
@@ -150,7 +151,7 @@ const PaymentMethods: React.FC = () => {
               </h2>
               <button
                 onClick={handleAddPaymentMethod}
-                className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition active:scale-[0.96] flex items-center"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
@@ -174,7 +175,7 @@ const PaymentMethods: React.FC = () => {
                   </p>
                   <button
                     onClick={handleAddPaymentMethod}
-                    className="bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition active:scale-[0.96] flex items-center mx-auto"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     {language === 'uk' ? 'Додати перший спосіб оплати' : language === 'ru' ? 'Добавить первый способ оплаты' : 'Add Your First Payment Method'}
@@ -205,7 +206,7 @@ const PaymentMethods: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
                           **** **** **** {method.cardLast4}
                           {method.cardExpMonth && method.cardExpYear && (
                             <span className="ml-2">
@@ -226,13 +227,15 @@ const PaymentMethods: React.FC = () => {
                       )}
                       <button
                         onClick={() => handleEditPaymentMethod(method)}
-                        className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
+                        aria-label="Edit payment method"
+                        className="w-10 h-10 flex items-center justify-center text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition active:scale-[0.96]"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleRemovePaymentMethod(method.id)}
-                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                        aria-label="Remove payment method"
+                        className="w-10 h-10 flex items-center justify-center text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition active:scale-[0.96]"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -271,8 +274,8 @@ const PaymentMethods: React.FC = () => {
 
       {/* Add/Edit Payment Method Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               {isEditing
                 ? (language === 'uk' ? 'Редагувати спосіб оплати' : language === 'ru' ? 'Редактировать способ оплаты' : 'Edit Payment Method')
@@ -411,8 +414,8 @@ const PaymentMethods: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

@@ -44,7 +44,7 @@ const ContactPage: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-gray-800">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-balance">
             {t('contact.title')}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
@@ -151,7 +151,7 @@ const ContactPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-semibold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:scale-[0.96] disabled:active:scale-100"
             >
               {isSubmitting ? t('contact.form.sending') : t('contact.form.submit')}
             </button>

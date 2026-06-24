@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -424,7 +425,7 @@ const SpecialistPurchasing: React.FC = () => {
           </div>
           <button
             onClick={tab === 'orders' ? openNewPO : openNewSupplier}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
           >
             <PlusIcon className="h-5 w-5" />
             {tab === 'orders'
@@ -490,7 +491,7 @@ const SpecialistPurchasing: React.FC = () => {
         <div className="flex flex-wrap gap-x-1 gap-y-0 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setTab('orders')}
-            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition active:scale-[0.96] ${
               tab === 'orders'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -501,7 +502,7 @@ const SpecialistPurchasing: React.FC = () => {
           </button>
           <button
             onClick={() => setTab('suppliers')}
-            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition active:scale-[0.96] ${
               tab === 'suppliers'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -554,7 +555,7 @@ const SpecialistPurchasing: React.FC = () => {
                   </p>
                   <button
                     onClick={openNewPO}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96]"
                   >
                     <PlusIcon className="h-5 w-5" />
                     {t('purchasing.createFirstPO') || 'Create your first PO'}
@@ -586,7 +587,7 @@ const SpecialistPurchasing: React.FC = () => {
                               <td className="px-6 py-4">
                                 <p className="font-medium text-gray-900 dark:text-white whitespace-nowrap">{po.poNumber}</p>
                                 {po.itemCount != null && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
                                     {po.itemCount} {t('purchasing.items') || 'items'}
                                   </p>
                                 )}
@@ -597,10 +598,10 @@ const SpecialistPurchasing: React.FC = () => {
                                   {getStatusLabel(po.status)}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white tabular-nums">
                                 {formatPrice(num(po.total), poCur)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 tabular-nums">
                                 {new Date(po.createdAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -775,7 +776,7 @@ const SpecialistPurchasing: React.FC = () => {
                 </p>
                 <button
                   onClick={openNewSupplier}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96]"
                 >
                   <PlusIcon className="h-5 w-5" />
                   {t('purchasing.addFirstSupplier') || 'Add your first supplier'}
@@ -907,8 +908,8 @@ const SpecialistPurchasing: React.FC = () => {
 
         {/* ===================== Supplier Modal ===================== */}
         {supplierModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {editingSupplier
@@ -1012,14 +1013,14 @@ const SpecialistPurchasing: React.FC = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* ===================== New PO Modal ===================== */}
         {poModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {t('purchasing.newPO') || 'New Purchase Order'}
@@ -1158,7 +1159,7 @@ const SpecialistPurchasing: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
-                  <div className="text-right space-y-1">
+                  <div className="text-right space-y-1 tabular-nums">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {t('purchasing.subtotal') || 'Subtotal'}: <span className="font-medium text-gray-900 dark:text-white">{formatPrice(poSubtotal, asCurrency(poCurrency))}</span>
                     </p>
@@ -1198,14 +1199,14 @@ const SpecialistPurchasing: React.FC = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* ===================== View PO Modal ===================== */}
         {viewPO && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{viewPO.poNumber}</h2>
@@ -1253,10 +1254,10 @@ const SpecialistPurchasing: React.FC = () => {
                           {(viewPO.items || []).map((it: PurchaseOrderItem) => (
                             <tr key={it.id}>
                               <td className="px-4 py-2 text-gray-900 dark:text-white">{it.description}</td>
-                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.quantity)}</td>
-                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{num(it.receivedQty)}</td>
-                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{formatPrice(num(it.unitCost), asCurrency(viewPO.currency))}</td>
-                              <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{formatPrice(num(it.quantity) * num(it.unitCost), asCurrency(viewPO.currency))}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300 tabular-nums">{num(it.quantity)}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300 tabular-nums">{num(it.receivedQty)}</td>
+                              <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300 tabular-nums">{formatPrice(num(it.unitCost), asCurrency(viewPO.currency))}</td>
+                              <td className="px-4 py-2 text-right text-gray-900 dark:text-white tabular-nums">{formatPrice(num(it.quantity) * num(it.unitCost), asCurrency(viewPO.currency))}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1292,7 +1293,7 @@ const SpecialistPurchasing: React.FC = () => {
                   </>
                 )}
 
-                <div className="text-right space-y-1 text-sm">
+                <div className="text-right space-y-1 text-sm tabular-nums">
                   <p className="text-gray-600 dark:text-gray-400">
                     {t('purchasing.subtotal') || 'Subtotal'}: <span className="text-gray-900 dark:text-white">{formatPrice(num(viewPO.subtotal), asCurrency(viewPO.currency))}</span>
                   </p>
@@ -1311,14 +1312,14 @@ const SpecialistPurchasing: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* ===================== Receive Modal ===================== */}
         {receivePO && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1384,8 +1385,8 @@ const SpecialistPurchasing: React.FC = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

@@ -52,7 +52,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
                 </span>
                 <button
                   onClick={() => onViewDetails(booking)}
-                  className="inline-flex items-center justify-center p-2 rounded-xl text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm hover:shadow-md"
+                  className="inline-flex items-center justify-center p-2 rounded-xl text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-110 active:scale-[0.96] shadow-sm hover:shadow-md"
                   title={t('actions.viewDetails')}
                 >
                   <EyeIcon className="w-4 h-4" />
@@ -66,6 +66,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
                   src={specialistAvatar}
                   alt={specialistName}
                   size="sm"
+                  className="ring-1 ring-inset ring-black/10 dark:ring-white/10"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -78,11 +79,11 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
             <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 font-medium">
                 <CalendarIcon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                <span>{scheduledDate.toLocaleDateString()}</span>
+                <span className="tabular-nums">{scheduledDate.toLocaleDateString()}</span>
                 <ClockIcon className="w-4 h-4 ml-2 transition-transform duration-200 group-hover:scale-110" />
-                <span>{scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="tabular-nums">{scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <div className="text-sm font-bold text-gray-900 dark:text-white">
+              <div className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
                 {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
               </div>
             </div>

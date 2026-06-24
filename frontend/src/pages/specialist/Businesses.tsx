@@ -2,6 +2,7 @@
 // list / create / detail+manage views to keep routing minimal.
 
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { confirm, promptInput } from '@/components/ui/Confirm';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -71,7 +72,7 @@ const BusinessList: React.FC = () => {
               <button
                 key={m.id}
                 onClick={() => navigate(`/specialist/businesses/${m.business.id}`)}
-                className="text-left bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-500 transition-colors"
+                className="text-left bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-500 transition active:scale-[0.96]"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -207,7 +208,7 @@ const BusinessDetail: React.FC<{ id: string; onBack: () => void }> = ({ id, onBa
             <button
               key={tabKey}
               onClick={() => setTab(tabKey)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px capitalize transition active:scale-[0.96] ${
                 tab === tabKey ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -276,7 +277,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
               <div key={b.id} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{b.service?.name ?? '—'}</span>
-                  <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white flex-shrink-0">{fmtMoney(b.totalAmount)}</span>
+                  <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white flex-shrink-0 tabular-nums">{fmtMoney(b.totalAmount)}</span>
                 </div>
                 <div className="mt-1 text-xs text-gray-500 truncate">
                   {b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : '—'}
@@ -302,7 +303,7 @@ const OverviewTab: React.FC<{ dashboard: BusinessDashboard | null; business: Bus
                   <td>{b.service?.name ?? '—'}</td>
                   <td>{b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : '—'}</td>
                   <td>{b.specialist ? `${b.specialist.firstName} ${b.specialist.lastName}` : '—'}</td>
-                  <td className="text-right font-mono">{fmtMoney(b.totalAmount)}</td>
+                  <td className="text-right font-mono tabular-nums">{fmtMoney(b.totalAmount)}</td>
                   <td className="text-xs">{b.status}</td>
                 </tr>
               ))}
@@ -445,11 +446,11 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('businesses.invite.modal.title')}</h3>
-          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} aria-label="Close" className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none transition active:scale-[0.96]">×</button>
         </div>
         <p className="text-sm text-gray-500 mb-4">{t('businesses.invite.modal.intro')}</p>
         <FormField label={t('businesses.invite.modal.email')} value={email} onChange={setEmail} type="email" />
@@ -464,8 +465,8 @@ const InviteModal: React.FC<{ businessId: string; onClose: () => void; onInvited
           <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('actions.cancel')}</button>
           <button onClick={submit} disabled={saving || !email} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">{saving ? t('businesses.invite.modal.submitting') : t('businesses.invite.modal.submit')}</button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -628,7 +629,7 @@ const StaffTab: React.FC<{ business: Business; canManage: boolean }> = ({ busine
 };
 
 const ActionBtn: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => (
-  <button onClick={onClick} className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary-500">{children}</button>
+  <button onClick={onClick} className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary-500 transition active:scale-[0.96]">{children}</button>
 );
 
 const ManagedBadge: React.FC<{ managed: boolean }> = ({ managed }) => {
@@ -639,15 +640,15 @@ const ManagedBadge: React.FC<{ managed: boolean }> = ({ managed }) => {
 
 // Modal shell -------------------------------------------------------------
 const Modal: React.FC<{ title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }> = ({ title, onClose, children, wide }) => (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div className={`bg-white dark:bg-gray-800 rounded-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className={`bg-white dark:bg-gray-800 rounded-xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} p-6 max-h-[90vh] overflow-y-auto`}>
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
-        <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+        <button onClick={onClose} aria-label="Close" className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none transition active:scale-[0.96]">×</button>
       </div>
       {children}
-    </div>
-  </div>
+    </motion.div>
+  </motion.div>
 );
 
 // Weekly schedule editor --------------------------------------------------
@@ -844,7 +845,7 @@ const ServicesModal: React.FC<{ businessId: string; staff: Staff; onClose: () =>
 const Stat: React.FC<{ label: string; value: string; hint?: string }> = ({ label, value, hint }) => (
   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
     <div className="text-xs uppercase text-gray-500 tracking-wider">{label}</div>
-    <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
+    <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{value}</div>
     {hint && <div className="text-xs text-gray-500">{hint}</div>}
   </div>
 );

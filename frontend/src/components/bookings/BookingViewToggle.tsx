@@ -18,7 +18,7 @@ export const BookingViewToggle: React.FC<BookingViewToggleProps> = ({
     <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
       <button
         onClick={() => onViewModeChange('table')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-[0.96] ${
           viewMode === 'table'
             ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md'
             : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -29,7 +29,7 @@ export const BookingViewToggle: React.FC<BookingViewToggleProps> = ({
       </button>
       <button
         onClick={() => onViewModeChange('kanban')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-[0.96] ${
           viewMode === 'kanban'
             ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md'
             : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

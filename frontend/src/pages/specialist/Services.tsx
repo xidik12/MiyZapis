@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { InlineLoader } from '@/components/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -901,7 +902,7 @@ const SpecialistServices: React.FC = () => {
   // Removed getDayName function as availability is no longer supported
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
-    <div className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg hover:border-gray-300 dark:hover:border-gray-700 cursor-pointer transition-all duration-200 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg hover:border-gray-300 dark:hover:border-gray-700 cursor-pointer transition duration-200 active:scale-[0.96] border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
@@ -965,7 +966,7 @@ const SpecialistServices: React.FC = () => {
       <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={() => openEditModal(service)}
-          className="flex-1 bg-primary-50 hover:bg-primary-100 hover:shadow-sm text-primary-700 px-4 py-2 rounded-xl font-medium transition-all duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
+          className="flex-1 bg-primary-50 hover:bg-primary-100 hover:shadow-sm text-primary-700 px-4 py-2 rounded-xl font-medium transition duration-200 active:scale-[0.96] dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
         >
           {t('services.edit')}
         </button>
@@ -975,7 +976,7 @@ const SpecialistServices: React.FC = () => {
             logger.debug('Service ID:', service.id);
             handleToggleServiceStatus(service.id, !service.isActive);
           }}
-          className={`px-4 py-2 rounded-xl font-medium transition-colors duration-200 ${
+          className={`px-4 py-2 rounded-xl font-medium transition duration-200 active:scale-[0.96] ${
             service.isActive
               ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'
               : 'bg-success-50 hover:bg-success-100 text-success-700 dark:bg-success-900/20 dark:hover:bg-success-900/30 dark:text-success-300'
@@ -985,7 +986,7 @@ const SpecialistServices: React.FC = () => {
         </button>
         <button 
           onClick={() => handleDeleteService(service.id)}
-          className="p-2 bg-error-50 hover:bg-error-100 hover:shadow-sm text-error-600 rounded-xl transition-all duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
+          className="p-2 bg-error-50 hover:bg-error-100 hover:shadow-sm text-error-600 rounded-xl transition duration-200 active:scale-[0.96] dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1040,7 +1041,7 @@ const SpecialistServices: React.FC = () => {
               <div className="flex gap-3 mt-4 lg:mt-0">
                 <button
                   onClick={openAddModal}
-                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-300 active:scale-[0.96] flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1270,8 +1271,8 @@ const SpecialistServices: React.FC = () => {
 
       {/* Add/Edit Service Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {editingService ? t('serviceForm.editService') : t('serviceForm.addService')}
@@ -1994,8 +1995,8 @@ const SpecialistServices: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
       </div>
     </div>

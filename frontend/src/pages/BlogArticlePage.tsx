@@ -281,12 +281,12 @@ const BlogArticlePage: React.FC = () => {
             {article.emoji} {category}
           </span>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4 text-balance">
             {title}
           </h1>
 
           {/* Meta row */}
-          <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+          <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap tabular-nums">
             <time dateTime={article.publishedAt}>{pubDate}</time>
             <span aria-hidden="true">·</span>
             <span>{readLabel}</span>

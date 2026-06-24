@@ -166,7 +166,7 @@ const Promote: React.FC = () => {
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {isActive && status?.featuredUntil ? (
-                <span className="inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1 tabular-nums">
                   <CalendarDaysIcon className="w-4 h-4" />
                   {(t('promote.activeUntil') || 'Active until')} {formatDate(status.featuredUntil)}
                 </span>
@@ -183,7 +183,7 @@ const Promote: React.FC = () => {
                 type="button"
                 disabled={saving}
                 onClick={() => handleToggle(false)}
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50"
               >
                 {t('promote.disableBoost') || 'Disable boost'}
               </button>
@@ -192,7 +192,7 @@ const Promote: React.FC = () => {
                 type="button"
                 disabled={saving}
                 onClick={() => handleToggle(true)}
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-amber-500 hover:bg-amber-600 transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50"
               >
                 <RocketLaunchIcon className="w-5 h-5" />
                 {t('promote.enableBoost') || 'Enable boost'}
@@ -213,7 +213,7 @@ const Promote: React.FC = () => {
                   key={d}
                   type="button"
                   onClick={() => setSelectedDays(d)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition active:scale-[0.96] ${
                     selectedDays === d
                       ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-500/50'
                       : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -307,10 +307,10 @@ const Promote: React.FC = () => {
                         {t(meta.key) || src}
                       </span>
                     </div>
-                    <span className="text-right text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-right text-sm text-gray-700 dark:text-gray-300 tabular-nums">
                       {stats?.bySource?.[src] ?? 0}
                     </span>
-                    <span className="text-right text-sm font-semibold text-success-600 dark:text-success-400">
+                    <span className="text-right text-sm font-semibold text-success-600 dark:text-success-400 tabular-nums">
                       {stats?.newClientsBySource?.[src] ?? 0}
                     </span>
                   </div>

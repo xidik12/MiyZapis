@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
@@ -219,7 +220,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
           onClick={() => onEdit(lead)}
           disabled={busy}
           aria-label={t('common.edit') || 'Edit'}
-          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+          className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition active:scale-[0.96] disabled:opacity-50"
         >
           <PencilIcon className="h-3.5 w-3.5" />
         </button>
@@ -231,7 +232,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
             disabled={busy}
             aria-label={t('crm.convertLead') || 'Convert to client'}
             title={t('crm.convertLead') || 'Convert to client'}
-            className="p-1.5 text-green-500 hover:text-green-700 dark:hover:text-green-300 transition-colors disabled:opacity-50"
+            className="p-2 text-green-500 hover:text-green-700 dark:hover:text-green-300 transition active:scale-[0.96] disabled:opacity-50"
           >
             {busy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <CheckCircleIcon className="h-3.5 w-3.5" />}
           </button>
@@ -242,7 +243,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
           onClick={() => onDelete(lead)}
           disabled={busy}
           aria-label={t('common.delete') || 'Delete'}
-          className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+          className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition active:scale-[0.96] disabled:opacity-50"
         >
           {busy && lead.stage === lead.stage /* always true, just keeps busy for delete */
             ? <TrashIcon className="h-3.5 w-3.5" />
@@ -434,7 +435,7 @@ const CrmLeads: React.FC = () => {
           </div>
           <button
             onClick={openAdd}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
           >
             <PlusIcon className="h-5 w-5 flex-shrink-0" />
             {t('crm.addLead') || 'Add lead'}
@@ -588,8 +589,8 @@ const CrmLeads: React.FC = () => {
 
         {/* ============================ MODAL ============================ */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {editingLead
@@ -598,7 +599,7 @@ const CrmLeads: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -702,22 +703,22 @@ const CrmLeads: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition active:scale-[0.96]"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 flex items-center gap-2"
                   >
                     {submitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                     {editingLead ? (t('common.save') || 'Save') : (t('crm.create') || 'Create')}
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
       </div>

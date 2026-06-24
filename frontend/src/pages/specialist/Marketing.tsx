@@ -64,7 +64,7 @@ const Toggle: React.FC<{
     aria-label={label}
     disabled={disabled}
     onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-[0.96] disabled:active:scale-100 ${
       disabled
         ? 'cursor-not-allowed bg-gray-200 dark:bg-gray-700'
         : checked
@@ -203,7 +203,7 @@ const Marketing: React.FC = () => {
             type="button"
             onClick={runNow}
             disabled={running}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm active:scale-[0.96] disabled:active:scale-100"
           >
             <ArrowPathIcon className={`h-5 w-5 ${running ? 'animate-spin' : ''}`} />
             {running ? t('marketing.running') : t('marketing.runNow')}
@@ -354,7 +354,7 @@ const Marketing: React.FC = () => {
                                 key={ch}
                                 type="button"
                                 onClick={() => !active && patch(type, { channel: ch })}
-                                className={`flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                className={`flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium border transition active:scale-[0.96] ${
                                   active
                                     ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
                                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-primary-400'

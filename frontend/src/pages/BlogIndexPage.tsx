@@ -101,7 +101,7 @@ const BlogIndexPage: React.FC = () => {
             </span>
           </nav>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight text-balance">
             {lang === 'ru' ? 'Блог и советы' : lang === 'en' ? 'Blog & Guides' : 'Блог і поради'}
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
@@ -134,7 +134,7 @@ const BlogIndexPage: React.FC = () => {
               <Link
                 key={article.slug}
                 to={`/blog/${article.slug}`}
-                className="group flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 transition-all duration-200 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md"
+                className="group flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 transition duration-200 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md active:scale-[0.96]"
               >
                 {/* Emoji + category chip */}
                 <div className="flex items-center justify-between mb-4">
@@ -157,7 +157,7 @@ const BlogIndexPage: React.FC = () => {
                 </p>
 
                 {/* Meta: date + reading time */}
-                <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+                <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 pt-3 border-t border-gray-100 dark:border-gray-700/60 tabular-nums">
                   <span>{pubDate}</span>
                   <span>
                     {readLabel} {lang === 'en' ? 'read' : lang === 'ru' ? 'чтения' : 'читання'}

@@ -103,7 +103,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
       <img
         src={absoluteSrc}
         alt={alt}
-        className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
+        className={`${sizeClasses[size]} rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10 transition-opacity duration-200 ${
           imageLoading ? 'opacity-0' : 'opacity-100'
         } ${className}`}
         onError={handleImageError}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -305,7 +306,7 @@ const SpecialistFinances: React.FC = () => {
           </div>
           <button
             onClick={handleAddExpense}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
           >
             <PlusIcon className="h-5 w-5" />
             {t('finances.addExpense') || 'Add Expense'}
@@ -354,7 +355,7 @@ const SpecialistFinances: React.FC = () => {
             </div>
             <button
               onClick={clearFilters}
-              className="w-full sm:w-auto px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center justify-center gap-2 active:scale-[0.96]"
             >
               <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
               {t('finances.clearFilters') || 'Clear'}
@@ -438,7 +439,7 @@ const SpecialistFinances: React.FC = () => {
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {getCategoryLabel(cat.category as ExpenseCategory)}
                         </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 tabular-nums">
                           {formatPrice(Number(cat.amount) || 0, summaryCurrency)} ({cat.percentage}%)
                         </span>
                       </div>
@@ -474,7 +475,7 @@ const SpecialistFinances: React.FC = () => {
               </p>
               <button
                 onClick={handleAddExpense}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96]"
               >
                 <PlusIcon className="h-5 w-5" />
                 {t('finances.addFirstExpense') || 'Add your first expense'}
@@ -541,7 +542,7 @@ const SpecialistFinances: React.FC = () => {
                             <span className="text-gray-400 dark:text-gray-600">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-red-600 dark:text-red-400">
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-red-600 dark:text-red-400 tabular-nums">
                           -{formatPrice(Number(expense.amount) || 0, (expense.currency || 'UAH') as 'USD' | 'EUR' | 'UAH')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -549,7 +550,7 @@ const SpecialistFinances: React.FC = () => {
                             <button
                               onClick={() => handleEditExpense(expense)}
                               aria-label={t('finances.editExpense') || 'Edit expense'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                              className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
@@ -557,7 +558,7 @@ const SpecialistFinances: React.FC = () => {
                               onClick={() => handleDelete(expense.id)}
                               disabled={deleting === expense.id}
                               aria-label={t('common.delete') || 'Delete'}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                              className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                             >
                               {deleting === expense.id ? (
                                 <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -584,7 +585,7 @@ const SpecialistFinances: React.FC = () => {
                           {t('finances.totalExpenses') || 'Total'}
                           <span className="ml-2 text-gray-400 dark:text-gray-500 font-normal">({expenses.length})</span>
                         </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-right text-sm font-bold text-red-600 dark:text-red-400">
+                        <td className="px-6 py-3 whitespace-nowrap text-right text-sm font-bold text-red-600 dark:text-red-400 tabular-nums">
                           -{formatPrice(total, currencies[0] as 'USD' | 'EUR' | 'UAH')}
                         </td>
                         <td />
@@ -657,7 +658,7 @@ const SpecialistFinances: React.FC = () => {
                       <button
                         onClick={() => handleEditExpense(expense)}
                         aria-label={t('finances.editExpense') || 'Edit expense'}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
@@ -665,7 +666,7 @@ const SpecialistFinances: React.FC = () => {
                         onClick={() => handleDelete(expense.id)}
                         disabled={deleting === expense.id}
                         aria-label={t('common.delete') || 'Delete'}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                        className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                       >
                         {deleting === expense.id ? (
                           <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -700,8 +701,8 @@ const SpecialistFinances: React.FC = () => {
 
         {/* Add/Edit Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+            <motion.div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }}>
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {editingExpense
@@ -711,7 +712,7 @@ const SpecialistFinances: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -910,14 +911,14 @@ const SpecialistFinances: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition active:scale-[0.96]"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {submitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                     {editingExpense
@@ -927,8 +928,8 @@ const SpecialistFinances: React.FC = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

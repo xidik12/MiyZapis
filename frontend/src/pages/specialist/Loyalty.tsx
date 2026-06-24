@@ -398,7 +398,7 @@ const SpecialistLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentPoints') || 'Current Points'}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
+                <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
               </div>
@@ -413,7 +413,7 @@ const SpecialistLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
               </div>
@@ -443,7 +443,7 @@ const SpecialistLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
-                <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">
+                <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
               </div>
@@ -461,7 +461,7 @@ const SpecialistLoyalty: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {(t('loyalty.progressTo') || 'Progress to') + ' ' + loyaltyStats.nextTier.name}
               </h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
                 {Math.round(getTierProgress())}%
               </span>
             </div>
@@ -475,8 +475,8 @@ const SpecialistLoyalty: React.FC = () => {
               </div>
               
               <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>{loyaltyStats.currentTier?.name} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
-                <span>{loyaltyStats.nextTier.name} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+                <span className="tabular-nums">{loyaltyStats.currentTier?.name} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
+                <span className="tabular-nums">{loyaltyStats.nextTier.name} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
               </div>
             </div>
           </div>
@@ -550,7 +550,7 @@ const SpecialistLoyalty: React.FC = () => {
                       isActive
                         ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
-                    } transition-colors`}
+                    } transition active:scale-[0.96]`}
                   >
                     <Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">{tab.label}</span>
@@ -569,7 +569,7 @@ const SpecialistLoyalty: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                     <CalendarDaysIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
@@ -577,7 +577,7 @@ const SpecialistLoyalty: React.FC = () => {
 
                   <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                     <BriefcaseIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                       {loyaltyStats?.totalServices || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.servicesCompleted') || 'Services Completed'}</p>
@@ -585,7 +585,7 @@ const SpecialistLoyalty: React.FC = () => {
 
                   <div className="text-center p-3 sm:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                     <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mx-auto mb-2" active />
-                    <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                    <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                       {loyaltyStats?.totalBadges || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.badgesEarned') || 'Badges Earned'}</p>
@@ -606,7 +606,7 @@ const SpecialistLoyalty: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
-                          <p className={`font-semibold text-sm sm:text-base ${
+                          <p className={`font-semibold text-sm sm:text-base tabular-nums ${
                             (transaction.type as string) === 'EARNED' || (transaction.type as string) === 'BONUS' || (transaction.type as string) === 'REFERRAL' || (transaction.type as string) === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
@@ -650,7 +650,7 @@ const SpecialistLoyalty: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
-                        <p className={`font-bold text-base sm:text-lg ${
+                        <p className={`font-bold text-base sm:text-lg tabular-nums ${
                           (transaction.type as string) === 'EARNED' || (transaction.type as string) === 'BONUS' || (transaction.type as string) === 'REFERRAL' || (transaction.type as string) === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                             ? 'text-green-600 dark:text-green-400'
                             : 'text-red-600 dark:text-red-400'
@@ -914,7 +914,7 @@ const SpecialistLoyalty: React.FC = () => {
                             </div>
 
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                              <div className="flex items-center">
+                              <div className="flex items-center tabular-nums">
                                 <StarIcon className="h-4 w-4 mr-1 text-primary-600" active />
                                 {formatPoints(reward.pointsRequired)} {t('loyalty.pointsRequired') || 'points required'}
                               </div>
@@ -922,7 +922,7 @@ const SpecialistLoyalty: React.FC = () => {
                                 <GiftIcon className="h-4 w-4 mr-1 text-indigo-600" />
                                 {RewardsService.getRewardValue(reward)}
                               </div>
-                              <div className="flex items-center">
+                              <div className="flex items-center tabular-nums">
                                 <UsersIcon className="h-4 w-4 mr-1 text-blue-600" />
                                 {reward.currentRedemptions} / {reward.maxRedemptions || '∞'} {t('loyalty.redemptions')}
                               </div>
@@ -949,14 +949,14 @@ const SpecialistLoyalty: React.FC = () => {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => setEditingReward(reward)}
-                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+                              className="p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-xl transition active:scale-[0.96]"
                               title={t('loyalty.editReward')}
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleToggleRewardStatus(reward)}
-                              className={`p-2 rounded-xl transition-colors ${
+                              className={`p-2.5 rounded-xl transition active:scale-[0.96] ${
                                 reward.isActive
                                   ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/20'
                                   : 'text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/20'
@@ -971,7 +971,7 @@ const SpecialistLoyalty: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteReward(reward.id)}
-                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                              className="p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition active:scale-[0.96]"
                               title={t('loyalty.deleteReward')}
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -1009,7 +1009,7 @@ const SpecialistLoyalty: React.FC = () => {
                               <h5 className="font-semibold text-gray-900 dark:text-white">{reward.title}</h5>
                               <p className="text-sm text-gray-600 dark:text-gray-400">{reward.description}</p>
                               <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                <span className="inline-flex items-center px-2 py-1 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span className="inline-flex items-center px-2 py-1 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 tabular-nums">
                                   {formatPoints(reward.pointsRequired)} pts
                                 </span>
                                 {reward.validUntil && (
@@ -1022,7 +1022,7 @@ const SpecialistLoyalty: React.FC = () => {
                             <button
                               disabled={redeemingId === reward.id}
                               onClick={() => handleRedeem(reward.id)}
-                              className="inline-flex items-center px-3 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                              className="inline-flex items-center px-3 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
                             >
                               {redeemingId === reward.id ? (t('loyalty.redeeming') || 'Redeeming...') : (t('loyalty.redeem') || 'Redeem')}
                             </button>
@@ -1046,7 +1046,7 @@ const SpecialistLoyalty: React.FC = () => {
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{r.reward.title}</p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(r.redeemedAt).toLocaleString()} • {r.status}</p>
                           </div>
-                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">-{formatPoints(r.pointsUsed)} pts</span>
+                          <span className="text-sm font-semibold text-green-600 dark:text-green-400 tabular-nums">-{formatPoints(r.pointsUsed)} pts</span>
                         </div>
                       ))}
                     </div>
@@ -1297,14 +1297,14 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
               >
                 {isSubmitting ? (t('common.creating') || 'Creating...') : (t('loyalty.createReward') || 'Create Reward')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400 transition active:scale-[0.96]"
               >
                 {t('actions.cancel') || 'Cancel'}
               </button>
@@ -1477,14 +1477,14 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
               >
                 {isSubmitting ? t('loyalty.rewards.updating') : t('loyalty.rewards.updateReward')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400 transition active:scale-[0.96]"
               >
                 {t('actions.cancel')}
               </button>

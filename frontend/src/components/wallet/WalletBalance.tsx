@@ -92,7 +92,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowBalance(!showBalance)}
-              className="h-8 w-8 p-0"
+              className="h-10 w-10 p-0 active:scale-[0.96]"
             >
               {showBalance ? (
                 <EyeOff className="h-4 w-4" />
@@ -105,7 +105,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
               size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="h-8 w-8 p-0"
+              className="h-10 w-10 p-0 active:scale-[0.96]"
             >
               <Loader2 className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
@@ -115,7 +115,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         <div className="space-y-4">
         {/* Main Balance */}
         <div className="text-center">
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
             {showBalance ? formatPrice(summary.balance, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
           </div>
           <div className="text-sm text-muted-foreground mt-1">
@@ -131,7 +131,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             ) : (
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
-            <span className={isPositiveFlow ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+            <span className={`tabular-nums ${isPositiveFlow ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {isPositiveFlow ? '+' : ''}{formatPrice(netFlow, summary.currency as 'USD' | 'EUR' | 'UAH')} {t('wallet.balance.netFlow')}
             </span>
           </div>
@@ -140,13 +140,13 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {/* Summary Stats */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center">
-            <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+            <div className="text-lg font-semibold text-green-600 dark:text-green-400 tabular-nums">
               {showBalance ? formatPrice(summary.totalCredits, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
             </div>
             <div className="text-xs text-muted-foreground">{t('wallet.balance.totalReceived')}</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+            <div className="text-lg font-semibold text-red-600 dark:text-red-400 tabular-nums">
               {showBalance ? formatPrice(summary.totalDebits, summary.currency as 'USD' | 'EUR' | 'UAH') : '•••••'}
             </div>
             <div className="text-xs text-muted-foreground">{t('wallet.balance.totalSpent')}</div>

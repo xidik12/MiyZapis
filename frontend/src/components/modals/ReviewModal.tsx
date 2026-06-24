@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { XIcon as XMarkIcon, StarIcon } from '@/components/icons';
 ;
@@ -153,8 +154,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-end sm:items-start justify-center px-0 sm:px-4 py-0 sm:py-4" onClick={onClose}>
-      <div ref={panelRef} className={`relative w-full max-w-[calc(100vw-2rem)] sm:max-w-lg shadow-lg rounded-t-lg sm:rounded-xl ${
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-end sm:items-start justify-center px-0 sm:px-4 py-0 sm:py-4" onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} ref={panelRef} className={`relative w-full max-w-[calc(100vw-2rem)] sm:max-w-lg shadow-lg rounded-t-lg sm:rounded-xl ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'
@@ -171,7 +172,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             </h3>
             <button
               onClick={onClose}
-              className={`flex-shrink-0 p-1 ${
+              className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition active:scale-[0.96] ${
                 theme === 'dark' 
                   ? 'text-gray-500 dark:text-gray-400 hover:text-gray-200' 
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-600'
@@ -218,7 +219,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     />
                   </button>
                 ))}
-                <span className={`ml-2 text-xs sm:text-sm ${
+                <span className={`ml-2 text-xs sm:text-sm tabular-nums ${
                   theme === 'dark' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-600'
                 }`}>
                   {rating > 0 && `${rating}/5`}
@@ -281,7 +282,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={actualLoading}
-                className={`w-full sm:w-auto px-3 sm:px-4 py-2 border rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
+                className={`w-full sm:w-auto px-3 sm:px-4 py-2 border rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.96] disabled:active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
                     : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
@@ -292,7 +293,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <button
                 type="submit"
                 disabled={actualLoading || rating === 0}
-                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-xl shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-xl shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition active:scale-[0.96] disabled:active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {actualLoading && <LoadingSpinner size="sm" className="mr-2" />}
                 {t('reviews.submitReview')}
@@ -301,8 +302,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
           </form>
           <p className="mt-2 sm:mt-4 text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left">Press Esc or click outside to close</p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

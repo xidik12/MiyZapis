@@ -86,7 +86,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
               <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-1">
                 {stat.label}
               </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {stat.value}
                 {stat.unit && <span className="text-xl ml-1">{stat.unit}</span>}
               </p>
@@ -135,10 +135,10 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
                   />
                 </div>
                 <div className="w-16 text-right">
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
                     {count}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 tabular-nums">
                     ({percentage.toFixed(0)}%)
                   </span>
                 </div>

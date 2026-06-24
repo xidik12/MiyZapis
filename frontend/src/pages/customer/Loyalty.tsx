@@ -350,7 +350,7 @@ const CustomerLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentPoints') || 'Current Points'}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
+                <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
               </div>
@@ -365,7 +365,7 @@ const CustomerLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
               </div>
@@ -395,7 +395,7 @@ const CustomerLoyalty: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
-                <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">
+                <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
               </div>
@@ -413,7 +413,7 @@ const CustomerLoyalty: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {(t('loyalty.progressTo') || 'Progress to') + ' ' + translateTier(loyaltyStats.nextTier.name)}
               </h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
                 {Math.round(getTierProgress())}%
               </span>
             </div>
@@ -498,11 +498,11 @@ const CustomerLoyalty: React.FC = () => {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as any)}
-                    className={`flex items-center py-3 sm:py-4 px-2 sm:px-4 mr-4 sm:mr-8 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
+                    className={`flex items-center py-3 sm:py-4 px-2 sm:px-4 mr-4 sm:mr-8 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition active:scale-[0.96] ${
                       isActive
                         ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
-                    } transition-colors`}
+                    }`}
                   >
                     <Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">{tab.label}</span>
@@ -521,7 +521,7 @@ const CustomerLoyalty: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                     <CalendarDaysIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
@@ -529,7 +529,7 @@ const CustomerLoyalty: React.FC = () => {
 
                   <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                     <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                       {loyaltyStats?.totalReferrals || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.totalReferrals') || 'Total Referrals'}</p>
@@ -537,7 +537,7 @@ const CustomerLoyalty: React.FC = () => {
 
                   <div className="text-center p-3 sm:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                     <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mx-auto mb-2" active />
-                    <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                    <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                       {loyaltyStats?.totalBadges || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.badgesEarned') || 'Badges Earned'}</p>
@@ -558,7 +558,7 @@ const CustomerLoyalty: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
-                          <p className={`font-semibold text-sm sm:text-base ${
+                          <p className={`font-semibold text-sm sm:text-base tabular-nums ${
                             (['EARNED','BONUS','REFERRAL','CAMPAIGN','SERVICE','BOOKING_COMPLETION','PROFILE_VIEW'] as string[]).includes(transaction.type as string)
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
@@ -602,7 +602,7 @@ const CustomerLoyalty: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
-                        <p className={`font-bold text-base sm:text-lg ${
+                        <p className={`font-bold text-base sm:text-lg tabular-nums ${
                           transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN' || (transaction.type as string) === 'SERVICE' || (transaction.type as string) === 'BOOKING_COMPLETION' || (transaction.type as string) === 'PROFILE_VIEW'
                             ? 'text-green-600 dark:text-green-400'
                             : 'text-red-600 dark:text-red-400'
@@ -885,7 +885,7 @@ const CustomerLoyalty: React.FC = () => {
                                     <button
                                       onClick={() => handleRedeemReward(reward.id)}
                                       disabled={!canAfford || !isAvailable || redeemingId === reward.id}
-                                      className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
+                                      className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.96] disabled:active:scale-100 ${
                                         canAfford && isAvailable
                                           ? 'bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
                                           : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'

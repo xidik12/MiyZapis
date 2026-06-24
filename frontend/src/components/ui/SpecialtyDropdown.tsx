@@ -225,7 +225,7 @@ export const SpecialtyDropdown: React.FC<SpecialtyDropdownProps> = ({
             type="button"
             onClick={handleCustomSubmit}
             disabled={!customValue.trim() || value.includes(customValue.trim()) || value.length >= maxSelections}
-            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition duration-200 active:scale-[0.96] disabled:active:scale-100"
           >
             {t('common.add') || 'Add'}
           </button>
@@ -287,8 +287,8 @@ export const SpecialtyDropdown: React.FC<SpecialtyDropdownProps> = ({
             error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
           } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white text-left ${className}`}
         >
-          <span className={value.length === 0 ? 'text-gray-500' : 'text-gray-900 dark:text-white'}>
-            {value.length === 0 
+          <span className={`tabular-nums ${value.length === 0 ? 'text-gray-500' : 'text-gray-900 dark:text-white'}`}>
+            {value.length === 0
               ? placeholder
               : `${value.length} ${value.length === 1 ? 'specialty' : 'specialties'} selected ${value.length >= maxSelections ? '(max)' : ''}`
             }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { crmService, ClientTask } from '../../services/crm.service';
@@ -190,7 +191,7 @@ const CrmTasks: React.FC = () => {
           </div>
           <button
             onClick={openNewTask}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96] w-full sm:w-auto"
           >
             <PlusIcon className="h-5 w-5" />
             {t('crm.newTask') || 'New task'}
@@ -205,7 +206,7 @@ const CrmTasks: React.FC = () => {
               <button
                 key={tb.key}
                 onClick={() => setStatusFilter(tb.key)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition active:scale-[0.96] ${
                   active
                     ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -240,7 +241,7 @@ const CrmTasks: React.FC = () => {
             {statusFilter === 'open' && (
               <button
                 onClick={openNewTask}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
               >
                 <PlusIcon className="h-5 w-5" />
                 {t('crm.createFirstTask') || 'Create your first task'}
@@ -262,7 +263,7 @@ const CrmTasks: React.FC = () => {
                       onClick={() => handleToggle(task)}
                       disabled={acting === task.id}
                       aria-label={task.status === 'open' ? (t('crm.markDone') || 'Mark done') : (t('crm.reopen') || 'Reopen')}
-                      className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors disabled:opacity-50 ${
+                      className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition active:scale-[0.96] disabled:opacity-50 ${
                         task.status === 'done'
                           ? 'bg-green-500 border-green-500 text-white'
                           : 'border-gray-400 dark:border-gray-500 hover:border-primary-500'
@@ -295,7 +296,7 @@ const CrmTasks: React.FC = () => {
                         )}
                         {task.status === 'done' && task.completedAt && (
                           <span className="text-xs text-green-600 dark:text-green-400">
-                            {t('crm.completedAt') || 'Done'} {fmtDate(task.completedAt)}
+                            {t('crm.completedAt') || 'Done'} <span className="tabular-nums">{fmtDate(task.completedAt)}</span>
                           </span>
                         )}
                       </div>
@@ -310,7 +311,7 @@ const CrmTasks: React.FC = () => {
                       <button
                         onClick={() => openEditTask(task)}
                         aria-label={t('common.edit') || 'Edit'}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition active:scale-[0.96]"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
@@ -318,7 +319,7 @@ const CrmTasks: React.FC = () => {
                         onClick={() => handleDeleteTask(task.id)}
                         disabled={acting === task.id}
                         aria-label={t('common.delete') || 'Delete'}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition active:scale-[0.96] disabled:opacity-50"
                       >
                         {acting === task.id ? (
                           <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -336,8 +337,8 @@ const CrmTasks: React.FC = () => {
 
         {/* ======================== TASK MODAL ======================== */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {editingTask
@@ -346,7 +347,7 @@ const CrmTasks: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -400,22 +401,22 @@ const CrmTasks: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition active:scale-[0.96]"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 flex items-center gap-2"
                   >
                     {submitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                     {editingTask ? (t('common.save') || 'Save') : (t('crm.createTask') || 'Create task')}
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

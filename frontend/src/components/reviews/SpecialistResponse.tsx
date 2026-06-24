@@ -98,7 +98,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                     src={response.respondedBy.avatar}
                     alt={businessName}
                     size="md"
-                    className="w-10 h-10"
+                    className="w-10 h-10 ring-1 ring-inset ring-black/10 dark:ring-white/10"
                   />
                 ) : (
                   <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
@@ -128,7 +128,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                   {/* Like Button */}
                   <button
                     onClick={handleLikeClick}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.96] ${
                       response.userReaction === 'like'
                         ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -137,13 +137,13 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                     <HandThumbUpIcon
                       className={`w-3.5 h-3.5 flex-shrink-0 ${response.userReaction === 'like' ? 'text-green-600 dark:text-green-400' : ''}`}
                     />
-                    <span className="text-xs font-semibold">{response.likeCount || 0}</span>
+                    <span className="text-xs font-semibold tabular-nums">{response.likeCount || 0}</span>
                   </button>
 
                   {/* Dislike Button */}
                   <button
                     onClick={handleDislikeClick}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.96] ${
                       response.userReaction === 'dislike'
                         ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -152,7 +152,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                     <HandThumbDownIcon
                       className={`w-3.5 h-3.5 flex-shrink-0 ${response.userReaction === 'dislike' ? 'text-red-600 dark:text-red-400' : ''}`}
                     />
-                    <span className="text-xs font-semibold">{response.dislikeCount || 0}</span>
+                    <span className="text-xs font-semibold tabular-nums">{response.dislikeCount || 0}</span>
                   </button>
                 </div>
               )}

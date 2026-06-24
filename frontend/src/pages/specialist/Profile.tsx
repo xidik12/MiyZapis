@@ -1087,7 +1087,7 @@ const SpecialistProfile: React.FC = () => {
                   <img
                     src={getAbsoluteImageUrl(user.avatar!)}
                     alt={profile.firstName || 'Profile'}
-                    className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
+                    className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800 ring-1 ring-inset ring-black/10 dark:ring-white/10"
                   />
                 ) : (
                   <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
@@ -1143,7 +1143,7 @@ const SpecialistProfile: React.FC = () => {
                         style={{ width: `${completionPercentage}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">
                       {completionPercentage}% {t('profile.complete') || 'complete'}
                     </span>
                   </div>
@@ -1196,7 +1196,7 @@ const SpecialistProfile: React.FC = () => {
                       );
                     }
                   }}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 active:scale-[0.96]"
                 >
                   <EyeIcon className="h-4 w-4" />
                   {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
@@ -1211,7 +1211,7 @@ const SpecialistProfile: React.FC = () => {
                     setOriginalProfile(profile);
                   }
                 }}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+                className={`px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2 active:scale-[0.96] ${
                   isEditing
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
                     : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
@@ -1252,7 +1252,7 @@ const SpecialistProfile: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 cursor-pointer ${
+                    className={`w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 cursor-pointer active:scale-[0.96] ${
                       activeTab === tab.id
                         ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 border border-primary-200 dark:border-primary-800 shadow-sm'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 hover:shadow-sm'
@@ -1841,7 +1841,7 @@ const SpecialistProfile: React.FC = () => {
                                 input.value = '';
                               }
                             }}
-                            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium"
+                            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition text-sm font-medium active:scale-[0.96]"
                           >
                             <PlusIcon className="h-4 w-4" />
                           </button>
@@ -2220,7 +2220,7 @@ const SpecialistProfile: React.FC = () => {
                             <img
                               src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
                               alt={t('specialist.paymentQr') || 'Payment QR code'}
-                              className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                              className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                             />
                           ) : (
                             <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
@@ -2251,7 +2251,7 @@ const SpecialistProfile: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={handlePaymentQrRemove}
-                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96]"
                                   >
                                     {t('specialist.removeQr') || 'Remove'}
                                   </button>
@@ -2330,7 +2330,7 @@ const SpecialistProfile: React.FC = () => {
                             <img
                               src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
-                              className="w-full h-full object-cover transition-transform duration-300"
+                              className="w-full h-full object-cover transition-transform duration-300 ring-1 ring-inset ring-black/10 dark:ring-white/10"
                               onError={(e) => {
                                 logger.error('Portfolio image failed to load:', item.imageUrl);
                                 // Hide broken images
@@ -2360,7 +2360,8 @@ const SpecialistProfile: React.FC = () => {
                                 handleProfileChange('portfolio', updatedPortfolio);
                                 await persistPortfolio(updatedPortfolio);
                               }}
-                              className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label={language === 'uk' ? 'Видалити фото' : language === 'ru' ? 'Удалить фото' : 'Remove photo'}
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <XCircleIcon className="h-4 w-4" />
                             </button>
@@ -2388,14 +2389,14 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex gap-4 justify-end">
                     <button
                       onClick={handleCancelEdit}
-                      className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200"
+                      className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition active:scale-[0.96]"
                     >
                       {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition disabled:cursor-not-allowed flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                     >
                       {saving && (
                         <InlineLoader size="sm" color="white" />

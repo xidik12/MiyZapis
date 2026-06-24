@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -412,7 +413,7 @@ const SpecialistPayroll: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.pendingApproval || 0, summaryCurrency)}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
                     {counts.DRAFT || 0} {t('payroll.drafts') || 'drafts'}
                   </p>
                 </div>
@@ -441,7 +442,7 @@ const SpecialistPayroll: React.FC = () => {
         <div className="flex flex-wrap gap-x-1 gap-y-0 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setTab('staff')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition active:scale-[0.96] ${
               tab === 'staff'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -452,7 +453,7 @@ const SpecialistPayroll: React.FC = () => {
           </button>
           <button
             onClick={() => setTab('runs')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition active:scale-[0.96] ${
               tab === 'runs'
                 ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -604,7 +605,7 @@ const SpecialistPayroll: React.FC = () => {
                             <button
                               onClick={() => handleSaveCommission(s.staffUserId)}
                               disabled={savingCommission === s.staffUserId}
-                              className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                              className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50 inline-flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                             >
                               {savingCommission === s.staffUserId && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                               {t('common.save') || 'Save'}
@@ -735,7 +736,7 @@ const SpecialistPayroll: React.FC = () => {
                           <button
                             onClick={() => handleSaveCommission(s.staffUserId)}
                             disabled={savingCommission === s.staffUserId}
-                            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50 inline-flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                           >
                             {savingCommission === s.staffUserId && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                             {t('common.save') || 'Save'}
@@ -801,7 +802,7 @@ const SpecialistPayroll: React.FC = () => {
                   <button
                     onClick={handlePreview}
                     disabled={previewing}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {previewing ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <EyeIcon className="h-5 w-5" />}
                     {t('payroll.preview') || 'Preview'}
@@ -846,7 +847,7 @@ const SpecialistPayroll: React.FC = () => {
                                   />
                                 </td>
                               ))}
-                              <td className="px-4 py-2 text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                              <td className="px-4 py-2 text-right font-medium text-gray-900 dark:text-white whitespace-nowrap tabular-nums">
                                 {formatPrice(rowNet(r), asCurrency(runCurrency))}
                               </td>
                             </tr>
@@ -924,13 +925,13 @@ const SpecialistPayroll: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                      <p className="text-base font-semibold text-gray-900 dark:text-white break-words">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white break-words tabular-nums">
                         {t('payroll.runTotal') || 'Run total'}: {formatPrice(runTotal, asCurrency(runCurrency))}
                       </p>
                       <button
                         onClick={handleCreateRun}
                         disabled={creatingRun}
-                        className="w-full sm:w-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                       >
                         {creatingRun ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <PlusIcon className="h-5 w-5" />}
                         {t('payroll.createPayRun') || 'Create pay run'}
@@ -1002,7 +1003,7 @@ const SpecialistPayroll: React.FC = () => {
                               <td className="px-6 py-4">
                                 <p className="font-medium text-gray-900 dark:text-white">{rec.staffName || rec.staffUserId}</p>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 tabular-nums">
                                 {new Date(rec.periodStart).toLocaleDateString()} – {new Date(rec.periodEnd).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -1010,7 +1011,7 @@ const SpecialistPayroll: React.FC = () => {
                                   {getStatusLabel(rec.status)}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white tabular-nums">
                                 {formatPrice(num(rec.netPay), cur)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -1018,7 +1019,7 @@ const SpecialistPayroll: React.FC = () => {
                                   <button
                                     onClick={() => setViewRecord(rec)}
                                     aria-label={t('payroll.viewPayslip') || 'View payslip'}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                    className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition active:scale-[0.96]"
                                   >
                                     <EyeIcon className="h-4 w-4" />
                                   </button>
@@ -1027,7 +1028,7 @@ const SpecialistPayroll: React.FC = () => {
                                       onClick={() => handleApprove(rec)}
                                       disabled={isBusy}
                                       aria-label={t('payroll.approve') || 'Approve'}
-                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
+                                      className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                                     >
                                       <CheckCircleIcon className="h-4 w-4" />
                                     </button>
@@ -1037,7 +1038,7 @@ const SpecialistPayroll: React.FC = () => {
                                       onClick={() => handleMarkPaid(rec)}
                                       disabled={isBusy}
                                       aria-label={t('payroll.markPaid') || 'Mark paid'}
-                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                      className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                                     >
                                       <BanknotesIcon className="h-4 w-4" />
                                     </button>
@@ -1047,7 +1048,7 @@ const SpecialistPayroll: React.FC = () => {
                                       onClick={() => handleDelete(rec)}
                                       disabled={isBusy}
                                       aria-label={t('common.delete') || 'Delete'}
-                                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                      className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                                     >
                                       {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
                                     </button>
@@ -1082,7 +1083,7 @@ const SpecialistPayroll: React.FC = () => {
                           <dl className="mt-3 space-y-2 text-sm">
                             <div className="flex items-start justify-between gap-3">
                               <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('payroll.period') || 'Period'}</dt>
-                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">
+                              <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words tabular-nums">
                                 {new Date(rec.periodStart).toLocaleDateString()} – {new Date(rec.periodEnd).toLocaleDateString()}
                               </dd>
                             </div>
@@ -1099,7 +1100,7 @@ const SpecialistPayroll: React.FC = () => {
                             <button
                               onClick={() => setViewRecord(rec)}
                               aria-label={t('payroll.viewPayslip') || 'View payslip'}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 border border-gray-200 dark:border-gray-600 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 border border-gray-200 dark:border-gray-600 rounded-lg transition active:scale-[0.96]"
                             >
                               <EyeIcon className="h-4 w-4" />
                               {t('payroll.viewPayslip') || 'View'}
@@ -1109,7 +1110,7 @@ const SpecialistPayroll: React.FC = () => {
                                 onClick={() => handleApprove(rec)}
                                 disabled={isBusy}
                                 aria-label={t('payroll.approve') || 'Approve'}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 border border-primary-200 dark:border-primary-800 rounded-lg transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 border border-primary-200 dark:border-primary-800 rounded-lg transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                               >
                                 <CheckCircleIcon className="h-4 w-4" />
                                 {t('payroll.approve') || 'Approve'}
@@ -1120,7 +1121,7 @@ const SpecialistPayroll: React.FC = () => {
                                 onClick={() => handleMarkPaid(rec)}
                                 disabled={isBusy}
                                 aria-label={t('payroll.markPaid') || 'Mark paid'}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-700 border border-green-200 dark:border-green-800 rounded-lg transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-700 border border-green-200 dark:border-green-800 rounded-lg transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                               >
                                 <BanknotesIcon className="h-4 w-4" />
                                 {t('payroll.markPaid') || 'Mark paid'}
@@ -1131,7 +1132,7 @@ const SpecialistPayroll: React.FC = () => {
                                 onClick={() => handleDelete(rec)}
                                 disabled={isBusy}
                                 aria-label={t('common.delete') || 'Delete'}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 border border-red-200 dark:border-red-800 rounded-lg transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 border border-red-200 dark:border-red-800 rounded-lg transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                               >
                                 {isBusy ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
                                 {t('common.delete') || 'Delete'}
@@ -1150,8 +1151,8 @@ const SpecialistPayroll: React.FC = () => {
 
         {/* ===================== Payslip View Modal ===================== */}
         {viewRecord && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1163,7 +1164,8 @@ const SpecialistPayroll: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setViewRecord(null)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label={t('common.close') || 'Close'}
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -1172,7 +1174,7 @@ const SpecialistPayroll: React.FC = () => {
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">{t('payroll.period') || 'Period'}</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-gray-900 dark:text-white tabular-nums">
                     {new Date(viewRecord.periodStart).toLocaleDateString()} – {new Date(viewRecord.periodEnd).toLocaleDateString()}
                   </span>
                 </div>
@@ -1193,7 +1195,7 @@ const SpecialistPayroll: React.FC = () => {
                   ].map((row) => (
                     <div key={row.label} className="flex items-center justify-between">
                       <span className="text-gray-600 dark:text-gray-300">{row.label}</span>
-                      <span className={row.sign < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}>
+                      <span className={`tabular-nums ${row.sign < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                         {row.sign < 0 ? '−' : ''}{formatPrice(row.value, asCurrency(viewRecord.currency))}
                       </span>
                     </div>
@@ -1202,7 +1204,7 @@ const SpecialistPayroll: React.FC = () => {
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex items-center justify-between">
                   <span className="text-base font-semibold text-gray-900 dark:text-white">{t('payroll.netPay') || 'Net Pay'}</span>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
                     {formatPrice(num(viewRecord.netPay), asCurrency(viewRecord.currency))}
                   </span>
                 </div>
@@ -1219,8 +1221,8 @@ const SpecialistPayroll: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

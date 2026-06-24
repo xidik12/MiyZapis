@@ -510,10 +510,10 @@ const SpecialistOnboarding: React.FC = () => {
     <div className="mb-8">
       {/* Step counter */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 tabular-nums">
           {t('onboarding.step') || 'Step'} {step + 1} / {totalSteps}
         </span>
-        <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
+        <span className="text-sm font-medium text-primary-600 dark:text-primary-400 tabular-nums">
           {Math.round(((step + 1) / totalSteps) * 100)}%
         </span>
       </div>
@@ -604,7 +604,7 @@ const SpecialistOnboarding: React.FC = () => {
         />
         <div className="flex justify-between mt-1">
           {basicErrors.bio && <p className="text-sm text-red-500">{basicErrors.bio}</p>}
-          <p className={`text-xs ml-auto ${basicInfo.bio.length > 500 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+          <p className={`text-xs ml-auto tabular-nums ${basicInfo.bio.length > 500 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
             {basicInfo.bio.length}/500
           </p>
         </div>
@@ -883,7 +883,7 @@ const SpecialistOnboarding: React.FC = () => {
               });
               setScheduleError(null);
             }}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96]"
           >
             {t('onboarding.presetWeekdays') || 'Mon-Fri, 9-17'}
           </button>
@@ -899,7 +899,7 @@ const SpecialistOnboarding: React.FC = () => {
               });
               setScheduleError(null);
             }}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96]"
           >
             {t('onboarding.presetAllDays') || 'Every day, 9-18'}
           </button>
@@ -928,7 +928,7 @@ const SpecialistOnboarding: React.FC = () => {
               <img
                 src={avatarPreview}
                 alt={t('onboarding.avatarPreview')}
-                className="w-full h-full object-cover rounded-full"
+                className="w-full h-full object-cover rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
               />
             ) : (
               <svg className="w-16 h-16 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -940,8 +940,9 @@ const SpecialistOnboarding: React.FC = () => {
             <button
               type="button"
               onClick={removeAvatar}
-              className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
+              className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition active:scale-[0.96]"
               title={t('common.remove') || 'Remove'}
+              aria-label={t('common.remove') || 'Remove'}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1042,19 +1043,19 @@ const SpecialistOnboarding: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
         <button
           onClick={() => navigateAfterOnboarding('/specialist/dashboard')}
-          className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+          className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition active:scale-[0.96]"
         >
           {t('onboarding.goToDashboard') || 'Go to Dashboard'}
         </button>
         <button
           onClick={() => navigateAfterOnboarding('/specialist/services')}
-          className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+          className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96]"
         >
           {t('onboarding.manageServices') || 'Manage Services'}
         </button>
         <button
           onClick={() => navigateAfterOnboarding('/specialist/schedule')}
-          className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+          className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96]"
         >
           {t('onboarding.viewSchedule') || 'View Schedule'}
         </button>
@@ -1131,7 +1132,7 @@ const SpecialistOnboarding: React.FC = () => {
                     type="button"
                     onClick={goBack}
                     disabled={saving}
-                    className="px-5 py-2.5 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {t('common.back') || 'Back'}
                   </button>
@@ -1145,7 +1146,7 @@ const SpecialistOnboarding: React.FC = () => {
                     type="button"
                     onClick={skipAvatar}
                     disabled={saving}
-                    className="px-5 py-2.5 text-gray-500 dark:text-gray-400 font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 text-gray-500 dark:text-gray-400 font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {t('common.skip') || 'Skip'}
                   </button>
@@ -1156,7 +1157,7 @@ const SpecialistOnboarding: React.FC = () => {
                   type="button"
                   onClick={goNext}
                   disabled={saving}
-                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                 >
                   {saving && (
                     <InlineLoader size="sm" color="white" />

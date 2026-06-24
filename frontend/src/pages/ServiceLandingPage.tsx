@@ -299,7 +299,7 @@ const ServiceLandingPage: React.FC = () => {
               {service.emoji}
             </span>
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight mb-3">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight mb-3 text-balance">
                 {h1Text}
               </h1>
               <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
@@ -367,7 +367,7 @@ const ServiceLandingPage: React.FC = () => {
       <section className="bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="flex items-center justify-between gap-4 mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-balance">
               {city
                 ? `${t('seo.specialistsIn') || 'Майстри'} ${cityLocative}`
                 : t('seo.specialists') || 'Майстри'}
@@ -402,7 +402,7 @@ const ServiceLandingPage: React.FC = () => {
                     <Link
                       key={(s.id as string) || (s.slug as string)}
                       to={profileUrl}
-                      className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-300 dark:hover:border-primary-700 hover-lift transition-all duration-200 flex flex-col"
+                      className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-300 dark:hover:border-primary-700 hover-lift transition duration-200 flex flex-col active:scale-[0.96]"
                     >
                       {/* Avatar + name */}
                       <div className="flex items-center gap-4 mb-4">
@@ -410,7 +410,7 @@ const ServiceLandingPage: React.FC = () => {
                           <img
                             src={avatar}
                             alt={name}
-                            className="h-14 w-14 rounded-full object-cover flex-shrink-0"
+                            className="h-14 w-14 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10"
                           />
                         ) : (
                           <span className="h-14 w-14 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center text-lg font-semibold flex-shrink-0">
@@ -435,11 +435,11 @@ const ServiceLandingPage: React.FC = () => {
                         {rating > 0 ? (
                           <div className="flex items-center gap-1">
                             <StarIcon className="w-4 h-4 text-amber-400" active />
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                               {rating.toFixed(1)}
                             </span>
                             {reviewCount > 0 && (
-                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                              <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
                                 ({reviewCount})
                               </span>
                             )}

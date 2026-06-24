@@ -91,7 +91,7 @@ export const ReviewResponseModal: React.FC<ReviewResponseModalProps> = ({
               <button
                 onClick={handleClose}
                 disabled={isSubmitting}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition active:scale-[0.96] disabled:opacity-50"
               >
                 <XIcon className="w-5 h-5" />
               </button>
@@ -142,7 +142,7 @@ export const ReviewResponseModal: React.FC<ReviewResponseModalProps> = ({
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {t('reviews.response.hint') || 'Be professional and courteous in your response'}
                   </p>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
                     {responseText.length}/1000
                   </span>
                 </div>
@@ -154,14 +154,14 @@ export const ReviewResponseModal: React.FC<ReviewResponseModalProps> = ({
                   type="button"
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   {t('common.cancel') || 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !responseText.trim()}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center gap-2"
                 >
                   {isSubmitting && (
                     <InlineLoader size="sm" color="white" />

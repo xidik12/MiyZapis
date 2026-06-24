@@ -47,13 +47,13 @@ const SpendingSummaryCard: React.FC = () => {
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
             {t('wallet.spending.title') || 'Total spent on completed visits'}
           </p>
-          <p className="mt-1 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          <p className="mt-1 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
             {loading ? '…' : formatPrice(total, currency)}
           </p>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             {loading
               ? ''
-              : `${bookings.length} ${t('wallet.spending.completedVisits') || 'completed visits'}`}
+              : <><span className="tabular-nums">{bookings.length}</span> {t('wallet.spending.completedVisits') || 'completed visits'}</>}
           </p>
         </div>
         <span

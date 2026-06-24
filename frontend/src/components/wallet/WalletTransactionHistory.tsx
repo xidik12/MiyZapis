@@ -122,7 +122,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-            {t('wallet.transactions.title')} {total > 0 && `(${total})`}
+            {t('wallet.transactions.title')} {total > 0 && <span className="tabular-nums">({total})</span>}
           </h3>
         <div className="flex items-center gap-2">
           {showFilters && (
@@ -130,7 +130,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowFilterPanel(!showFilterPanel)}
-              className="h-8 w-8 p-0"
+              className="h-10 w-10 p-0 active:scale-[0.96]"
             >
               <Filter className="h-4 w-4" />
             </Button>
@@ -140,7 +140,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             size="sm"
             onClick={() => fetchTransactions()}
             disabled={loading}
-            className="h-8 w-8 p-0"
+            className="h-10 w-10 p-0 active:scale-[0.96]"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
@@ -181,7 +181,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
 
         {/* Current Balance */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(balance, walletCurrency)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(balance, walletCurrency)}</div>
           <div className="text-sm text-muted-foreground">{t('wallet.transactions.currentBalance')}</div>
         </div>
 
@@ -214,7 +214,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                         {transaction.description}
                       </div>
                     )}
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground tabular-nums">
                       {new Date(transaction.createdAt).toLocaleString()}
                       {transaction.status === 'PENDING' && (
                         <span className="ml-2 text-yellow-600 dark:text-yellow-400">{t('wallet.transactions.pending')}</span>
@@ -229,12 +229,12 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                 </div>
 
                 <div className="text-right">
-                  <div className={`font-semibold ${getTransactionColor(transaction.type)}`}>
+                  <div className={`font-semibold tabular-nums ${getTransactionColor(transaction.type)}`}>
                     {transaction.type === 'DEBIT' ? '-' : '+'}
                     {formatPrice(transaction.amount, (transaction.currency as 'USD' | 'EUR' | 'UAH') || walletCurrency)}
                   </div>
                   {!compact && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground tabular-nums">
                       {t('wallet.transactions.balance')}: {formatPrice(transaction.balanceAfter, (transaction.currency as 'USD' | 'EUR' | 'UAH') || walletCurrency)}
                     </div>
                   )}
@@ -255,7 +255,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              {t('wallet.transactions.loadMore')} ({transactions.length} {t('common.of')} {total})
+              {t('wallet.transactions.loadMore')} (<span className="tabular-nums">{transactions.length}</span> {t('common.of')} <span className="tabular-nums">{total}</span>)
             </Button>
           </div>
         )}

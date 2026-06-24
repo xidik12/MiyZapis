@@ -107,7 +107,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               src={comment.user.avatar}
               alt={userName}
               size="sm"
-              className="w-8 h-8"
+              className="w-8 h-8 ring-1 ring-inset ring-black/10 dark:ring-white/10"
             />
           ) : (
             <div className="w-8 h-8 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
@@ -135,34 +135,34 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {/* Like Button */}
               <button
                 onClick={handleLikeClick}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-95 ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-[0.96] ${
                   comment.userReaction === 'like'
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <HandThumbUpIcon className="w-3 h-3" />
-                <span className="text-xs font-semibold">{comment.likeCount || 0}</span>
+                <span className="text-xs font-semibold tabular-nums">{comment.likeCount || 0}</span>
               </button>
 
               {/* Dislike Button */}
               <button
                 onClick={handleDislikeClick}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-95 ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-[0.96] ${
                   comment.userReaction === 'dislike'
                     ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <HandThumbDownIcon className="w-3 h-3" />
-                <span className="text-xs font-semibold">{comment.dislikeCount || 0}</span>
+                <span className="text-xs font-semibold tabular-nums">{comment.dislikeCount || 0}</span>
               </button>
 
               {/* Reply Button */}
               {depth < 3 && ( // Limit nesting depth
                 <button
                   onClick={() => onReply(comment.id)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-[0.96]"
                 >
                   <ChatCircleIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">
@@ -177,7 +177,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <TrashIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">
@@ -311,7 +311,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
         <div className="flex items-center gap-2 mb-4">
           <ChatCircleIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            {comments.length} {comments.length === 1
+            <span className="tabular-nums">{comments.length}</span> {comments.length === 1
               ? (t('reviews.comments.comment') || 'Comment')
               : (t('reviews.comments.comments') || 'Comments')}
           </h3>

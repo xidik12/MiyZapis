@@ -492,7 +492,7 @@ const SearchPage: React.FC = () => {
     return (
     <div
       key={service.id}
-      className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover-lift"
+      className="cursor-pointer bg-white dark:bg-gray-800 rounded-2xl hover:border-gray-300 dark:hover:border-gray-700 transition duration-150 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover-lift active:scale-[0.96]"
     >
       {/* Portfolio lives on the specialist profile — search cards stay clean (ProfiHub-style) */}
       <div className="flex flex-row items-start gap-3 sm:gap-4">
@@ -559,7 +559,7 @@ const SearchPage: React.FC = () => {
             </div>
             <div className="flex items-center space-x-1">
               {renderStars(service.rating)}
-              <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
+              <span className="text-sm text-gray-600 dark:text-gray-400 ml-1 tabular-nums">
                 {(service.rating ?? 0).toFixed(1)} ({service.reviewCount ?? 0})
               </span>
             </div>
@@ -576,12 +576,12 @@ const SearchPage: React.FC = () => {
                 <span className="truncate">{service.location}</span>
               </div>
             )}
-            <div className="flex items-center">
+            <div className="flex items-center tabular-nums">
               <ClockIcon className="w-4 h-4 mr-1" />
               <span>{service.duration} {t('common.minutes')}</span>
             </div>
             {service.distance && (
-              <div className="flex items-center">
+              <div className="flex items-center tabular-nums">
                 <span>{service.distance.toFixed(1)} km</span>
               </div>
             )}
@@ -602,10 +602,10 @@ const SearchPage: React.FC = () => {
           )}
 
           <div className="flex flex-row items-end justify-between gap-3 mt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 text-left min-w-0">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-left min-w-0 tabular-nums">
               {(service.specialist?.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist?.experience || ''}
               {typeof service.specialist.responseTime === 'number' && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 tabular-nums">
                   ~{service.specialist.responseTime} {t('common.minutes') || 'min'}
                 </span>
               )}
@@ -614,7 +614,7 @@ const SearchPage: React.FC = () => {
               <div className={`inline-block text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
             </div>
@@ -915,7 +915,7 @@ const SearchPage: React.FC = () => {
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                   {searchQuery ? `${t('search.resultsFor') || 'Results for'} "${searchQuery}"` : (t('search.results') || 'Results')}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{getFilteredServices().length} {t('search.professionalsFound') || 'found'}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">{getFilteredServices().length} {t('search.professionalsFound') || 'found'}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsFilterTrayOpen(v => !v)} className="lg:hidden btn btn-secondary text-sm">
@@ -1321,7 +1321,7 @@ const SearchPage: React.FC = () => {
                   )}
                   <button
                     onClick={() => setIsFilterTrayOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors focus-visible-ring"
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors focus-visible-ring"
                     aria-label="Close filters"
                   >
                     ✕

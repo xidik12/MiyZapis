@@ -165,7 +165,7 @@ const CustomerHelpSupport: React.FC = () => {
                     <button
                       key={category.id}
                       onClick={() => setActiveCategory(category.id)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                      className={`px-3 py-1.5 text-sm font-medium rounded-full transition active:scale-[0.96] ${
                         activeCategory === category.id
                           ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -194,7 +194,7 @@ const CustomerHelpSupport: React.FC = () => {
                       <div key={faq.id} className="border border-gray-200 dark:border-gray-600 rounded-xl">
                         <button
                           onClick={() => handleFAQToggle(faq.id)}
-                          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96]"
                         >
                           <span className="font-medium text-gray-900 dark:text-gray-100">{faq.question}</span>
                           {expandedFAQ === faq.id ? (
@@ -292,7 +292,7 @@ const CustomerHelpSupport: React.FC = () => {
                         <button
                           key={method.id}
                           onClick={() => handleContactMethod(method)}
-                          className="w-full text-left p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          className="w-full text-left p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition active:scale-[0.96]"
                         >
                           <div className="flex items-start">
                             <Icon className="h-6 w-6 text-blue-600 mr-3 mt-1" />
@@ -386,7 +386,7 @@ const CustomerHelpSupport: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition active:scale-[0.96]"
                   >
                     {t('feedback.sendFeedback')}
                   </button>

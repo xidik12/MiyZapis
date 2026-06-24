@@ -447,7 +447,7 @@ const SpecialistSettings: React.FC = () => {
                             />
                             <label
                               htmlFor="settings-avatar-upload"
-                              className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                              className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition active:scale-[0.96] ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                             >
                               <CameraIcon className="w-4 h-4 inline mr-2" />
                               {isUploadingImage ?
@@ -460,7 +460,7 @@ const SpecialistSettings: React.FC = () => {
                               <button
                                 onClick={handleImageRemove}
                                 disabled={isUploadingImage}
-                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                               >
                                 <TrashIcon className="w-4 h-4 inline mr-2" />
                                 {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
@@ -1057,7 +1057,7 @@ const SpecialistSettings: React.FC = () => {
                         navigator.clipboard.writeText(url);
                         toast.success(t('settings.linkCopied') || 'Link copied to clipboard!');
                       }}
-                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium whitespace-nowrap"
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition active:scale-[0.96] text-sm font-medium whitespace-nowrap"
                     >
                       {t('actions.copy') || 'Copy'}
                     </button>

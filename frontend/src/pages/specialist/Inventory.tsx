@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -402,13 +403,13 @@ const SpecialistInventory: React.FC = () => {
           <div className="w-full sm:w-auto flex gap-2">
             <button
               onClick={() => setLabelsOpen(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-[0.96]"
             >
               {t('labels.printLabels') || 'Print labels'}
             </button>
             <button
               onClick={handleAddProduct}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
             >
               <PlusIcon className="h-5 w-5" />
               {t('inventory.addProduct') || 'Add Product'}
@@ -581,7 +582,7 @@ const SpecialistInventory: React.FC = () => {
               </p>
               <button
                 onClick={handleAddProduct}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-[0.96]"
               >
                 <PlusIcon className="h-5 w-5" />
                 {t('inventory.addFirstProduct') || 'Add your first product'}
@@ -633,7 +634,7 @@ const SpecialistInventory: React.FC = () => {
                             {product.unit}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <span className="font-medium text-gray-900 dark:text-white">
+                            <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                               {num(product.stockQty)}
                             </span>
                             {low && (
@@ -644,10 +645,10 @@ const SpecialistInventory: React.FC = () => {
                             )}
                             {(() => { const e = expiryInfo(product); return e ? (<span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${e.cls}`}>{e.label}</span>) : null; })()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300 tabular-nums">
                             {formatPrice(num(product.costPrice), productCurrency)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-300 tabular-nums">
                             {product.salePrice != null
                               ? formatPrice(num(product.salePrice), productCurrency)
                               : <span className="text-gray-400 dark:text-gray-600">—</span>}
@@ -657,14 +658,14 @@ const SpecialistInventory: React.FC = () => {
                               <button
                                 onClick={() => handleOpenAdjust(product)}
                                 aria-label={t('inventory.adjustStock') || 'Adjust stock'}
-                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition active:scale-[0.96]"
                               >
                                 <ArrowsUpDownIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleEditProduct(product)}
                                 aria-label={t('inventory.editProduct') || 'Edit product'}
-                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
@@ -672,7 +673,7 @@ const SpecialistInventory: React.FC = () => {
                                 onClick={() => handleDelete(product.id)}
                                 disabled={deleting === product.id}
                                 aria-label={t('common.delete') || 'Delete'}
-                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                               >
                                 {deleting === product.id ? (
                                   <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -766,14 +767,14 @@ const SpecialistInventory: React.FC = () => {
                         <button
                           onClick={() => handleOpenAdjust(product)}
                           aria-label={t('inventory.adjustStock') || 'Adjust stock'}
-                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                          className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition active:scale-[0.96]"
                         >
                           <ArrowsUpDownIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleEditProduct(product)}
                           aria-label={t('inventory.editProduct') || 'Edit product'}
-                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                          className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
@@ -781,7 +782,7 @@ const SpecialistInventory: React.FC = () => {
                           onClick={() => handleDelete(product.id)}
                           disabled={deleting === product.id}
                           aria-label={t('common.delete') || 'Delete'}
-                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                          className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition disabled:opacity-50 active:scale-[0.96] disabled:active:scale-100"
                         >
                           {deleting === product.id ? (
                             <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -800,8 +801,8 @@ const SpecialistInventory: React.FC = () => {
 
         {/* Add/Edit Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+            <motion.div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }}>
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {editingProduct
@@ -810,7 +811,7 @@ const SpecialistInventory: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -915,7 +916,7 @@ const SpecialistInventory: React.FC = () => {
                   </label>
                   <div className="flex items-center gap-3">
                     {formData.imageUrl ? (
-                      <img src={formData.imageUrl} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600" />
+                      <img src={formData.imageUrl} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                     ) : (
                       <div className="w-16 h-16 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
                         {t('inventory.noPhoto') || 'No photo'}
@@ -1062,14 +1063,14 @@ const SpecialistInventory: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition active:scale-[0.96]"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {submitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                     {editingProduct
@@ -1078,14 +1079,14 @@ const SpecialistInventory: React.FC = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Adjust Stock Modal */}
         {adjustProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+          <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+            <motion.div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full" initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }}>
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1097,7 +1098,7 @@ const SpecialistInventory: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setAdjustProduct(null)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -1158,22 +1159,22 @@ const SpecialistInventory: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setAdjustProduct(null)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition active:scale-[0.96]"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={adjusting}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                   >
                     {adjusting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                     {t('inventory.applyAdjustment') || 'Apply'}
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

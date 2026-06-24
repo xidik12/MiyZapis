@@ -78,6 +78,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
                         src={specialistAvatar}
                         alt={specialistName}
                         size="sm"
+                        className="ring-1 ring-inset ring-black/10 dark:ring-white/10"
                       />
                     </div>
                     <div>
@@ -88,15 +89,15 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                     {scheduledDate.toLocaleDateString()}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
                     {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">
+                  <div className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
                     {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </div>
                 </td>
@@ -108,7 +109,7 @@ const BookingTable: React.FC<BookingTableProps> = ({ bookings, onViewDetails }) 
                 <td className="px-6 py-4 text-right">
                   <button
                     onClick={() => onViewDetails(booking)}
-                    className="inline-flex items-center justify-center p-2 rounded-xl text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm hover:shadow-md"
+                    className="inline-flex items-center justify-center p-2 rounded-xl text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-110 active:scale-[0.96] shadow-sm hover:shadow-md"
                     title={t('actions.viewDetails')}
                   >
                     <EyeIcon className="w-5 h-5" />

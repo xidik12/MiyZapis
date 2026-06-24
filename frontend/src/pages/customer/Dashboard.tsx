@@ -390,7 +390,7 @@ const CustomerDashboard: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition active:scale-[0.96]"
           >
             {t('common.tryAgain')}
           </button>
@@ -408,11 +408,11 @@ const CustomerDashboard: React.FC = () => {
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description, onClick }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string; onClick?: () => void }) => (
-    <div className={`bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
+    <div className={`bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition duration-200 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tabular-nums">{value}</p>
           {description && (
             <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
           )}
@@ -462,14 +462,14 @@ const CustomerDashboard: React.FC = () => {
             <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Link
                 to="/search"
-                className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition duration-200 active:scale-[0.96] font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
                 <MagnifyingGlassIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.customer.findSpecialists')}
               </Link>
               <Link
                 to="/customer/bookings"
-                className="inline-flex items-center justify-center px-4 py-2 bg-surface-hover border-surface rounded-xl transition-all duration-200 font-medium text-secondary-content text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-4 py-2 bg-surface-hover border-surface rounded-xl transition duration-200 active:scale-[0.96] font-medium text-secondary-content text-sm sm:text-base"
               >
                 <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.nav.bookings')}
@@ -656,7 +656,7 @@ const CustomerDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base tabular-nums">
                         {formatPrice(booking.amount || 0, booking.currency || 'USD')}
                       </p>
                       <span className={`inline-block px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
@@ -665,7 +665,7 @@ const CustomerDashboard: React.FC = () => {
                       {booking.status === 'completed' && booking.serviceId && (
                         <button
                           onClick={() => navigate(`/booking/${booking.serviceId}`)}
-                          className="mt-1 px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 cursor-pointer transition-all duration-200"
+                          className="mt-1 px-2.5 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 cursor-pointer transition duration-200 active:scale-[0.96]"
                         >
                           {t('dashboard.bookAgain') || 'Book Again'}
                         </button>
@@ -681,7 +681,7 @@ const CustomerDashboard: React.FC = () => {
                   <p className="text-sm">{t('dashboard.customer.startBooking')}</p>
                   <Link
                     to="/search"
-                    className="inline-flex items-center mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition active:scale-[0.96]"
                   >
                     <PlusIcon className="w-4 h-4 mr-2" />
                     {t('dashboard.customer.exploreServices')}
@@ -778,7 +778,7 @@ const CustomerDashboard: React.FC = () => {
                 </div>
                 <Link
                   to="/loyalty"
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-xs sm:text-sm font-medium"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition active:scale-[0.96] text-xs sm:text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
@@ -786,21 +786,21 @@ const CustomerDashboard: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
-                  <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <p className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.currentPoints')}</p>
                 </div>
 
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
-                  <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                  <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                     {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.thisMonth')}</p>
                 </div>
 
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
-                  <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                     {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.lifetimePoints')}</p>
@@ -813,7 +813,7 @@ const CustomerDashboard: React.FC = () => {
                     <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                       {t('dashboard.loyalty.progressTo')} {loyaltyStats.nextTier.name}
                     </span>
-                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 tabular-nums">
                       {loyaltyStats.pointsToNextTier} {t('dashboard.loyalty.pointsNeeded')}
                     </span>
                   </div>

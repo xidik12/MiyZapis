@@ -286,14 +286,14 @@ const CustomerProfile: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {!isEditing && (
-                <button className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2">
+                <button className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200 active:scale-[0.96] flex items-center gap-2">
                   <EyeIcon className="h-4 w-4" />
                   {t('actions.preview') || 'Preview'}
                 </button>
               )}
               <Link
                 to="/settings"
-                className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold transition duration-300 active:scale-[0.96] shadow-lg hover:shadow-xl flex items-center gap-2"
               >
                 <Cog6ToothIcon className="h-4 w-4" />
                 {language === 'uk' ? 'Налаштування' : language === 'ru' ? 'Настройки' : 'Settings'}
@@ -469,7 +469,7 @@ const CustomerProfile: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-6 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-700 rounded-xl">
-                  <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">{loyalty.points}</div>
+                  <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1 tabular-nums">{loyalty.points}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {language === 'uk' ? 'Бонусні бали' : language === 'ru' ? 'Бонусные баллы' : 'Bonus Points'}
                   </div>
@@ -477,14 +477,14 @@ const CustomerProfile: React.FC = () => {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-xl">
-                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400">{formatPrice(loyalty.totalSpent, 'UAH')}</div>
+                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400 tabular-nums">{formatPrice(loyalty.totalSpent, 'UAH')}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {language === 'uk' ? 'Потрачено' : language === 'ru' ? 'Потрачено' : 'Spent'}
                     </div>
                   </div>
                   
                   <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-xl">
-                    <div className="text-lg font-bold text-success-600 dark:text-success-400">{loyalty.discountsUsed}</div>
+                    <div className="text-lg font-bold text-success-600 dark:text-success-400 tabular-nums">{loyalty.discountsUsed}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {language === 'uk' ? 'Знижки' : language === 'ru' ? 'Скидки' : 'Discounts'}
                     </div>

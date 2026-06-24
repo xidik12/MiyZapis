@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -446,7 +447,7 @@ const SpecialistTeam: React.FC = () => {
                 <button
                   onClick={handleClockIn}
                   disabled={clockingIn || !!todayRecord?.clockIn}
-                  className="min-h-[44px] px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                  className="min-h-[44px] px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 inline-flex items-center gap-2"
                 >
                   {clockingIn && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                   {t('team.clockIn')}
@@ -454,14 +455,14 @@ const SpecialistTeam: React.FC = () => {
                 <button
                   onClick={handleClockOut}
                   disabled={clockingOut || !todayRecord?.clockIn || !!todayRecord?.clockOut}
-                  className="min-h-[44px] px-6 py-2.5 bg-gray-700 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                  className="min-h-[44px] px-6 py-2.5 bg-gray-700 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white rounded-xl font-medium transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 inline-flex items-center gap-2"
                 >
                   {clockingOut && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                   {t('team.clockOut')}
                 </button>
                 <button
                   onClick={() => setShowLeaveModal(true)}
-                  className="min-h-[44px] px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors inline-flex items-center gap-2"
+                  className="min-h-[44px] px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-medium transition active:scale-[0.96] inline-flex items-center gap-2"
                 >
                   <CalendarDaysIcon className="h-4 w-4" />
                   {t('team.requestLeave')}
@@ -470,7 +471,7 @@ const SpecialistTeam: React.FC = () => {
 
               {/* Today summary */}
               {todayRecord && (
-                <div className="flex-1 flex flex-wrap gap-4 sm:justify-end text-sm text-gray-600 dark:text-gray-300">
+                <div className="flex-1 flex flex-wrap gap-4 sm:justify-end text-sm text-gray-600 dark:text-gray-300 tabular-nums">
                   <span>
                     <span className="font-medium text-gray-900 dark:text-white">{t('team.in')}:</span>{' '}
                     {fmtTime(todayRecord.clockIn)}
@@ -790,8 +791,8 @@ const SpecialistTeam: React.FC = () => {
 
       {/* Request Leave Modal */}
       {showLeaveModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('team.requestLeave')}</h2>
               <button onClick={() => setShowLeaveModal(false)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -855,14 +856,14 @@ const SpecialistTeam: React.FC = () => {
                 {t('team.submitRequest')}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Manual Attendance Modal */}
       {showManualModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('team.setAttendance')}</h2>
               <button onClick={() => setShowManualModal(false)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -945,14 +946,14 @@ const SpecialistTeam: React.FC = () => {
                 {t('common.save')}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Leave Review Modal */}
       {reviewLeave && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('team.reviewLeave')}</h2>
               <button onClick={() => { setReviewLeave(null); setReviewNote(''); }} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -1016,14 +1017,14 @@ const SpecialistTeam: React.FC = () => {
                 {t('team.approve')}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Schedule Shift Modal */}
       {showShiftModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('team.scheduleShift')}</h2>
               <button onClick={() => setShowShiftModal(false)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -1083,8 +1084,8 @@ const SpecialistTeam: React.FC = () => {
                 {t('team.scheduleShift')}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

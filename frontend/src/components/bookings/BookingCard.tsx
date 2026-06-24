@@ -122,7 +122,8 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
             e.stopPropagation();
             if (onQuickAction) onQuickAction('menu');
           }}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+          className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition flex-shrink-0 active:scale-[0.96]"
+          aria-label="More options"
         >
           <EllipsisVerticalIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </button>
@@ -132,7 +133,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
           <CalendarIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
-          <span className="font-medium leading-none">
+          <span className="font-medium leading-none tabular-nums">
             {(() => {
               if (!booking.scheduledDate || booking.scheduledDate === 'N/A') return 'No date';
               try {
@@ -144,9 +145,9 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
           <ClockIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
-          <span className="font-medium leading-none">{booking.scheduledTime}</span>
+          <span className="font-medium leading-none tabular-nums">{booking.scheduledTime}</span>
           {booking.service?.duration && (
-            <span className="text-gray-500 dark:text-gray-500 leading-none">
+            <span className="text-gray-500 dark:text-gray-500 leading-none tabular-nums">
               ({booking.service.duration} min)
             </span>
           )}
@@ -163,7 +164,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-1.5">
           <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-          <span className="font-bold text-sm text-gray-900 dark:text-white leading-none">
+          <span className="font-bold text-sm text-gray-900 dark:text-white leading-none tabular-nums">
             {formatPrice(Number(booking.totalPrice) || 0, (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
           </span>
         </div>

@@ -61,7 +61,7 @@ const BusinessPublicPage: React.FC = () => {
               <img src={business.logoUrl} alt={business.name} className="w-24 h-24 rounded-xl bg-white p-2 object-contain" />
             )}
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold">{business.name}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-balance">{business.name}</h1>
               {business.description && <p className="text-primary-100 mt-2 max-w-2xl">{business.description}</p>}
               <div className="flex flex-wrap gap-3 mt-4 text-sm">
                 {business.address && <Pill icon="📍">{business.address}</Pill>}
@@ -89,11 +89,11 @@ const BusinessPublicPage: React.FC = () => {
                 <Link
                   key={m.id}
                   to={profileLink}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition active:scale-[0.96]"
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {u?.avatar ? (
-                      <img src={u.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                      <img src={u.avatar} alt="" className="w-12 h-12 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium">
                         {(u?.firstName?.[0] ?? '?') + (u?.lastName?.[0] ?? '')}

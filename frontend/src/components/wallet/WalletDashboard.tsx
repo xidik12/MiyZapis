@@ -233,7 +233,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
             <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.totalEarnings')}</h3>
             <CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.totalEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(earnings.totalEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromReferralsRewards')}
           </p>
@@ -253,7 +253,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
             <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.referralEarnings')}</h3>
             <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.referralEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(earnings.referralEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromSuccessfulReferrals')}
           </p>
@@ -272,7 +272,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
             <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('wallet.earnings.rewardEarnings')}</h3>
             <Gift className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(earnings.loyaltyEarnings + earnings.forfeitureEarnings)}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(earnings.loyaltyEarnings + earnings.forfeitureEarnings)}</div>
           <p className="text-xs text-muted-foreground">
             {t('wallet.earnings.fromLoyaltyForfeiture')}
           </p>
@@ -310,7 +310,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
                       }`}></div>
                       <span className="text-sm text-gray-700 dark:text-gray-300">{transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
                     </div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">+{formatPrice(transaction.amount)}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">+{formatPrice(transaction.amount)}</div>
                   </div>
                 ))}
               </div>
@@ -327,21 +327,21 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
                   <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.referralBonuses')}</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.referralEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2 tabular-nums">{formatPrice(earnings.referralEarnings)}</span>
               </div>
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.loyaltyRewards')}</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.loyaltyEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2 tabular-nums">{formatPrice(earnings.loyaltyEarnings)}</span>
               </div>
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-gray-200 dark:border-gray-700 sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-indigo-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate text-gray-700 dark:text-gray-300">{t('wallet.earnings.forfeitureShare')}</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.forfeitureEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2 tabular-nums">{formatPrice(earnings.forfeitureEarnings)}</span>
               </div>
             </div>
           </div>

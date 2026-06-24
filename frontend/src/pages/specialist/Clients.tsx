@@ -754,7 +754,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
               <img
                 src={client.avatar}
                 alt={client.name}
-                className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-gray-200 dark:border-gray-600"
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-gray-200 dark:border-gray-600 ring-1 ring-inset ring-black/10 dark:ring-white/10"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
@@ -801,7 +801,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
           {/* Right: expand toggle */}
           <button
             onClick={onToggle}
-            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2 flex-shrink-0"
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition active:scale-[0.96] ml-2 flex-shrink-0"
             aria-label={t('clients.toggleDetails') || 'Toggle details'}
           >
             {isExpanded ? (
@@ -842,14 +842,14 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <div className="mt-4 flex items-center space-x-2">
           <button
             onClick={onViewBookings}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition duration-200 active:scale-[0.96]"
           >
             <EyeIcon className="w-4 h-4" />
             <span>{t('clients.viewBookings') || 'History'}</span>
           </button>
           <button
             onClick={onSendMessage}
-            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition duration-200 active:scale-[0.96]"
           >
             <ChatBubbleLeftRightIcon className="w-4 h-4" />
             <span>{t('clients.sendMessage') || 'Message'}</span>
@@ -907,7 +907,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
                         <button
                           key={cat}
                           onClick={() => onNoteCategoryChange(cat)}
-                          className={`px-2 py-0.5 text-xs rounded-full transition-colors whitespace-nowrap ${
+                          className={`px-2 py-0.5 text-xs rounded-full transition active:scale-[0.96] whitespace-nowrap ${
                             (noteCategory || 'general') === cat
                               ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
                               : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
@@ -920,7 +920,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
                   </div>
                   <button
                     onClick={onCreateNote}
-                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0"
+                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition active:scale-[0.96] flex-shrink-0"
                   >
                     {t('actions.add') || 'Add'}
                   </button>
@@ -961,7 +961,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
                         </div>
                         <button
                           onClick={() => onDeleteNote(note.id)}
-                          className="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                          className="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition active:scale-[0.96] flex-shrink-0"
                         >
                           <XIcon className="w-3.5 h-3.5" />
                         </button>
@@ -1289,7 +1289,7 @@ const SpecialistClients: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setShowManageTags(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96] w-full sm:w-auto"
               >
                 <TagIconFallback className="w-4 h-4" />
                 <span>{t('crm.manageTags') || 'Manage Tags'}</span>
@@ -1297,7 +1297,7 @@ const SpecialistClients: React.FC = () => {
               {!loading && (
                 <button
                   onClick={() => loadClients()}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96] w-full sm:w-auto"
                 >
                   <ArrowPathIcon className="w-4 h-4" />
                   <span>{t('common.refresh') || 'Refresh'}</span>
@@ -1394,7 +1394,7 @@ const SpecialistClients: React.FC = () => {
                     <div className="relative flex-shrink-0">
                       <button
                         onClick={() => setTagFilterOpen((v) => !v)}
-                        className={`inline-flex items-center gap-2 px-3 py-3 rounded-2xl border text-sm font-medium transition-colors ${
+                        className={`inline-flex items-center gap-2 px-3 py-3 rounded-2xl border text-sm font-medium transition active:scale-[0.96] ${
                           filterTagId
                             ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-400'
                             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -1442,7 +1442,7 @@ const SpecialistClients: React.FC = () => {
                                 <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${TAG_COLOR_CLASSES[tag.color].swatch}`} />
                                 <span className="truncate">{tag.name}</span>
                                 {tag.count !== undefined && (
-                                  <span className="ml-auto text-xs text-gray-400 flex-shrink-0">{tag.count}</span>
+                                  <span className="ml-auto text-xs text-gray-400 flex-shrink-0 tabular-nums">{tag.count}</span>
                                 )}
                               </button>
                             ))}
@@ -1461,7 +1461,7 @@ const SpecialistClients: React.FC = () => {
                       <button
                         key={opt.field}
                         onClick={() => handleToggleSort(opt.field)}
-                        className={`px-3 py-2 text-xs font-medium rounded-xl transition-colors whitespace-nowrap ${
+                        className={`px-3 py-2 text-xs font-medium rounded-xl transition active:scale-[0.96] whitespace-nowrap ${
                           isActive
                             ? 'bg-primary-500 text-white shadow-sm'
                             : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'

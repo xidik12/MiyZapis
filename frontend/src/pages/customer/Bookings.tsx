@@ -319,7 +319,7 @@ const CustomerBookings: React.FC = () => {
             <div className="mt-4">
               <button
                 onClick={() => dispatch(fetchBookings({ filters: {}, userType: 'customer' }))}
-                className="bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-red-700 text-red-800 dark:text-red-200 font-medium py-2 px-4 rounded-xl transition-colors"
+                className="bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-red-700 text-red-800 dark:text-red-200 font-medium py-2 px-4 rounded-xl transition active:scale-[0.96]"
               >
                 {t('actions.retry')}
               </button>
@@ -408,23 +408,23 @@ const CustomerBookings: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{filteredAndSortedBookings.length}</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600">
+            <p className="text-xl sm:text-2xl font-bold text-green-600 tabular-nums">
               {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
-            <p className="text-xl sm:text-2xl font-bold text-yellow-600">
+            <p className="text-xl sm:text-2xl font-bold text-yellow-600 tabular-nums">
               {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600">
+            <p className="text-xl sm:text-2xl font-bold text-blue-600 tabular-nums">
               {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
             </p>
           </div>
@@ -504,7 +504,7 @@ const CustomerBookings: React.FC = () => {
                 </select>
                 <button
                   onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                  className="px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg hover:bg-gray-50 dark:hover:bg-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                  className="px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg hover:bg-gray-50 dark:hover:bg-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition active:scale-[0.96]"
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
                 </button>
@@ -622,7 +622,7 @@ const CustomerBookings: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{t('bookings.amount')}</p>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                           {formatPrice(booking.totalAmount || 0, getBookingCurrency(booking))}
                         </p>
                       </div>
@@ -643,14 +643,14 @@ const CustomerBookings: React.FC = () => {
                           setSelectedBooking(booking);
                           setShowDetailModal(true);
                         }}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition-all duration-200"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition duration-200 active:scale-[0.96]"
                       >
                         {t('actions.viewDetails')}
                       </button>
                       {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                         <button
                           onClick={() => handleLeaveReview(booking.id)}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition-all duration-200 flex items-center"
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-xl cursor-pointer transition duration-200 active:scale-[0.96] flex items-center"
                         >
                           <StarIcon className="w-4 h-4 mr-1" />
                           {t('customer.bookings.leaveReview')}
@@ -737,7 +737,7 @@ const CustomerBookings: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             {getStatusBadge(booking.status)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                             {formatPrice(booking.totalAmount || 0, getBookingCurrency(booking))}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -747,7 +747,7 @@ const CustomerBookings: React.FC = () => {
                                   setSelectedBooking(booking);
                                   setShowDetailModal(true);
                                 }}
-                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200"
+                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition duration-200 active:scale-[0.96]"
                                 title={t('actions.viewDetails')}
                               >
                                 <EyeIcon className="w-4 h-4 mr-1" />
@@ -756,7 +756,7 @@ const CustomerBookings: React.FC = () => {
                               {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                                 <button
                                   onClick={() => handleLeaveReview(booking.id)}
-                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 cursor-pointer transition-all duration-200"
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 cursor-pointer transition duration-200 active:scale-[0.96]"
                                   title={t('customer.bookings.leaveReview')}
                                 >
                                   <StarIcon className="w-4 h-4 mr-1" />
@@ -767,7 +767,7 @@ const CustomerBookings: React.FC = () => {
                               {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                                 <button
                                   onClick={() => handleCancelBooking(booking.id)}
-                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer transition-all duration-200"
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer transition duration-200 active:scale-[0.96]"
                                   title={t('bookings.cancelBooking')}
                                 >
                                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -974,14 +974,14 @@ const CustomerBookings: React.FC = () => {
                                 navigate(`/booking/${serviceId}`);
                               }
                             }}
-                            className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-xl transition-colors"
+                            className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-xl transition active:scale-[0.96]"
                           >
                             {t('waitlist.bookNow') || 'Book Now'}
                           </button>
                         )}
                         <button
                           onClick={() => handleCancelWaitlist(entry.id)}
-                          className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96]"
                         >
                           {t('waitlist.cancel') || 'Remove'}
                         </button>

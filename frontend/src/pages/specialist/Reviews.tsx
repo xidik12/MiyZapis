@@ -130,7 +130,7 @@ const ReputationSettingsCard: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-sm font-medium transition active:scale-[0.96] disabled:active:scale-100"
             >
               {saving ? (t('common.saving') || 'Saving…') : t('reputation.save')}
             </button>

@@ -532,7 +532,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
-    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] cursor-pointer transition-all duration-200">
+    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] cursor-pointer transition duration-200">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
@@ -541,7 +541,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
             </div>
           ) : (
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tabular-nums">{value}</p>
           )}
           {description && !loading && (
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{description}</p>
@@ -595,14 +595,14 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link
             to="/specialist/services"
-            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition duration-200 active:scale-[0.96] font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
           </Link>
           <button
             onClick={handleExportReport}
-            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 font-medium text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200 active:scale-[0.96] font-medium text-sm sm:text-base"
           >
             <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.exportReport')}
@@ -675,7 +675,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
 
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
             <EyeIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -683,20 +683,20 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.profileViews')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.profileViews}</span>
+              <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{dashboardData.stats.profileViews}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.favoriteCount')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.favoriteCount}</span>
+              <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{dashboardData.stats.favoriteCount}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.conversionRate}%</span>
+              <span className="font-semibold text-success-600 tabular-nums">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
             <ChartBarIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -704,15 +704,15 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.completionRate}%</span>
+              <span className="font-semibold text-success-600 tabular-nums">{dashboardData.stats.completionRate}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
+              <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{dashboardData.stats.repeatClients}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.noShowRate') || 'No-Show Rate'}</span>
-              <span className={`font-semibold ${dashboardData.stats.noShowRate > 20 ? 'text-error-600' : 'text-gray-900 dark:text-white'}`}>
+              <span className={`font-semibold tabular-nums ${dashboardData.stats.noShowRate > 20 ? 'text-error-600' : 'text-gray-900 dark:text-white'}`}>
                 {dashboardData.stats.noShowRate}%
               </span>
             </div>
@@ -734,21 +734,21 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-2">
             <Link
               to="/specialist/schedule"
-              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition duration-200 active:scale-[0.96] text-sm font-medium flex items-center"
             >
               <Cog6ToothIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.manageSchedule')}
             </Link>
             <Link
               to="/specialist/reviews"
-              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition duration-200 active:scale-[0.96] text-sm font-medium flex items-center"
             >
               <StarIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.viewReviews')}
             </Link>
             <Link
               to="/specialist/messages"
-              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition duration-200 active:scale-[0.96] text-sm font-medium flex items-center"
             >
               <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.messageClients')}
@@ -772,7 +772,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-4">
             {dashboardData.recentBookings.slice(0, 4).map((booking: any) => (
-              <div key={booking.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200">
+              <div key={booking.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-200">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
                   <div className="w-10 h-10 flex-shrink-0 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
@@ -788,7 +788,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                  <p className="font-semibold text-gray-900 dark:text-white whitespace-nowrap tabular-nums">
                     {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </p>
                   <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(booking.status)}`}>
@@ -813,7 +813,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-4">
             {dashboardData.upcomingAppointments.map((appointment: any) => (
-              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200">
+              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition duration-200">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
                   <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-semibold text-sm">
@@ -838,10 +838,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2 flex-shrink-0">
-                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-all duration-200">
+                  <button className="p-2.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition duration-200 active:scale-[0.96]">
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all duration-200">
+                  <button className="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]">
                     <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>

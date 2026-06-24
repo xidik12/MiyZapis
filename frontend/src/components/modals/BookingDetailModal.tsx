@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -83,8 +84,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl max-w-[calc(100vw-2rem)] sm:max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl max-w-[calc(100vw-2rem)] sm:max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
@@ -92,7 +93,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors flex-shrink-0"
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition active:scale-[0.96] flex-shrink-0"
           >
             <XMarkIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
           </button>
@@ -164,7 +165,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       }`}
                     />
                   ))}
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1 tabular-nums">
                     {specialistRating.toFixed(1)}
                   </span>
                 </div>
@@ -362,7 +363,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <div className="flex justify-between">
                 <span>{t('bookings.totalAmount')}:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                   {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                 </span>
               </div>
@@ -436,7 +437,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onCancel(booking.id);
                   onClose();
                 }}
-                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-red-200 dark:border-red-800 whitespace-nowrap justify-center flex items-center"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition active:scale-[0.96] border border-red-200 dark:border-red-800 whitespace-nowrap justify-center flex items-center"
               >
                 <XMarkIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                 <span>{t('actions.cancel')}</span>
@@ -449,7 +450,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onReschedule(booking.id);
                   onClose();
                 }}
-                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors border border-blue-200 dark:border-blue-800 whitespace-nowrap justify-center flex items-center"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition active:scale-[0.96] border border-blue-200 dark:border-blue-800 whitespace-nowrap justify-center flex items-center"
               >
                 <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                 <span>{t('actions.reschedule')}</span>
@@ -464,7 +465,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onLeaveReview(booking.id);
                   onClose();
                 }}
-                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors border border-green-200 dark:border-green-800 whitespace-nowrap justify-center flex items-center"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition active:scale-[0.96] border border-green-200 dark:border-green-800 whitespace-nowrap justify-center flex items-center"
               >
                 <StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                 <span>{t('actions.review')}</span>
@@ -479,7 +480,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onBookAgain(booking);
                   onClose();
                 }}
-                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors border border-indigo-200 dark:border-indigo-800 whitespace-nowrap justify-center flex items-center"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition active:scale-[0.96] border border-indigo-200 dark:border-indigo-800 whitespace-nowrap justify-center flex items-center"
               >
                 <ArrowPathIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                 <span>{t('actions.bookAgain')}</span>
@@ -490,15 +491,15 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <Link
               to={`/customer/messages?specialist=${booking.specialist?.userId || (booking.specialist as any)?.id || booking.specialistId}`}
               onClick={onClose}
-              className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors border border-primary-200 dark:border-primary-800 whitespace-nowrap justify-center flex items-center"
+              className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition active:scale-[0.96] border border-primary-200 dark:border-primary-800 whitespace-nowrap justify-center flex items-center"
             >
               <ChatBubbleLeftRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
               <span>{t('actions.message') || 'Message'}</span>
             </Link>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

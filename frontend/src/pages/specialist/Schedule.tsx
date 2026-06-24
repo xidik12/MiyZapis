@@ -139,8 +139,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-3 sm:p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -260,21 +260,21 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-all duration-200 font-medium touch-manipulation"
+                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition duration-200 font-medium touch-manipulation active:scale-[0.96]"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:bg-primary-800 transition-all duration-200 font-medium touch-manipulation"
+                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:bg-primary-800 transition duration-200 font-medium touch-manipulation active:scale-[0.96]"
               >
                 {editingBlock ? t('schedule.update') : t('schedule.add')}
               </button>
             </div>
           </form>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -750,7 +750,7 @@ const SpecialistSchedule: React.FC = () => {
           <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
             <button
               onClick={() => setViewMode('card')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition active:scale-[0.96] ${
                 viewMode === 'card'
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -762,7 +762,7 @@ const SpecialistSchedule: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('month')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition active:scale-[0.96] ${
                 viewMode === 'month'
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -877,7 +877,7 @@ const SpecialistSchedule: React.FC = () => {
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={goToPreviousWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
           >
             <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -888,7 +888,7 @@ const SpecialistSchedule: React.FC = () => {
           </div>
           <button
             onClick={goToNextWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
           >
             <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -1031,7 +1031,7 @@ const SpecialistSchedule: React.FC = () => {
                       {/* Hour Card Header */}
                       <button
                         onClick={() => toggleHourExpanded(dayIndex, hour)}
-                        className={`w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-200 text-left flex items-center justify-between group ${
+                        className={`w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition duration-200 text-left flex items-center justify-between group ${
                           isCurrentHour ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
                         }`}
                       >
@@ -1133,7 +1133,7 @@ const SpecialistSchedule: React.FC = () => {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className={`p-3 rounded-xl border-2 transition-all hover:shadow-md cursor-pointer ${
+                                    className={`p-3 rounded-xl border-2 transition hover:shadow-md cursor-pointer active:scale-[0.96] ${
                                       block.isAvailable
                                         ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
                                         : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
@@ -1141,7 +1141,7 @@ const SpecialistSchedule: React.FC = () => {
                                   >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
-                                    <div className={`text-sm font-medium ${
+                                    <div className={`text-sm font-medium tabular-nums ${
                                       block.isAvailable
                                         ? 'text-green-900 dark:text-green-100'
                                         : 'text-red-900 dark:text-red-100'
@@ -1163,7 +1163,7 @@ const SpecialistSchedule: React.FC = () => {
                                   <div className="flex items-center space-x-2 ml-3">
                                     <button
                                       onClick={() => openEditModal(block)}
-                                      className={`p-2 rounded-xl transition-all duration-200 ${
+                                      className={`p-2 rounded-xl transition duration-200 active:scale-[0.96] ${
                                         block.isAvailable
                                           ? 'hover:bg-green-200 dark:hover:bg-green-800 text-green-700 dark:text-green-300'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
@@ -1175,7 +1175,7 @@ const SpecialistSchedule: React.FC = () => {
                                     <button
                                       onClick={() => handleDeleteTimeSlot(block.id)}
                                       disabled={operationInProgress}
-                                      className={`p-2 rounded-xl transition-all duration-200 ${
+                                      className={`p-2 rounded-xl transition duration-200 active:scale-[0.96] disabled:active:scale-100 ${
                                         block.isAvailable
                                           ? 'hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'

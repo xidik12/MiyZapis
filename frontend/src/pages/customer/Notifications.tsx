@@ -179,7 +179,7 @@ const CustomerNotifications: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {t('notifications.subtitle') || 'Stay updated with your bookings and activity'}
             {unreadCount > 0 && (
-              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-xl text-xs font-bold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
+              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-xl text-xs font-bold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 tabular-nums">
                 {unreadCount} {t('notifications.unread') || 'unread'}
               </span>
             )}
@@ -188,7 +188,7 @@ const CustomerNotifications: React.FC = () => {
         <button
           onClick={markAllAsRead}
           disabled={unreadCount === 0}
-          className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors flex items-center space-x-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition active:scale-[0.96] disabled:active:scale-100 flex items-center space-x-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CheckIcon className="w-4 h-4" />
           <span className="hidden sm:inline">{t('notifications.markAllRead') || 'Mark all read'}</span>
@@ -207,7 +207,7 @@ const CustomerNotifications: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key as typeof filter)}
-              className={`flex-1 min-w-fit py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex-1 min-w-fit py-2 px-3 rounded-lg font-medium text-sm transition active:scale-[0.96] ${
                 filter === tab.key
                   ? 'bg-primary-600 text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -215,7 +215,7 @@ const CustomerNotifications: React.FC = () => {
             >
               {tab.label}
               {tab.key === 'unread' && unreadCount > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold rounded-md bg-red-500 text-white">
+                <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold rounded-md bg-red-500 text-white tabular-nums">
                   {unreadCount}
                 </span>
               )}
@@ -319,16 +319,16 @@ const CustomerNotifications: React.FC = () => {
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
-                          title={t('notifications.markAsRead') || 'Mark as read'}
+                          aria-label={t('notifications.markAsRead') || 'Mark as read'}
+                          className="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </button>
                       )}
                       <button
                         onClick={() => deleteNotification(notification.id)}
-                        className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                        title={t('notifications.delete') || 'Delete'}
+                        aria-label={t('notifications.delete') || 'Delete'}
+                        className="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
                       >
                         <XMarkIcon className="w-4 h-4" />
                       </button>

@@ -1,5 +1,6 @@
 // Calendar settings — connect/disconnect Google & Apple, manual resync.
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { toast } from 'react-toastify';
 import { calendarService, type CalendarStatusResponse } from '../../services/calendar.service';
@@ -114,7 +115,7 @@ const CalendarSettings: React.FC = () => {
               <div className="font-semibold text-gray-900 dark:text-white">{t('calendarSync.forceResync')}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">{t('calendarSync.forceResyncDesc')}</div>
             </div>
-            <button onClick={resync} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">{t('calendarSync.resync')}</button>
+            <button onClick={resync} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 transition active:scale-[0.96]">{t('calendarSync.resync')}</button>
           </div>
         )}
 
@@ -164,9 +165,9 @@ const ProviderCard: React.FC<{
 
         <div className="mt-4 flex gap-2">
           {p.connected ? (
-            <button onClick={p.onDisconnect} className="px-3 py-1.5 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg">{t('calendarSync.disconnect')}</button>
+            <button onClick={p.onDisconnect} className="px-3 py-1.5 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition active:scale-[0.96]">{t('calendarSync.disconnect')}</button>
           ) : (
-            <button onClick={p.onConnect} className="px-3 py-1.5 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg">{t('calendarSync.connect')}</button>
+            <button onClick={p.onConnect} className="px-3 py-1.5 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg transition active:scale-[0.96]">{t('calendarSync.connect')}</button>
           )}
         </div>
       </div>
@@ -199,11 +200,11 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('calendarSync.apple.modal.title')}</h3>
-          <button onClick={onClose} aria-label={t('common.close')} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button onClick={onClose} aria-label={t('common.close')} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-2xl leading-none w-10 h-10 flex items-center justify-center">×</button>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4 text-sm text-blue-900 dark:text-blue-200">
@@ -228,13 +229,13 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg">{t('common.cancel')}</button>
-          <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50">
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg transition active:scale-[0.96]">{t('common.cancel')}</button>
+          <button onClick={submit} disabled={saving} className="px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 rounded-lg disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100">
             {saving ? t('calendarSync.apple.modal.connecting') : t('calendarSync.apple.modal.connect')}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

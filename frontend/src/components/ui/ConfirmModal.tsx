@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ConfirmModalProps {
@@ -53,18 +54,18 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${
-          isAnimating ? 'opacity-100' : 'opacity-0'
-        }`}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="absolute inset-0 bg-black/50"
         onClick={onCancel}
       />
-      <div
-        className={`relative bg-white dark:bg-gray-800 border border-gray-200/20 dark:border-gray-700/20 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:max-w-md p-4 sm:p-6 transition-all duration-200 ${
-          isAnimating
-            ? 'opacity-100 scale-100 translate-y-0'
-            : 'opacity-0 scale-95 translate-y-4'
-        }`}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+        className="relative bg-white dark:bg-gray-800 border border-gray-200/20 dark:border-gray-700/20 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:max-w-md p-4 sm:p-6"
         style={{ transformOrigin: 'center' }}
       >
         <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
@@ -73,19 +74,19 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 active:scale-95 disabled:opacity-60"
+            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition duration-200 active:scale-[0.96] disabled:active:scale-100 disabled:opacity-60"
           >
             {resolvedCancelText}
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${confirmButtonStyles[variant]}`}
+            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition duration-200 active:scale-[0.96] disabled:active:scale-100 disabled:opacity-60 disabled:cursor-not-allowed ${confirmButtonStyles[variant]}`}
           >
             {loading ? (t('common.loading') || 'Loading...') : resolvedConfirmText}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -149,10 +149,10 @@ const CustomerBadges: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Badges Earned</p>
-                <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                <p className="text-3xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                   {earnedCount}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-500 tabular-nums">
                   of {badges.length} total
                 </p>
               </div>
@@ -166,7 +166,7 @@ const CustomerBadges: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Badge Points</p>
-                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                   {totalPoints.toLocaleString()}
                 </p>
               </div>
@@ -180,7 +180,7 @@ const CustomerBadges: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completion Rate</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                   {Math.round((earnedCount / badges.length) * 100)}%
                 </p>
               </div>
@@ -296,7 +296,7 @@ const CustomerBadges: React.FC = () => {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center space-x-1">
                       <StarIcon className="h-4 w-4 text-yellow-500" active />
-                      <span className={badge.isEarned ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}>
+                      <span className={`tabular-nums ${badge.isEarned ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
                         {badge.points} points
                       </span>
                     </div>
@@ -313,7 +313,7 @@ const CustomerBadges: React.FC = () => {
                     <div className="mt-3">
                       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                         <span>Progress</span>
-                        <span>{Math.round(badge.progress)}%</span>
+                        <span className="tabular-nums">{Math.round(badge.progress)}%</span>
                       </div>
                       <div className="overflow-hidden h-2 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
                         <div 
