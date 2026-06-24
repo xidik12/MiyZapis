@@ -201,7 +201,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                     <button
                       onClick={(e) => handleDelete(notification.id, e)}
                       className="p-2 rounded-xl hover:bg-red-100/80 dark:hover:bg-red-900/30 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:scale-110 active:scale-90"
-                      title="Delete"
+                      aria-label="Delete notification"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>

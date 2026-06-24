@@ -717,6 +717,7 @@ const uk: Record<string, string> = {
   'nav.tab.dashboard': 'Головна',
   'nav.tab.bookings': 'Записи',
   'nav.tab.accounting': 'Облік',
+  'nav.tab.schedule': 'Розклад',
   'nav.tab.messages': 'Чати',
   'dashboard.nav.bookings': 'Бронювання',
   'dashboard.nav.services': 'Послуги',

@@ -676,7 +676,7 @@ const ActionBtn: React.FC<{ onClick: () => void; children: React.ReactNode }> = 
 
 const ManagedBadge: React.FC<{ managed: boolean }> = ({ managed }) => {
   const { t } = useLanguage();
-  const cls = managed ? 'bg-amber-100 text-amber-700' : 'bg-success-100 text-success-700';
+  const cls = managed ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-success-100 dark:bg-green-900/30 text-success-700 dark:text-green-300';
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cls}`}>{managed ? t('businesses.staff.managed') : t('businesses.staff.invited')}</span>;
 };
 

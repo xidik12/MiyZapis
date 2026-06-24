@@ -599,13 +599,13 @@ const InvoicesPanel: React.FC = () => {
   useEffect(reload, []);
 
   const statusColor = (s: InvoiceStatus) => ({
-    DRAFT: 'bg-gray-100 text-gray-700',
-    SENT: 'bg-blue-100 text-blue-700',
-    PARTIAL: 'bg-amber-100 text-amber-700',
-    PAID: 'bg-green-100 text-green-700',
-    OVERDUE: 'bg-red-100 text-red-700',
-    CANCELLED: 'bg-gray-100 text-gray-500',
-    VOID: 'bg-gray-100 text-gray-500',
+    DRAFT: 'bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300',
+    SENT: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    PARTIAL: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    PAID: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+    OVERDUE: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+    CANCELLED: 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400',
+    VOID: 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400',
   })[s];
 
   return (
@@ -685,9 +685,9 @@ const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({
   };
   return (
     <div className="flex gap-1 text-xs">
-      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition active:scale-[0.96]">{t('accounting.invoices.markSent')}</button>}
-      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition active:scale-[0.96]">{t('accounting.invoices.markPaid')}</button>}
-      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition active:scale-[0.96]">{t('accounting.invoices.delete')}</button>}
+      {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition active:scale-[0.96]">{t('accounting.invoices.markSent')}</button>}
+      {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition active:scale-[0.96]">{t('accounting.invoices.markPaid')}</button>}
+      {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition active:scale-[0.96]">{t('accounting.invoices.delete')}</button>}
     </div>
   );
 };

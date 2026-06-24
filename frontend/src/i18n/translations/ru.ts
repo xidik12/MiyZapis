@@ -717,6 +717,7 @@ const ru: Record<string, string> = {
   'nav.tab.dashboard': 'Главная',
   'nav.tab.bookings': 'Записи',
   'nav.tab.accounting': 'Учёт',
+  'nav.tab.schedule': 'Расписание',
   'nav.tab.messages': 'Чаты',
   'dashboard.nav.bookings': 'Бронирования',
   'dashboard.nav.services': 'Услуги',

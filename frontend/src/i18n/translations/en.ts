@@ -717,6 +717,7 @@ const en: Record<string, string> = {
   'nav.tab.dashboard': 'Home',
   'nav.tab.bookings': 'Bookings',
   'nav.tab.accounting': 'Accounts',
+  'nav.tab.schedule': 'Schedule',
   'nav.tab.messages': 'Chat',
   'dashboard.nav.bookings': 'Bookings',
   'dashboard.nav.services': 'Services',

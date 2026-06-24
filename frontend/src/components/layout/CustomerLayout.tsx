@@ -203,7 +203,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                   {t('customer.customerLabel')}
                 </p>
                 <div className="flex items-center mt-1">
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
                     ● {t('customer.online')}
                   </span>
                 </div>
@@ -339,7 +339,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 min-w-0 overflow-auto bg-gray-50 dark:bg-gray-900 pb-28 lg:pb-0">
+        <main className="flex-1 min-w-0 overflow-auto bg-gray-50 dark:bg-gray-900 pb-32 lg:pb-0">
           <div key={location.pathname} className="page-enter min-w-0 px-1 sm:px-2">
             {children}
           </div>

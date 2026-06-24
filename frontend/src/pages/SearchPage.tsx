@@ -611,7 +611,7 @@ const SearchPage: React.FC = () => {
               )}
             </div>
             <div className="text-right flex-shrink-0">
-              <div className={`inline-block text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <div className={`inline-block text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}>
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
