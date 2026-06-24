@@ -323,7 +323,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
             <button
               onClick={() => fetchUsers()}
               disabled={usersLoading}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96] disabled:active:scale-100"
             >
               <ArrowPathIcon className={`w-5 h-5 ${usersLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -333,14 +333,14 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
         {/* Bulk Actions */}
         {selectedUsers.size > 0 && (
           <div className="mt-4 flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-            <span className="text-sm font-medium text-primary-900 dark:text-primary-100">
+            <span className="text-sm font-medium text-primary-900 dark:text-primary-100 tabular-nums">
               {selectedUsers.size} {t('admin.users.selected')}
             </span>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleUserAction('activate', Array.from(selectedUsers))}
                 disabled={actionLoading}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/20 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/40 disabled:opacity-50 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/20 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/40 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
               >
                 <CheckIcon className="w-4 h-4 mr-1" />
                 {t('admin.users.activate')}
@@ -348,7 +348,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               <button
                 onClick={() => handleUserAction('deactivate', Array.from(selectedUsers))}
                 disabled={actionLoading}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/40 disabled:opacity-50 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/40 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
               >
                 <XMarkIcon className="w-4 h-4 mr-1" />
                 {t('admin.users.deactivate')}
@@ -356,7 +356,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               <button
                 onClick={() => handleUserAction('delete', Array.from(selectedUsers))}
                 disabled={actionLoading}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/20 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 disabled:opacity-50 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/20 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100"
               >
                 <TrashIcon className="w-4 h-4 mr-1" />
                 {t('admin.users.delete')}
@@ -378,21 +378,21 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
             {t('admin.users.page')} {currentPage} {t('admin.table.of')} {pagination.totalPages} ({pagination.totalItems} {t('admin.users.totalUsers')})
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={!pagination.hasPrev}
-              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
             >
               {t('admin.table.previous')}
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
               disabled={!pagination.hasNext}
-              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
             >
               {t('admin.table.next')}
             </button>
@@ -401,7 +401,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       )}
 
       {/* Results Summary */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="text-center text-sm text-gray-500 dark:text-gray-400 tabular-nums">
         {t('admin.table.showing')} {users.length} {t('admin.table.of')} {pagination.totalItems} {t('admin.users.totalUsers')}
       </div>
 

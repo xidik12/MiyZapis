@@ -136,7 +136,7 @@ const AdminDashboard: React.FC = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200
+                      group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition duration-200 active:scale-[0.96]
                       ${
                         isActive
                           ? 'border-primary-500 text-primary-600 dark:text-primary-400'
@@ -206,7 +206,7 @@ const AdminDashboard: React.FC = () => {
           <button
             onClick={() => refetch()}
             disabled={loading}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-[0.96] disabled:active:scale-100"
           >
             <svg
               className={`-ml-1 mr-2 h-5 w-5 ${loading ? 'animate-spin' : ''}`}

@@ -66,7 +66,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
 
       <div className="flex items-baseline justify-between">
-        <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h4 className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </h4>
 
@@ -74,7 +74,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <div className="flex items-center space-x-1">
             <TrendIcon className={`w-4 h-4 ${trendColors[trend]}`} />
             {trendValue !== undefined && (
-              <span className={`text-sm font-semibold ${trendColors[trend]}`}>
+              <span className={`text-sm font-semibold tabular-nums ${trendColors[trend]}`}>
                 {trendValue}%
               </span>
             )}

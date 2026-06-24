@@ -64,7 +64,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
                 className={`
-                  group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200
+                  group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition duration-200 active:scale-[0.96]
                   ${
                     isActive
                       ? 'border-primary-500 text-primary-600 dark:text-primary-400'
@@ -320,7 +320,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       label: t('admin.analytics.revenue'),
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-green-600 dark:text-green-400">
+        <span className="font-semibold text-green-600 dark:text-green-400 tabular-nums">
           ${(row.revenue || 0).toFixed(2)}
         </span>
       )

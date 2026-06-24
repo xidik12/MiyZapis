@@ -82,7 +82,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
           <div
             key={item.hour}
             className={`
-              relative rounded-lg p-3 transition-all duration-200 cursor-pointer
+              relative rounded-lg p-3 transition duration-200 cursor-pointer
               ${getColorIntensity(item.count)}
             `}
             title={`${formatHour(item.hour)}: ${item.count} bookings`}
@@ -91,7 +91,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
               <div className={`text-xs font-medium ${getTextColor(item.count)}`}>
                 {formatHour(item.hour)}
               </div>
-              <div className={`text-sm font-bold mt-1 ${getTextColor(item.count)}`}>
+              <div className={`text-sm font-bold mt-1 tabular-nums ${getTextColor(item.count)}`}>
                 {item.count}
               </div>
             </div>
@@ -122,7 +122,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
               {formatHour(data.reduce((max, item) => item.count > max.count ? item : max, data[0]).hour)}
             </span>
             {' '}with{' '}
-            <span className="font-semibold">
+            <span className="font-semibold tabular-nums">
               {Math.max(...data.map(d => d.count))} bookings
             </span>
           </p>

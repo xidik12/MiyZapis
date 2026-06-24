@@ -39,7 +39,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
             key={option.value}
             onClick={() => onChange(option.value)}
             className={`
-              px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+              px-4 py-2 text-sm font-medium rounded-md transition duration-200 active:scale-[0.96]
               ${
                 selected === option.value
                   ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'

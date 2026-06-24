@@ -146,7 +146,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
           <button
             onClick={fetchHealth}
             disabled={loading}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors duration-200"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition duration-200 active:scale-[0.96] disabled:active:scale-100"
           >
             <ArrowPathIcon className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             {t('admin.system.refresh')}
@@ -173,7 +173,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">{t('admin.system.latency')}</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                   {health.database.latency.toFixed(0)}ms
                 </span>
               </div>
@@ -181,13 +181,13 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
                 <>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('admin.system.active')}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                       {health.database.connections.active}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('admin.system.idle')}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                       {health.database.connections.idle}
                     </span>
                   </div>
@@ -215,13 +215,13 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">{t('admin.system.latency')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                     {health.redis.latency?.toFixed(0)}ms
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">{t('admin.system.memory')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                     {formatBytes(health.redis.memoryUsed)}
                   </span>
                 </div>
@@ -241,13 +241,13 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">{t('admin.system.uptime')}</span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                 {formatUptime(health.system.uptime)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">{t('admin.system.memory')}</span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="font-medium text-gray-900 dark:text-white tabular-nums">
                 {health.system.memory.percentage.toFixed(1)}%
               </span>
             </div>
@@ -263,7 +263,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
                 style={{ width: `${Math.min(health.system.memory.percentage, 100)}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 tabular-nums">
               <span>{formatBytes(health.system.memory.used)}</span>
               <span>{formatBytes(health.system.memory.total)}</span>
             </div>

@@ -87,7 +87,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       render: (row) => (
         <div className="flex items-center">
           <span className="text-yellow-500 mr-1">★</span>
-          <span className="font-medium">{row.rating.toFixed(1)}</span>
+          <span className="font-medium tabular-nums">{row.rating.toFixed(1)}</span>
         </div>
       )
     },
@@ -259,7 +259,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                   </p>
                 </div>
                 <div className="flex flex-col items-end ml-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                     ${booking.totalAmount}
                   </span>
                   <span

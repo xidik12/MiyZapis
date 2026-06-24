@@ -73,7 +73,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
             {title}
           </p>
-          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1 tabular-nums">
             {formatValue(value)}
           </h3>
           {subtitle && (
@@ -99,7 +99,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             ) : (
               <ArrowDownIcon className={`w-4 h-4 ${getGrowthColor(growth)}`} />
             )}
-            <span className={`text-sm font-semibold ${getGrowthColor(growth)}`}>
+            <span className={`text-sm font-semibold tabular-nums ${getGrowthColor(growth)}`}>
               {formatGrowth(growth)}
             </span>
           </div>
