@@ -126,6 +126,12 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'redux-vendor': ['react-redux', '@reduxjs/toolkit', 'redux-persist'],
+          // framer-motion is now used on nearly every screen (modals, polish) —
+          // splitting it out lets the browser cache it across deploys.
+          'motion-vendor': ['framer-motion'],
+          // Charts pull in d3; only analytics/dashboard need them.
+          'chart-vendor': ['recharts'],
+          'date-vendor': ['date-fns'],
         },
         assetFileNames: (assetInfo) => {
           const name = assetInfo.names?.[0] || '';

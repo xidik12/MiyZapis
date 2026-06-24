@@ -37,6 +37,7 @@ module.exports = {
           500: '#6a707d',
           600: '#474d59',
           700: '#363d4d',  /* dark border — clean navy */
+          750: '#2f3543',  /* dark hover (table rows) — between 700 and 800 */
           800: '#282e3a',  /* dark elevated (modals, inputs) */
           900: '#1e232f',  /* dark surface (cards) */
           950: '#141822',  /* dark body bg — soft dark navy blue (no purple) */
