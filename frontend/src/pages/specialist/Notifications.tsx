@@ -382,11 +382,11 @@ const SpecialistNotifications: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="flex items-center gap-1 ml-3">
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
                         title={t('notifications.markAsRead')}
                         aria-label={t('notifications.markAsRead')}
                       >
@@ -395,7 +395,7 @@ const SpecialistNotifications: React.FC = () => {
                     )}
                     <button
                       onClick={() => deleteNotification(notification.id)}
-                      className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
                       title={t('notifications.delete')}
                       aria-label={t('notifications.delete')}
                     >

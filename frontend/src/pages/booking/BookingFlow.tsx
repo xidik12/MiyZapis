@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socketService, subscribeToPaymentUpdates } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { selectUser, selectIsAuthenticated } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
 import { waitlistService } from '../../services/waitlist.service';
 import { paymentService } from '../../services/payment.service';
@@ -50,8 +50,13 @@ const BookingFlow: React.FC = () => {
   // Always prioritize service ID from URL params, then query params, then specialist route
   const serviceId = paramServiceId || queryServiceId;
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+
+  // Mobile summary panel: collapsible toggle state
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   const { bookingState: state, dispatch } = useBookingState();
 
@@ -1159,6 +1164,89 @@ const BookingFlow: React.FC = () => {
           {/* LEFT: stepper + step content + nav */}
           <div className="min-w-0">
             <BookingProgress steps={steps} currentStep={state.currentStep} />
+
+            {/* ── FIX 1: Auth gate — shown only to unauthenticated users ── */}
+            {!isAuthenticated && (
+              <div className="mb-4 rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-primary-900 dark:text-primary-100 leading-snug">
+                    {t('booking.signInToBook') || 'Sign in to book this appointment'}
+                  </p>
+                  <p className="text-sm text-primary-700 dark:text-primary-300 mt-0.5">
+                    {t('booking.signInToBookDesc') || 'You need an account to complete your booking.'}
+                  </p>
+                </div>
+                <a
+                  href={`/auth/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`}
+                  className="shrink-0 inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition active:scale-[0.96]"
+                >
+                  {t('auth.signIn') || 'Sign in'}
+                </a>
+              </div>
+            )}
+
+            {/* ── FIX 2: Mobile-only price summary (lg:hidden) ── */}
+            <div className="lg:hidden mb-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+              {/* Collapsed header — always visible */}
+              <button
+                type="button"
+                onClick={() => setMobileSummaryOpen(o => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {state.service?.name || '—'}
+                  </span>
+                  {depositInfo.amount > 0 && (
+                    <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
+                      {t('deposit.depositRequired') || 'Deposit required'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  <span className="tabular-nums text-sm font-bold text-gray-900 dark:text-white">
+                    {formatPrice(finalPrice, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${mobileSummaryOpen ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Expandable details */}
+              {mobileSummaryOpen && (
+                <div className="border-t border-gray-100 dark:border-gray-800 px-4 pb-4 pt-3 space-y-3">
+                  {/* Deposit notice */}
+                  {state.service?.requireDeposit && depositInfo.amount > 0 && (
+                    <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">{t('deposit.depositRequired') || 'Deposit required'}</span>
+                        <span className="tabular-nums text-sm font-bold text-amber-800 dark:text-amber-300">
+                          {formatPrice(depositInfo.amount, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">{t('deposit.depositNote') || 'Deposit is required to secure your booking.'}</p>
+                    </div>
+                  )}
+
+                  {/* Cancellation / no-show policy */}
+                  {(state.service?.cancellationWindowHours || depositInfo.noShowFeeLabel) && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      {state.service?.cancellationWindowHours
+                        ? (t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))
+                        : ''}
+                      {depositInfo.noShowFeeLabel ? ` ${(t('policy.noShowFeeNote') || 'No-show fee: {{fee}}.').replace('{{fee}}', depositInfo.noShowFeeLabel)}` : ''}
+                    </p>
+                  )}
+
+                  {/* Not charged yet */}
+                  <p className="text-center text-xs text-gray-400 dark:text-gray-500">{t('booking.notChargedYet') || 'You won\'t be charged yet'}</p>
+                </div>
+              )}
+            </div>
 
             <div className="mb-4 sm:mb-6 md:mb-8 min-h-[300px]">
               <AnimatePresence mode="wait">

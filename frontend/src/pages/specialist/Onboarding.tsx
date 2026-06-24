@@ -122,6 +122,9 @@ const SpecialistOnboarding: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ------ Booking link copy state ------
+  const [linkCopied, setLinkCopied] = useState(false);
+
   // ------ Onboarding complete tracking ------
   const [profileSaved, setProfileSaved] = useState(false);
   const [serviceSaved, setServiceSaved] = useState(false);
@@ -1004,6 +1007,41 @@ const SpecialistOnboarding: React.FC = () => {
           {t('onboarding.doneSubtitle') || 'Your profile is ready. Clients can now discover and book your services. You can always update your settings later.'}
         </p>
       </div>
+
+      {/* Public booking link */}
+      {(() => {
+        const handle = (user as any)?.slug || (user as any)?.id || '';
+        const bookingUrl = handle ? `${window.location.origin}/s/${handle}` : '';
+        if (!bookingUrl) return null;
+        return (
+          <div className="max-w-lg mx-auto w-full text-left">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              {t('onboarding.yourBookingLink') || 'Your booking link — share this with clients so they can book you.'}
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={bookingUrl}
+                className="flex-1 min-w-0 px-3 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(bookingUrl).then(() => {
+                    setLinkCopied(true);
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }).catch(() => {});
+                }}
+                className="shrink-0 px-4 py-2.5 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition active:scale-[0.96]"
+              >
+                {linkCopied ? (t('common.copied') || 'Copied!') : (t('common.copyLink') || 'Copy link')}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">

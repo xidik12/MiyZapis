@@ -61,7 +61,7 @@ const navigation: SidebarNavItem[] = [
     nameUk: 'Розклад',
     href: '/specialist/schedule',
     icon: CalendarDaysIcon,
-    iconActive: ClipboardDocumentListIcon,
+    iconActive: CalendarDaysIcon,
   },
   {
     name: 'Analytics',
@@ -103,14 +103,14 @@ const navigation: SidebarNavItem[] = [
     nameUk: 'Спільнота',
     href: '/community',
     icon: GlobeIcon,
-    iconActive: UsersIcon,
+    iconActive: GlobeIcon,
   },
   {
     name: 'Earnings',
     nameUk: 'Заробіток',
     href: '/specialist/earnings',
     icon: CurrencyDollarIcon,
-    iconActive: CreditCardIcon,
+    iconActive: CurrencyDollarIcon,
   },
   {
     name: 'Finances',
@@ -159,7 +159,7 @@ const navigation: SidebarNavItem[] = [
     nameUk: 'Закупівлі',
     href: '/specialist/purchasing',
     icon: InboxIcon,
-    iconActive: BuildingStorefrontIcon,
+    iconActive: InboxIcon,
   },
   {
     name: 'Payroll',
@@ -187,7 +187,7 @@ const navigation: SidebarNavItem[] = [
     nameUk: 'Лояльність',
     href: '/specialist/loyalty',
     icon: TrophyIcon,
-    iconActive: GiftIcon,
+    iconActive: TrophyIcon,
   },
   {
     name: 'Referrals',
@@ -283,7 +283,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       const saved = localStorage.getItem('spec_nav_open_groups');
       if (saved) return JSON.parse(saved);
     } catch { /* ignore */ }
-    return { work: true, finance: true, growth: true, account: true };
+    return { work: true, finance: false, growth: false, account: false };
   });
   const toggleGroup = (key: string) =>
     setOpenGroups((prev) => {
@@ -548,7 +548,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 const specialistBottomNavItems: TabItem[] = [
   { nameKey: 'nav.tab.dashboard', fallback: 'Home', href: '/specialist/dashboard', icon: HomeIcon },
   { nameKey: 'nav.tab.bookings', fallback: 'Bookings', href: '/specialist/bookings', icon: CalendarIcon },
-  { nameKey: 'nav.tab.accounting', fallback: 'Accounts', href: '/specialist/accounting', icon: ClipboardDocumentListIcon },
+  { nameKey: 'nav.tab.schedule', fallback: 'Schedule', href: '/specialist/schedule', icon: CalendarDaysIcon },
   { nameKey: 'nav.tab.messages', fallback: 'Chat', href: '/specialist/messages', icon: ChatBubbleLeftRightIcon },
 ];
 

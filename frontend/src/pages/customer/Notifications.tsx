@@ -328,12 +328,12 @@ const CustomerNotifications: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 ml-2">
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
                           aria-label={t('notifications.markAsRead') || 'Mark as read'}
-                          className="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
+                          className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition active:scale-[0.96]"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </button>
@@ -341,7 +341,7 @@ const CustomerNotifications: React.FC = () => {
                       <button
                         onClick={() => deleteNotification(notification.id)}
                         aria-label={t('notifications.delete') || 'Delete'}
-                        className="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
+                        className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition active:scale-[0.96]"
                       >
                         <XMarkIcon className="w-4 h-4" />
                       </button>

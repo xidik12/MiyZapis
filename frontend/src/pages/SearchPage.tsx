@@ -879,9 +879,24 @@ const SearchPage: React.FC = () => {
               {/* Availability */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('search.availability') || 'Availability'}</h3>
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
-                  <input type="checkbox" checked={availableWithin === 'now'} onChange={(e) => setAvailableWithin(e.target.checked ? 'now' : '')} className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500" />
-                  <span className="inline-flex items-center"><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1.5" />{t('search.availableNow') || 'Available now'}</span>
+                <label
+                  className="flex items-center gap-2 cursor-not-allowed text-sm text-gray-400 dark:text-gray-600 select-none"
+                  title={t('search.availableNowComingSoon') || 'Coming soon'}
+                >
+                  <input
+                    type="checkbox"
+                    disabled
+                    checked={false}
+                    readOnly
+                    className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 opacity-40 cursor-not-allowed"
+                  />
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-block w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                    {t('search.availableNow') || 'Available now'}
+                    <span className="text-xs font-normal text-gray-400 dark:text-gray-600">
+                      ({t('search.availableNowComingSoon') || 'coming soon'})
+                    </span>
+                  </span>
                 </label>
               </div>
               {/* Quick filters */}
@@ -918,9 +933,29 @@ const SearchPage: React.FC = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">{getFilteredServices().length} {t('search.professionalsFound') || 'found'}</p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => setIsFilterTrayOpen(v => !v)} className="lg:hidden btn btn-secondary text-sm">
-                  {t('search.filters') || 'Filters'}
-                </button>
+                {(() => {
+                  const activeFilterCount = [
+                    selectedCategory && selectedCategory !== 'all',
+                    selectedLocation,
+                    priceRange.min > 0 || priceRange.max < 1000,
+                    selectedRating > 0,
+                    availableWithin === 'now',
+                    activeQuickFilters.size > 0,
+                    showFavoritesOnly,
+                    selectedDistance > 0,
+                  ].filter(Boolean).length;
+                  return (
+                    <button onClick={() => setIsFilterTrayOpen(v => !v)} className="lg:hidden btn btn-secondary text-sm relative">
+                      {t('search.filters') || 'Filters'}
+                      {activeFilterCount > 0 && (
+                        <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-600 text-white text-xs font-bold tabular-nums leading-none">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })()}
+
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="input w-auto text-sm">
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
                   <option value="price">{t('search.sortBy.priceAsc') || 'Price: low to high'}</option>
