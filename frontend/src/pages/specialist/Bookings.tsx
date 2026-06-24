@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
@@ -176,7 +177,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
   
   return (
-    <div 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
       className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         // Close modal when clicking on overlay
@@ -185,8 +189,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         }
       }}
     >
-      <div 
-        className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -194,7 +201,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-xl transition active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label={t('common.close')}
             type="button"
           >
@@ -261,11 +268,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.duration')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">{booking.duration} {t('time.minutes')}</p>
+                <p className="font-medium text-gray-900 dark:text-white tabular-nums">{booking.duration} {t('time.minutes')}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.amount')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</p>
+                <p className="font-medium text-gray-900 dark:text-white tabular-nums">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.type')}</label>
@@ -288,13 +295,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">
+                <p className="font-medium text-gray-900 dark:text-white tabular-nums">
                   {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.time')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">{booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || 'N/A')}</p>
+                <p className="font-medium text-gray-900 dark:text-white tabular-nums">{booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || 'N/A')}</p>
               </div>
             </div>
             {booking.meetingLink && (
@@ -450,7 +457,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
                         className="sr-only"
                       />
-                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors active:scale-[0.96] ${
                         selectedStatus === status
                           ? 'bg-blue-600 text-white'
                           : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -462,7 +469,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
                 <button
                   onClick={handleStatusChange}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white py-2 px-4 rounded-xl transition-colors"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white py-2 px-4 rounded-xl transition active:scale-[0.96]"
                 >
                   {t('bookingDetails.updateStatus')}
                 </button>
@@ -482,11 +489,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   <button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base"
+                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition active:scale-[0.96] disabled:active:scale-100 text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
                   </button>
-                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base">
+                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96] text-sm sm:text-base">
                     {t('bookingDetails.template')}
                   </button>
                 </div>
@@ -516,7 +523,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onClose();
                       }
                     }}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition active:scale-[0.96]"
                   >
                     {t('bookings.cancelBooking')}
                   </button>
@@ -529,7 +536,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       // Handle review
                       onClose();
                     }}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl transition-colors"
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl transition active:scale-[0.96]"
                   >
                     {t('customer.bookings.leaveReview')}
                   </button>
@@ -541,7 +548,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     // Handle book again
                     onClose();
                   }}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition active:scale-[0.96]"
                 >
                   {t('customer.bookings.bookAgain')}
                 </button>
@@ -549,8 +556,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -594,14 +601,25 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('bookings.paymentConfirmation') || 'Payment Confirmation'}</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
+            aria-label={t('common.close') || 'Close'}
+            className="p-2.5 -mr-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 rounded-xl transition active:scale-[0.96]"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -679,7 +697,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleConfirmPayment}
               disabled={isSubmitting}
-              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
+              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition active:scale-[0.96] disabled:active:scale-100 flex items-center justify-center"
             >
               {isSubmitting ? (
                 <InlineLoader size="sm" color="white" className="mr-2" />
@@ -693,7 +711,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleDeclinePayment}
               disabled={isSubmitting}
-              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors"
+              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition active:scale-[0.96] disabled:active:scale-100"
             >
               {t('bookings.noNotPaidYet') || 'No, Not Paid Yet'}
             </button>
@@ -703,8 +721,8 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             {t('bookings.onlyCompleteIfPaid') || 'Only complete the booking if payment has been received from the customer.'}
           </p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
