@@ -23,7 +23,7 @@ const CONTENT = {
           'By registering an account or using MiyZapis in any way you agree to this Agreement. If you do not agree, do not use the platform.',
           'You must be at least 18 years old and have full legal capacity under applicable law to enter into binding contracts. By using the platform you represent and warrant that you meet these requirements.',
           'If you are registering on behalf of a legal entity you represent that you are authorised to bind that entity to this Agreement, and "you" includes that entity.',
-          'The platform is operated by [Operating entity — to be added], hereinafter referred to as "MiyZapis", "we", "us", or "our".',
+          'The platform is operated by MiyZapis, hereinafter referred to as "MiyZapis", "we", "us", or "our".',
         ],
       },
       {
@@ -203,7 +203,7 @@ const CONTENT = {
           'Реєструючи акаунт або використовуючи MiyZapis будь-яким способом, ви погоджуєтеся з цією Угодою. Якщо ви не погоджуєтеся, не використовуйте платформу.',
           'Вам має бути не менше 18 років, і ви повинні мати повну дієздатність відповідно до чинного законодавства для укладення обов’язкових договорів. Використовуючи платформу, ви підтверджуєте, що відповідаєте цим вимогам.',
           'Якщо ви реєструєтеся від імені юридичної особи, ви підтверджуєте, що уповноважені зобов’язати цю особу умовами Угоди, а «ви» включає і цю юридичну особу.',
-          'Платформа управляється [Юридична особа-оператор — потрібно вказати], далі іменованою «MiyZapis», «ми», «нас» або «нам».',
+          'Платформа управляється MiyZapis, далі іменованою «MiyZapis», «ми», «нас» або «нам».',
         ],
       },
       {
@@ -383,7 +383,7 @@ const CONTENT = {
           'Регистрируя аккаунт или используя MiyZapis любым способом, вы соглашаетесь с настоящим Соглашением. Если вы не согласны, не используйте платформу.',
           'Вам должно быть не менее 18 лет, и вы должны обладать полной дееспособностью в соответствии с применимым законодательством для заключения обязательных договоров. Используя платформу, вы подтверждаете, что отвечаете этим требованиям.',
           'Если вы регистрируетесь от имени юридического лица, вы подтверждаете, что уполномочены обязать это лицо условиями Соглашения, а «вы» включает данное юридическое лицо.',
-          'Платформа управляется [Юридическое лицо-оператор — необходимо указать], далее именуемым «MiyZapis», «мы», «нас» или «нам».',
+          'Платформа управляется MiyZapis, далее именуемым «MiyZapis», «мы», «нас» или «нам».',
         ],
       },
       {

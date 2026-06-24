@@ -34,7 +34,7 @@ const en: PolicyContent = {
   lastUpdatedDate: 'June 1, 2026',
   legalNotice:
     'This document is a policy template and does not constitute legal advice. We recommend having it reviewed by a qualified lawyer before relying on it in a legal context.',
-  entityPlaceholder: '[Registered legal entity — to be filled in]',
+  entityPlaceholder: 'MiyZapis',
   contactBoxLabel: 'Billing questions?',
   sections: [
     {
@@ -58,7 +58,7 @@ const en: PolicyContent = {
           </ol>
           <p>
             Operating entity: MiyZapis (
-            <span className="italic text-gray-500 dark:text-gray-400">[Registered legal entity — to be filled in]</span>
+            <span className="italic text-gray-500 dark:text-gray-400">MiyZapis</span>
             ).
           </p>
         </>
@@ -261,7 +261,7 @@ const uk: PolicyContent = {
   lastUpdatedDate: '1 червня 2026 р.',
   legalNotice:
     'Цей документ є шаблоном політики і не є юридичною порадою. Рекомендуємо проконсультуватися з кваліфікованим юристом перед використанням у правовому контексті.',
-  entityPlaceholder: '[Зареєстрована юридична особа — потрібно заповнити]',
+  entityPlaceholder: 'MiyZapis',
   contactBoxLabel: 'Питання щодо оплати?',
   sections: [
     {
@@ -285,7 +285,7 @@ const uk: PolicyContent = {
           </ol>
           <p>
             Оператор: МійЗапис (
-            <span className="italic text-gray-500 dark:text-gray-400">[Зареєстрована юридична особа — потрібно заповнити]</span>
+            <span className="italic text-gray-500 dark:text-gray-400">MiyZapis</span>
             ).
           </p>
         </>
@@ -490,7 +490,7 @@ const ru: PolicyContent = {
   lastUpdatedDate: '1 июня 2026 г.',
   legalNotice:
     'Этот документ является шаблоном политики и не является юридической консультацией. Рекомендуем проконсультироваться с квалифицированным юристом перед использованием в правовом контексте.',
-  entityPlaceholder: '[Зарегистрированное юридическое лицо — необходимо заполнить]',
+  entityPlaceholder: 'MiyZapis',
   contactBoxLabel: 'Вопросы по оплате?',
   sections: [
     {
@@ -514,7 +514,7 @@ const ru: PolicyContent = {
           </ol>
           <p>
             Оператор: МийЗапис (
-            <span className="italic text-gray-500 dark:text-gray-400">[Зарегистрированное юридическое лицо — необходимо заполнить]</span>
+            <span className="italic text-gray-500 dark:text-gray-400">MiyZapis</span>
             ).
           </p>
         </>
