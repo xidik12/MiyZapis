@@ -540,6 +540,15 @@ const SpecialistEarnings: React.FC = () => {
     ? (netProfit / earningsData.totalEarnings) * 100
     : 0;
 
+  // A quick estimate only — service earnings minus expenses. It does NOT include
+  // retail/POS, paid invoices, VAT or tax. The Accounting page is the authoritative
+  // Profit & Loss; this tip points there so the two profit figures don't confuse.
+  const plScopeNote = ({
+    en: 'A quick estimate: your service earnings (completed bookings, all-time) minus recorded expenses.\n\nNet Profit = Total Earnings − Total Expenses.\nProfit Margin = Net Profit ÷ Total Earnings × 100.\n\nThis is simplified — it excludes retail/POS sales, paid invoices, VAT and tax. For your full, period-based Profit & Loss, open the Accounting page (that is the source of truth).',
+    uk: 'Швидка оцінка: ваш дохід від послуг (завершені записи, за весь час) мінус враховані витрати.\n\nЧистий прибуток = Загальний заробіток − Загальні витрати.\nМаржа = Чистий прибуток ÷ Загальний заробіток × 100.\n\nЦе спрощений показник — він не враховує роздрібні/POS продажі, оплачені рахунки, ПДВ і податки. Для повного звіту про прибутки та збитки за період відкрийте сторінку «Бухгалтерія» (це джерело істини).',
+    ru: 'Быстрая оценка: ваш доход от услуг (завершённые записи, за всё время) минус учтённые расходы.\n\nЧистая прибыль = Общий заработок − Общие расходы.\nМаржа = Чистая прибыль ÷ Общий заработок × 100.\n\nЭто упрощённый показатель — без розничных/POS продаж, оплаченных счетов, НДС и налогов. Полный отчёт о прибылях и убытках за период — на странице «Бухгалтерия» (источник истины).',
+  } as Record<string, string>)[language] || '';
+
   const determinePeakHours = (breakdown: Array<{ date: string; revenue: number }>) => {
     try {
       // This is a simplified implementation. In a real scenario, you'd analyze hourly data
@@ -886,7 +895,7 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.netProfit')}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1.5">{t('earnings.netProfit')} <HelpTip title={t('earnings.netProfit')} content={plScopeNote} /></p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -904,7 +913,7 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.profitMargin')}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1.5">{t('earnings.profitMargin')} <HelpTip title={t('earnings.profitMargin')} content={plScopeNote} /></p>
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
