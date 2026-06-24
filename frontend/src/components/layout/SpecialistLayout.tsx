@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { MobileTabBar, TabItem, TabSection } from './MobileTabBar';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon, FunnelIcon, CheckCircleIcon, UserPlusIcon, UserGroupIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, BriefcaseIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon, BuildingOfficeIcon, CurrencyDollarIcon, UserIcon, ArchiveBoxIcon, BuildingStorefrontIcon, WalletIcon, SparklesIcon, RocketLaunchIcon, FunnelIcon, CheckCircleIcon, UserPlusIcon, UserGroupIcon, CalendarDaysIcon, GlobeIcon, InboxIcon, TrophyIcon, ArrowPathIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -60,7 +60,7 @@ const navigation: SidebarNavItem[] = [
     name: 'Schedule',
     nameUk: 'Розклад',
     href: '/specialist/schedule',
-    icon: ClipboardDocumentListIcon,
+    icon: CalendarDaysIcon,
     iconActive: ClipboardDocumentListIcon,
   },
   {
@@ -102,14 +102,14 @@ const navigation: SidebarNavItem[] = [
     name: 'Community',
     nameUk: 'Спільнота',
     href: '/community',
-    icon: UsersIcon,
+    icon: GlobeIcon,
     iconActive: UsersIcon,
   },
   {
     name: 'Earnings',
     nameUk: 'Заробіток',
     href: '/specialist/earnings',
-    icon: CreditCardIcon,
+    icon: CurrencyDollarIcon,
     iconActive: CreditCardIcon,
   },
   {
@@ -158,7 +158,7 @@ const navigation: SidebarNavItem[] = [
     name: 'Purchasing',
     nameUk: 'Закупівлі',
     href: '/specialist/purchasing',
-    icon: BuildingStorefrontIcon,
+    icon: InboxIcon,
     iconActive: BuildingStorefrontIcon,
   },
   {
@@ -186,7 +186,7 @@ const navigation: SidebarNavItem[] = [
     name: 'Loyalty',
     nameUk: 'Лояльність',
     href: '/specialist/loyalty',
-    icon: GiftIcon,
+    icon: TrophyIcon,
     iconActive: GiftIcon,
   },
   {
@@ -559,16 +559,16 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
     { nameKey: 'dashboard.nav.clients', fallback: 'Clients', href: '/specialist/clients', icon: UsersIcon },
     { nameKey: 'dashboard.nav.tasks', fallback: 'Tasks', href: '/specialist/tasks', icon: CheckCircleIcon },
-    { nameKey: 'dashboard.nav.schedule', fallback: 'Schedule', href: '/specialist/schedule', icon: CalendarIcon },
+    { nameKey: 'dashboard.nav.schedule', fallback: 'Schedule', href: '/specialist/schedule', icon: CalendarDaysIcon },
     { nameKey: 'dashboard.nav.analytics', fallback: 'Analytics', href: '/specialist/analytics', icon: PresentationChartLineIcon },
-    { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: CalendarIcon },
+    { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: ArrowPathIcon },
   ]},
   { title: 'nav.section.finance', items: [
     { nameKey: 'dashboard.nav.earnings', fallback: 'Earnings', href: '/specialist/earnings', icon: CurrencyDollarIcon },
     { nameKey: 'dashboard.nav.finances', fallback: 'Finances', href: '/specialist/finances', icon: ChartBarIcon },
     { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
     { nameKey: 'dashboard.nav.pos', fallback: 'POS', href: '/specialist/pos', icon: BuildingStorefrontIcon },
-    { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: BuildingStorefrontIcon },
+    { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: InboxIcon },
     { nameKey: 'dashboard.nav.payroll', fallback: 'Payroll', href: '/specialist/payroll', icon: WalletIcon },
     { nameKey: 'dashboard.nav.team', fallback: 'Team', href: '/specialist/team', icon: UserGroupIcon },
     { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
@@ -578,14 +578,14 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.leads', fallback: 'Leads', href: '/specialist/leads', icon: UserPlusIcon },
     { nameKey: 'dashboard.nav.marketing', fallback: 'Marketing', href: '/specialist/marketing', icon: SparklesIcon },
     { nameKey: 'dashboard.nav.promote', fallback: 'Promote', href: '/specialist/promote', icon: RocketLaunchIcon },
-    { nameKey: 'dashboard.nav.loyalty', fallback: 'Loyalty', href: '/specialist/loyalty', icon: GiftIcon },
+    { nameKey: 'dashboard.nav.loyalty', fallback: 'Loyalty', href: '/specialist/loyalty', icon: TrophyIcon },
     { nameKey: 'dashboard.nav.referrals', fallback: 'Referrals', href: '/specialist/referrals', icon: ShareIcon },
     { nameKey: 'dashboard.nav.reviews', fallback: 'Reviews', href: '/specialist/reviews', icon: StarIcon },
     { nameKey: 'dashboard.nav.businesses', fallback: 'Businesses', href: '/specialist/businesses', icon: BuildingOfficeIcon },
   ]},
   { title: 'nav.section.account', items: [
     { nameKey: 'dashboard.nav.billing', fallback: 'Subscription', href: '/specialist/billing', icon: CreditCardIcon },
-    { nameKey: 'dashboard.nav.community', fallback: 'Community', href: '/community', icon: UsersIcon },
+    { nameKey: 'dashboard.nav.community', fallback: 'Community', href: '/community', icon: GlobeIcon },
     { nameKey: 'dashboard.nav.notifications', fallback: 'Notifications', href: '/specialist/notifications', icon: BellIcon },
     { nameKey: 'dashboard.nav.profile', fallback: 'Profile', href: '/specialist/profile', icon: UserIcon },
     { nameKey: 'dashboard.nav.settings', fallback: 'Settings', href: '/specialist/settings', icon: Cog6ToothIcon },
