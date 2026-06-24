@@ -952,6 +952,7 @@ const en: Record<string, string> = {
   'dashboard.specialist.repeatClients': 'Repeat Clients',
   'dashboard.specialist.punctuality': 'Punctuality',
   'dashboard.specialist.allTime': 'All time',
+  'dashboard.specialist.thisMonth': 'This month',
   'dashboard.specialist.thisMonthImprovement': 'this month',
   'dashboard.specialist.averageTime': 'Average time',
   'dashboard.specialist.improvement': 'improvement',

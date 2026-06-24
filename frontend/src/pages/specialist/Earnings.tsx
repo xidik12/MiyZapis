@@ -20,6 +20,7 @@ interface EarningsData {
   monthlyGrowth: number;
   conversionRate: number;
   repeatCustomers: number;
+  newCustomers: number;
   peakHours: string;
   bestDay: string;
   avgSessionValue: number;
@@ -98,6 +99,7 @@ const SpecialistEarnings: React.FC = () => {
     monthlyGrowth: 0,
     conversionRate: 0,
     repeatCustomers: 0,
+    newCustomers: 0,
     peakHours: '',
     bestDay: '',
     avgSessionValue: 0
@@ -218,10 +220,13 @@ const SpecialistEarnings: React.FC = () => {
         let analyticsData = {
           totalBookings: totalBookingsFromPayments,
           completedBookings: totalBookingsFromPayments, // Since we have payments, these were completed
-          averageRating: 4.5, // Reasonable default since we don't have this data
-          completionRate: 95, // High completion rate since we have payments
-          newCustomers: Math.ceil(totalBookingsFromPayments * 0.6), // Estimate 60% new customers
-          repeatCustomers: Math.floor(totalBookingsFromPayments * 0.4) // Estimate 40% repeat customers
+          // Honest zeros — only the analytics API (below) can supply real values for
+          // these. Previously these were fabricated (4.5 rating, 95% completion,
+          // 60/40 new-vs-repeat split), which showed fake numbers to operators.
+          averageRating: 0,
+          completionRate: 0,
+          newCustomers: 0,
+          repeatCustomers: 0,
         };
         
         // Try to enhance with analytics API data if available, but don't rely on it
@@ -289,8 +294,12 @@ const SpecialistEarnings: React.FC = () => {
           monthlyGrowth: calculateGrowthRate(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
           conversionRate: safeAnalyticsData.completionRate,
           repeatCustomers: safeAnalyticsData.repeatCustomers,
-          peakHours: determinePeakHours(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
-          bestDay: determineBestDay(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
+          newCustomers: safeAnalyticsData.newCustomers,
+          // Peak hours / best day can't be derived from monthly aggregates — these
+          // helpers returned a fixed value regardless of data. Leave blank (shows
+          // "—") until per-booking time data is wired in.
+          peakHours: '',
+          bestDay: '',
           avgSessionValue: safeAnalyticsData.totalBookings > 0 
             ? Math.round((totalEarnings / safeAnalyticsData.totalBookings) * 100) / 100 
             : 0
@@ -315,6 +324,7 @@ const SpecialistEarnings: React.FC = () => {
           monthlyGrowth: 0,
           conversionRate: 0,
           repeatCustomers: 0,
+          newCustomers: 0,
           peakHours: t('earnings.noData'),
           bestDay: t('earnings.noData'),
           avgSessionValue: 0
@@ -620,12 +630,12 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.lastPayout')}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
-                  {formatPrice(earningsData.lastPayout || 0, currency)}
+                  {formatPrice(earningsData.averageBookingValue || 0, currency)}
                 </p>
               )}
             </div>
@@ -941,7 +951,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{earningsData.repeatCustomers || 0}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{earningsData.repeatCustomers || 0}</span>
                 )}
               </div>
               <div className="flex justify-between gap-2">
@@ -980,7 +990,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">90 {t('earnings.duration.minutes')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{t('earnings.noData')}</span>
                 )}
               </div>
             </div>
@@ -1005,7 +1015,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">+{Math.max(0, (earningsData.activeClients || 0) - (earningsData.repeatCustomers || 0))} {t('earnings.thisMonthShort')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{(earningsData.newCustomers || 0) > 0 ? `+${earningsData.newCustomers}` : t('earnings.noData')}</span>
                 )}
               </div>
               <div className="flex justify-between gap-2">

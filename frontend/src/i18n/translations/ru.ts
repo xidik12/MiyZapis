@@ -951,6 +951,7 @@ const ru: Record<string, string> = {
   'dashboard.specialist.repeatClients': 'Повторные клиенты',
   'dashboard.specialist.punctuality': 'Пунктуальность',
   'dashboard.specialist.allTime': 'За все время',
+  'dashboard.specialist.thisMonth': 'За месяц',
   'dashboard.specialist.thisMonthImprovement': 'в этом месяце',
   'dashboard.specialist.averageTime': 'Среднее время',
   'dashboard.specialist.improvement': 'улучшение',

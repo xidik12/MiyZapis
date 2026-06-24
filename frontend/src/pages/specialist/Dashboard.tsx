@@ -148,25 +148,27 @@ const SpecialistDashboard: React.FC = () => {
             // Total bookings = completed + pending/confirmed/inProgress
             stats.totalBookings = completedBookings.length + upcomingBookings.length;
             
-            // Calculate total revenue from completed bookings (accurate amounts)
-            const totalRevenue = Math.round(completedBookings.reduce((sum, booking) => {
-              const amount = booking.totalAmount || 0;
-              const bookingCurrency = getBookingCurrency(booking);
-
-              // Convert to user's preferred currency for consistent total
-              const convertedAmount = convertPrice(amount, bookingCurrency);
-
-              return sum + convertedAmount;
+            // Monthly revenue = THIS MONTH's completed-booking revenue (filtered by
+            // the appointment date) + this month's retail/POS sales. (Previously
+            // this summed ALL-TIME booking revenue but was labelled "Monthly", which
+            // showed a lifetime total under a monthly heading.)
+            const monthStart = new Date();
+            monthStart.setDate(1);
+            monthStart.setHours(0, 0, 0, 0);
+            const monthlyBookingRevenue = Math.round(completedBookings.reduce((sum, booking) => {
+              const when = new Date((booking as any).scheduledAt || (booking as any).updatedAt || (booking as any).createdAt || 0);
+              if (isNaN(when.getTime()) || when < monthStart) return sum;
+              return sum + convertPrice(booking.totalAmount || 0, getBookingCurrency(booking));
             }, 0) * 100) / 100;
-            
-            // Revenue = completed bookings + this month's retail/POS sales
-            // (converted from the shop's currency into the display currency).
+
+            // Retail/POS summary is already this-month only (converted from the
+            // shop's currency into the display currency).
             let retailRevenue = 0;
             if (storeSummaryData.status === 'fulfilled' && storeSummaryData.value) {
               const s = storeSummaryData.value as { monthSalesTotal?: number; currency?: string };
               retailRevenue = convertPrice(Number(s.monthSalesTotal || 0), (s.currency as any) || 'UAH');
             }
-            stats.monthlyRevenue = Math.round((totalRevenue + retailRevenue) * 100) / 100;
+            stats.monthlyRevenue = Math.round((monthlyBookingRevenue + retailRevenue) * 100) / 100;
             
             // Calculate completion rate based on completed vs total (real calculation only)
             if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
@@ -649,7 +651,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           changeType={dashboardData.stats.thisWeekRevenue >= dashboardData.stats.lastWeekRevenue ? 'positive' : 'negative'}
           icon={CurrencyDollarIcon}
           iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
-          description={t('dashboard.specialist.allTime')}
+          description={t('dashboard.specialist.thisMonth')}
         />
         <StatCard
           title={t('dashboard.specialist.averageRating')}
@@ -688,10 +690,6 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.favoriteCount')}</span>
               <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{dashboardData.stats.favoriteCount}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-semibold text-success-600 tabular-nums">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>

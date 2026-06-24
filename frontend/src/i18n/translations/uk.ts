@@ -951,6 +951,7 @@ const uk: Record<string, string> = {
   'dashboard.specialist.repeatClients': 'Повторні клієнти',
   'dashboard.specialist.punctuality': 'Пунктуальність',
   'dashboard.specialist.allTime': 'За весь час',
+  'dashboard.specialist.thisMonth': 'Цього місяця',
   'dashboard.specialist.thisMonthImprovement': 'цього місяця',
   'dashboard.specialist.averageTime': 'Середній час',
   'dashboard.specialist.improvement': 'покращення',
