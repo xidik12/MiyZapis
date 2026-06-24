@@ -1,6 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const SPEC_LOYALTY_HELP = {
+  en: {
+    pageTitle: 'Specialist Loyalty Program',
+    pageBody:
+      'The loyalty program works in two directions:\n\n• As a member yourself — you earn points every time you book a service through MiyZapis (10 pts per $1 spent), write a review, get referred, or join a campaign. Accumulate lifetime points to advance through Bronze → Silver → Gold → Platinum tiers.\n\n• As a specialist — you can create custom rewards (discounts, vouchers, free sessions) that your customers redeem with the points they earn from booking YOUR services.\n\nUse the tabs below to see your point balance, full history, tier benefits, and your reward catalogue.',
+
+    currentPoints: 'Current Points',
+    currentPointsBody:
+      'Points you have available to spend right now. These decrease when you redeem a reward.',
+
+    lifetimePoints: 'Lifetime Points',
+    lifetimePointsBody:
+      'The running total of all points ever earned — they never decrease, even after redemptions. Lifetime points determine your tier level.',
+
+    currentTier: 'Current Tier',
+    currentTierBody:
+      'Your membership tier based on lifetime points:\n• Bronze: 0 – 499 pts\n• Silver: 500 – 999 pts\n• Gold: 1 000 – 1 999 pts (5 % commission bonus)\n• Platinum: 2 000 + pts (10 % commission bonus)\n\nHigher tiers unlock priority support and exclusive benefits.',
+
+    pointsSpent: 'Points Spent',
+    pointsSpentBody:
+      'Total points you have redeemed across all rewards so far.',
+
+    monthlyPoints: 'Points This Month',
+    monthlyPointsBody:
+      'Points earned in the current calendar month. Useful for tracking whether your activity level is growing.',
+
+    servicesCompleted: 'Services Completed',
+    servicesCompletedBody:
+      'Total number of bookings you have completed as a specialist. Each completed booking may earn you points via the BOOKING_COMPLETION event.',
+
+    rewardsTab: 'Rewards Tab',
+    rewardsTabBody:
+      'Two sections in one tab:\n\n1. YOUR REWARDS — rewards you create for your own customers. Set a title, description, reward type and the point cost customers must spend to unlock it. Types: Percentage Off, Fixed Amount Off, Service Credit, Free Service.\n\n2. REDEEM REWARDS — rewards from other specialists that you (as a customer yourself) can redeem using your current point balance.',
+
+    createReward: 'Creating a Reward',
+    createRewardBody:
+      'When you create a reward you set:\n• Title & description — what customers see\n• Reward type — Percentage Off / Fixed Amount Off / Service Credit / Free Service\n• Points Required — the point cost a customer must pay to claim this reward (you set the value; there is no fixed platform exchange rate)\n• Usage Limit — Unlimited / Once per user / Limited total\n• Expiration date — optional cutoff date\n\nActive rewards appear in the customer rewards catalogue.',
+  },
+  uk: {
+    pageTitle: 'Програма лояльності спеціаліста',
+    pageBody:
+      'Програма лояльності працює у двох напрямках:\n\n• Як учасник — ви заробляєте бали щоразу, коли бронюєте послугу через MiyZapis (10 балів за $1 витрат), пишете відгук, залучаєте нових клієнтів або берете участь у кампанії. Накопичуйте балів за весь час, щоб просуватися по рівнях Bronze → Silver → Gold → Platinum.\n\n• Як спеціаліст — ви можете створювати власні нагороди (знижки, ваучери, безкоштовні сеанси), які ваші клієнти погашають балами, що вони заробляють, бронюючи ВАШІ послуги.\n\nВикористовуйте вкладки нижче, щоб переглянути баланс балів, повну історію, переваги рівнів і ваш каталог нагород.',
+
+    currentPoints: 'Поточні бали',
+    currentPointsBody:
+      'Бали, доступні для витрати прямо зараз. Зменшуються, коли ви погашаєте нагороду.',
+
+    lifetimePoints: 'Бали за весь час',
+    lifetimePointsBody:
+      'Сумарна кількість усіх зароблених балів — вони ніколи не зменшуються, навіть після погашення. Саме ці бали визначають ваш рівень.',
+
+    currentTier: 'Поточний рівень',
+    currentTierBody:
+      'Ваш рівень членства на основі балів за весь час:\n• Bronze: 0 – 499 балів\n• Silver: 500 – 999 балів\n• Gold: 1 000 – 1 999 балів (бонус 5 % до комісії)\n• Platinum: 2 000 + балів (бонус 10 % до комісії)\n\nВищі рівні надають пріоритетну підтримку та ексклюзивні переваги.',
+
+    pointsSpent: 'Витрачені бали',
+    pointsSpentBody:
+      'Загальна кількість балів, погашених за всі нагороди до цього часу.',
+
+    monthlyPoints: 'Бали цього місяця',
+    monthlyPointsBody:
+      'Бали, зароблені в поточному календарному місяці. Корисно для відстеження зростання активності.',
+
+    servicesCompleted: 'Виконані послуги',
+    servicesCompletedBody:
+      'Загальна кількість бронювань, виконаних вами як спеціалістом. За кожне завершене бронювання можуть нараховуватись бали через подію BOOKING_COMPLETION.',
+
+    rewardsTab: 'Вкладка "Нагороди"',
+    rewardsTabBody:
+      'Дві секції в одній вкладці:\n\n1. ВАШІ НАГОРОДИ — нагороди, які ви створюєте для своїх клієнтів. Встановіть назву, опис, тип нагороди та вартість у балах, яку клієнти повинні витратити, щоб її отримати.\n\n2. ПОГАШЕННЯ НАГОРОД — нагороди від інших спеціалістів, які ви (як клієнт) можете погасити, використовуючи свій поточний баланс балів.',
+
+    createReward: 'Створення нагороди',
+    createRewardBody:
+      'При створенні нагороди ви вказуєте:\n• Назва та опис — що бачать клієнти\n• Тип нагороди — Відсоток знижки / Фіксована знижка / Кредит на послугу / Безкоштовна послуга\n• Необхідна кількість балів — вартість у балах, яку клієнт витрачає (ви встановлюєте значення; фіксованого курсу обміну платформою немає)\n• Ліміт використання — Необмежено / Один раз на користувача / Обмежена кількість\n• Дата закінчення — необов\'язкова\n\nАктивні нагороди з\'являються в каталозі нагород для клієнтів.',
+  },
+  ru: {
+    pageTitle: 'Программа лояльности специалиста',
+    pageBody:
+      'Программа лояльности работает в двух направлениях:\n\n• Как участник — вы зарабатываете баллы каждый раз, когда бронируете услугу через MiyZapis (10 баллов за $1 расходов), пишете отзыв, привлекаете новых клиентов или участвуете в кампании. Накапливайте баллы за всё время, чтобы продвигаться по уровням Bronze → Silver → Gold → Platinum.\n\n• Как специалист — вы можете создавать пользовательские награды (скидки, ваучеры, бесплатные сеансы), которые ваши клиенты обменивают на баллы, заработанные при бронировании ВАШИХ услуг.\n\nИспользуйте вкладки ниже для просмотра баланса баллов, полной истории, преимуществ уровней и каталога ваших наград.',
+
+    currentPoints: 'Текущие баллы',
+    currentPointsBody:
+      'Баллы, доступные для расходования прямо сейчас. Уменьшаются при погашении награды.',
+
+    lifetimePoints: 'Баллы за всё время',
+    lifetimePointsBody:
+      'Суммарное количество всех заработанных баллов — они никогда не уменьшаются, даже после погашения. Именно эти баллы определяют ваш уровень.',
+
+    currentTier: 'Текущий уровень',
+    currentTierBody:
+      'Ваш уровень членства на основе баллов за всё время:\n• Bronze: 0 – 499 баллов\n• Silver: 500 – 999 баллов\n• Gold: 1 000 – 1 999 баллов (бонус 5 % к комиссии)\n• Platinum: 2 000 + баллов (бонус 10 % к комиссии)\n\nВысокие уровни открывают приоритетную поддержку и эксклюзивные преимущества.',
+
+    pointsSpent: 'Потраченные баллы',
+    pointsSpentBody:
+      'Общее количество баллов, погашённых за все награды до сих пор.',
+
+    monthlyPoints: 'Баллы в этом месяце',
+    monthlyPointsBody:
+      'Баллы, заработанные в текущем календарном месяце. Помогает отслеживать рост активности.',
+
+    servicesCompleted: 'Выполненные услуги',
+    servicesCompletedBody:
+      'Общее количество бронирований, выполненных вами как специалистом. За каждое завершённое бронирование могут начисляться баллы через событие BOOKING_COMPLETION.',
+
+    rewardsTab: 'Вкладка "Награды"',
+    rewardsTabBody:
+      'Два раздела в одной вкладке:\n\n1. ВАШИ НАГРАДЫ — награды, которые вы создаёте для своих клиентов. Укажите название, описание, тип награды и стоимость в баллах, которую клиенты должны потратить для её получения.\n\n2. ПОГАШЕНИЕ НАГРАД — награды от других специалистов, которые вы (как клиент) можете погасить, используя текущий баланс баллов.',
+
+    createReward: 'Создание награды',
+    createRewardBody:
+      'При создании награды вы указываете:\n• Название и описание — что видят клиенты\n• Тип награды — Процент скидки / Фиксированная скидка / Кредит на услугу / Бесплатная услуга\n• Необходимые баллы — стоимость в баллах, которую клиент тратит (вы устанавливаете значение; фиксированного курса обмена платформой нет)\n• Лимит использования — Неограниченно / Один раз на пользователя / Ограниченное количество\n• Дата окончания — необязательная\n\nАктивные награды появляются в каталоге наград для клиентов.',
+  },
+};
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
 import { RewardsService, LoyaltyReward, CreateRewardData } from '@/services/rewards.service';
@@ -17,6 +131,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 const SpecialistLoyalty: React.FC = () => {
   const { theme: _theme } = useTheme();
   const { t, language } = useLanguage();
+  const h = (SPEC_LOYALTY_HELP as any)[language] || SPEC_LOYALTY_HELP.en;
   const { currency: _currency } = useCurrency();
   
   const [loading, setLoading] = useState(true);
@@ -384,7 +499,7 @@ const SpecialistLoyalty: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {t('loyalty.specialistProgramTitle') || 'Specialist Loyalty Program'}
             </h1>
-            <HelpTip title={t('help.specLoyalty.title') || 'Loyalty'} content={t('help.specLoyalty.body') || 'Reward returning clients with points they earn on each visit.'} />
+            <HelpTip title={h.pageTitle} content={h.pageBody} />
           </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('loyalty.specialistProgramSubtitle') || 'Earn points by providing excellent services and grow your business'}
@@ -397,7 +512,10 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentPoints') || 'Current Points'}</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentPoints') || 'Current Points'}</p>
+                  <HelpTip title={h.currentPoints} content={h.currentPointsBody} />
+                </div>
                 <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
@@ -412,7 +530,10 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
+                  <HelpTip title={h.lifetimePoints} content={h.lifetimePointsBody} />
+                </div>
                 <p className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
@@ -427,7 +548,10 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentTierShort') || 'Current Tier'}</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentTierShort') || 'Current Tier'}</p>
+                  <HelpTip title={h.currentTier} content={h.currentTierBody} />
+                </div>
                 <p className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-400">
                   {loyaltyStats?.currentTier?.name || 'Bronze'}
                 </p>
@@ -442,7 +566,10 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
+                  <HelpTip title={h.pointsSpent} content={h.pointsSpentBody} />
+                </div>
                 <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
@@ -572,7 +699,10 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
+                    <div className="flex items-center justify-center gap-1">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
+                      <HelpTip title={h.monthlyPoints} content={h.monthlyPointsBody} />
+                    </div>
                   </div>
 
                   <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
@@ -580,7 +710,10 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                       {loyaltyStats?.totalServices || 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.servicesCompleted') || 'Services Completed'}</p>
+                    <div className="flex items-center justify-center gap-1">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.servicesCompleted') || 'Services Completed'}</p>
+                      <HelpTip title={h.servicesCompleted} content={h.servicesCompletedBody} />
+                    </div>
                   </div>
 
                   <div className="text-center p-3 sm:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
@@ -849,9 +982,12 @@ const SpecialistLoyalty: React.FC = () => {
                 {/* Rewards Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                      {t('loyalty.yourRewards') || 'Your Loyalty Rewards'}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                        {t('loyalty.yourRewards') || 'Your Loyalty Rewards'}
+                      </h4>
+                      <HelpTip title={h.rewardsTab} content={h.rewardsTabBody} />
+                    </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {t('loyalty.createRewardsDescription')}
                     </p>

@@ -34,11 +34,70 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   return currency;
 };
 
+// ─── Self-contained help content (trilingual, no i18n edits required) ───────
+const DASHBOARD_HELP = {
+  en: {
+    overview: 'Your business at a glance.\n\nThis page shows key metrics computed from your real booking and retail data. All amounts are converted to your chosen display currency at current exchange rates.\n\nHow to use it:\n• Check Monthly Revenue and Completion Rate daily to spot trends.\n• Use the Quality Metrics card to identify problems early (high no-show rate → send reminders).\n• Export a report any time from the top-right button.\n\nKey terms:\n• Completed booking — a session you marked as done.\n• Display currency — set in your profile settings; all totals are shown in it.',
+
+    totalBookings: 'All-time count of every booking ever associated with your account — completed and still upcoming.\n\nFormula: completed bookings + active (confirmed / pending / in-progress) bookings.\n\nThis number never decreases.',
+
+    monthlyRevenue: 'Revenue earned THIS calendar month only.\n\nFormula: sum of completed-booking amounts whose appointment date falls in the current month, converted to your display currency + any retail/POS sales recorded for this month.\n\nNote: MiyZapis does not process or hold your payments. You collect money directly from clients in person. This figure reflects what you billed — it is not a platform payout.',
+
+    averageRating: 'The average score across all customer reviews left for you.\n\nFormula: sum of all review scores ÷ total number of reviews.\n\nScale: 0 – 5.0. Shows 0 until your first review arrives.',
+
+    responseTime: 'How quickly you act on new booking requests, measured in your working hours only.\n\nFormula: for each completed booking, count business-hours minutes between booking creation and your first status change; average those values.\n\nOnly counts time within your configured working schedule — overnight and off-day gaps are excluded. Bookings with response times over 24 business hours are treated as outliers and excluded from the average.',
+
+    completionRate: 'What share of your bookings actually got done.\n\nFormula: completed ÷ (completed + upcoming) × 100.\n\nCancellations are excluded. A low rate can mean clients are cancelling or you are not marking sessions as completed.',
+
+    repeatClients: 'What share of your clients came back more than once.\n\nFormula: clients with more than one completed booking ÷ all unique clients with at least one completed booking × 100.\n\nA high percentage means strong client loyalty.',
+
+    noShowRate: 'How often clients do not show up for their appointment.\n\nFormula: no-shows ÷ (completed + no-shows) × 100.\n\nCancellations are NOT counted as no-shows. Above 20% a warning appears — consider automated reminders.',
+  },
+
+  uk: {
+    overview: 'Загальний стан вашого бізнесу одним поглядом.\n\nЦя сторінка показує ключові показники, розраховані на основі ваших реальних даних про записи та роздрібні продажі. Усі суми конвертовані у вашу обрану валюту за поточним курсом.\n\nЯк користуватися:\n• Щодня перевіряйте Дохід за місяць і Відсоток виконання — це допоможе помітити тенденції.\n• Картка «Показники якості» дозволяє швидко виявити проблеми (висока частка неявок → надсилайте нагадування).\n• Кнопка «Експорт звіту» у верхньому правому куті доступна будь-коли.\n\nОсновні терміни:\n• Завершений запис — сесія, яку ви позначили як виконану.\n• Відображувана валюта — обирається в налаштуваннях профілю; всі підсумки показуються в ній.',
+
+    totalBookings: 'Загальна кількість усіх записів за весь час — як завершених, так і майбутніх.\n\nФормула: завершені записи + активні (підтверджені / очікують / в процесі).\n\nЦе число ніколи не зменшується.',
+
+    monthlyRevenue: 'Дохід лише за ПОТОЧНИЙ календарний місяць.\n\nФормула: сума сум завершених записів, дата прийому яких припадає на поточний місяць, конвертована у вашу валюту + роздрібні/POS продажі за цей місяць.\n\nВажливо: MiyZapis не обробляє і не утримує ваші платежі. Ви отримуєте гроші безпосередньо від клієнтів готівкою або переказом. Ця сума відображає те, що ви виставили до оплати — це не виплата від платформи.',
+
+    averageRating: 'Середній бал з усіх відгуків клієнтів.\n\nФормула: сума всіх оцінок ÷ кількість відгуків.\n\nШкала: 0–5,0. Показує 0, поки не надійде перший відгук.',
+
+    responseTime: 'Наскільки швидко ви реагуєте на нові запити на запис — вимірюється лише у ваших робочих годинах.\n\nФормула: для кожного завершеного запису рахуються хвилини робочого часу між створенням запису та вашою першою зміною статусу; потім береться середнє.\n\nНічні перерви та вихідні дні не враховуються. Записи з часом реакції понад 24 робочі години вважаються викидами і виключаються.',
+
+    completionRate: 'Яка частка ваших записів дійсно відбулася.\n\nФормула: завершені ÷ (завершені + майбутні) × 100.\n\nСкасування не враховуються. Низький показник може означати, що клієнти скасовують записи або ви не позначаєте сесії як завершені.',
+
+    repeatClients: 'Яка частка ваших клієнтів повернулася більше одного разу.\n\nФормула: клієнти з більше ніж одним завершеним записом ÷ усі унікальні клієнти з хоча б одним завершеним записом × 100.\n\nВисокий відсоток свідчить про сильну лояльність клієнтів.',
+
+    noShowRate: 'Як часто клієнти не з\'являються на прийом.\n\nФормула: неявки ÷ (завершені + неявки) × 100.\n\nСкасування НЕ вважаються неявками. При перевищенні 20% з\'являється попередження — розгляньте автоматичні нагадування.',
+  },
+
+  ru: {
+    overview: 'Общее состояние вашего бизнеса с первого взгляда.\n\nЭта страница показывает ключевые показатели, рассчитанные на основе ваших реальных данных о записях и розничных продажах. Все суммы конвертируются в выбранную вами валюту по текущему курсу.\n\nКак пользоваться:\n• Ежедневно проверяйте Доход за месяц и Процент выполнения — это поможет заметить тенденции.\n• Карточка «Показатели качества» позволяет быстро выявить проблемы (высокий процент неявок → отправляйте напоминания).\n• Кнопка «Экспорт отчёта» в верхнем правом углу доступна в любое время.\n\nОсновные термины:\n• Завершённая запись — сессия, которую вы отметили как выполненную.\n• Отображаемая валюта — выбирается в настройках профиля; все итоги показываются в ней.',
+
+    totalBookings: 'Общее количество всех записей за всё время — как завершённых, так и предстоящих.\n\nФормула: завершённые записи + активные (подтверждённые / ожидают / в процессе).\n\nЭто число никогда не уменьшается.',
+
+    monthlyRevenue: 'Доход только за ТЕКУЩИЙ календарный месяц.\n\nФормула: сумма сумм завершённых записей, дата приёма которых приходится на текущий месяц, конвертированная в вашу валюту + розничные/POS продажи за этот месяц.\n\nВажно: MiyZapis не обрабатывает и не хранит ваши платежи. Вы получаете деньги непосредственно от клиентов наличными или переводом. Эта сумма отражает то, что вы выставили к оплате — это не выплата от платформы.',
+
+    averageRating: 'Средний балл по всем отзывам клиентов.\n\nФормула: сумма всех оценок ÷ количество отзывов.\n\nШкала: 0–5,0. Показывает 0, пока не поступит первый отзыв.',
+
+    responseTime: 'Насколько быстро вы реагируете на новые запросы на запись — измеряется только в ваших рабочих часах.\n\nФормула: для каждой завершённой записи считаются минуты рабочего времени между созданием записи и вашим первым изменением статуса; затем берётся среднее.\n\nНочные перерывы и выходные дни не учитываются. Записи со временем реакции более 24 рабочих часов считаются выбросами и исключаются.',
+
+    completionRate: 'Какая доля ваших записей действительно состоялась.\n\nФормула: завершённые ÷ (завершённые + предстоящие) × 100.\n\nОтмены не учитываются. Низкий показатель может означать, что клиенты отменяют записи или вы не отмечаете сессии как завершённые.',
+
+    repeatClients: 'Какая доля ваших клиентов вернулась более одного раза.\n\nФормула: клиенты с более чем одной завершённой записью ÷ все уникальные клиенты хотя бы с одной завершённой записью × 100.\n\nВысокий процент свидетельствует о сильной лояльности клиентов.',
+
+    noShowRate: 'Как часто клиенты не приходят на приём.\n\nФормула: неявки ÷ (завершённые + неявки) × 100.\n\nОтмены НЕ считаются неявками. При превышении 20% появляется предупреждение — рассмотрите автоматические напоминания.',
+  },
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
   const navigate = useNavigate();
   const { formatPrice, convertPrice, currency } = useCurrency();
   const { t, language } = useLanguage();
+  const dh = (DASHBOARD_HELP as any)[language] || DASHBOARD_HELP.en;
   const [currentTime, setCurrentTime] = useState(new Date());
   const [dashboardData, setDashboardData] = useState<any>({
     stats: {
@@ -533,11 +592,14 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
     }
   };
 
-  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string }) => (
+  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description, helpTip }: { title: string; value: string | number; change?: string; changeType?: string; icon: React.ElementType; iconBg: string; description?: string; helpTip?: React.ReactNode }) => (
     <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] cursor-pointer transition duration-200">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
+          <div className="flex items-center gap-1 mb-1">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">{title}</p>
+            {helpTip}
+          </div>
           {loading ? (
             <div className="mb-2">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
@@ -580,7 +642,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {getGreeting()}, {user?.firstName}! 👋
             </h1>
-            <HelpTip title={t('help.dashboard.title') || 'Dashboard'} content={t('help.dashboard.body') || 'A snapshot of your business at a glance.'} />
+            <HelpTip title={t('help.dashboard.title') || 'Dashboard'} content={dh.overview} />
           </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('dashboard.today')} {currentTime.toLocaleDateString(
@@ -641,6 +703,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           icon={CalendarIcon}
           iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.allTime')}
+          helpTip={<HelpTip title={t('dashboard.specialist.totalBookings')} content={dh.totalBookings} />}
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
@@ -652,6 +715,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           icon={CurrencyDollarIcon}
           iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.thisMonth')}
+          helpTip={<HelpTip title={t('dashboard.specialist.monthlyRevenue')} content={dh.monthlyRevenue} />}
         />
         <StatCard
           title={t('dashboard.specialist.averageRating')}
@@ -661,6 +725,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           icon={StarIcon}
           iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
+          helpTip={<HelpTip title={t('dashboard.specialist.averageRating')} content={dh.averageRating} />}
         />
         <StatCard
           title={t('dashboard.specialist.responseTime')}
@@ -672,6 +737,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           icon={ClockIcon}
           iconBg="bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
           description={t('dashboard.specialist.averageTime')}
+          helpTip={<HelpTip title={t('dashboard.specialist.responseTime')} content={dh.responseTime} />}
         />
       </div>
 
@@ -701,15 +767,24 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
+              <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                {t('dashboard.specialist.completionRate')}
+                <HelpTip title={t('dashboard.specialist.completionRate')} content={dh.completionRate} />
+              </span>
               <span className="font-semibold text-success-600 tabular-nums">{dashboardData.stats.completionRate}%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
+              <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                {t('dashboard.specialist.repeatClients')}
+                <HelpTip title={t('dashboard.specialist.repeatClients')} content={dh.repeatClients} />
+              </span>
               <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{dashboardData.stats.repeatClients}%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.noShowRate') || 'No-Show Rate'}</span>
+              <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                {t('dashboard.noShowRate') || 'No-Show Rate'}
+                <HelpTip title={t('dashboard.noShowRate') || 'No-Show Rate'} content={dh.noShowRate} />
+              </span>
               <span className={`font-semibold tabular-nums ${dashboardData.stats.noShowRate > 20 ? 'text-error-600' : 'text-gray-900 dark:text-white'}`}>
                 {dashboardData.stats.noShowRate}%
               </span>

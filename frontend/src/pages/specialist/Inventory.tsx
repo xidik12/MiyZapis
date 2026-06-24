@@ -89,8 +89,36 @@ const initialAdjustData: AdjustFormData = {
   reference: '',
 };
 
+const INV_HELP = {
+  en: {
+    overview: 'Inventory — manage every product you stock, sell, or use in your work.\n\n• Stock quantity: units physically on your shelf right now. Automatically decreases when you complete a sale in POS.\n• Reorder level: the low-stock threshold. When stock reaches or falls below this number, the product shows a red "Low" badge and counts in the Low-stock alert card. Set it to 0 to disable the alert.\n• Expiry date: optional. A red "Expired" badge appears once the date has passed; an amber "Exp. Nd" badge appears within 30 days of expiry. Use the "Expiring soon" filter to act fast.\n• Cost price: what you paid per unit (required). Used to calculate your stock value.\n• Sale price: what the customer pays. Optional — if blank, the cost price is shown on POS.\n• Product type:\n  — Consumable: used internally (gloves, colour, etc.) — not sold directly.\n  — Retail: sold to customers from the POS screen.\n• Barcode: scan the manufacturer\'s EAN/UPC barcode on the packaging, or type it. If the code is in the platform catalog, name and photo are auto-filled. No barcode on the product? Tap Generate — the system mints a unique in-store EAN-13 code. Then use Print labels to print sticker labels to attach to items.\n• Adjust stock (the arrows icon): use this to add or remove stock outside a sale. Enter a positive number to add, a negative number to remove. Pick the reason (Purchase / Usage / Sale / Adjustment / Return) and an optional reference number for your records.',
+    reorderLevel: 'Low-stock threshold. When stock quantity reaches or falls below this number, the product is flagged "Low" and appears in the Low-stock alert summary.\nSet to 0 to disable the alert for this product.',
+    barcode: 'Scan or type the manufacturer\'s EAN/UPC barcode.\nIf found in the platform catalog, the product name and photo are auto-filled.\n\nNo barcode on the product?\nTap Generate — a unique in-store EAN-13 code is created.\nThen use Print labels to print sticker labels to attach to items.',
+    expiry: 'Optional expiry date for this product.\n• Within 30 days: amber "Exp. Nd" badge appears on the product.\n• Past the date: red "Expired" badge.\nUse the Expiring soon filter to see all at-risk products at once.',
+    costVsSale: 'Cost price: what you paid per unit (required). Used to calculate total stock value.\nSale price: what the customer pays at checkout. If left blank, cost price is used on the POS screen.',
+    adjustStock: 'Adjust the quantity on hand without creating a sale.\n• Enter a positive number to ADD stock (e.g. new delivery: +50).\n• Enter a negative number to REMOVE stock (e.g. breakage or waste: -3).\nAlways pick a reason so you have a clean audit trail:\n• Purchase — new stock received.\n• Usage — consumed internally (not sold).\n• Sale — manual correction for an in-person sale made outside POS.\n• Adjustment — stock count correction.\n• Return — supplier or customer return.',
+  },
+  uk: {
+    overview: 'Склад — керування всіма товарами, які ви зберігаєте, продаєте або використовуєте у роботі.\n\n• Кількість на складі: одиниці, які фізично є на вашій полиці прямо зараз. Зменшується автоматично після завершення продажу в Касі.\n• Рівень дозамовлення: поріг малого залишку. Коли залишок досягає або падає нижче цього числа, товар отримує червону мітку «Мало» і враховується в карточці сповіщень. Встановіть 0, щоб вимкнути сповіщення.\n• Термін придатності: необов\'язковий. Червона мітка «Прострочено» з\'являється після закінчення дати; жовтогаряча мітка «Закін. Nд» — за 30 днів до закінчення. Використовуйте фільтр «Скоро закінчується» для швидкої реакції.\n• Ціна закупівлі: ціна, яку ви заплатили за одиницю (обов\'язкова). Використовується для розрахунку вартості складу.\n• Ціна продажу: ціна для покупця. Необов\'язкова — якщо не вказана, на касі відображається ціна закупівлі.\n• Тип товару:\n  — Витратний: використовується всередині (рукавички, фарба тощо) — не продається напряму.\n  — Роздрібний: продається покупцям через Касу.\n• Штрихкод: скануйте або введіть EAN/UPC з упаковки. Якщо код є в каталозі платформи, назва та фото заповнюються автоматично. Немає штрихкоду? Натисніть «Згенерувати» — система створить унікальний внутрішній EAN-13. Потім скористайтеся «Друком етикеток».\n• Коригування залишку (іконка стрілок): додайте або зніміть залишок поза межами продажу. Введіть позитивне число, щоб додати, або від\'ємне, щоб зняти. Оберіть причину та необов\'язковий номер для довідки.',
+    reorderLevel: 'Поріг малого залишку. Коли кількість товару досягає або падає нижче цього числа, товар позначається міткою «Мало» і відображається в карточці сповіщень.\nВстановіть 0, щоб вимкнути сповіщення для цього товару.',
+    barcode: 'Скануйте або введіть EAN/UPC з упаковки виробника.\nЯкщо код знайдено в каталозі платформи, назва та фото заповнюються автоматично.\n\nНемає штрихкоду на товарі?\nНатисніть «Згенерувати» — система створить унікальний внутрішній EAN-13.\nПотім скористайтеся «Друком етикеток» для наклейок.',
+    expiry: 'Необов\'язковий термін придатності для цього товару.\n• За 30 днів до закінчення: жовтогаряча мітка «Закін. Nд».\n• Після закінчення: червона мітка «Прострочено».\nВикористовуйте фільтр «Скоро закінчується», щоб побачити всі такі товари одразу.',
+    costVsSale: 'Ціна закупівлі: ціна за одиницю, яку ви заплатили (обов\'язкова). Використовується для розрахунку загальної вартості складу.\nЦіна продажу: ціна для покупця на касі. Якщо залишити порожнім, на Касі буде відображатися ціна закупівлі.',
+    adjustStock: 'Скоригуйте залишок без створення продажу.\n• Позитивне число — ДОДАТИ залишок (напр., нова поставка: +50).\n• Від\'ємне число — ЗНЯТИ залишок (напр., бій або відходи: -3).\nЗавжди обирайте причину для чистого обліку:\n• Закупівля — отримано нові товари.\n• Використання — витрачено всередині (не продано).\n• Продаж — ручне коригування для продажу поза Касою.\n• Коригування — виправлення при інвентаризації.\n• Повернення — повернення від постачальника або покупця.',
+  },
+  ru: {
+    overview: 'Склад — управление всеми товарами, которые вы храните, продаёте или используете в работе.\n\n• Количество на складе: единицы, физически находящиеся на вашей полке прямо сейчас. Уменьшается автоматически после завершения продажи в Кассе.\n• Уровень дозаказа: порог малого остатка. Когда остаток достигает или падает ниже этого числа, товар получает красную метку «Мало» и учитывается в карточке оповещений. Установите 0, чтобы отключить оповещение.\n• Срок годности: необязательный. Красная метка «Просрочено» появляется после истечения даты; оранжевая метка «Ист. Nд» — за 30 дней до истечения. Используйте фильтр «Скоро истекает» для быстрой реакции.\n• Цена закупки: цена, которую вы заплатили за единицу (обязательная). Используется для расчёта стоимости склада.\n• Цена продажи: цена для покупателя. Необязательная — если не указана, на кассе отображается цена закупки.\n• Тип товара:\n  — Расходный: используется внутренне (перчатки, краска и т.д.) — не продаётся напрямую.\n  — Розничный: продаётся покупателям через Кассу.\n• Штрихкод: сканируйте или введите EAN/UPC с упаковки. Если код есть в каталоге платформы, название и фото заполняются автоматически. Нет штрихкода? Нажмите «Сгенерировать» — система создаст уникальный внутренний EAN-13. Затем используйте «Печать этикеток».\n• Корректировка остатка (иконка стрелок): добавьте или снимите остаток вне продажи. Введите положительное число для добавления или отрицательное для снятия. Выберите причину и необязательный номер для справки.',
+    reorderLevel: 'Порог малого остатка. Когда количество товара достигает или падает ниже этого числа, товар помечается меткой «Мало» и отображается в карточке оповещений.\nУстановите 0, чтобы отключить оповещение для этого товара.',
+    barcode: 'Сканируйте или введите EAN/UPC с упаковки производителя.\nЕсли код найден в каталоге платформы, название и фото заполняются автоматически.\n\nНет штрихкода на товаре?\nНажмите «Сгенерировать» — система создаст уникальный внутренний EAN-13.\nЗатем используйте «Печать этикеток» для наклеек.',
+    expiry: 'Необязательный срок годности для этого товара.\n• За 30 дней до истечения: оранжевая метка «Ист. Nд».\n• После истечения: красная метка «Просрочено».\nИспользуйте фильтр «Скоро истекает», чтобы увидеть все такие товары сразу.',
+    costVsSale: 'Цена закупки: цена за единицу, которую вы заплатили (обязательная). Используется для расчёта общей стоимости склада.\nЦена продажи: цена для покупателя на кассе. Если оставить пустым, на Кассе будет отображаться цена закупки.',
+    adjustStock: 'Скорректируйте остаток без создания продажи.\n• Положительное число — ДОБАВИТЬ остаток (напр., новая поставка: +50).\n• Отрицательное число — СНЯТЬ остаток (напр., бой или отходы: -3).\nВсегда выбирайте причину для чистого учёта:\n• Закупка — получены новые товары.\n• Использование — потрачено внутренне (не продано).\n• Продажа — ручная корректировка для продажи вне Кассы.\n• Корректировка — исправление при инвентаризации.\n• Возврат — возврат от поставщика или покупателя.',
+  },
+};
+
 const SpecialistInventory: React.FC = () => {
   const { t, language } = useLanguage();
+  const h = (INV_HELP as any)[language] || INV_HELP.en;
   const { formatPrice } = useCurrency();
 
   // State
@@ -394,7 +422,7 @@ const SpecialistInventory: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
                 {t('inventory.title') || 'Inventory'}
               </h1>
-              <HelpTip title={t('help.inventory.title') || 'Inventory'} content={t('help.inventory.body') || 'Track product stock, cost and low-stock alerts.'} />
+              <HelpTip title={t('help.inventory.title') || 'Inventory'} content={h.overview} />
             </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('inventory.subtitle') || 'Track stock levels and product costs'}
@@ -866,9 +894,12 @@ const SpecialistInventory: React.FC = () => {
                 {/* Barcode + Expiry */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('inventory.barcode') || 'Barcode'}
-                    </label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('inventory.barcode') || 'Barcode'}
+                      </label>
+                      <HelpTip title={t('inventory.barcode') || 'Barcode'} content={h.barcode} />
+                    </div>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -897,9 +928,12 @@ const SpecialistInventory: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('inventory.expiryDate') || 'Expiry date'}
-                    </label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('inventory.expiryDate') || 'Expiry date'}
+                      </label>
+                      <HelpTip title={t('inventory.expiryDate') || 'Expiry date'} content={h.expiry} />
+                    </div>
                     <input
                       type="date"
                       value={formData.expiryDate}
@@ -975,9 +1009,12 @@ const SpecialistInventory: React.FC = () => {
                 {/* Cost + Sale price */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('inventory.costPrice') || 'Cost Price'} *
-                    </label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('inventory.costPrice') || 'Cost Price'} *
+                      </label>
+                      <HelpTip title={t('inventory.costPrice') || 'Cost & Sale Price'} content={h.costVsSale} />
+                    </div>
                     <input
                       type="number"
                       step="0.01"
@@ -1023,9 +1060,12 @@ const SpecialistInventory: React.FC = () => {
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('inventory.reorderLevel') || 'Reorder Level'}
-                    </label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('inventory.reorderLevel') || 'Reorder Level'}
+                      </label>
+                      <HelpTip title={t('inventory.reorderLevel') || 'Reorder Level'} content={h.reorderLevel} />
+                    </div>
                     <input
                       type="number"
                       step="0.01"
@@ -1089,9 +1129,12 @@ const SpecialistInventory: React.FC = () => {
             <motion.div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full" initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }}>
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {t('inventory.adjustStock') || 'Adjust Stock'}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      {t('inventory.adjustStock') || 'Adjust Stock'}
+                    </h2>
+                    <HelpTip title={t('inventory.adjustStock') || 'Adjust Stock'} content={h.adjustStock} />
+                  </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[18rem]">
                     {adjustProduct.name} · {t('inventory.currentStock') || 'Current'}: {num(adjustProduct.stockQty)} {adjustProduct.unit}
                   </p>

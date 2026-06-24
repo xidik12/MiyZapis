@@ -15,8 +15,27 @@ const num = (v: number | string | null | undefined): number =>
   v == null ? 0 : typeof v === 'number' ? v : Number(v) || 0;
 const priceOf = (p: Product): number => num(p.salePrice ?? p.costPrice);
 
+const POS_HELP = {
+  en: {
+    overview: 'Point of Sale — ring up products and record the payment method.\n\n• Tap a product card to add it to the cart. Tap again to add more. Out-of-stock items are greyed out.\n• Use the search box to filter by name or SKU.\n• Barcode scanner: type a code and press Enter, or tap Scan to use the rear camera. The product is added instantly.\n• Checkout: review the cart, adjust quantities with the − / + buttons, choose how the customer paid, then tap Complete sale.\n\nPayment methods:\n• Cash — customer paid with physical money.\n• Card — customer paid with a bank card (tap, chip, or online). MiyZapis does NOT process the payment; you collect it yourself at the terminal.\n• Other — any other method (bank transfer, app, etc.). Recorded for your bookkeeping only.\n\nWhen you complete a sale:\n• Stock is deducted automatically for each item sold.\n• The sale is counted toward your revenue reports.\n• A receipt appears — tap Print to send it to the printer.',
+    barcode: 'Type a barcode and press Enter, or tap Scan to use the rear camera.\nThe product is added to the cart instantly if found.\nIf not found, the code is searched on the server.\nTo link barcodes to products, use Inventory.',
+    payMethod: 'Choose how the customer paid — Cash, Card, or Other.\nThis is recorded for your bookkeeping only.\nMiyZapis does NOT process any payment. You collect it in person.',
+  },
+  uk: {
+    overview: 'Каса — оформлення продажів та запис способу оплати.\n\n• Натисніть на картку товару, щоб додати його до кошика. Натисніть ще раз, щоб збільшити кількість. Товари без залишку неактивні.\n• Використовуйте пошук для фільтрації за назвою або артикулом.\n• Сканер штрихкодів: введіть код і натисніть Enter, або натисніть «Сканувати», щоб скористатися задньою камерою. Товар додається миттєво.\n• Оформлення: перевірте кошик, відкоригуйте кількість кнопками − / +, оберіть спосіб оплати, потім натисніть «Завершити продаж».\n\nСпособи оплати:\n• Готівка — покупець розрахувався готівкою.\n• Картка — покупець оплатив банківською карткою (tap, чіп або онлайн). MiyZapis НЕ обробляє платіж; ви приймаєте кошти самостійно на своєму терміналі.\n• Інше — будь-який інший спосіб (переказ, додаток тощо). Записується лише для вашого обліку.\n\nПісля завершення продажу:\n• Залишок товарів списується автоматично.\n• Продаж зараховується до вашої виручки.\n• З\'являється чек — натисніть «Друк», щоб роздрукувати.',
+    barcode: 'Введіть штрихкод і натисніть Enter, або натисніть «Сканувати», щоб скористатися камерою.\nТовар миттєво додається до кошика, якщо знайдений.\nЯкщо не знайдено — код шукається на сервері.\nЩоб прив\'язати штрихкоди до товарів, перейдіть до Складу.',
+    payMethod: 'Оберіть спосіб, яким розрахувався покупець: Готівка, Картка або Інше.\nЦе записується лише для вашого обліку.\nMiyZapis НЕ обробляє жодних платежів. Ви приймаєте кошти особисто.',
+  },
+  ru: {
+    overview: 'Касса — оформление продаж и запись способа оплаты.\n\n• Нажмите на карточку товара, чтобы добавить его в корзину. Нажмите ещё раз, чтобы увеличить количество. Товары без остатка неактивны.\n• Используйте поиск для фильтрации по названию или артикулу.\n• Сканер штрихкодов: введите код и нажмите Enter, или нажмите «Сканировать», чтобы использовать заднюю камеру. Товар добавляется мгновенно.\n• Оформление: проверьте корзину, скорректируйте количество кнопками − / +, выберите способ оплаты, затем нажмите «Завершить продажу».\n\nСпособы оплаты:\n• Наличные — покупатель рассчитался наличными.\n• Карта — покупатель оплатил банковской картой (tap, чип или онлайн). MiyZapis НЕ обрабатывает платёж; вы принимаете оплату самостоятельно на своём терминале.\n• Другое — любой другой способ (перевод, приложение и т.д.). Записывается только для вашего учёта.\n\nПосле завершения продажи:\n• Остаток товаров списывается автоматически.\n• Продажа засчитывается в вашу выручку.\n• Появляется чек — нажмите «Печать», чтобы его распечатать.',
+    barcode: 'Введите штрихкод и нажмите Enter, или нажмите «Сканировать», чтобы использовать камеру.\nТовар мгновенно добавляется в корзину, если найден.\nЕсли не найден — код ищется на сервере.\nЧтобы привязать штрихкоды к товарам, перейдите в Склад.',
+    payMethod: 'Выберите способ оплаты: Наличные, Карта или Другое.\nЭто записывается только для вашего учёта.\nMiyZapis НЕ обрабатывает платежи. Вы принимаете оплату лично.',
+  },
+};
+
 const POS: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (POS_HELP as any)[language] || POS_HELP.en;
   const { formatPrice } = useCurrency();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -116,7 +135,7 @@ const POS: React.FC = () => {
     <div className="p-4 sm:p-6 pb-28">
       <div className="flex items-center gap-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('pos.title') || 'Point of Sale'}</h1>
-        <HelpTip title={t('pos.title') || 'Point of Sale'} content={t('pos.help') || 'Scan or tap products to build a sale, choose how the customer paid (cash/card), and complete it. Stock is deducted automatically and the sale counts toward your revenue. Payment is taken in person — the platform does not process it.'} />
+        <HelpTip title={t('pos.title') || 'Point of Sale'} content={h.overview} />
       </div>
 
       {/* Search + barcode */}
@@ -138,6 +157,7 @@ const POS: React.FC = () => {
             placeholder={t('pos.scanBarcode') || 'Scan barcode (Enter)…'}
             className="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
           />
+          <HelpTip title={t('pos.scanBarcode') || 'Barcode'} content={h.barcode} />
           <button
             type="button"
             onClick={() => setScanOpen(true)}
@@ -242,7 +262,10 @@ const POS: React.FC = () => {
               <span className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(total, currency as any)}</span>
             </div>
             <div className="p-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('pos.paidWith') || 'Paid with'}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('pos.paidWith') || 'Paid with'}</p>
+                <HelpTip title={t('pos.paidWith') || 'Payment method'} content={h.payMethod} />
+              </div>
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {(['CASH', 'CARD', 'OTHER'] as PayMethod[]).map((m) => (
                   <button key={m} onClick={() => setPayMethod(m)}

@@ -5,6 +5,156 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 
+const ANALYTICS_HELP = {
+  en: {
+    pageTitle: 'Analytics',
+    pageBody:
+      'Your business performance dashboard, built from completed bookings.\n\nUse the period buttons (Daily / Weekly / Monthly / Yearly) to zoom in or out:\n• Daily — last 30 days of activity\n• Weekly — last 12 weeks\n• Monthly — last 12 months\n• Yearly — last 5 years\n\nAll revenue figures are converted to your selected currency.',
+
+    revenue: 'Revenue',
+    revenueBody:
+      'Total earnings from completed bookings in the selected period.\n\nThe arrow shows the trend: the period is split in two halves and the percentage compares the second half to the first — a positive number means the recent half outperformed the earlier half.',
+
+    avgRevenue: 'Average Revenue',
+    avgRevenueBody:
+      'Mean revenue per time unit (day / week / month / year, depending on the selected period).\n\nUseful for spotting seasonality: if the average is much lower than the total it means earnings are concentrated in a few peaks.',
+
+    bookings: 'Bookings',
+    bookingsBody:
+      'Number of completed bookings in the selected period.\n\nThe growth arrow uses the same half-period comparison as revenue: it compares the count in the second half against the first half of the window.',
+
+    rating: 'Average Rating',
+    ratingBody:
+      'Your overall star rating (out of 5) calculated across all customer reviews.\n\nThe review count shown is the total ever — it is not filtered by the selected time period.',
+
+    trendChart: 'Revenue / Bookings Trend Chart',
+    trendChartBody:
+      'Area chart showing how revenue (green) or booking count (blue) changed over time in the selected period.\n\nToggle "Revenue" or "Bookings" using the buttons above the chart.\n\nThe summary bar below the chart always shows both totals regardless of the toggle.',
+
+    servicePie: 'Service Performance (Pie Chart)',
+    servicePieBody:
+      'Breakdown of completed bookings by service name — shows which services are booked most often.\n\nEach slice represents one service; the percentage is its share of total completed bookings in your all-time data.',
+
+    serviceBar: 'Revenue by Service (Bar Chart)',
+    serviceBarBody:
+      'Total revenue generated per service, using the raw amount stored on each booking (not period-filtered).\n\nThe tallest bar is your highest-earning service. Use this to decide which services to promote or price differently.',
+
+    responseTime: 'Avg. Response Time',
+    responseTimeBody:
+      'Average time (in minutes) between a booking being created and last updated for completed bookings. Lower is better.\n\nThresholds:\n• Excellent: ≤ 5 min\n• Outstanding: ≤ 15 min\n• Good: ≤ 30 min\n• Needs Improvement: > 30 min',
+
+    completionRate: 'Completion Rate',
+    completionRateBody:
+      'Percentage of bookings that reached the "completed" status out of all bookings loaded in this session.\n\nThresholds:\n• Excellent: ≥ 95 %\n• Outstanding: ≥ 85 %\n• Good: ≥ 75 %\n• Needs Improvement: < 75 %',
+
+    profileViews: 'Profile Views',
+    profileViewsBody:
+      'Number of times your specialist profile was viewed this calendar month, plus the month-over-month growth percentage compared to last month.',
+
+    conversionRate: 'Conversion Rate',
+    conversionRateBody:
+      'Ratio of completed bookings to unique customers (bookings ÷ unique customers, capped at 100 %).\n\nA higher number means the same customers book you repeatedly.\n\nIndustry average shown for reference: 18 %.',
+  },
+  uk: {
+    pageTitle: 'Аналітика',
+    pageBody:
+      'Панель ефективності вашого бізнесу, побудована на основі завершених бронювань.\n\nВикористовуйте кнопки вибору періоду (День / Тиждень / Місяць / Рік) для деталізації:\n• День — останні 30 днів\n• Тиждень — останні 12 тижнів\n• Місяць — останні 12 місяців\n• Рік — останні 5 років\n\nУсі суми конвертовані у вашу обрану валюту.',
+
+    revenue: 'Дохід',
+    revenueBody:
+      'Загальний дохід від завершених бронювань за обраний період.\n\nСтрілка показує тренд: період ділиться навпіл, а відсоток порівнює другу половину з першою — позитивне значення означає, що остання половина виявилась кращою.',
+
+    avgRevenue: 'Середній дохід',
+    avgRevenueBody:
+      'Середній дохід за одиницю часу (день / тиждень / місяць / рік залежно від обраного periodу).\n\nДопомагає виявити сезонність: якщо середнє значно менше від загального, прибуток сконцентрований у кількох пікових точках.',
+
+    bookings: 'Бронювання',
+    bookingsBody:
+      'Кількість завершених бронювань за обраний period.\n\nСтрілка зростання використовує те саме порівняння двох половин, що й дохід.',
+
+    rating: 'Середня оцінка',
+    ratingBody:
+      'Ваша загальна зіркова оцінка (з 5), розрахована по всіх відгуках клієнтів.\n\nКількість відгуків показана за весь час — вона не фільтрується обраним periodом.',
+
+    trendChart: 'Графік тренду Дохід / Бронювання',
+    trendChartBody:
+      'Діаграма площі, що показує зміну доходу (зелений) або кількості бронювань (синій) у часі за обраний period.\n\nПеремикайте "Дохід" або "Бронювання" за допомогою кнопок над графіком.\n\nПанель під графіком завжди відображає обидва підсумки незалежно від перемикача.',
+
+    servicePie: 'Ефективність послуг (кругова діаграма)',
+    servicePieBody:
+      'Розбивка завершених бронювань за назвою послуги — показує, які послуги бронюють найчастіше.\n\nКожен сегмент — одна послуга; відсоток — її частка в загальній кількості завершених бронювань.',
+
+    serviceBar: 'Дохід за послугами (стовпчаста діаграма)',
+    serviceBarBody:
+      'Загальний дохід, отриманий від кожної послуги, на основі сум, збережених у бронюваннях.\n\nНайвищий стовпець — ваша найприбутковіша послуга. Використовуйте для прийняття рішень щодо просування та ціноутворення.',
+
+    responseTime: 'Сер. час відповіді',
+    responseTimeBody:
+      'Середній час (у хвилинах) між створенням бронювання та його останнім оновленням для завершених бронювань. Менше — краще.\n\nПороги:\n• Відмінно: ≤ 5 хв\n• Чудово: ≤ 15 хв\n• Добре: ≤ 30 хв\n• Потрібно покращити: > 30 хв',
+
+    completionRate: 'Рівень завершення',
+    completionRateBody:
+      'Відсоток бронювань, що досягли статусу "завершено".\n\nПороги:\n• Відмінно: ≥ 95 %\n• Чудово: ≥ 85 %\n• Добре: ≥ 75 %\n• Потрібно покращити: < 75 %',
+
+    profileViews: 'Перегляди профілю',
+    profileViewsBody:
+      'Кількість переглядів вашого профілю спеціаліста за поточний календарний місяць і відсоток зміни порівняно з попереднім місяцем.',
+
+    conversionRate: 'Коефіцієнт конверсії',
+    conversionRateBody:
+      'Відношення завершених бронювань до унікальних клієнтів (бронювань ÷ унікальних клієнтів, максимум 100 %).\n\nВище значення означає, що ті самі клієнти бронюють вас знову і знову.\n\nСередньогалузевий показник для довідки: 18 %.',
+  },
+  ru: {
+    pageTitle: 'Аналитика',
+    pageBody:
+      'Панель эффективности вашего бизнеса, построенная на основе завершённых бронирований.\n\nИспользуйте кнопки выбора периода (День / Неделя / Месяц / Год) для детализации:\n• День — последние 30 дней\n• Неделя — последние 12 недель\n• Месяц — последние 12 месяцев\n• Год — последние 5 лет\n\nВсе суммы конвертированы в вашу выбранную валюту.',
+
+    revenue: 'Доход',
+    revenueBody:
+      'Общий доход от завершённых бронирований за выбранный период.\n\nСтрелка показывает тренд: период делится пополам, и процент сравнивает вторую половину с первой — положительное значение означает, что последняя половина оказалась лучше.',
+
+    avgRevenue: 'Средний доход',
+    avgRevenueBody:
+      'Средний доход за единицу времени (день / неделя / месяц / год в зависимости от выбранного периода).\n\nПомогает выявить сезонность: если среднее значительно меньше общего, прибыль сосредоточена в нескольких пиковых точках.',
+
+    bookings: 'Бронирования',
+    bookingsBody:
+      'Количество завершённых бронирований за выбранный период.\n\nСтрелка роста использует то же сравнение двух половин, что и доход.',
+
+    rating: 'Средняя оценка',
+    ratingBody:
+      'Ваша общая звёздная оценка (из 5), рассчитанная по всем отзывам клиентов.\n\nКоличество отзывов показано за всё время — оно не фильтруется выбранным периодом.',
+
+    trendChart: 'График тренда Доход / Бронирования',
+    trendChartBody:
+      'Диаграмма площади, показывающая изменение дохода (зелёный) или количества бронирований (синий) во времени за выбранный период.\n\nПереключайте "Доход" или "Бронирования" кнопками над графиком.\n\nПанель под графиком всегда отображает оба итога независимо от переключателя.',
+
+    servicePie: 'Эффективность услуг (круговая диаграмма)',
+    servicePieBody:
+      'Разбивка завершённых бронирований по названию услуги — показывает, какие услуги бронируют чаще всего.\n\nКаждый сегмент — одна услуга; процент — её доля в общем количестве завершённых бронирований.',
+
+    serviceBar: 'Доход по услугам (столбчатая диаграмма)',
+    serviceBarBody:
+      'Общий доход, полученный от каждой услуги, на основе сумм, сохранённых в бронированиях.\n\nСамый высокий столбец — ваша наиболее прибыльная услуга. Используйте для принятия решений о продвижении и ценообразовании.',
+
+    responseTime: 'Ср. время ответа',
+    responseTimeBody:
+      'Среднее время (в минутах) между созданием бронирования и его последним обновлением для завершённых бронирований. Меньше — лучше.\n\nПороги:\n• Отлично: ≤ 5 мин\n• Превосходно: ≤ 15 мин\n• Хорошо: ≤ 30 мин\n• Нужно улучшить: > 30 мин',
+
+    completionRate: 'Уровень завершения',
+    completionRateBody:
+      'Процент бронирований, достигших статуса "завершено".\n\nПороги:\n• Отлично: ≥ 95 %\n• Превосходно: ≥ 85 %\n• Хорошо: ≥ 75 %\n• Нужно улучшить: < 75 %',
+
+    profileViews: 'Просмотры профиля',
+    profileViewsBody:
+      'Количество просмотров вашего профиля специалиста за текущий календарный месяц и процентное изменение по сравнению с прошлым месяцем.',
+
+    conversionRate: 'Коэффициент конверсии',
+    conversionRateBody:
+      'Отношение завершённых бронирований к уникальным клиентам (бронирований ÷ уникальных клиентов, максимум 100 %).\n\nВысокое значение означает, что одни и те же клиенты бронируют вас снова и снова.\n\nОтраслевой средний показатель для справки: 18 %.',
+  },
+};
+
 // Helper function to get the booking currency (same as Dashboard)
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
@@ -247,7 +397,8 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
 };
 
 const SpecialistAnalytics: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const h = (ANALYTICS_HELP as any)[language] || ANALYTICS_HELP.en;
   const { formatPrice, convertPrice, currency } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({});
@@ -894,7 +1045,7 @@ Performance:
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('dashboard.nav.analytics')}
               </h1>
-              <HelpTip title={t('help.analytics.title') || 'Analytics'} content={t('help.analytics.body') || 'Visitor, booking and revenue trends for your business.'} />
+              <HelpTip title={h.pageTitle} content={h.pageBody} />
             </div>
             <p className="text-gray-600 dark:text-gray-300">
               {t('analytics.subtitle')}
@@ -925,9 +1076,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl cursor-pointer transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
+                  </p>
+                  <HelpTip title={h.revenue} content={h.revenueBody} />
+                </div>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), currency)}
                 </p>
@@ -959,9 +1113,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl cursor-pointer transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
+                  </p>
+                  <HelpTip title={h.avgRevenue} content={h.avgRevenueBody} />
+                </div>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {formatPrice(periodStats.avgRevenue, currency)}
                 </p>
@@ -981,9 +1138,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl cursor-pointer transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.bookings')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.bookings')}
+                  </p>
+                  <HelpTip title={h.bookings} content={h.bookingsBody} />
+                </div>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalBookings || 0) : (periodStats?.currentBookings || 0)).toLocaleString()}
                 </p>
@@ -1015,9 +1175,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl cursor-pointer transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('dashboard.specialist.averageRating')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('dashboard.specialist.averageRating')}
+                  </p>
+                  <HelpTip title={h.rating} content={h.ratingBody} />
+                </div>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {(analyticsData.performance?.averageRating || 0).toFixed(1)}
                 </p>
@@ -1055,9 +1218,12 @@ Performance:
           {/* Revenue Trend Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                {selectedView === 'revenue' ? t('analytics.revenueTrend') : t('analytics.bookingsTrend')} ({t(`analytics.${selectedPeriod}`)})
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                  {selectedView === 'revenue' ? t('analytics.revenueTrend') : t('analytics.bookingsTrend')} ({t(`analytics.${selectedPeriod}`)})
+                </h2>
+                <HelpTip title={h.trendChart} content={h.trendChartBody} />
+              </div>
               <div className="flex flex-wrap gap-2">
                 {(['revenue', 'bookings'] as const).map((view) => (
                   <button
@@ -1119,7 +1285,10 @@ Performance:
           
           {/* Service Performance Pie Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('analytics.servicePerformance')}</h2>
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('analytics.servicePerformance')}</h2>
+              <HelpTip title={h.servicePie} content={h.servicePieBody} />
+            </div>
             {serviceData.length > 0 ? (
               <SimplePieChart data={serviceData} height="300px" />
             ) : (
@@ -1138,7 +1307,10 @@ Performance:
         
         {/* Service Revenue Analysis */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 mb-4 sm:mb-6 md:mb-8 hover:shadow-xl transition duration-200">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('analytics.revenueByService')}</h2>
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('analytics.revenueByService')}</h2>
+            <HelpTip title={h.serviceBar} content={h.serviceBarBody} />
+          </div>
           {serviceRevenue.length > 0 ? (
             <SimpleBarChart
               data={serviceRevenue}
@@ -1164,9 +1336,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('analytics.responseTime')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('analytics.responseTime')}
+                  </p>
+                  <HelpTip title={h.responseTime} content={h.responseTimeBody} />
+                </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {Math.round(analyticsData.performance?.averageResponseTime || 0)}m
                 </p>
@@ -1185,9 +1360,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('analytics.completionRate')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('analytics.completionRate')}
+                  </p>
+                  <HelpTip title={h.completionRate} content={h.completionRateBody} />
+                </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {(analyticsData.performance?.completionRate || 0).toFixed(1)}%
                 </p>
@@ -1206,9 +1384,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('analytics.profileViews')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('analytics.profileViews')}
+                  </p>
+                  <HelpTip title={h.profileViews} content={h.profileViewsBody} />
+                </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {profileViewStats?.totalViews || 0}
                 </p>
@@ -1230,9 +1411,12 @@ Performance:
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {t('analytics.conversionRate')}
-                </p>
+                <div className="flex items-center gap-1 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {t('analytics.conversionRate')}
+                  </p>
+                  <HelpTip title={h.conversionRate} content={h.conversionRateBody} />
+                </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
                   {conversionRate.toFixed(1)}%
                 </p>

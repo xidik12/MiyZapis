@@ -49,8 +49,255 @@ function categoryLabel(category: string, t: (k: string) => string): string {
   return category;
 }
 
+// ────────────────────────────────────────────────────────────────────────
+// Self-contained trilingual help strings for this page.
+// Do NOT edit i18n files — all content lives here.
+const ACCOUNTING_HELP = {
+  en: {
+    pageTitle: 'Accounting',
+    pageBody:
+      'Your financial command centre. Use the period picker (or MTD / Last Month / QTD / YTD shortcuts) to set the reporting window, then explore four tabs:\n' +
+      '• P&L — revenue vs. expenses for the period.\n' +
+      '• Tax — estimated tax liability under your chosen regime.\n' +
+      '• Invoices — issue and track client invoices.\n' +
+      '• Export — download a CSV for your accountant.\n\n' +
+      'Scope toggle (business owners only): "Just me" shows your own data; "This business" rolls up all active staff.',
+
+    grossIncome:
+      'Gross Income = completed-booking revenue + paid-invoice revenue + fulfilled retail/POS sales.\n\n' +
+      '• Completed bookings: services where status reached COMPLETED within the period (by completedAt date).\n' +
+      '• Paid invoices: manual invoices you marked PAID within the period (by paidAt date).\n' +
+      '• Retail/POS sales: product orders with status FULFILLED within the period.\n\n' +
+      'Pending bookings are shown separately as a grey informational row — they are NOT counted in Gross Income.',
+
+    expenses:
+      'Total Expenses = sum of all expense records + payroll cost (approved/paid runs) + purchase orders (received stock) within the period.\n\n' +
+      'The sub-label shows the deductible portion — expenses you flagged as tax-deductible in the Finances page.\n\n' +
+      'Note: payroll and purchase orders are added as separate line items. If you also logged them as manual expenses, both are counted (de-duplication is planned).',
+
+    grossProfit:
+      'Gross Profit = Gross Income − Total Expenses\n\n' +
+      'Total Expenses here includes every category: manual expenses, payroll, and stock purchases.\n' +
+      'A negative value means outgoings exceeded income for the period.',
+
+    netBeforeTax:
+      'Net Before Tax = Gross Income − Deductible Expenses only\n\n' +
+      'Only expenses you marked "tax-deductible" are subtracted here. Non-deductible costs (personal purchases, fines, etc.) do not reduce this figure.\n\n' +
+      'This is the basis the Tax tab uses to compute your estimated liability.',
+
+    deductible:
+      'Deductible Expenses: the portion of total expenses flagged as tax-deductible in the Finances page.\n\n' +
+      'This amount reduces your taxable income in the tax estimator. Any expense NOT checked as deductible still appears in Total Expenses and Gross Profit but does NOT reduce Net Before Tax.',
+
+    pendingBookings:
+      'Pending / upcoming bookings (PENDING, CONFIRMED, IN_PROGRESS) scheduled in the period.\n\n' +
+      'These are informational only — they are greyed out and NOT included in Gross Income or any P&L total. Revenue is recognised only when a booking reaches COMPLETED status.',
+
+    periodPresets:
+      'Quick period shortcuts:\n' +
+      '• MTD (Month-to-date) — 1st of this month → today\n' +
+      '• Last Month — full previous calendar month\n' +
+      '• QTD (Quarter-to-date) — 1st of this calendar quarter → today\n' +
+      '• YTD (Year-to-date) — 1 January → today\n\n' +
+      'All tabs (P&L, Tax, Export) respect the same period.',
+
+    taxableBase:
+      'Taxable Base = Gross Income − Deductible Expenses (= Net Before Tax from the P&L tab).\n\n' +
+      'The selected tax regime then applies its rate(s) to this base. Switch the regime dropdown to compare different scenarios — the calculation updates instantly.',
+
+    totalTax:
+      'Estimated total tax liability for the period under the selected regime.\n\n' +
+      'This is an ESTIMATE based on the data recorded in MiyZapis. Consult a licensed accountant for official filings.\n' +
+      'Shown in red because it represents money owed.',
+
+    netAfterTax:
+      'Net After Tax = Taxable Base − Total Estimated Tax\n\n' +
+      'Your estimated take-home profit after paying taxes. Does not account for tax credits or deferrals outside MiyZapis.',
+
+    vatCollected:
+      'VAT Collected (output VAT) = sum of the VAT amount on all invoices you marked PAID within the period.\n\n' +
+      'This is VAT you charged your clients and must remit to the tax authority.',
+
+    vatPaid:
+      'VAT Paid (input VAT) = sum of the tax amount on purchase orders with status RECEIVED or PARTIAL within the period.\n\n' +
+      'This is VAT you paid to your suppliers and may be reclaimable as an input-VAT credit.',
+
+    vatNetDue:
+      'Net VAT Due = VAT Collected − VAT Paid\n\n' +
+      'Positive = you owe this to the tax authority.\n' +
+      'Negative = you have a VAT credit (paid more input VAT than you collected — may be refundable or carried forward depending on your regime).',
+
+    scope:
+      'Scope toggle (visible to business owners only):\n' +
+      '• "Just me" — shows only your personal bookings, expenses, invoices, and payroll.\n' +
+      '• "This business" — aggregates all active staff members of every business you own.\n\n' +
+      'Use "This business" for a consolidated company P&L.',
+  },
+  uk: {
+    pageTitle: 'Бухгалтерія',
+    pageBody:
+      'Ваш фінансовий центр управління. Оберіть звітний період за допомогою вибору дат або кнопок-пресетів (МТМ / Мин.місяць / КТК / РТД), після чого перегляньте чотири вкладки:\n' +
+      '• П&З — доходи проти витрат за період.\n' +
+      '• Податки — розрахунок орієнтовного податкового зобов\'язання за обраним режимом.\n' +
+      '• Рахунки-фактури — виставлення та відстеження рахунків клієнтам.\n' +
+      '• Експорт — завантаження CSV для бухгалтера.\n\n' +
+      'Перемикач охоплення (тільки для власників бізнесу): «Тільки я» — особисті дані; «Весь бізнес» — зведення по всіх активних співробітниках.',
+
+    grossIncome:
+      'Валовий дохід = виручка від завершених записів + оплачені рахунки-фактури + реалізовані роздрібні/POS-продажі.\n\n' +
+      '• Завершені записи: послуги зі статусом COMPLETED у межах звітного періоду (за датою completedAt).\n' +
+      '• Оплачені рахунки-фактури: рахунки, які ви позначили PAID у межах звітного періоду (за датою paidAt).\n' +
+      '• Роздрібні/POS-продажі: замовлення товарів зі статусом FULFILLED у межах звітного періоду.\n\n' +
+      'Очікувані записи відображаються окремим сірим рядком як орієнтовна інформація — вони НЕ враховуються у Валовому доході.',
+
+    expenses:
+      'Загальні витрати = сума всіх витратних записів + вартість нарахованої зарплати (затверджені/виплачені відомості) + замовлення на закупівлю (отриманий товар) у звітному періоді.\n\n' +
+      'Підпис під сумою показує «вирахувальну» частину — витрати, які ви позначили як податково-вирахувальні на сторінці «Фінанси».\n\n' +
+      'Увага: нарахована зарплата та закупівлі додаються як окремі рядки. Якщо ви також вніс їх вручну як витрати, вони будуть зараховані двічі (дедублікація планується).',
+
+    grossProfit:
+      'Валовий прибуток = Валовий дохід − Загальні витрати\n\n' +
+      'Загальні витрати включають усі категорії: ручні витрати, зарплату та закупівлю товарів.\n' +
+      'Від\'ємне значення означає, що видатки перевищили дохід за період.',
+
+    netBeforeTax:
+      'Прибуток до оподаткування = Валовий дохід − Тільки вирахувальні витрати\n\n' +
+      'Від цього показника відраховуються лише витрати, позначені як «вирахувальні». Невирахувальні витрати (особисті покупки, штрафи тощо) цей показник не зменшують.\n\n' +
+      'Саме ця сума є базою для розрахунку орієнтовного податку на вкладці «Податки».',
+
+    deductible:
+      'Вирахувальні витрати: частина загальних витрат, позначена як «вирахувальна» на сторінці «Фінанси».\n\n' +
+      'Ця сума зменшує оподатковуваний дохід у розрахунку податку. Витрати, не позначені як вирахувальні, враховуються у Загальних витратах та Валовому прибутку, але НЕ зменшують Прибуток до оподаткування.',
+
+    pendingBookings:
+      'Очікувані записи (PENDING, CONFIRMED, IN_PROGRESS), заплановані в межах звітного періоду.\n\n' +
+      'Лише інформація — виділені сірим і НЕ включені до Валового доходу чи будь-якого підсумку П&З. Дохід визнається лише після переходу запису до статусу COMPLETED.',
+
+    periodPresets:
+      'Швидкі пресети звітного періоду:\n' +
+      '• МТМ (від початку місяця) — 1-й день поточного місяця → сьогодні\n' +
+      '• Мин.місяць — повний попередній календарний місяць\n' +
+      '• КТК (від початку кварталу) — 1-й день поточного кварталу → сьогодні\n' +
+      '• РТД (від початку року) — 1 січня → сьогодні\n\n' +
+      'Усі вкладки (П&З, Податки, Експорт) використовують той самий обраний період.',
+
+    taxableBase:
+      'Оподатковувана база = Валовий дохід − Вирахувальні витрати (= Прибуток до оподаткування з вкладки П&З).\n\n' +
+      'Обраний податковий режим застосовує свої ставки до цієї бази. Перемикайте режими у випадаючому списку — розрахунок оновлюється миттєво.',
+
+    totalTax:
+      'Орієнтовне загальне податкове зобов\'язання за звітний період за обраним режимом.\n\n' +
+      'Це ПРОГНОЗ на основі даних, внесених до MiyZapis. Для офіційної звітності зверніться до ліцензованого бухгалтера.\n' +
+      'Виділено червоним як сума до сплати.',
+
+    netAfterTax:
+      'Чистий прибуток після податків = Оподатковувана база − Орієнтовний податок\n\n' +
+      'Ваш орієнтовний залишковий прибуток після сплати податків. Не враховує податкові кредити та відстрочки поза межами MiyZapis.',
+
+    vatCollected:
+      'ПДВ нарахований (вихідний ПДВ) = сума ПДВ із усіх рахунків-фактур, позначених PAID у звітному періоді.\n\n' +
+      'Це ПДВ, який ви нарахували клієнтам і маєте сплатити до бюджету.',
+
+    vatPaid:
+      'ПДВ сплачений (вхідний ПДВ) = сума суми податку із замовлень на закупівлю зі статусом RECEIVED або PARTIAL у звітному періоді.\n\n' +
+      'Це ПДВ, сплачений постачальникам, який може бути зарахований як податковий кредит.',
+
+    vatNetDue:
+      'ПДВ до сплати = ПДВ нарахований − ПДВ сплачений\n\n' +
+      'Позитивне значення: сума до сплати до бюджету.\n' +
+      'Від\'ємне значення: надлишок вхідного ПДВ (податковий кредит — може бути відшкодований або перенесений залежно від режиму).',
+
+    scope:
+      'Перемикач охоплення (лише для власників бізнесу):\n' +
+      '• «Тільки я» — ваші особисті записи, витрати, рахунки та зарплата.\n' +
+      '• «Весь бізнес» — зведення по всіх активних співробітниках кожного вашого бізнесу.\n\n' +
+      'Використовуйте «Весь бізнес» для зведеного звіту П&З по компанії.',
+  },
+  ru: {
+    pageTitle: 'Бухгалтерия',
+    pageBody:
+      'Ваш финансовый центр управления. Выберите отчётный период с помощью дат или кнопок-пресетов (МТМ / Пр.месяц / КТК / ГТД), затем просматривайте четыре вкладки:\n' +
+      '• П&У — доходы и расходы за период.\n' +
+      '• Налоги — расчёт ориентировочного налогового обязательства по выбранному режиму.\n' +
+      '• Счета-фактуры — выставление и отслеживание счетов клиентам.\n' +
+      '• Экспорт — скачать CSV для бухгалтера.\n\n' +
+      'Переключатель охвата (только для владельцев бизнеса): «Только я» — личные данные; «Весь бизнес» — сводка по всем активным сотрудникам.',
+
+    grossIncome:
+      'Валовый доход = выручка от завершённых записей + оплаченные счета-фактуры + реализованные розничные/POS-продажи.\n\n' +
+      '• Завершённые записи: услуги со статусом COMPLETED в рамках периода (по дате completedAt).\n' +
+      '• Оплаченные счета-фактуры: счета, отмеченные PAID в рамках периода (по дате paidAt).\n' +
+      '• Розничные/POS-продажи: заказы товаров со статусом FULFILLED в рамках периода.\n\n' +
+      'Ожидаемые записи показываются отдельной серой строкой — они НЕ учитываются в Валовом доходе.',
+
+    expenses:
+      'Общие расходы = сумма всех расходных записей + стоимость начисленной зарплаты (утверждённые/выплаченные ведомости) + заказы на закупку (полученный товар) в отчётном периоде.\n\n' +
+      'Подпись под суммой показывает «вычитаемую» часть — расходы, отмеченные как налогово-вычитаемые на странице «Финансы».\n\n' +
+      'Внимание: зарплата и закупки добавляются как отдельные строки. Если вы также внесли их вручную как расходы, они будут учтены дважды (дедупликация планируется).',
+
+    grossProfit:
+      'Валовая прибыль = Валовый доход − Общие расходы\n\n' +
+      'Общие расходы включают все категории: ручные расходы, зарплату и закупку товаров.\n' +
+      'Отрицательное значение означает, что расходы превысили доход за период.',
+
+    netBeforeTax:
+      'Прибыль до налогообложения = Валовый доход − Только вычитаемые расходы\n\n' +
+      'Здесь вычитаются только расходы, отмеченные как «вычитаемые». Невычитаемые расходы (личные покупки, штрафы и т.д.) этот показатель не уменьшают.\n\n' +
+      'Именно эта сумма является базой для расчёта ориентировочного налога на вкладке «Налоги».',
+
+    deductible:
+      'Вычитаемые расходы: часть общих расходов, отмеченная как «вычитаемая» на странице «Финансы».\n\n' +
+      'Эта сумма уменьшает налогооблагаемый доход в расчёте налога. Расходы, не отмеченные как вычитаемые, учитываются в Общих расходах и Валовой прибыли, но НЕ уменьшают Прибыль до налогообложения.',
+
+    pendingBookings:
+      'Ожидаемые записи (PENDING, CONFIRMED, IN_PROGRESS), запланированные в рамках периода.\n\n' +
+      'Только информация — выделены серым и НЕ включены в Валовый доход или итоги П&У. Доход признаётся только после перехода записи в статус COMPLETED.',
+
+    periodPresets:
+      'Быстрые пресеты отчётного периода:\n' +
+      '• МТМ (с начала месяца) — 1-й день текущего месяца → сегодня\n' +
+      '• Пр.месяц — полный предыдущий календарный месяц\n' +
+      '• КТК (с начала квартала) — 1-й день текущего квартала → сегодня\n' +
+      '• ГТД (с начала года) — 1 января → сегодня\n\n' +
+      'Все вкладки (П&У, Налоги, Экспорт) используют один и тот же выбранный период.',
+
+    taxableBase:
+      'Налогооблагаемая база = Валовый доход − Вычитаемые расходы (= Прибыль до налогообложения из вкладки П&У).\n\n' +
+      'Выбранный налоговый режим применяет свои ставки к этой базе. Переключайте режимы в выпадающем списке — расчёт обновляется мгновенно.',
+
+    totalTax:
+      'Ориентировочное общее налоговое обязательство за отчётный период по выбранному режиму.\n\n' +
+      'Это ПРОГНОЗ на основе данных, внесённых в MiyZapis. Для официальной отчётности обратитесь к лицензированному бухгалтеру.\n' +
+      'Выделено красным как сумма к уплате.',
+
+    netAfterTax:
+      'Чистая прибыль после налогов = Налогооблагаемая база − Ориентировочный налог\n\n' +
+      'Ваша ориентировочная остаточная прибыль после уплаты налогов. Не учитывает налоговые кредиты и отсрочки вне MiyZapis.',
+
+    vatCollected:
+      'НДС начисленный (исходящий НДС) = сумма НДС по всем счетам-фактурам, отмеченным PAID в отчётном периоде.\n\n' +
+      'Это НДС, который вы начислили клиентам и должны уплатить в бюджет.',
+
+    vatPaid:
+      'НДС уплаченный (входящий НДС) = сумма налога по заказам на закупку со статусом RECEIVED или PARTIAL в отчётном периоде.\n\n' +
+      'Это НДС, уплаченный поставщикам, который может быть зачтён как налоговый кредит.',
+
+    vatNetDue:
+      'НДС к уплате = НДС начисленный − НДС уплаченный\n\n' +
+      'Положительное значение: сумма к уплате в бюджет.\n' +
+      'Отрицательное значение: избыток входящего НДС (налоговый кредит — может быть возмещён или перенесён в зависимости от режима).',
+
+    scope:
+      'Переключатель охвата (только для владельцев бизнеса):\n' +
+      '• «Только я» — ваши личные записи, расходы, счета и зарплата.\n' +
+      '• «Весь бизнес» — сводка по всем активным сотрудникам каждого вашего бизнеса.\n\n' +
+      'Используйте «Весь бизнес» для сводного П&У по компании.',
+  },
+};
+
 const Accounting: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const ah = (ACCOUNTING_HELP as any)[language] || ACCOUNTING_HELP.en;
   const [tab, setTab] = useState<Tab>('pnl');
   const [from, setFrom] = useState<Date>(startOfMonth());
   const [to, setTo] = useState<Date>(endOfMonth());
@@ -73,11 +320,16 @@ const Accounting: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounting.title')}</h1>
-              <HelpTip title={t('help.accounting.title') || 'Accounting'} content={t('help.accounting.body') || 'Tax estimates and financial summaries for your business.'} />
+              <HelpTip title={ah.pageTitle} content={ah.pageBody} />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('accounting.subtitle')}</p>
           </div>
-          {ownsBusiness && <ScopeToggle scope={scope} onChange={setScope} />}
+          {ownsBusiness && (
+            <div className="flex items-center gap-2">
+              <ScopeToggle scope={scope} onChange={setScope} />
+              <HelpTip size={14} title={ah.scope.split('\n')[0]} content={ah.scope} />
+            </div>
+          )}
         </header>
 
         <PeriodPicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t); }} />
@@ -126,7 +378,8 @@ const ScopeToggle: React.FC<{ scope: AccountingScope; onChange: (s: AccountingSc
 
 // ────────────────────────────────────────────────────────────────────────
 const PeriodPicker: React.FC<{ from: Date; to: Date; onChange: (f: Date, t: Date) => void }> = ({ from, to, onChange }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const ph = (ACCOUNTING_HELP as any)[language] || ACCOUNTING_HELP.en;
   const setPreset = (kind: 'mtd' | 'qtd' | 'ytd' | 'last_month') => {
     const now = new Date();
     if (kind === 'mtd') return onChange(startOfMonth(now), endOfMonth(now));
@@ -148,10 +401,11 @@ const PeriodPicker: React.FC<{ from: Date; to: Date; onChange: (f: Date, t: Date
       <label className="text-sm text-gray-700 dark:text-gray-200">
         {t('accounting.period.to')} <input type="date" value={toInputDate(to)} onChange={(e) => onChange(from, fromInputDate(e.target.value))} className="ml-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm" />
       </label>
-      <div className="flex gap-1 ml-auto">
+      <div className="flex gap-1 ml-auto items-center">
         {[['mtd', t('accounting.period.thisMonth')], ['last_month', t('accounting.period.lastMonth')], ['qtd', t('accounting.period.quarter')], ['ytd', t('accounting.period.year')]].map(([k, l]) => (
           <button key={k} onClick={() => setPreset(k as any)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96]">{l}</button>
         ))}
+        <HelpTip size={14} title={ph.periodPresets.split('\n')[0]} content={ph.periodPresets} />
       </div>
     </div>
   );
@@ -189,7 +443,8 @@ const Tabs: React.FC<{ current: Tab; onChange: (t: Tab) => void }> = ({ current,
 
 // ────────────────────────────────────────────────────────────────────────
 const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ from, to, scope }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const ph = (ACCOUNTING_HELP as any)[language] || ACCOUNTING_HELP.en;
   const [data, setData] = useState<ProfitLoss | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -207,16 +462,16 @@ const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat label={t('accounting.pnl.grossIncome')} value={fmtMoney(data.totals.grossIncome, c)} hint={`${data.income.completedBookings} ${t('accounting.pnl.bookings')} · ${data.income.invoicesPaid} ${t('accounting.pnl.invoices')}`} />
-        <Stat label={t('accounting.pnl.expenses')} value={fmtMoney(data.expenses.total, c)} hint={`${fmtMoney(data.totals.deductibleExpenses, c)} ${t('accounting.pnl.deductible')}`} />
-        <Stat label={t('accounting.pnl.grossProfit')} value={fmtMoney(data.totals.grossProfit, c)} positive={data.totals.grossProfit >= 0} />
-        <Stat label={t('accounting.pnl.netBeforeTax')} value={fmtMoney(data.totals.netBeforeTax, c)} positive={data.totals.netBeforeTax >= 0} />
+        <StatHelp label={t('accounting.pnl.grossIncome')} helpTitle={t('accounting.pnl.grossIncome')} helpContent={ph.grossIncome} value={fmtMoney(data.totals.grossIncome, c)} hint={`${data.income.completedBookings} ${t('accounting.pnl.bookings')} · ${data.income.invoicesPaid} ${t('accounting.pnl.invoices')}`} />
+        <StatHelp label={t('accounting.pnl.expenses')} helpTitle={t('accounting.pnl.expenses')} helpContent={ph.expenses} value={fmtMoney(data.expenses.total, c)} hint={`${fmtMoney(data.totals.deductibleExpenses, c)} ${t('accounting.pnl.deductible')}`} />
+        <StatHelp label={t('accounting.pnl.grossProfit')} helpTitle={t('accounting.pnl.grossProfit')} helpContent={ph.grossProfit} value={fmtMoney(data.totals.grossProfit, c)} positive={data.totals.grossProfit >= 0} />
+        <StatHelp label={t('accounting.pnl.netBeforeTax')} helpTitle={t('accounting.pnl.netBeforeTax')} helpContent={ph.netBeforeTax} value={fmtMoney(data.totals.netBeforeTax, c)} positive={data.totals.netBeforeTax >= 0} />
       </div>
 
       <Section title={t('accounting.pnl.income')}>
         <RowKV k={t('accounting.pnl.completedBookings')} v={fmtMoney(data.income.completedBookingsRevenue, c)} />
         <RowKV k={t('accounting.pnl.paidInvoices')} v={fmtMoney(data.income.invoicesPaidRevenue, c)} />
-        <RowKV k={t('accounting.pnl.pendingBookings')} v={fmtMoney(data.income.pendingBookingsRevenue, c)} muted />
+        <RowKVHelp k={t('accounting.pnl.pendingBookings')} v={fmtMoney(data.income.pendingBookingsRevenue, c)} muted helpTitle={t('accounting.pnl.pendingBookings')} helpContent={ph.pendingBookings} />
       </Section>
 
       <Section title={t('accounting.pnl.byCategory')}>
@@ -226,7 +481,7 @@ const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
             <div key={row.category} className="flex justify-between gap-3 py-2 text-sm">
               <div className="min-w-0">
                 <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{categoryLabel(row.category, t)}</div>
-                <div className="text-xs text-gray-500 break-words">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}</div>
+                <div className="text-xs text-gray-500 break-words flex items-center gap-1 flex-wrap">{row.count} {t('accounting.pnl.entries')} · {fmtMoney(row.deductible, c)} {t('accounting.pnl.deductible')}<HelpTip size={13} title={t('accounting.pnl.deductible')} content={ph.deductible} /></div>
               </div>
               <div className="flex-shrink-0 font-mono tabular-nums text-gray-900 dark:text-gray-100">{fmtMoney(row.total, c)}</div>
             </div>
@@ -239,7 +494,8 @@ const PnlPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
 
 // ────────────────────────────────────────────────────────────────────────
 const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ from, to, scope }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const ph = (ACCOUNTING_HELP as any)[language] || ACCOUNTING_HELP.en;
   const [regimes, setRegimes] = useState<TaxRegime[]>([]);
   const [regime, setRegime] = useState<string>('');
   const [data, setData] = useState<TaxComputation | null>(null);
@@ -282,9 +538,9 @@ const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Stat label={t('accounting.tax.totalTax')} value={fmtMoney(data.totalTax)} negative={data.totalTax > 0} />
-        <Stat label={t('accounting.tax.taxableBase')} value={fmtMoney(data.taxableBase)} />
-        <Stat label={t('accounting.tax.netAfterTax')} value={fmtMoney(data.netIncome)} positive={data.netIncome >= 0} />
+        <StatHelp label={t('accounting.tax.totalTax')} helpTitle={t('accounting.tax.totalTax')} helpContent={ph.totalTax} value={fmtMoney(data.totalTax)} negative={data.totalTax > 0} />
+        <StatHelp label={t('accounting.tax.taxableBase')} helpTitle={t('accounting.tax.taxableBase')} helpContent={ph.taxableBase} value={fmtMoney(data.taxableBase)} />
+        <StatHelp label={t('accounting.tax.netAfterTax')} helpTitle={t('accounting.tax.netAfterTax')} helpContent={ph.netAfterTax} value={fmtMoney(data.netIncome)} positive={data.netIncome >= 0} />
       </div>
 
       <Section title={data.regimeLabel}>
@@ -306,9 +562,9 @@ const TaxPanel: React.FC<{ from: Date; to: Date; scope: AccountingScope }> = ({ 
       {vat && (
         <Section title={t('accounting.vat.title')}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Stat label={t('accounting.vat.collected')} value={fmtMoney(vat.vatCollected, vat.currency)} />
-            <Stat label={t('accounting.vat.paid')} value={fmtMoney(vat.vatPaid, vat.currency)} />
-            <Stat label={t('accounting.vat.netDue')} value={fmtMoney(vat.netVatDue, vat.currency)} negative={vat.netVatDue > 0} positive={vat.netVatDue < 0} />
+            <StatHelp label={t('accounting.vat.collected')} helpTitle={t('accounting.vat.collected')} helpContent={ph.vatCollected} value={fmtMoney(vat.vatCollected, vat.currency)} />
+            <StatHelp label={t('accounting.vat.paid')} helpTitle={t('accounting.vat.paid')} helpContent={ph.vatPaid} value={fmtMoney(vat.vatPaid, vat.currency)} />
+            <StatHelp label={t('accounting.vat.netDue')} helpTitle={t('accounting.vat.netDue')} helpContent={ph.vatNetDue} value={fmtMoney(vat.netVatDue, vat.currency)} negative={vat.netVatDue > 0} positive={vat.netVatDue < 0} />
           </div>
           <p className="text-xs text-gray-500 mt-2">{t('accounting.vat.hint')}</p>
         </Section>
@@ -652,6 +908,29 @@ const Stat: React.FC<{ label: string; value: string; hint?: string; positive?: b
     <div className="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wider">{label}</div>
     <div className={`text-xl font-bold truncate tabular-nums ${positive ? 'text-green-600' : negative ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{value}</div>
     {hint && <div className="text-xs text-gray-500">{hint}</div>}
+  </div>
+);
+
+// Stat card with an inline HelpTip next to the label.
+const StatHelp: React.FC<{ label: string; helpTitle: string; helpContent: string; value: string; hint?: string; positive?: boolean; negative?: boolean }> = ({ label, helpTitle, helpContent, value, hint, positive, negative }) => (
+  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+    <div className="flex items-center gap-1 text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wider">
+      <span>{label}</span>
+      <HelpTip size={13} title={helpTitle} content={helpContent} />
+    </div>
+    <div className={`text-xl font-bold truncate tabular-nums ${positive ? 'text-green-600' : negative ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{value}</div>
+    {hint && <div className="text-xs text-gray-500">{hint}</div>}
+  </div>
+);
+
+// RowKV with an inline HelpTip.
+const RowKVHelp: React.FC<{ k: string; v: string; muted?: boolean; helpTitle: string; helpContent: string }> = ({ k, v, muted, helpTitle, helpContent }) => (
+  <div className="flex justify-between gap-3 py-1 text-sm">
+    <span className={`flex items-center gap-1 flex-shrink-0 ${muted ? 'text-gray-500' : 'text-gray-700 dark:text-gray-200'}`}>
+      {k}
+      <HelpTip size={13} title={helpTitle} content={helpContent} />
+    </span>
+    <span className={`min-w-0 truncate text-right font-mono tabular-nums ${muted ? 'text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{v}</span>
   </div>
 );
 

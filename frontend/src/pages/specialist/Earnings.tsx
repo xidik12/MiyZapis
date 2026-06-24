@@ -59,8 +59,109 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
 };
 
+// ─── Self-contained help content (trilingual, no i18n edits required) ───────
+const EARNINGS_HELP = {
+  en: {
+    overview: 'Your complete earnings record.\n\nThis page shows what you have billed clients across all time and broken down by month. All amounts come from completed bookings and are converted to your display currency at current exchange rates.\n\nImportant: MiyZapis does not process or hold payments. You collect money directly from clients in person. "Earnings" here means what you billed — it is not a platform payout.\n\nHow to use it:\n• Use Total Earnings and This Month to track your income.\n• Monitor Monthly Growth to see whether your business is growing.\n• Add expenses under Finances to see Net Profit and Profit Margin.\n• Export a CSV report any time from the top-right button.',
+
+    totalEarnings: 'Sum of all completed booking amounts across your entire history on MiyZapis, converted to your display currency at current exchange rates.\n\nFormula: Σ (each completed booking amount × exchange rate to your currency).\n\nThis is NOT a platform payout — you collected this money directly from clients in person.',
+
+    thisMonth: 'Your earnings from completed bookings in the current calendar month only.\n\nFormula: sum of completed-booking amounts whose completion date falls in the current month, converted to your display currency.\n\nResets to zero on the 1st of each month.',
+
+    pending: 'Bookings that are confirmed or in progress but not yet marked as completed. The amounts shown here are not yet counted in your total earnings.\n\nOnce you mark a session as completed, it moves into your total.',
+
+    avgPerBooking: 'Average amount you earn per completed booking.\n\nFormula: Total Earnings ÷ number of completed bookings.\n\nUse this to identify whether your pricing matches the market.',
+
+    avgSessionValue: 'Average amount per booking across ALL bookings (completed and upcoming).\n\nFormula: Total Earnings ÷ total bookings.\n\nCompare this to Avg per Booking — a big gap means many bookings are not yet completed.',
+
+    monthlyGrowth: 'How your earnings changed from the previous month to the last recorded month.\n\nFormula: (last month − prior month) ÷ prior month × 100.\n\nPositive = growing. Negative = shrinking. Shows 0 if there are fewer than two months of data.',
+
+    activeClients: 'The number of unique customers who have at least one completed booking with you.\n\nFormula: count of distinct customer IDs across all your completed bookings.\n\nThis is your active client base — the people who have actually paid you.',
+
+    repeatCustomers: 'Clients who came back more than once, as reported by the analytics API.\n\nShows 0 if the analytics data is not available yet — this is normal for new accounts.',
+
+    newCustomers: 'First-time clients in the reporting period, as reported by the analytics API.\n\nShows 0 if the analytics data is not available yet.',
+
+    peakHours: 'The time-of-day window when you receive the most bookings.\n\nCurrently shows "—" because per-booking appointment time data is not yet wired into this page. This will populate automatically once the data pipeline is connected.',
+
+    bestDay: 'The weekday when you earn the most on average.\n\nCurrently shows "—" because per-booking appointment time data is not yet wired into this page. This will populate automatically once the data pipeline is connected.',
+
+    avgDuration: 'Average duration of your completed sessions.\n\nCurrently shows "—" because per-booking duration data is not yet wired into this page. This will populate automatically once the data pipeline is connected.',
+
+    conversionRate: 'Completion rate from the analytics service — how many of your bookings were marked as completed vs total.\n\nFormula: completed bookings ÷ total bookings × 100.\n\nShows 0 if the analytics data is unavailable.',
+
+    monthlyGrowthDetail: 'Month-over-month growth in the Detailed Analytics section.\n\nFormula: (last month earnings − prior month earnings) ÷ prior month earnings × 100.\n\nBased on your monthly earnings breakdown.',
+  },
+
+  uk: {
+    overview: 'Ваш повний облік доходів.\n\nЦя сторінка показує суми, виставлені клієнтам за весь час та з розбивкою по місяцях. Усі суми беруться із завершених записів і конвертуються у вашу обрану валюту за поточним курсом.\n\nВажливо: MiyZapis не обробляє і не утримує платежі. Ви отримуєте гроші безпосередньо від клієнтів готівкою або переказом. «Доходи» тут означають те, що ви виставили до оплати — це не виплата від платформи.\n\nЯк користуватися:\n• Використовуйте Загальний дохід і Цього місяця для відстеження надходжень.\n• Стежте за Місячним зростанням, щоб бачити динаміку розвитку.\n• Додавайте витрати в розділі «Фінанси», щоб побачити Чистий прибуток і Маржу.\n• Кнопка «Експорт звіту» у верхньому правому куті доступна будь-коли.',
+
+    totalEarnings: 'Сума всіх завершених записів за весь час на MiyZapis, конвертована у вашу обрану валюту за поточним курсом.\n\nФормула: Σ (сума кожного завершеного запису × курс до вашої валюти).\n\nЦе НЕ виплата від платформи — ви отримали ці кошти безпосередньо від клієнтів готівкою або переказом.',
+
+    thisMonth: 'Ваші доходи від завершених записів лише за поточний календарний місяць.\n\nФормула: сума сум завершених записів, дата завершення яких припадає на поточний місяць, конвертована у вашу валюту.\n\nОбнуляється 1-го числа кожного місяця.',
+
+    pending: 'Записи, які підтверджені або в процесі, але ще не позначені як завершені. Ці суми ще не входять у ваш загальний дохід.\n\nЯк тільки ви позначите сесію як завершену, вона перейде до загальної суми.',
+
+    avgPerBooking: 'Середня сума, яку ви отримуєте за один завершений запис.\n\nФормула: Загальний дохід ÷ кількість завершених записів.\n\nВикористовуйте цей показник, щоб оцінити відповідність ваших цін ринку.',
+
+    avgSessionValue: 'Середня сума на запис по ВСІХ записах (завершених і майбутніх).\n\nФормула: Загальний дохід ÷ загальна кількість записів.\n\nПорівняйте з «Середнім за записом» — великий розрив означає, що багато записів ще не завершені.',
+
+    monthlyGrowth: 'Як змінились ваші доходи від попереднього місяця до останнього зафіксованого.\n\nФормула: (останній місяць − попередній місяць) ÷ попередній місяць × 100.\n\nПозитивне значення = зростання. Негативне = зниження. Показує 0, якщо даних менше ніж за два місяці.',
+
+    activeClients: 'Кількість унікальних клієнтів, у яких є хоча б один завершений запис до вас.\n\nФормула: кількість унікальних ідентифікаторів клієнтів серед усіх ваших завершених записів.\n\nЦе ваша активна клієнтська база — люди, які вам фактично платили.',
+
+    repeatCustomers: 'Клієнти, які поверталися більше одного разу — за даними аналітичного API.\n\nПоказує 0, якщо аналітичні дані ще недоступні — це нормально для нових акаунтів.',
+
+    newCustomers: 'Клієнти, які звернулися вперше у звітний період — за даними аналітичного API.\n\nПоказує 0, якщо аналітичні дані ще недоступні.',
+
+    peakHours: 'Година дня, коли ви отримуєте найбільше записів.\n\nПоки що відображається «—», оскільки дані про час прийому по кожному запису ще не підключені до цієї сторінки. Заповниться автоматично після підключення відповідного потоку даних.',
+
+    bestDay: 'День тижня, коли ви в середньому заробляєте найбільше.\n\nПоки що відображається «—», оскільки дані про час прийому по кожному запису ще не підключені до цієї сторінки. Заповниться автоматично після підключення відповідного потоку даних.',
+
+    avgDuration: 'Середня тривалість ваших завершених сесій.\n\nПоки що відображається «—», оскільки дані про тривалість по кожному запису ще не підключені до цієї сторінки. Заповниться автоматично після підключення відповідного потоку даних.',
+
+    conversionRate: 'Відсоток виконання від аналітичного сервісу — скільки ваших записів позначено як завершені відносно загальної кількості.\n\nФормула: завершені записи ÷ загальна кількість записів × 100.\n\nПоказує 0, якщо аналітичні дані недоступні.',
+
+    monthlyGrowthDetail: 'Місяць до місяця в розділі «Детальна аналітика».\n\nФормула: (доходи останнього місяця − доходи попереднього місяця) ÷ доходи попереднього місяця × 100.\n\nРозраховується на основі вашої помісячної розбивки.',
+  },
+
+  ru: {
+    overview: 'Полный учёт ваших доходов.\n\nЭта страница показывает суммы, выставленные клиентам за всё время и с разбивкой по месяцам. Все суммы берутся из завершённых записей и конвертируются в выбранную вами валюту по текущему курсу.\n\nВажно: MiyZapis не обрабатывает и не хранит платежи. Вы получаете деньги непосредственно от клиентов наличными или переводом. «Доходы» здесь означают то, что вы выставили к оплате — это не выплата от платформы.\n\nКак пользоваться:\n• Используйте Общий доход и За этот месяц для отслеживания поступлений.\n• Следите за Ростом за месяц, чтобы видеть динамику.\n• Добавляйте расходы в разделе «Финансы», чтобы видеть Чистую прибыль и Маржу.\n• Кнопка «Экспорт отчёта» в верхнем правом углу доступна в любое время.',
+
+    totalEarnings: 'Сумма всех завершённых записей за всё время на MiyZapis, конвертированная в выбранную вами валюту по текущему курсу.\n\nФормула: Σ (сумма каждой завершённой записи × курс к вашей валюте).\n\nЭто НЕ выплата от платформы — вы получили эти средства непосредственно от клиентов наличными или переводом.',
+
+    thisMonth: 'Ваши доходы от завершённых записей только за текущий календарный месяц.\n\nФормула: сумма сумм завершённых записей, дата завершения которых приходится на текущий месяц, конвертированная в вашу валюту.\n\nСбрасывается в ноль 1-го числа каждого месяца.',
+
+    pending: 'Записи, которые подтверждены или в процессе, но ещё не отмечены как завершённые. Эти суммы ещё не входят в ваш общий доход.\n\nКак только вы отметите сессию как завершённую, она перейдёт в общую сумму.',
+
+    avgPerBooking: 'Средняя сумма, которую вы получаете за одну завершённую запись.\n\nФормула: Общий доход ÷ количество завершённых записей.\n\nИспользуйте этот показатель, чтобы оценить соответствие ваших цен рынку.',
+
+    avgSessionValue: 'Средняя сумма на запись по ВСЕМ записям (завершённым и предстоящим).\n\nФормула: Общий доход ÷ общее количество записей.\n\nСравните с «Средним за запись» — большой разрыв означает, что многие записи ещё не завершены.',
+
+    monthlyGrowth: 'Как изменились ваши доходы от предыдущего месяца до последнего зафиксированного.\n\nФормула: (последний месяц − предыдущий месяц) ÷ предыдущий месяц × 100.\n\nПоложительное значение = рост. Отрицательное = снижение. Показывает 0, если данных менее чем за два месяца.',
+
+    activeClients: 'Количество уникальных клиентов, у которых есть хотя бы одна завершённая запись к вам.\n\nФормула: количество уникальных идентификаторов клиентов среди всех ваших завершённых записей.\n\nЭто ваша активная клиентская база — люди, которые вам фактически платили.',
+
+    repeatCustomers: 'Клиенты, которые возвращались более одного раза — по данным аналитического API.\n\nПоказывает 0, если аналитические данные ещё недоступны — это нормально для новых аккаунтов.',
+
+    newCustomers: 'Клиенты, обратившиеся впервые в отчётный период — по данным аналитического API.\n\nПоказывает 0, если аналитические данные ещё недоступны.',
+
+    peakHours: 'Час дня, когда вы получаете больше всего записей.\n\nПока отображается «—», так как данные о времени приёма по каждой записи ещё не подключены к этой странице. Заполнится автоматически после подключения соответствующего потока данных.',
+
+    bestDay: 'День недели, когда вы в среднем зарабатываете больше всего.\n\nПока отображается «—», так как данные о времени приёма по каждой записи ещё не подключены к этой странице. Заполнится автоматически после подключения соответствующего потока данных.',
+
+    avgDuration: 'Средняя продолжительность ваших завершённых сессий.\n\nПока отображается «—», так как данные о продолжительности по каждой записи ещё не подключены к этой странице. Заполнится автоматически после подключения соответствующего потока данных.',
+
+    conversionRate: 'Процент выполнения от аналитического сервиса — сколько ваших записей отмечено как завершённые от общего числа.\n\nФормула: завершённые записи ÷ общее количество записей × 100.\n\nПоказывает 0, если аналитические данные недоступны.',
+
+    monthlyGrowthDetail: 'Месяц к месяцу в разделе «Детальная аналитика».\n\nФормула: (доходы последнего месяца − доходы предыдущего месяца) ÷ доходы предыдущего месяца × 100.\n\nРассчитывается на основе вашей помесячной разбивки.',
+  },
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SpecialistEarnings: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const eh = (EARNINGS_HELP as any)[language] || EARNINGS_HELP.en;
   const { formatPrice, convertPrice, currency } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
@@ -538,7 +639,7 @@ const SpecialistEarnings: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">{t('dashboard.nav.earnings')}</h1>
-            <HelpTip title={t('help.earnings.title') || 'Earnings'} content={t('help.earnings.body') || 'Revenue from your completed bookings over time.'} />
+            <HelpTip title={t('help.earnings.title') || 'Earnings'} content={eh.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">{t('earnings.subtitle')}</p>
         </div>
@@ -576,7 +677,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalEarnings')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.totalEarnings')}</p>
+                <HelpTip title={t('earnings.totalEarnings')} content={eh.totalEarnings} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -594,7 +698,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonth')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.thisMonth')}</p>
+                <HelpTip title={t('earnings.thisMonth')} content={eh.thisMonth} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -612,7 +719,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.pending')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.pending')}</p>
+                <HelpTip title={t('earnings.pending')} content={eh.pending} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -630,7 +740,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.averageBookingValue')}</p>
+                <HelpTip title={t('earnings.averageBookingValue')} content={eh.avgPerBooking} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -651,7 +764,9 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.completedBookings')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.completedBookings')}</p>
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -669,7 +784,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.activeClients')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.activeClients')}</p>
+                <HelpTip title={t('earnings.activeClients')} content={eh.activeClients} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -687,7 +805,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.averageBookingValue')}</p>
+                <HelpTip title={t('earnings.averageBookingValue')} content={eh.avgPerBooking} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -705,7 +826,10 @@ const SpecialistEarnings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.monthlyGrowth')}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.monthlyGrowth')}</p>
+                <HelpTip title={t('earnings.monthlyGrowth')} content={eh.monthlyGrowth} />
+              </div>
               {loading.earnings ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
@@ -939,7 +1063,10 @@ const SpecialistEarnings: React.FC = () => {
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.performanceMetrics')}</h4>
             <div className="space-y-3">
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.conversionRate')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.conversionRate')}</span>
+                  <HelpTip title={t('earnings.conversionRate')} content={eh.conversionRate} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -947,7 +1074,10 @@ const SpecialistEarnings: React.FC = () => {
                 )}
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.repeatCustomers')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.repeatCustomers')}</span>
+                  <HelpTip title={t('earnings.repeatCustomers')} content={eh.repeatCustomers} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -955,7 +1085,10 @@ const SpecialistEarnings: React.FC = () => {
                 )}
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.avgSessionValue')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.avgSessionValue')}</span>
+                  <HelpTip title={t('earnings.avgSessionValue')} content={eh.avgSessionValue} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -970,7 +1103,10 @@ const SpecialistEarnings: React.FC = () => {
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.timeAnalysis')}</h4>
             <div className="space-y-3">
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.peakHours')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.peakHours')}</span>
+                  <HelpTip title={t('earnings.peakHours')} content={eh.peakHours} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -978,7 +1114,10 @@ const SpecialistEarnings: React.FC = () => {
                 )}
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.bestDay')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.bestDay')}</span>
+                  <HelpTip title={t('earnings.bestDay')} content={eh.bestDay} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -986,7 +1125,10 @@ const SpecialistEarnings: React.FC = () => {
                 )}
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.avgBookingDuration')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.avgBookingDuration')}</span>
+                  <HelpTip title={t('earnings.avgBookingDuration')} content={eh.avgDuration} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -1001,7 +1143,10 @@ const SpecialistEarnings: React.FC = () => {
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.growthInsights')}</h4>
             <div className="space-y-3">
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.monthlyGrowth')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.monthlyGrowth')}</span>
+                  <HelpTip title={t('earnings.monthlyGrowth')} content={eh.monthlyGrowthDetail} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
@@ -1011,7 +1156,10 @@ const SpecialistEarnings: React.FC = () => {
                 )}
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-gray-600 dark:text-gray-400 min-w-0 truncate">{t('earnings.newCustomers')}</span>
+                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
+                  <span className="truncate">{t('earnings.newCustomers')}</span>
+                  <HelpTip title={t('earnings.newCustomers')} content={eh.newCustomers} />
+                </span>
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (

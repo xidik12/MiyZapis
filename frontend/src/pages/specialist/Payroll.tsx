@@ -71,8 +71,251 @@ const monthStartISO = () => {
   return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
 };
 
+// ────────────────────────────────────────────────────────────────────────
+// Self-contained trilingual help strings for this page.
+const PAYROLL_HELP = {
+  en: {
+    pageTitle: 'Payroll',
+    pageBody:
+      'Manage staff commissions and issue pay runs.\n\n' +
+      'Two tabs:\n' +
+      '• Staff & Commission — set each person\'s commission rate (flat or tiered).\n' +
+      '• Pay Runs — create, approve, and mark pay runs as paid.\n\n' +
+      'Workflow: set commission rates → click Preview for a period → adjust any figures → Create Pay Run (DRAFT) → Approve → Mark Paid.\n\n' +
+      'Payroll cost (netPay + taxAmount for each approved/paid run) is rolled into the Accounting P&L as the "PAYROLL" expense line, fully tax-deductible.',
+
+    thisPeriodTotal:
+      'This-period Payroll: total net pay across all payroll records (DRAFT + APPROVED + PAID) returned by the current filter.\n\n' +
+      'Net pay per person = base salary + commission + bonus − deductions − tax.',
+
+    pendingApproval:
+      'Pending Approval: total net pay across records with status DRAFT — runs created but not yet approved.\n\n' +
+      'Draft records do NOT flow into the Accounting P&L. Only APPROVED and PAID records are counted as expenses.',
+
+    totalCommission:
+      'Total Commission: sum of commission amounts across all records in the current filter.\n\n' +
+      'Commission is calculated from completed bookings within the pay-run period at the staff member\'s configured rate.',
+
+    commissionMode:
+      'Commission mode:\n\n' +
+      '• FLAT — one fixed percentage applied to the staff member\'s total service revenue for the entire period.\n' +
+      '  Example: 30% flat on 10,000 UAH revenue = 3,000 UAH commission.\n\n' +
+      '• TIERED — the percentage depends on which revenue bracket the staff member\'s total falls into.\n' +
+      '  The highest tier whose "min revenue" threshold is met determines the percentage for the whole period.\n' +
+      '  Example tiers: 0 UAH → 20%, 20,000 UAH → 30%, 50,000 UAH → 35%.\n' +
+      '  If revenue is 25,000 UAH, the 20,000 UAH tier applies → 30% on the full 25,000 UAH.\n\n' +
+      'Important: tier thresholds are entered in the run currency. Make sure rates are set in the same currency as your pay run.',
+
+    preview:
+      'Preview: calculates commission from all COMPLETED bookings (by completedAt date) falling within the selected period start → end.\n\n' +
+      'The preview pre-fills each staff member\'s row with:\n' +
+      '• Base salary (from their profile)\n' +
+      '• Commission total (calculated from bookings at their current rate)\n' +
+      '• Bonus, Deductions, Tax = 0 (adjust manually before creating the run)\n\n' +
+      'You can edit any field in the preview table before saving.',
+
+    netPay:
+      'Net Pay = base salary + commission + bonus − deductions − tax\n\n' +
+      'This is the actual amount to be paid to the staff member. Deductions and tax are subtracted.\n\n' +
+      'The "Run total" is the sum of Net Pay across all rows — this is the total cash outflow for the pay run.',
+
+    baseSalary:
+      'Base Salary: the fixed monthly (or per-period) salary component, independent of performance.\n\n' +
+      'Enter 0 if the person is commission-only.',
+
+    commissionTotal:
+      'Commission Total: the commission amount calculated for this period.\n\n' +
+      'Auto-filled by Preview based on completed bookings × commission rate. You can override this number manually before creating the run.',
+
+    bonus:
+      'Bonus: one-off additional payment for this period (performance bonus, holiday bonus, etc.).\n\n' +
+      'Added to Net Pay. Enter 0 if no bonus applies.',
+
+    deductions:
+      'Deductions: any amounts subtracted from gross pay this period (advance repayment, equipment cost recovery, disciplinary deduction, etc.).\n\n' +
+      'Subtracted from Net Pay. Enter 0 if no deductions apply.',
+
+    taxAmount:
+      'Tax (withheld): income tax or social contributions withheld from the staff member\'s gross pay on their behalf.\n\n' +
+      'Subtracted from Net Pay. The total employer cost shown in the Accounting P&L = netPay + taxAmount (both are deductible business expenses).\n\n' +
+      'Enter 0 if the employee handles tax separately.',
+
+    payRunWorkflow:
+      'Pay run lifecycle:\n\n' +
+      '• DRAFT — created but not finalised. Editable; not yet visible in the Accounting P&L.\n' +
+      '• APPROVED — locked and confirmed. Added to the Accounting P&L as a PAYROLL expense.\n' +
+      '• PAID — payment confirmed (physical transfer done). The record is archived.\n\n' +
+      'Only DRAFT records can be deleted.',
+
+    minRevenue:
+      'Min Revenue: the lower threshold for this commission tier.\n\n' +
+      'The tier applies when the staff member\'s total period revenue is ≥ this threshold.\n' +
+      'The first tier should always be 0 (covers all revenue from zero upward).\n\n' +
+      'Thresholds are in the pay run currency — set them in UAH if you pay in UAH.',
+  },
+  uk: {
+    pageTitle: 'Зарплата',
+    pageBody:
+      'Керуйте комісіями співробітників та видавайте платіжні відомості.\n\n' +
+      'Дві вкладки:\n' +
+      '• Співробітники та комісія — встановіть ставку комісії для кожної людини (фіксована або рівнева).\n' +
+      '• Платіжні відомості — створення, затвердження та позначення відомостей як виплачених.\n\n' +
+      'Робочий процес: встановіть ставки → натисніть «Попередній перегляд» для обраного періоду → скоригуйте показники → Створити відомість (ЧЕРНЕТКА) → Затвердити → Виплачено.\n\n' +
+      'Витрати на зарплату (netPay + taxAmount для кожної затвердженої/виплаченої відомості) потрапляють до П&З у Бухгалтерії як рядок «PAYROLL» — повністю вирахувальний.',
+
+    thisPeriodTotal:
+      'Зарплата за період: сума чистих виплат по всіх платіжних записах (ЧЕРНЕТКА + ЗАТВЕРДЖЕНО + ВИПЛАЧЕНО), що відповідають поточному фільтру.\n\n' +
+      'Чиста виплата на особу = базова зарплата + комісія + бонус − вирахування − податок.',
+
+    pendingApproval:
+      'Очікують затвердження: сума чистих виплат по записах зі статусом ЧЕРНЕТКА — відомості створено, але ще не затверджено.\n\n' +
+      'Чернеткові записи НЕ потрапляють до П&З у Бухгалтерії. До витрат зараховуються лише ЗАТВЕРДЖЕНІ та ВИПЛАЧЕНІ записи.',
+
+    totalCommission:
+      'Загальна комісія: сума комісійних виплат по всіх записах у поточному фільтрі.\n\n' +
+      'Комісія розраховується з виконаних записів у межах платіжного періоду за налаштованою ставкою співробітника.',
+
+    commissionMode:
+      'Тип комісії:\n\n' +
+      '• ФІКСОВАНА — один відсоток від загальної виручки співробітника за весь період.\n' +
+      '  Приклад: 30% з виручки 10 000 грн = 3 000 грн комісії.\n\n' +
+      '• РІВНЕВА — відсоток залежить від того, до якого рівня виручки потрапив підсумок співробітника.\n' +
+      '  Застосовується найвищий рівень, поріг якого досягнуто, і відсоток береться від УСІЄЇ виручки.\n' +
+      '  Приклад рівнів: 0 грн → 20%, 20 000 грн → 30%, 50 000 грн → 35%.\n' +
+      '  Якщо виручка 25 000 грн — застосовується рівень 20 000 грн → 30% від усіх 25 000 грн.\n\n' +
+      'Важливо: пороги рівнів вводяться у валюті платіжної відомості. Переконайтеся, що ставки задані в тій самій валюті.',
+
+    preview:
+      'Попередній перегляд: розраховує комісію з усіх ЗАВЕРШЕНИХ записів (за датою completedAt) у межах обраного діапазону дат.\n\n' +
+      'Попередній перегляд автоматично заповнює рядок кожного співробітника:\n' +
+      '• Базова зарплата (з профілю)\n' +
+      '• Сума комісії (розрахована з записів за поточною ставкою)\n' +
+      '• Бонус, Вирахування, Податок = 0 (скоригуйте вручну перед збереженням)\n\n' +
+      'Будь-яке поле в таблиці попереднього перегляду можна змінити перед збереженням.',
+
+    netPay:
+      'Чиста виплата = базова зарплата + комісія + бонус − вирахування − податок\n\n' +
+      'Це фактична сума, яку буде виплачено співробітнику. Вирахування та податок відраховуються.\n\n' +
+      '«Підсумок відомості» — сума чистих виплат по всіх рядках — загальний грошовий відплив за платіжну відомість.',
+
+    baseSalary:
+      'Базова зарплата: фіксована складова за місяць (або за період), незалежна від результатів.\n\n' +
+      'Введіть 0, якщо оплата лише відрядна.',
+
+    commissionTotal:
+      'Сума комісії: розрахований обсяг комісії за цей період.\n\n' +
+      'Заповнюється автоматично при попередньому перегляді на основі завершених записів × ставка комісії. Можна змінити вручну перед збереженням.',
+
+    bonus:
+      'Бонус: одноразова додаткова виплата за цей період (бонус за результатами, святкова виплата тощо).\n\n' +
+      'Додається до чистої виплати. Введіть 0, якщо бонус не нараховується.',
+
+    deductions:
+      'Вирахування: будь-які суми, що утримуються з нарахованої зарплати за цей період (погашення авансу, відшкодування вартості обладнання, дисциплінарні утримання тощо).\n\n' +
+      'Відраховуються від чистої виплати. Введіть 0, якщо вирахувань немає.',
+
+    taxAmount:
+      'Податок (утриманий): ПДФО або єдиний соціальний внесок, утриманий із нарахованої зарплати співробітника.\n\n' +
+      'Відраховується від чистої виплати. Загальні витрати роботодавця в П&З Бухгалтерії = netPay + taxAmount (обидві складові є вирахувальними витратами бізнесу).\n\n' +
+      'Введіть 0, якщо співробітник сплачує податок самостійно.',
+
+    payRunWorkflow:
+      'Статуси платіжної відомості:\n\n' +
+      '• ЧЕРНЕТКА — створено, але не завершено. Доступна для редагування; до П&З Бухгалтерії не потрапляє.\n' +
+      '• ЗАТВЕРДЖЕНО — зафіксовано та підтверджено. Додається до П&З Бухгалтерії як витрата PAYROLL.\n' +
+      '• ВИПЛАЧЕНО — підтверджено фактичне перерахування коштів. Запис архівується.\n\n' +
+      'Видалити можна лише записи зі статусом ЧЕРНЕТКА.',
+
+    minRevenue:
+      'Мінімальна виручка: нижній поріг для цього рівня комісії.\n\n' +
+      'Рівень застосовується, коли загальна виручка співробітника за період ≥ цього порогу.\n' +
+      'Перший рівень завжди має бути 0 (охоплює будь-яку виручку від нуля).\n\n' +
+      'Пороги задаються у валюті платіжної відомості — вказуйте в гривнях, якщо виплачуєте в гривнях.',
+  },
+  ru: {
+    pageTitle: 'Зарплата',
+    pageBody:
+      'Управляйте комиссиями сотрудников и выдавайте платёжные ведомости.\n\n' +
+      'Две вкладки:\n' +
+      '• Сотрудники и комиссия — установите ставку комиссии для каждого (фиксированная или уровневая).\n' +
+      '• Платёжные ведомости — создание, утверждение и отметка ведомостей как выплаченных.\n\n' +
+      'Рабочий процесс: установите ставки → нажмите «Предпросмотр» для выбранного периода → скорректируйте показатели → Создать ведомость (ЧЕРНОВИК) → Утвердить → Выплачено.\n\n' +
+      'Расходы на зарплату (netPay + taxAmount для каждой утверждённой/выплаченной ведомости) попадают в П&У Бухгалтерии как строка «PAYROLL» — полностью вычитаемая.',
+
+    thisPeriodTotal:
+      'Зарплата за период: сумма чистых выплат по всем платёжным записям (ЧЕРНОВИК + УТВЕРЖДЕНО + ВЫПЛАЧЕНО), соответствующим текущему фильтру.\n\n' +
+      'Чистая выплата на человека = базовая зарплата + комиссия + бонус − удержания − налог.',
+
+    pendingApproval:
+      'Ожидают утверждения: сумма чистых выплат по записям со статусом ЧЕРНОВИК — ведомости созданы, но ещё не утверждены.\n\n' +
+      'Черновые записи НЕ попадают в П&У Бухгалтерии. В расходы засчитываются только УТВЕРЖДЁННЫЕ и ВЫПЛАЧЕННЫЕ записи.',
+
+    totalCommission:
+      'Общая комиссия: сумма комиссионных выплат по всем записям в текущем фильтре.\n\n' +
+      'Комиссия рассчитывается из выполненных записей в рамках платёжного периода по настроенной ставке сотрудника.',
+
+    commissionMode:
+      'Тип комиссии:\n\n' +
+      '• ФИКСИРОВАННАЯ — один процент от общей выручки сотрудника за весь период.\n' +
+      '  Пример: 30% с выручки 10 000 грн = 3 000 грн комиссии.\n\n' +
+      '• УРОВНЕВАЯ — процент зависит от того, в какой уровень выручки попал итог сотрудника.\n' +
+      '  Применяется наивысший уровень, порог которого достигнут, и процент берётся от ВСЕЙ выручки.\n' +
+      '  Пример уровней: 0 грн → 20%, 20 000 грн → 30%, 50 000 грн → 35%.\n' +
+      '  Если выручка 25 000 грн — применяется уровень 20 000 грн → 30% от всех 25 000 грн.\n\n' +
+      'Важно: пороги уровней вводятся в валюте платёжной ведомости. Убедитесь, что ставки заданы в той же валюте.',
+
+    preview:
+      'Предпросмотр: рассчитывает комиссию из всех ЗАВЕРШЁННЫХ записей (по дате completedAt) в рамках выбранного диапазона дат.\n\n' +
+      'Предпросмотр автоматически заполняет строку каждого сотрудника:\n' +
+      '• Базовая зарплата (из профиля)\n' +
+      '• Сумма комиссии (рассчитана из записей по текущей ставке)\n' +
+      '• Бонус, Удержания, Налог = 0 (скорректируйте вручную перед сохранением)\n\n' +
+      'Любое поле в таблице предпросмотра можно изменить перед сохранением.',
+
+    netPay:
+      'Чистая выплата = базовая зарплата + комиссия + бонус − удержания − налог\n\n' +
+      'Это фактическая сумма, которую получит сотрудник. Удержания и налог вычитаются.\n\n' +
+      '«Итог ведомости» — сумма чистых выплат по всем строкам — общий денежный отток за платёжную ведомость.',
+
+    baseSalary:
+      'Базовая зарплата: фиксированная составляющая за месяц (или за период), независимая от результатов.\n\n' +
+      'Введите 0, если оплата только сдельная.',
+
+    commissionTotal:
+      'Сумма комиссии: рассчитанный объём комиссии за этот период.\n\n' +
+      'Заполняется автоматически при предпросмотре на основе завершённых записей × ставка комиссии. Можно изменить вручную перед сохранением.',
+
+    bonus:
+      'Бонус: единовременная дополнительная выплата за этот период (бонус по результатам, праздничная выплата и т.д.).\n\n' +
+      'Добавляется к чистой выплате. Введите 0, если бонус не начисляется.',
+
+    deductions:
+      'Удержания: любые суммы, удерживаемые из начисленной зарплаты за этот период (погашение аванса, возмещение стоимости оборудования, дисциплинарные удержания и т.д.).\n\n' +
+      'Вычитаются из чистой выплаты. Введите 0, если удержаний нет.',
+
+    taxAmount:
+      'Налог (удержанный): НДФЛ или единый социальный взнос, удержанный из начисленной зарплаты сотрудника.\n\n' +
+      'Вычитается из чистой выплаты. Общие расходы работодателя в П&У Бухгалтерии = netPay + taxAmount (обе составляющие являются вычитаемыми расходами бизнеса).\n\n' +
+      'Введите 0, если сотрудник уплачивает налог самостоятельно.',
+
+    payRunWorkflow:
+      'Статусы платёжной ведомости:\n\n' +
+      '• ЧЕРНОВИК — создано, но не завершено. Доступно для редактирования; в П&У Бухгалтерии не отражается.\n' +
+      '• УТВЕРЖДЕНО — зафиксировано и подтверждено. Добавляется в П&У Бухгалтерии как расход PAYROLL.\n' +
+      '• ВЫПЛАЧЕНО — подтверждено фактическое перечисление средств. Запись архивируется.\n\n' +
+      'Удалить можно только записи со статусом ЧЕРНОВИК.',
+
+    minRevenue:
+      'Минимальная выручка: нижний порог для этого уровня комиссии.\n\n' +
+      'Уровень применяется, когда общая выручка сотрудника за период ≥ этого порога.\n' +
+      'Первый уровень всегда должен быть 0 (охватывает любую выручку от нуля).\n\n' +
+      'Пороги задаются в валюте платёжной ведомости — указывайте в гривнях, если выплачиваете в гривнях.',
+  },
+};
+
 const SpecialistPayroll: React.FC = () => {
   const { t, language } = useLanguage();
+  const ph = (PAYROLL_HELP as any)[language] || PAYROLL_HELP.en;
   const { formatPrice } = useCurrency();
 
   const [tab, setTab] = useState<Tab>('staff');
@@ -374,7 +617,7 @@ const SpecialistPayroll: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('payroll.title') || 'Payroll'}
               </h1>
-              <HelpTip title={t('help.payroll.title') || 'Payroll'} content={t('help.payroll.body') || 'Set staff commission and run payouts.'} />
+              <HelpTip title={ph.pageTitle} content={ph.pageBody} />
             </div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               {t('payroll.subtitle') || 'Manage staff commission and pay runs'}
@@ -391,8 +634,9 @@ const SpecialistPayroll: React.FC = () => {
                   <CurrencyDollarIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                     {t('payroll.thisPeriodTotal') || 'This-period Payroll'}
+                    <HelpTip size={14} title={t('payroll.thisPeriodTotal') || 'This-period Payroll'} content={ph.thisPeriodTotal} />
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalPayrollThisPeriod || 0, summaryCurrency)}
@@ -407,8 +651,9 @@ const SpecialistPayroll: React.FC = () => {
                   <ClockIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                     {t('payroll.pendingApproval') || 'Pending Approval'}
+                    <HelpTip size={14} title={t('payroll.pendingApproval') || 'Pending Approval'} content={ph.pendingApproval} />
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.pendingApproval || 0, summaryCurrency)}
@@ -426,8 +671,9 @@ const SpecialistPayroll: React.FC = () => {
                   <ReceiptPercentIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                     {t('payroll.totalCommission') || 'Total Commission'}
+                    <HelpTip size={14} title={t('payroll.totalCommission') || 'Total Commission'} content={ph.totalCommission} />
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
                     {formatPrice(summary.totalCommission || 0, summaryCurrency)}
@@ -532,7 +778,7 @@ const SpecialistPayroll: React.FC = () => {
                                   </button>
                                 ))}
                               </div>
-                              <HelpTip size={15} title={t('help.tip.tieredCommission.title') || 'Commission mode'} content={t('help.tip.tieredCommission.body') || 'Flat = one % on all sales; Tiered = higher % as monthly revenue grows.'} />
+                              <HelpTip size={15} title={t('payroll.commission') || 'Commission mode'} content={ph.commissionMode} />
                             </div>
 
                             {d.mode === 'FLAT' ? (
@@ -556,8 +802,9 @@ const SpecialistPayroll: React.FC = () => {
                                 {d.tiers.map((tr, idx) => (
                                   <div key={idx} className="flex flex-wrap items-center gap-2">
                                     <div className="flex items-center gap-1">
-                                      <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                         {t('payroll.commission.minRevenue') || 'Min revenue'}
+                                        <HelpTip size={13} title={t('payroll.commission.minRevenue') || 'Min revenue'} content={ph.minRevenue} />
                                       </span>
                                       <input
                                         type="number"
@@ -682,8 +929,9 @@ const SpecialistPayroll: React.FC = () => {
                               {d.tiers.map((tr, idx) => (
                                 <div key={idx} className="space-y-1.5">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                                    <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
                                       {t('payroll.commission.minRevenue') || 'Min revenue'}
+                                      <HelpTip size={13} title={t('payroll.commission.minRevenue') || 'Min revenue'} content={ph.minRevenue} />
                                     </span>
                                     <input
                                       type="number"
@@ -799,14 +1047,17 @@ const SpecialistPayroll: React.FC = () => {
                       <option value="EUR">EUR</option>
                     </select>
                   </div>
-                  <button
-                    onClick={handlePreview}
-                    disabled={previewing}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.96] disabled:active:scale-100"
-                  >
-                    {previewing ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <EyeIcon className="h-5 w-5" />}
-                    {t('payroll.preview') || 'Preview'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handlePreview}
+                      disabled={previewing}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.96] disabled:active:scale-100"
+                    >
+                      {previewing ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <EyeIcon className="h-5 w-5" />}
+                      {t('payroll.preview') || 'Preview'}
+                    </button>
+                    <HelpTip size={15} title={t('payroll.preview') || 'Preview'} content={ph.preview} />
+                  </div>
                 </div>
 
                 {runRows.length > 0 && (
@@ -817,12 +1068,12 @@ const SpecialistPayroll: React.FC = () => {
                         <thead>
                           <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                             <th className="px-4 py-2">{t('payroll.name') || 'Name'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.baseSalary') || 'Base'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.commission') || 'Commission'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.bonus') || 'Bonus'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.deductions') || 'Deductions'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.tax') || 'Tax'}</th>
-                            <th className="px-4 py-2 text-right">{t('payroll.netPay') || 'Net Pay'}</th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.baseSalary') || 'Base'}<HelpTip size={13} title={t('payroll.baseSalary') || 'Base'} content={ph.baseSalary} /></span></th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.commission') || 'Commission'}<HelpTip size={13} title={t('payroll.commission') || 'Commission'} content={ph.commissionTotal} /></span></th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.bonus') || 'Bonus'}<HelpTip size={13} title={t('payroll.bonus') || 'Bonus'} content={ph.bonus} /></span></th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.deductions') || 'Deductions'}<HelpTip size={13} title={t('payroll.deductions') || 'Deductions'} content={ph.deductions} /></span></th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.tax') || 'Tax'}<HelpTip size={13} title={t('payroll.tax') || 'Tax'} content={ph.taxAmount} /></span></th>
+                            <th className="px-4 py-2 text-right"><span className="inline-flex items-center gap-1 justify-end">{t('payroll.netPay') || 'Net Pay'}<HelpTip size={13} title={t('payroll.netPay') || 'Net Pay'} content={ph.netPay} /></span></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -966,8 +1217,9 @@ const SpecialistPayroll: React.FC = () => {
             {/* Records table */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   {t('payroll.records') || 'Payroll Records'}
+                  <HelpTip size={15} title={t('payroll.records') || 'Payroll Records'} content={ph.payRunWorkflow} />
                 </h2>
               </div>
 

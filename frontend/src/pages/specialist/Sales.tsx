@@ -111,8 +111,30 @@ const initialPlanForm: PlanFormData = {
   discountPercent: '0',
 };
 
+const SALES_HELP = {
+  en: {
+    overview: 'Sales — manage gift cards, prepaid service packages, memberships, and online store orders.\n\nTabs:\n• Gift cards — issue a prepaid card with a fixed monetary value. The client pays for the card upfront (you collect payment separately); they redeem it later against services or products. The balance decreases each time you tap Redeem and enter the amount used.\n• Packages — define bundles of a fixed number of credits (e.g. 10 haircuts). Sell a package to a client (collect payment yourself), then Grant it to them by email. Each visit you tap Use credit to deduct one credit. Status turns Used when credits hit 0 or the validity period expires.\n• Memberships — recurring subscription plans (monthly or yearly). Define a plan with a price, billing period, and optional % discount for members. Enroll a client by email; billing is handled manually. Active members see a renewal date (Renews column). Cancel to stop the subscription.\n• Store orders — product orders placed online by clients. Mark Paid when payment is collected; tap Fulfil to hand over the goods (stock is deducted at that point).\n\nDashboard cards show: outstanding gift-card balance, unused package credits, and active member count + estimated MRR.',
+    giftCards: 'Gift cards are prepaid vouchers with a fixed monetary value (e.g. 500 UAH).\n\nHow it works:\n1. Tap Issue gift card — set the amount, optional recipient email, and expiry date.\n2. Collect payment from the client yourself — MiyZapis does not process it.\n3. The card gets a unique code. Give the code to the client.\n4. When the client wants to use it: tap Redeem next to the card, enter the amount being applied, and the balance decreases.\n5. A card is fully Redeemed when the balance reaches zero. Cancel a card to void its remaining balance.\n\nThe outstanding balance card shows the total liability — money clients have paid but not yet spent.',
+    packages: 'Service packages are prepaid sets of credits (visits or service sessions), sold as a bundle at a fixed price.\n\nHow it works:\n1. Define the package — give it a name, set the number of credits (e.g. 10), set a price and validity period in days.\n2. Sell it to a client offline and collect payment yourself.\n3. Tap Grant, enter the client\'s email — a copy of the package is assigned to them (Sold packages section).\n4. Each visit: tap Use credit — one credit is deducted. Remaining credits are tracked per client.\n5. Status becomes Used when credits reach 0, or Expired when the validity period ends.\n\nCredits outstanding (dashboard card) = total unused credits you owe clients.',
+    memberships: 'Memberships are recurring subscription plans — clients pay a regular fee (monthly or yearly) for access or a discount.\n\nHow it works:\n1. Define a plan — set a name, price, billing period (Monthly / Yearly), optional discount % for members, and benefits description.\n2. Enroll a client by email — their membership starts immediately. Billing is handled manually by you (you collect payment offline).\n3. Track members in the Members list: start date, renewal date (current period end), and status.\n4. Cancel a membership to stop it — status becomes Cancelled.\n\nMRR (Monthly Recurring Revenue) estimate on the dashboard = sum of all active members\' monthly fees.',
+  },
+  uk: {
+    overview: 'Продажі — керування подарунковими картками, передплаченими пакетами послуг, абонементами та замовленнями онлайн-магазину.\n\nВкладки:\n• Подарункові картки — видайте картку з фіксованою грошовою сумою. Клієнт оплачує її заздалегідь (ви приймаєте оплату самостійно); пізніше він гасить її при оплаті послуг або товарів. Баланс зменшується щоразу, коли ви натискаєте «Погасити» і вводите суму.\n• Пакети послуг — набори з фіксованою кількістю кредитів (напр., 10 стрижок). Продайте пакет клієнту (оплату приймайте самостійно), потім натисніть «Видати» та вкажіть email клієнта. На кожному відвідуванні натискайте «Використати кредит». Статус стає «Використаний», коли кредити вичерпані або закінчується термін дії.\n• Абонементи — повторювані підписки (щомісяця або щороку). Створіть план з ціною, періодом та необов\'язковою знижкою. Запишіть клієнта за email; оплату стягуйте вручну. Активні учасники мають дату поновлення (колонка «Поновлення»). Скасуйте для зупинки підписки.\n• Замовлення магазину — онлайн-замовлення товарів від клієнтів. Позначте «Оплачено» після отримання коштів; натисніть «Виконати» для видачі товарів (залишок списується в цей момент).\n\nКарточки зведення: загальний залишок подарункових карток, невикористані кредити пакетів, кількість активних учасників + оціночний MRR.',
+    giftCards: 'Подарункові картки — передплачені ваучери з фіксованою сумою (напр., 500 грн).\n\nЯк це працює:\n1. Натисніть «Видати картку» — вкажіть суму, необов\'язковий email отримувача та дату закінчення.\n2. Прийміть оплату від клієнта самостійно — MiyZapis не обробляє платежі.\n3. Картка отримує унікальний код. Передайте код клієнту.\n4. Коли клієнт хоче використати картку: натисніть «Погасити», введіть суму, яку застосовуєте, — баланс зменшується.\n5. Картка стає «Використаною», коли баланс досягає нуля. Скасуйте картку, щоб анулювати залишок.\n\nКарточка «Залишок карток» показує загальне зобов\'язання — гроші, які клієнти вже заплатили, але ще не витратили.',
+    packages: 'Пакети послуг — передплачені набори кредитів (відвідувань або сеансів), продані за фіксованою ціною.\n\nЯк це працює:\n1. Створіть пакет — назва, кількість кредитів (напр., 10), ціна та термін дії в днях.\n2. Продайте клієнту офлайн і прийміть оплату самостійно.\n3. Натисніть «Видати», введіть email клієнта — копія пакету призначається йому (розділ «Продані пакети»).\n4. На кожному відвідуванні: натисніть «Використати кредит» — один кредит списується. Залишок відстежується для кожного клієнта.\n5. Статус стає «Використаний», коли кредити вичерпані, або «Прострочений» — після закінчення терміну.\n\nНевикористані кредити (карточка зведення) = загальна кількість кредитів, що ви ще маєте надати клієнтам.',
+    memberships: 'Абонементи — повторювані підписки: клієнти платять регулярну суму (щомісяця або щороку) за доступ або знижку.\n\nЯк це працює:\n1. Створіть план — назва, ціна, period (Щомісяця / Щороку), необов\'язкова знижка % для учасників та опис переваг.\n2. Запишіть клієнта за email — абонемент починається одразу. Оплату стягуйте вручну офлайн.\n3. Відстежуйте учасників у списку: дата початку, дата поновлення та статус.\n4. Скасуйте абонемент для зупинки — статус стає «Скасовано».\n\nОціночний MRR (щомісячний recurring дохід) на дашборді = сума щомісячних платежів усіх активних учасників.',
+  },
+  ru: {
+    overview: 'Продажи — управление подарочными картами, предоплаченными пакетами услуг, абонементами и заказами онлайн-магазина.\n\nВкладки:\n• Подарочные карты — выдайте карту с фиксированной суммой. Клиент оплачивает её заранее (вы принимаете оплату самостоятельно); позже погашает при оплате услуг или товаров. Баланс уменьшается каждый раз, когда вы нажимаете «Погасить» и вводите сумму.\n• Пакеты услуг — наборы с фиксированным количеством кредитов (напр., 10 стрижек). Продайте пакет клиенту (оплату принимайте самостоятельно), затем нажмите «Выдать» и укажите email клиента. На каждом визите нажимайте «Использовать кредит». Статус становится «Использован», когда кредиты исчерпаны или истекает срок действия.\n• Абонементы — повторяющиеся подписки (ежемесячно или ежегодно). Создайте план с ценой, периодом и необязательной скидкой. Запишите клиента по email; оплату взимайте вручную. Активные участники имеют дату обновления (столбец «Обновляется»). Отмените для остановки подписки.\n• Заказы магазина — онлайн-заказы товаров от клиентов. Отметьте «Оплачено» после получения средств; нажмите «Выполнить» для выдачи товаров (остаток списывается в этот момент).\n\nКарточки сводки: общий остаток подарочных карт, неиспользованные кредиты пакетов, количество активных участников + оценочный MRR.',
+    giftCards: 'Подарочные карты — предоплаченные ваучеры с фиксированной суммой (напр., 500 грн).\n\nКак это работает:\n1. Нажмите «Выдать карту» — укажите сумму, необязательный email получателя и дату окончания.\n2. Примите оплату от клиента самостоятельно — MiyZapis не обрабатывает платежи.\n3. Карта получает уникальный код. Передайте код клиенту.\n4. Когда клиент хочет использовать карту: нажмите «Погасить», введите сумму — баланс уменьшается.\n5. Карта становится «Использованной», когда баланс достигает нуля. Отмените карту, чтобы аннулировать остаток.\n\nКарточка «Остаток карт» показывает общее обязательство — деньги, которые клиенты уже заплатили, но ещё не потратили.',
+    packages: 'Пакеты услуг — предоплаченные наборы кредитов (визитов или сеансов), продаваемые за фиксированную цену.\n\nКак это работает:\n1. Создайте пакет — название, количество кредитов (напр., 10), цена и срок действия в днях.\n2. Продайте клиенту офлайн и примите оплату самостоятельно.\n3. Нажмите «Выдать», введите email клиента — копия пакета назначается ему (раздел «Проданные пакеты»).\n4. На каждом визите: нажмите «Использовать кредит» — один кредит списывается. Остаток отслеживается для каждого клиента.\n5. Статус становится «Использован», когда кредиты исчерпаны, или «Просрочен» — после истечения срока.\n\nНеиспользованные кредиты (карточка сводки) = общее количество кредитов, которые вы ещё должны предоставить клиентам.',
+    memberships: 'Абонементы — повторяющиеся подписки: клиенты платят регулярную сумму (ежемесячно или ежегодно) за доступ или скидку.\n\nКак это работает:\n1. Создайте план — название, цена, период (Ежемесячно / Ежегодно), необязательная скидка % и описание преимуществ.\n2. Запишите клиента по email — абонемент начинается сразу. Оплату взимайте вручную офлайн.\n3. Отслеживайте участников в списке: дата начала, дата обновления и статус.\n4. Отмените абонемент для остановки — статус становится «Отменено».\n\nОценочный MRR (ежемесячный recurring доход) на дашборде = сумма ежемесячных платежей всех активных участников.',
+  },
+};
+
 const SpecialistSales: React.FC = () => {
   const { t, language } = useLanguage();
+  const h = (SALES_HELP as any)[language] || SALES_HELP.en;
   const { formatPrice } = useCurrency();
 
   const [tab, setTab] = useState<Tab>('giftCards');
@@ -605,7 +627,7 @@ const SpecialistSales: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {t('sales.title') || 'Sales'}
             </h1>
-            <HelpTip title={t('help.sales.title') || 'Sales'} content={t('help.sales.body') || 'Gift cards, packages, memberships and store orders.'} />
+            <HelpTip title={t('help.sales.title') || 'Sales'} content={h.overview} />
           </div>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             {t('sales.subtitle') || 'Gift cards, service packages and memberships'}
@@ -693,7 +715,8 @@ const SpecialistSales: React.FC = () => {
         {/* ============================ GIFT CARDS ============================ */}
         {tab === 'giftCards' && (
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <HelpTip title={t('sales.giftCards') || 'Gift cards'} content={h.giftCards} />
               <button
                 onClick={() => {
                   setGiftCardForm(initialGiftCardForm);
@@ -848,7 +871,8 @@ const SpecialistSales: React.FC = () => {
         {/* ============================ PACKAGES ============================ */}
         {tab === 'packages' && (
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <HelpTip title={t('sales.packages') || 'Packages'} content={h.packages} />
               <button
                 onClick={openNewPackage}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
@@ -1088,7 +1112,8 @@ const SpecialistSales: React.FC = () => {
         {/* ============================ MEMBERSHIPS ============================ */}
         {tab === 'memberships' && (
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <HelpTip title={t('sales.memberships') || 'Memberships'} content={h.memberships} />
               <button
                 onClick={openNewPlan}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition active:scale-[0.96]"
