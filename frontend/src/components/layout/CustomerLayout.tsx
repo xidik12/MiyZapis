@@ -223,16 +223,19 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
+                  group relative flex items-center px-3 py-2 text-sm rounded-lg transition-colors duration-150 cursor-pointer
                   ${isActive
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
+                    ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-300 font-semibold'
+                    : 'text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-white'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
               >
+                {isActive && !isCollapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary-600 dark:bg-primary-400" />
+                )}
                 <div className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} active={isActive} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} active={isActive} />
                   {!isCollapsed && (
                     <span>{t(item.nameKey)}</span>
                   )}
@@ -242,17 +245,17 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                   <div className="flex items-center space-x-1">
                     {item.count && (
                       <span className={`
-                        inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
+                        inline-flex items-center justify-center px-1.5 min-w-[1.25rem] py-0.5 text-xs font-semibold rounded-md tabular-nums
                         ${isActive
-                          ? 'bg-white text-primary-600'
-                          : 'bg-primary-100 text-primary-700'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                         }
                       `}>
                         {item.count}
                       </span>
                     )}
                     {item.isNew && (
-                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span className="w-1.5 h-1.5 bg-primary-500 rounded-full"></span>
                     )}
                   </div>
                 )}
@@ -267,16 +270,16 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm hover:text-primary-500 dark:hover:text-primary-400 mobile-touch-target
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-2'} text-sm font-medium rounded-lg transition-colors duration-150 cursor-pointer
+              text-gray-600 dark:text-gray-400 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-white mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
             {theme === 'dark' ? (
-              <SunIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
+              <SunIcon className="w-5 h-5" />
             ) : (
-              <MoonIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
+              <MoonIcon className="w-5 h-5" />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -289,7 +292,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
+                className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
               >
                 {currencyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -305,12 +308,12 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
-              text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 hover:shadow-sm hover:text-red-700 dark:hover:text-red-300 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-2'} text-sm font-medium rounded-lg transition-colors duration-150 cursor-pointer
+              text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 mobile-touch-target
+              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
             {!isCollapsed && (
               <span>{t('auth.logout')}</span>
             )}
