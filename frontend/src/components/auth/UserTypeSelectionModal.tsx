@@ -54,7 +54,8 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label="Close"
+              className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition active:scale-[0.96]"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -132,7 +133,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
             <button
               onClick={() => handleSelectUserType('customer')}
               disabled={!agreeToTerms}
-              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+              className={`w-full p-4 border-2 rounded-xl transition group active:scale-[0.96] disabled:active:scale-100 ${
                 agreeToTerms
                   ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
                   : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
@@ -157,7 +158,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
             <button
               onClick={() => handleSelectUserType('specialist')}
               disabled={!agreeToTerms}
-              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+              className={`w-full p-4 border-2 rounded-xl transition group active:scale-[0.96] disabled:active:scale-100 ${
                 agreeToTerms
                   ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
                   : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
@@ -200,7 +201,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
             <button
               onClick={() => handleSelectUserType('business')}
               disabled={!agreeToTerms}
-              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+              className={`w-full p-4 border-2 rounded-xl transition group active:scale-[0.96] disabled:active:scale-100 ${
                 agreeToTerms
                   ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
                   : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'

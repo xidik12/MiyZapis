@@ -53,10 +53,10 @@ export const CreatePostFAB: React.FC = () => {
         'w-14 h-14 sm:w-16 sm:h-16 rounded-full',
         'bg-gradient-to-br from-primary-500 to-primary-700 text-white',
         'shadow-xl hover:shadow-2xl',
-        'transition-all duration-300',
+        'transition duration-300',
         visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none',
         // Press-down feedback and a gentle rotation on hover for personality.
-        'active:scale-95 hover:rotate-90',
+        'active:scale-[0.96] hover:rotate-90',
       ].join(' ')}
       style={{ willChange: 'transform, opacity' }}
     >

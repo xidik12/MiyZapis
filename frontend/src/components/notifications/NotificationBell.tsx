@@ -91,7 +91,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
       <button
         ref={btnRef}
         onClick={handleClick}
-        className={`relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-colors ${className}`}
+        className={`relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition active:scale-[0.96] ${className}`}
         title={t('notifications.title') || 'Notifications'}
         aria-label={t('notifications.open') || 'Open notifications'}
       >
@@ -99,7 +99,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
         
         {/* Unread count badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center animate-pulse tabular-nums">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

@@ -105,8 +105,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled}
-          className="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
           title={t('messages.attachFile')}
+          aria-label={t('messages.attachFile')}
         >
           <PaperClipIcon className="w-5 h-5" />
         </button>
@@ -130,8 +131,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <button
           type="button"
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 hover:scale-110 active:scale-95"
           title="Add emoji"
+          aria-label="Add emoji"
         >
           <Smile className="w-5 h-5" />
         </button>
@@ -140,7 +142,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <button
           type="submit"
           disabled={!value.trim() || disabled}
-          className={`flex-shrink-0 p-2.5 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 ${
+          className={`flex-shrink-0 p-2.5 rounded-xl transition duration-200 hover:scale-110 active:scale-95 disabled:active:scale-100 ${
             value.trim() && !disabled
               ? 'bg-primary-500 text-white hover:bg-primary-600'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'

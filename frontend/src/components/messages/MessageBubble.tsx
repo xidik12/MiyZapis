@@ -42,7 +42,7 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
             <img
               src={avatarUrl}
               alt={senderName}
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-8 h-8 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -71,7 +71,7 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
         {/* Time and Read Status */}
         <div className={`flex items-center gap-1.5 mt-1.5 ${isOwnMessage ? 'justify-end' : ''}`}>
           <span
-            className={`text-xs leading-none ${
+            className={`text-xs leading-none tabular-nums ${
               isOwnMessage
                 ? 'text-white/80'
                 : 'text-gray-500 dark:text-gray-400'

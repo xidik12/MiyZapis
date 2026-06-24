@@ -319,7 +319,7 @@ const WorkingHoursTab: React.FC<WorkingHoursTabProps> = ({
           type="button"
           disabled={isBusy}
           onClick={handleSaveAndSync}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium rounded-xl transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 active:scale-[0.96] disabled:active:scale-100"
         >
           {isBusy && (
             <InlineLoader size="sm" color="white" />

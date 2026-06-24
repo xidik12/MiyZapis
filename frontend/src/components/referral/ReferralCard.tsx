@@ -83,7 +83,8 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {getStatusIcon()}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
+              aria-label={isExpanded ? 'Collapse' : 'Expand'}
             >
               {isExpanded ? (
                 <ChevronUpIcon className="h-5 w-5" />
@@ -99,7 +100,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <EyeIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                 {referral.viewCount}
               </span>
             </div>
@@ -108,7 +109,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <CursorArrowRaysIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                 {referral.clickCount}
               </span>
             </div>
@@ -117,7 +118,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-1" />
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                 {daysUntilExpiry}
               </span>
             </div>

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { notificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -355,12 +356,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 ${className}`}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
+      className={`fixed inset-0 z-50 ${className}`}
+    >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/40 to-black/20" onClick={onClose} />
-      
+
       {/* Notification Panel */}
-      <div
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
         ref={panelRef}
         role="dialog"
         aria-modal="true"
@@ -416,14 +425,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   </p>
                 </div>
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/30">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/30 tabular-nums">
                     {unreadCount}
                   </span>
                 )}
               </div>
-              <button 
+              <button
                 onClick={onClose}
-                className="p-2 rounded-xl bg-white dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 active:scale-95"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-800 transition duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 active:scale-[0.96]"
                 aria-label={t('notifications.close') || 'Close notifications'}
               >
                 <XMarkIcon className="h-5 w-5 text-gray-600 dark:text-gray-200" />
@@ -564,16 +573,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         {!notification.isRead && (
                           <button
                             onClick={() => markAsRead(notification.id)}
-                            className="p-2 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 active:scale-95"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition duration-200 active:scale-[0.96]"
                             title={t('notifications.markRead') || 'Mark as read'}
+                            aria-label={t('notifications.markRead') || 'Mark as read'}
                           >
                             <CheckIcon className="h-4 w-4" />
                           </button>
                         )}
                         <button
                           onClick={() => deleteNotification(notification.id)}
-                          className="p-2 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition-all duration-200 active:scale-95"
+                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition duration-200 active:scale-[0.96]"
                           title={t('notifications.delete') || 'Delete'}
+                          aria-label={t('notifications.delete') || 'Delete'}
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>
@@ -588,8 +599,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           )}
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

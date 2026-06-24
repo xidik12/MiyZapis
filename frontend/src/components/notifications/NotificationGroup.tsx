@@ -47,7 +47,7 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
     <div className="border-b border-gray-200 dark:border-gray-800 last:border-b-0">
       {/* Group Header */}
       <div
-        className="sticky top-0 z-10 px-4 py-2.5 bg-gray-50/95 dark:bg-gray-800 flex items-center justify-between cursor-pointer hover:bg-gray-100/95 dark:hover:bg-gray-700/95 transition-colors duration-200"
+        className="sticky top-0 z-10 px-4 py-2.5 bg-gray-50/95 dark:bg-gray-800 flex items-center justify-between cursor-pointer hover:bg-gray-100/95 dark:hover:bg-gray-700/95 transition duration-200 active:scale-[0.96]"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
@@ -65,13 +65,13 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
           </h4>
 
           {/* Count Badge */}
-          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 tabular-nums">
             {notifications.length}
           </span>
 
           {/* Unread Badge */}
           {unreadCount > 0 && (
-            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-500 text-white">
+            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-500 text-white tabular-nums">
               {unreadCount} new
             </span>
           )}

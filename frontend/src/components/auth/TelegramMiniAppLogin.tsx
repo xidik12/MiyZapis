@@ -48,7 +48,7 @@ const TelegramMiniAppLogin: React.FC<TelegramMiniAppLoginProps> = ({
       type="button"
       onClick={handleLogin}
       disabled={disabled || loading}
-      className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#54a9eb] hover:bg-[#4a96d2] text-white font-semibold rounded-xl transition-colors duration-200 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#54a9eb] hover:bg-[#4a96d2] text-white font-semibold rounded-xl transition duration-200 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.96] disabled:active:scale-100"
     >
       {loading ? (
         <InlineLoader size="sm" color="white" className="mr-1" />

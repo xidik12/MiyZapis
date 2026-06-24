@@ -101,7 +101,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                 {format(day, 'EEE')}
               </div>
               <div
-                className={`text-lg font-bold ${
+                className={`text-lg font-bold tabular-nums ${
                   isToday(day)
                     ? 'text-primary-600 dark:text-primary-400'
                     : 'text-gray-900 dark:text-white'
@@ -120,7 +120,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     <button
                       key={block.id}
                       onClick={() => onBlockClick?.(block)}
-                      className="w-full text-left px-2 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors group"
+                      className="w-full text-left px-2 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition active:scale-[0.96] group"
                     >
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -145,7 +145,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     <button
                       key={block.id}
                       onClick={() => onBlockClick?.(block)}
-                      className="w-full text-left px-2 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/15 hover:bg-red-100 dark:hover:bg-red-900/25 transition-colors"
+                      className="w-full text-left px-2 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/15 hover:bg-red-100 dark:hover:bg-red-900/25 transition active:scale-[0.96]"
                     >
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
@@ -175,7 +175,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     <button
                       key={booking.id}
                       onClick={() => onBookingClick?.(booking)}
-                      className={`w-full text-left px-2 py-1.5 rounded-lg transition-colors hover:ring-1 hover:ring-gray-300 dark:hover:ring-gray-600 ${
+                      className={`w-full text-left px-2 py-1.5 rounded-lg transition hover:ring-1 hover:ring-gray-300 dark:hover:ring-gray-600 active:scale-[0.96] ${
                         statusColors[booking.status] || statusColors.confirmed
                       }`}
                     >

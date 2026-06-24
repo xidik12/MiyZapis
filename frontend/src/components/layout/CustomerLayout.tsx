@@ -172,7 +172,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 cursor-pointer hover:shadow-sm"
+            className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition duration-200 cursor-pointer hover:shadow-sm active:scale-[0.96]"
           >
             <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
@@ -185,7 +185,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
               <img
                 src={getAbsoluteImageUrl(user.avatar)}
                 alt={`${user.firstName} ${user.lastName}`}
-                className="w-10 h-10 rounded-full object-cover"
+                className="w-10 h-10 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
@@ -223,7 +223,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
                   ${isActive
                     ? 'bg-primary-600 text-white'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm'
@@ -267,7 +267,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:shadow-sm hover:text-primary-500 dark:hover:text-primary-400 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
@@ -305,7 +305,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition duration-200 cursor-pointer active:scale-[0.96]
               text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 hover:shadow-sm hover:text-red-700 dark:hover:text-red-300 mobile-touch-target
               ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
             `}

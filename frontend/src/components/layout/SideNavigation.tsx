@@ -98,7 +98,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       return (
         <button
           onClick={() => handleHashLink(item.href as string)}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition duration-200 active:scale-[0.96] hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
             item.current
               ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
               : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
@@ -115,7 +115,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     return (
       <Link
         to={item.href as string}
-        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
+        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition duration-200 active:scale-[0.96] hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
           item.current
             ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
             : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
@@ -152,7 +152,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition duration-200 active:scale-[0.96]"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
@@ -237,7 +237,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
                   <img
                     src={user.avatar}
                     alt={`${user.firstName} ${user.lastName}`}
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                   />
                 ) : (
                   <UserCircleIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
@@ -254,7 +254,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             )}
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 transition duration-200 active:scale-[0.96] ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -266,7 +266,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
           <div className="space-y-2">
             <Link
               to="/auth/login"
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition duration-200 active:scale-[0.96] ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -275,7 +275,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             </Link>
             <Link
               to="/auth/register"
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 transition duration-200 active:scale-[0.96] ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >

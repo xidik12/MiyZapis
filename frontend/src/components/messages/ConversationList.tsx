@@ -135,7 +135,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.2 }}
                   onClick={() => onSelectConversation(conversation)}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-all duration-200 ${
+                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition active:scale-[0.96] ${
                     isSelected
                       ? 'bg-primary-50 dark:bg-primary-900/20'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-l-4 border-l-transparent'
@@ -148,7 +148,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                         <img
                           src={getAbsoluteImageUrl(otherParty.avatar)}
                           alt={otherParty.name}
-                          className="w-12 h-12 rounded-full object-cover"
+                          className="w-12 h-12 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold text-lg">
@@ -170,7 +170,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                           {otherParty.name}
                         </h3>
                         {conversation.lastMessageAt && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2 tabular-nums">
                             {formatTime(conversation.lastMessageAt)}
                           </span>
                         )}
@@ -191,7 +191,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                           {conversation.lastMessage?.content || t('messages.noConversations')}
                         </p>
                         {hasUnread && (
-                          <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                          <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center tabular-nums">
                             {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
                           </span>
                         )}

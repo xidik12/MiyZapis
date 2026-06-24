@@ -290,7 +290,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
             type="button"
             onClick={handleAddSpecialty}
             disabled={!newSpecialty.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-[0.96] disabled:active:scale-100 shadow-sm hover:shadow-md"
           >
             <PlusIcon className="w-4 h-4" />
             {t('common.add') || 'Add'}
@@ -311,7 +311,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="w-full px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="w-full px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-[0.96] disabled:active:scale-100"
         >
           {saving
             ? t('common.loading') || 'Saving...'

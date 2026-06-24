@@ -67,7 +67,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
       <Link
         to={item.href}
         onClick={() => haptic.selection()}
-        className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full cursor-pointer select-none"
+        className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 h-full cursor-pointer select-none transition active:scale-[0.96]"
       >
         {/* Fixed-size icon box. The glyph never swaps (regular variant always) so
             it cannot shift on activation — active is shown by colour + the bubble. */}
@@ -142,7 +142,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                       type="button"
                       onClick={() => toggleSection(section.title)}
                       aria-expanded={sectionOpen}
-                      className="w-full flex items-center justify-between px-1 mb-2 cursor-pointer"
+                      className="w-full flex items-center justify-between px-1 mb-2 cursor-pointer transition active:scale-[0.96]"
                     >
                       <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                         {t(section.title) || section.title}
@@ -176,7 +176,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                             <Link
                               to={item.href}
                               onClick={() => { haptic.selection(); setOpen(false); }}
-                              className={`flex items-center gap-3 p-3 rounded-2xl border transition-colors cursor-pointer ${
+                              className={`flex items-center gap-3 p-3 rounded-2xl border transition cursor-pointer ${
                                 active
                                   ? 'border-primary-200 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-500/10'
                                   : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98]'
@@ -209,7 +209,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                     {/* Theme toggle */}
                     <button
                       onClick={toggleTheme}
-                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98] transition-colors"
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.96] transition"
                     >
                       <span className="shrink-0 grid place-items-center h-9 w-9 rounded-xl bg-white dark:bg-gray-700/60 text-gray-500 dark:text-gray-300">
                         {theme === 'dark'
@@ -229,7 +229,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                         <button
                           key={c.value}
                           onClick={() => setCurrency(c.value as 'UAH' | 'USD' | 'EUR')}
-                          className={`flex-1 px-2 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                          className={`flex-1 px-2 py-1.5 rounded-lg text-[12px] font-semibold transition active:scale-[0.96] ${
                             currency === c.value
                               ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/60'
@@ -243,7 +243,7 @@ export const MobileTabBar: React.FC<Props> = ({ primary, sections }) => {
                     {/* Logout */}
                     <button
                       onClick={() => { setOpen(false); dispatch(logout()); }}
-                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-error-100 dark:border-error-500/20 bg-error-50 dark:bg-error-500/10 hover:bg-error-100 dark:hover:bg-error-500/15 active:scale-[0.98] transition-colors"
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl border border-error-100 dark:border-error-500/20 bg-error-50 dark:bg-error-500/10 hover:bg-error-100 dark:hover:bg-error-500/15 active:scale-[0.96] transition"
                     >
                       <span className="shrink-0 grid place-items-center h-9 w-9 rounded-xl bg-white dark:bg-error-500/20 text-error-600 dark:text-error-400">
                         <ArrowRightOnRectangleIcon className="w-[18px] h-[18px]" />

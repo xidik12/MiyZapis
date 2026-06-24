@@ -40,7 +40,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <div className="mt-4 sm:mt-6 text-center">
         <Link
           to="/"
-          className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors duration-200"
+          className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition duration-200 active:scale-[0.96]"
         >
           ← {/* Back to home */}
           <span className="ml-1">Back to home</span>

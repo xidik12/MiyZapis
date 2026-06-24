@@ -128,7 +128,7 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors duration-150 ${
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition duration-150 active:scale-[0.96] ${
                       item.current
                         ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
                         : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors duration-150 ${
+                  className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition duration-150 active:scale-[0.96] ${
                     item.current
                       ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-primary-900/30'
                       : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -177,14 +177,14 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={notificationRef}>
                   <button
                     onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsUserMenuOpen(false); }}
-                    className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300 mobile-touch-target"
+                    className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition duration-300 mobile-touch-target active:scale-[0.96]"
                   >
                     <BellIcon
                       active={unreadNotifications > 0}
                       className={`w-7 h-7 sm:w-6 sm:h-6 ${unreadNotifications > 0 ? 'text-primary-600' : ''}`}
                     />
                     {unreadNotifications > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center tabular-nums">
                         {unreadNotifications > 9 ? '9+' : unreadNotifications}
                       </span>
                     )}
@@ -199,13 +199,13 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationOpen(false); }}
-                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-700/80 transition-all duration-300 mobile-touch-target"
+                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-700/80 transition duration-300 mobile-touch-target active:scale-[0.96]"
                   >
                     {user?.avatar ? (
                       <img
                         src={getAbsoluteImageUrl(user.avatar)}
                         alt={`${user.firstName} ${user.lastName}`}
-                        className="w-9 h-9 sm:w-8 sm:h-8 rounded-full object-cover"
+                        className="w-9 h-9 sm:w-8 sm:h-8 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                       />
                     ) : (
                       <UserCircleIcon className="w-9 h-9 sm:w-8 sm:h-8" />
@@ -226,13 +226,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="hidden sm:inline-flex items-center h-10 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary-600 px-3 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="hidden sm:inline-flex items-center h-10 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary-600 px-3 rounded-xl transition duration-150 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.96]"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="inline-flex items-center h-10 bg-primary-600 text-white px-4 sm:px-6 rounded-xl text-xs sm:text-sm font-semibold hover:bg-primary-700 transition-colors duration-150 whitespace-nowrap"
+                  className="inline-flex items-center h-10 bg-primary-600 text-white px-4 sm:px-6 rounded-xl text-xs sm:text-sm font-semibold hover:bg-primary-700 transition duration-150 whitespace-nowrap active:scale-[0.96]"
                 >
                   {t('nav.getStarted')}
                 </Link>
@@ -243,7 +243,7 @@ export const Header: React.FC = () => {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-              className="sm:hidden inline-flex items-center justify-center h-10 w-10 text-gray-700 dark:text-gray-200 hover:text-primary-600 transition-colors duration-150 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="sm:hidden inline-flex items-center justify-center h-10 w-10 text-gray-700 dark:text-gray-200 hover:text-primary-600 transition duration-150 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.96]"
             >
               {isMobileMenuOpen ? (
                 <svg className="w-6 h-6 stroke-gray-700 dark:stroke-gray-200" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -287,7 +287,7 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`block px-4 py-3 text-base font-semibold rounded-xl cursor-pointer mobile-touch-target transition-colors duration-200 ${
+                    className={`block px-4 py-3 text-base font-semibold rounded-xl cursor-pointer mobile-touch-target transition duration-200 active:scale-[0.96] ${
                       item.current
                         ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
                         : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
@@ -302,7 +302,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-4 py-3 text-base font-semibold rounded-xl mobile-touch-target transition-colors duration-200 ${
+                  className={`block px-4 py-3 text-base font-semibold rounded-xl mobile-touch-target transition duration-200 active:scale-[0.96] ${
                     item.current
                       ? 'text-primary-700 bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300'
                       : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -331,13 +331,13 @@ export const Header: React.FC = () => {
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
                 <Link
                   to="/auth/login"
-                  className="block w-full text-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 mobile-touch-target transition-colors duration-200"
+                  className="block w-full text-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 mobile-touch-target transition duration-200 active:scale-[0.96]"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-xl text-base font-semibold hover:bg-primary-700 mobile-touch-target transition-colors duration-200"
+                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-xl text-base font-semibold hover:bg-primary-700 mobile-touch-target transition duration-200 active:scale-[0.96]"
                 >
                   {t('nav.getStarted')}
                 </Link>

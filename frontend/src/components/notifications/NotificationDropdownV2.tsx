@@ -162,7 +162,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
                 {t('notifications.title')}
               </h3>
               {totalUnread > 0 && (
-                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-500 text-white">
+                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-500 text-white tabular-nums">
                   {totalUnread}
                 </span>
               )}
@@ -180,7 +180,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
               <button
                 onClick={onClose}
                 aria-label="Close notifications"
-                className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 hover:scale-110 active:scale-90 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition duration-200 hover:scale-110 active:scale-[0.96] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <XIcon className="w-5 h-5" />
               </button>

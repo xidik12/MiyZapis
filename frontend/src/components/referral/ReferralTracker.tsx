@@ -88,25 +88,25 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
               {analytics.overview.totalReferrals}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.performance.totalSent')}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
               {analytics.overview.completedReferrals}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.stats.completed')}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 tabular-nums">
               {analytics.overview.pendingReferrals}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.performance.pending')}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
               {analytics.overview.totalPointsEarned}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.stats.pointsEarned')}</div>
@@ -158,7 +158,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
               key={filter.key}
               onClick={() => setSelectedFilter(filter.key as any)}
               className={clsx(
-                'px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-colors whitespace-nowrap',
+                'px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition active:scale-[0.96] whitespace-nowrap',
                 selectedFilter === filter.key
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

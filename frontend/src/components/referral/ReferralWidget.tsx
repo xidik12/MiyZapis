@@ -103,25 +103,25 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+          <div className="text-2xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
             {analytics.overview.totalReferrals}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalReferred')}</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
             {analytics.overview.completedReferrals}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalEarned')}</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 tabular-nums">
             {analytics.overview.pendingReferrals}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.pending')}</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
             {analytics.overview.totalPointsEarned}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.widget.totalEarned')}</div>

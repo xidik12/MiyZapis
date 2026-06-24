@@ -395,7 +395,7 @@ export const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-sm transition duration-200 active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {saving && (
               <InlineLoader size="sm" color="white" />

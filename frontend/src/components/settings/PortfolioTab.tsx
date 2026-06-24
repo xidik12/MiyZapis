@@ -94,7 +94,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
         <label
           className={`
             inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-            transition-colors cursor-pointer
+            transition active:scale-[0.96] cursor-pointer
             ${isUploading
               ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -135,7 +135,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
                 <img
                   src={getAbsoluteImageUrl(item.imageUrl)}
                   alt={item.title || t('portfolio.image') || 'Portfolio image'}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                   loading="lazy"
                 />
               </div>
@@ -198,7 +198,7 @@ const PortfolioTab: React.FC<PortfolioTabProps> = ({
           disabled={saving}
           className={`
             inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium
-            transition-colors
+            transition active:scale-[0.96] disabled:active:scale-100
             ${saving
               ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'

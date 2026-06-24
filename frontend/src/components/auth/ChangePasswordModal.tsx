@@ -131,7 +131,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 </p>
               </div>
             </div>
-            <button onClick={handleFullClose} disabled={isLoading} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors">
+            <button onClick={handleFullClose} disabled={isLoading} aria-label="Close" className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition active:scale-[0.96] disabled:active:scale-100">
               <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
@@ -166,7 +166,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 <button
                   onClick={handleSendOtp}
                   disabled={isSending}
-                  className="w-full px-4 py-3 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center justify-center space-x-2"
+                  className="w-full px-4 py-3 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition active:scale-[0.96] disabled:active:scale-100 flex items-center justify-center space-x-2"
                 >
                   {isSending && <LoadingSpinner size="sm" color="white" />}
                   <span>{isSending ? (t('auth.changePasswordModal.sending') || 'Sending...') : (t('auth.changePasswordModal.sendCode') || 'Send Verification Code')}</span>
@@ -208,13 +208,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-2">
-                    <button type="button" onClick={handleFullClose} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                    <button type="button" onClick={handleFullClose} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96]">
                       {t('common.cancel')}
                     </button>
                     <button
                       onClick={handleVerifyOtp}
                       disabled={otpCode.length !== 6}
-                      className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition active:scale-[0.96] disabled:active:scale-100"
                     >
                       {t('auth.changePasswordModal.verify') || 'Verify & Continue'}
                     </button>
@@ -283,14 +283,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
               {/* Buttons */}
               <div className="flex justify-between pt-2">
-                <button type="button" onClick={() => setStep('verify')} className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                <button type="button" onClick={() => setStep('verify')} className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition active:scale-[0.96]">
                   ← {t('common.back') || 'Back'}
                 </button>
                 <div className="flex space-x-3">
-                  <button type="button" onClick={handleFullClose} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors">
+                  <button type="button" onClick={handleFullClose} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition active:scale-[0.96] disabled:active:scale-100">
                     {t('common.cancel')}
                   </button>
-                  <button type="submit" disabled={isLoading || !watchedNewPassword} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center space-x-2">
+                  <button type="submit" disabled={isLoading || !watchedNewPassword} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition active:scale-[0.96] disabled:active:scale-100 flex items-center space-x-2">
                     {isLoading && <LoadingSpinner size="sm" color="white" />}
                     <span>{isLoading ? (t('auth.changePasswordModal.submitting')) : (t('auth.changePasswordModal.submit'))}</span>
                   </button>

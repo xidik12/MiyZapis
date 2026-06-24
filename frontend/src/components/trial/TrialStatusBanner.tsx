@@ -137,7 +137,7 @@ export const TrialStatusBanner: React.FC<TrialStatusBannerProps> = ({
               <div className="flex items-center space-x-4 text-xs">
                 <div className={clsx('flex items-center space-x-1', getTextStyles())}>
                   <ClockIcon className="h-4 w-4" />
-                  <span className="font-medium">
+                  <span className="font-medium tabular-nums">
                     {trialInfo.daysRemaining} {trialInfo.daysRemaining === 1 ? t('trial.banner.dayLeft') : t('trial.banner.daysLeft')}
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export const TrialStatusBanner: React.FC<TrialStatusBannerProps> = ({
             <button
               onClick={onDismiss}
               className={clsx(
-                'p-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors',
+                'w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition active:scale-[0.96]',
                 getTextStyles()
               )}
               aria-label="Dismiss"

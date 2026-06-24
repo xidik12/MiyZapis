@@ -328,7 +328,7 @@ const PaymentDetailsTab: React.FC<PaymentDetailsTabProps> = ({
             <img
               src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
               alt={t('specialist.paymentQr') || 'Payment QR code'}
-              className="w-28 h-28 rounded-xl border border-gray-200 dark:border-gray-700 object-cover"
+              className="w-28 h-28 rounded-xl border border-gray-200 dark:border-gray-700 object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
             />
           ) : (
             <div className="w-28 h-28 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
@@ -368,7 +368,7 @@ const PaymentDetailsTab: React.FC<PaymentDetailsTabProps> = ({
                 <button
                   type="button"
                   onClick={handleQrRemove}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-[0.96]"
                 >
                   {t('specialist.removeQr') || 'Remove'}
                 </button>
@@ -392,7 +392,7 @@ const PaymentDetailsTab: React.FC<PaymentDetailsTabProps> = ({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className={`px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors ${
+          className={`px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition active:scale-[0.96] disabled:active:scale-100 ${
             saving ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >

@@ -63,7 +63,7 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
             <Link
               key={post.id}
               to={`/community/${post.id}`}
-              className="shrink-0 w-64 sm:w-72 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-400 hover:shadow-lg transition-all"
+              className="shrink-0 w-64 sm:w-72 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-400 hover:shadow-lg transition active:scale-[0.96]"
               data-float
             >
               {firstImage && (
@@ -71,7 +71,7 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
                   <img
                     src={firstImage}
                     alt=""
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
                     loading="lazy"
                   />
                 </div>
@@ -83,11 +83,11 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
                 <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                   <span className="inline-flex items-center gap-1">
                     <HeartIcon className="w-3.5 h-3.5 text-rose-500" active />
-                    {post.likeCount || 0}
+                    <span className="tabular-nums">{post.likeCount || 0}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <ChatBubbleLeftIcon className="w-3.5 h-3.5 text-primary-500" active />
-                    {post.commentCount || 0}
+                    <span className="tabular-nums">{post.commentCount || 0}</span>
                   </span>
                   {post.type === 'SALE' && post.price != null && (
                     <span className="ml-auto text-emerald-600 dark:text-emerald-400 font-semibold">

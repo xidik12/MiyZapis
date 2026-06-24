@@ -107,7 +107,8 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors"
+              aria-label="Close"
+              className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition active:scale-[0.96] disabled:active:scale-100"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -223,14 +224,14 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 type="button"
                 onClick={handleClose}
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !watchedPassword}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center space-x-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition active:scale-[0.96] disabled:active:scale-100 flex items-center space-x-2"
               >
                 {isLoading && <LoadingSpinner size="sm" color="white" />}
                 <span>{isLoading ? t('auth.setPasswordModal.submitting') : t('auth.setPasswordModal.submit')}</span>

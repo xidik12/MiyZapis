@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -106,13 +107,20 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           onClick={onClose}
         />
 
         {/* Modal */}
-        <div className="inline-block transform overflow-hidden rounded-xl bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+          className="inline-block transform overflow-hidden rounded-xl bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
           <form onSubmit={handleSubmit}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -122,7 +130,8 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition active:scale-[0.96]"
+                aria-label="Close"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
@@ -159,7 +168,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                         type="button"
                         onClick={() => handleReferralTypeChange(type)}
                         className={clsx(
-                          'text-left p-4 border-2 rounded-xl transition-all',
+                          'text-left p-4 border-2 rounded-xl transition active:scale-[0.96]',
                           isSelected
                             ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -212,7 +221,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, inviteChannel: channel }))}
                       className={clsx(
-                        'flex items-center p-3 border rounded-xl transition-all text-sm',
+                        'flex items-center p-3 border rounded-xl transition active:scale-[0.96] text-sm',
                         formData.inviteChannel === channel
                           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -283,7 +292,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               </Button>
             </div>
           </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

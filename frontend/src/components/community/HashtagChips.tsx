@@ -29,7 +29,7 @@ export const HashtagChips: React.FC<HashtagChipsProps> = ({ tags, activeSlug, on
             key={tag.slug}
             onClick={() => onSelect(active ? null : tag.slug)}
             className={[
-              'shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all',
+              'shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition active:scale-[0.96]',
               'border',
               active
                 ? 'bg-primary-500 border-primary-500 text-white'
@@ -39,7 +39,7 @@ export const HashtagChips: React.FC<HashtagChipsProps> = ({ tags, activeSlug, on
             <HashtagIcon className="w-3.5 h-3.5" />
             <span className="font-medium">{tag.display}</span>
             {typeof tag.count === 'number' && tag.count > 1 && (
-              <span className={active ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}>
+              <span className={`tabular-nums ${active ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                 {tag.count}
               </span>
             )}

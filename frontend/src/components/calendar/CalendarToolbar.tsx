@@ -44,14 +44,15 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onNavigate('today')}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all duration-200 active:scale-95"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition duration-200 active:scale-[0.96]"
           >
             {t('calendar.today')}
           </button>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onNavigate('prev')}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
+              aria-label="Previous"
             >
               <ChevronLeftIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
@@ -62,7 +63,8 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             </div>
             <button
               onClick={() => onNavigate('next')}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
+              aria-label="Next"
             >
               <ChevronRightIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
@@ -73,7 +75,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
           <button
             onClick={() => onViewModeChange('month')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition duration-200 active:scale-[0.96] ${
               viewMode === 'month'
                 ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -84,7 +86,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           </button>
           <button
             onClick={() => onViewModeChange('week')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition duration-200 active:scale-[0.96] ${
               viewMode === 'week'
                 ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -95,7 +97,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           </button>
           <button
             onClick={() => onViewModeChange('day')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition duration-200 active:scale-[0.96] ${
               viewMode === 'day'
                 ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

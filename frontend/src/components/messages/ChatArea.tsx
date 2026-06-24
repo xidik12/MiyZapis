@@ -146,7 +146,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           {onBack && (
             <button
               onClick={onBack}
-              className="lg:hidden p-2 -ml-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+              className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
@@ -157,7 +157,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             <img
               src={getAbsoluteImageUrl(otherParty.avatar)}
               alt={otherParty.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10"
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
@@ -178,7 +178,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
         {/* Action buttons */}
         <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95">
+          <button className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition duration-200 hover:scale-110 active:scale-[0.96]" aria-label="More options">
             <EllipsisVerticalIcon className="w-5 h-5" />
           </button>
         </div>

@@ -133,12 +133,12 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         ? 'bg-green-50/40 dark:bg-green-900/10 hover:bg-green-50/60 dark:hover:bg-green-900/20'
                         : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       : 'bg-gray-50/50 dark:bg-gray-900/30'
-                  } cursor-pointer transition-colors relative group`}
+                  } cursor-pointer transition active:scale-[0.96] relative group`}
                 >
                   {/* Date number + availability indicators */}
                   <div className="flex items-center justify-between mb-1">
                     <span
-                      className={`text-sm font-semibold ${
+                      className={`text-sm font-semibold tabular-nums ${
                         isDayToday
                           ? 'flex items-center justify-center w-7 h-7 rounded-full bg-primary-600 text-white'
                           : isCurrentMonth

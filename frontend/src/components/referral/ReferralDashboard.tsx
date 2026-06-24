@@ -131,7 +131,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('referral.stats.total')}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {analytics.overview.totalReferrals}
               </p>
             </div>
@@ -147,7 +147,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('referral.stats.completed')}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {analytics.overview.completedReferrals}
               </p>
             </div>
@@ -163,7 +163,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('referral.stats.conversionRate')}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {referralService.formatConversionRate(analytics.overview.conversionRate)}
               </p>
             </div>
@@ -179,7 +179,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('referral.stats.pointsEarned')}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                 {analytics.overview.totalPointsEarned}
               </p>
             </div>
@@ -198,7 +198,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {t('referral.limits.daily')}
               </span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                 {config.limits.dailyUsed} / {config.limits.dailyLimit}
               </span>
             </div>
@@ -217,7 +217,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {t('referral.limits.pending')}
               </span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
                 {config.limits.pendingUsed} / {config.limits.pendingLimit}
               </span>
             </div>

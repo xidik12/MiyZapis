@@ -29,7 +29,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
           <LanguageToggle />
           <button
             onClick={onMenuToggle}
-            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 mobile-touch-target"
+            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition duration-200 mobile-touch-target active:scale-[0.96]"
             aria-label="Open navigation menu"
           >
             <Bars3Icon className="w-6 h-6" />

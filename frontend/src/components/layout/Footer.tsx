@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="block text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-4 py-2 rounded-xl hover:bg-gray-800/50"
+                    className="block text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-4 py-2 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
@@ -51,14 +51,14 @@ export const Footer: React.FC = () => {
               <Link
                 key={s.slug}
                 to={`/services/${s.slug}`}
-                className="text-gray-400 hover:text-white text-sm transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
+                className="text-gray-400 hover:text-white text-sm transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
               >
                 {pick(s.name, lang)}
               </Link>
             ))}
             <Link
               to="/blog"
-              className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
+              className="text-primary-400 hover:text-primary-300 text-sm font-medium transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50 whitespace-nowrap"
             >
               {t('footer.blog') || 'Блог і поради'}
             </Link>
@@ -69,19 +69,19 @@ export const Footer: React.FC = () => {
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6 xs:mb-8">
           <Link
             to="/terms"
-            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
           >
             {t('footer.termsOfService')}
           </Link>
           <Link
             to="/privacy"
-            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
           >
             {t('footer.privacyPolicy')}
           </Link>
           <Link
             to="/contact"
-            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition duration-200 active:scale-[0.96] px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
           >
             {t('footer.contactUs')}
           </Link>
