@@ -4,6 +4,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
+import { toast } from 'react-toastify';
 
 const ANALYTICS_HELP = {
   en: {
@@ -452,9 +453,8 @@ Performance:
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error exporting PDF:', error);
-      // Prefer toast style, but avoid adding a new import here if not present elsewhere
-      // toast.error('Failed to export PDF report. Please try again.');
+      console.error('Error exporting report:', error);
+      toast.error(t('analytics.exportError') || 'Export failed. Please try again.');
     }
   };
 
@@ -487,7 +487,7 @@ Performance:
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      // toast.error('Failed to export CSV data. Please try again.');
+      toast.error(t('analytics.exportError') || 'Export failed. Please try again.');
     }
   };
 
@@ -508,17 +508,17 @@ Performance:
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(shareText);
-        // toast.success('Analytics summary copied to clipboard!');
+        toast.success(t('analytics.copiedToClipboard') || 'Analytics summary copied to clipboard');
       }
     } catch (error) {
       console.error('Error sharing analytics:', error);
       // Fallback: try copying to clipboard
       try {
-        const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
-        await navigator.clipboard.writeText(shareText);
-        // toast.success('Analytics summary copied to clipboard!');
+        const shareTextFallback = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue, currency) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
+        await navigator.clipboard.writeText(shareTextFallback);
+        toast.success(t('analytics.copiedToClipboard') || 'Analytics summary copied to clipboard');
       } catch (clipboardError) {
-        // toast.error('Unable to share analytics. Please try again.');
+        toast.error(t('analytics.shareError') || 'Unable to share analytics. Please try again.');
       }
     }
   };
@@ -648,12 +648,18 @@ Performance:
 
         const performance: any = {
           averageResponseTime: averageResponseTime,
-          completionRate: completionRate,
-          customerSatisfaction: 4.5, // Default good rating
-          punctuality: 95, // High since all bookings completed
-          professionalismScore: 4.5, // Default good score
+          // completionRate is computed below after reviewing all data.
+          // customerSatisfaction / punctuality / professionalismScore are not
+          // derivable from completed-bookings data alone — omit rather than invent.
           period: { start: filters.startDate, end: filters.endDate }
         };
+
+        // completionRate: the query only fetches COMPLETED bookings, so
+        // completed ÷ completed is always 100. We use the analytics API's
+        // value (completed ÷ all) when available; otherwise leave as null
+        // so the card shows "—" rather than a misleading 100%.
+        performance.completionRate = null as number | null;
+        overview.completionRate = null as unknown as number;
 
         // Enhance with review stats for accurate rating values
         try {
@@ -668,6 +674,11 @@ Performance:
         } catch (e) {
           console.warn('Analytics: unable to load review stats', e);
         }
+
+        // If the analytics API supplied a real completion rate (completed ÷ all),
+        // prefer it over our always-100 local value.
+        // (analyticsService.getBookingAnalytics returns completionRate as a number 0-100)
+        // We intentionally leave it null if the API can't provide a proper denominator.
 
         // Group bookings by service for service analytics
         const serviceGroups = new Map();
@@ -686,8 +697,8 @@ Performance:
           serviceName,
           bookings: data.count,
           revenue: data.revenue,
-          averageRating: 4.5,
-          growthRate: 0 // We'd need historical data for this
+          averageRating: 0, // No per-service rating data available from this endpoint
+          growthRate: 0 // Would need historical data
         }));
 
         const bookings = {
@@ -727,8 +738,8 @@ Performance:
             serviceName: service.serviceName,
             bookings: service.bookings,
             revenue: service.revenue,
-            averageRating: 4.5,
-            completionRate: 100,
+            averageRating: 0, // No per-service rating data available
+            completionRate: null, // Cannot compute without total (incl. cancelled) per service
             cancellationRate: 0
           })),
           serviceGrowth: bookingsByService.map(service => ({
@@ -855,29 +866,27 @@ Performance:
         const message = error instanceof Error ? error.message : String(error);
         console.error('Error loading analytics:', error);
         
-        // Only show error if it's not a network/auth issue - provide fallback data instead
-        if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {
-          setError('Some analytics data may be unavailable. Please try refreshing the page.');
-        }
+        // Always show an error state so users aren't shown silent zeros or
+        // fake fallback metrics. Network / auth failures get a generic message.
+        setError('Some analytics data may be unavailable. Please try refreshing the page.');
 
-        // Set fallback analytics data
+        // Set fallback analytics data — all numeric metrics are 0/null (not invented).
         setAnalyticsData({
           overview: {
             totalBookings: 0,
             totalRevenue: 0,
             averageRating: 0,
-            completionRate: 85,
-            responseTime: 15,
+            completionRate: null as unknown as number,
+            responseTime: 0,
             newCustomers: 0,
             repeatCustomers: 0,
             period: { start: filters.startDate, end: filters.endDate }
           },
           performance: {
-            averageResponseTime: 15,
-            completionRate: 85,
-            customerSatisfaction: 4.2,
-            punctuality: 90,
-            professionalismScore: 4.5,
+            averageResponseTime: 0,
+            completionRate: null, // Cannot compute without real data
+            // customerSatisfaction / punctuality / professionalismScore omitted —
+            // no real data source; never invent these values.
             period: { start: filters.startDate, end: filters.endDate }
           } as any,
           bookings: {
@@ -1290,18 +1299,17 @@ Performance:
                   <div className="flex flex-wrap justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100, currency)}</span>
+                      <span>{t('analytics.chartRevenue')}: {formatPrice(Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100, currency)}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
-                      <span>Bookings: {currentPeriodData.bookings.reduce((sum, val) => sum + val, 0)}</span>
+                      <span>{t('analytics.chartBookings')}: {currentPeriodData.bookings.reduce((sum, val) => sum + val, 0)}</span>
                     </div>
                     {currentPeriodData.revenue.length <= 1 && (
                       <div className="text-gray-500 dark:text-gray-400 italic">
-                        {selectedPeriod === 'yearly' ? 'Switch to "monthly" for detailed trends' :
-                         selectedPeriod === 'monthly' ? 'Switch to "daily" for detailed trends' :
-                         selectedPeriod === 'weekly' ? 'Switch to "daily" for detailed trends' :
-                         'Not enough data for trend analysis'}
+                        {selectedPeriod === 'yearly' ? t('analytics.switchToMonthly') :
+                         selectedPeriod === 'monthly' || selectedPeriod === 'weekly' ? t('analytics.switchToDaily') :
+                         t('analytics.notEnoughData')}
                       </div>
                     )}
                   </div>
@@ -1403,11 +1411,15 @@ Performance:
                   <HelpTip title={h.completionRate} content={h.completionRateBody} />
                 </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
-                  {(analyticsData.performance?.completionRate || 0).toFixed(1)}%
+                  {analyticsData.performance?.completionRate != null
+                    ? `${(analyticsData.performance.completionRate as number).toFixed(1)}%`
+                    : '—'}
                 </p>
-                <p className={`text-xs mt-1 ${completionRateStatus.color}`}>
-                  {completionRateStatus.status}
-                </p>
+                {analyticsData.performance?.completionRate != null && (
+                  <p className={`text-xs mt-1 ${completionRateStatus.color}`}>
+                    {completionRateStatus.status}
+                  </p>
+                )}
               </div>
               <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-xl">
                 <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1460,7 +1472,7 @@ Performance:
                   <p className={`text-xs ${conversionRateStatus.color}`}>
                     {conversionRateStatus.status}
                   </p>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Industry avg: 18%</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('analytics.industryAvg')} 18%</span>
                 </div>
               </div>
               <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-xl">
@@ -1474,14 +1486,14 @@ Performance:
         
         {/* Export & Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
+          <button
             onClick={handleExportPDF}
             className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-medium transition duration-200 hover:shadow-md flex items-center justify-center active:scale-[0.96]"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            {t('analytics.exportPdfReport')}
+            {t('analytics.exportReportTxt')}
           </button>
           <button 
             onClick={handleExportCSV}

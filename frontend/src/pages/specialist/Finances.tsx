@@ -252,6 +252,7 @@ const SpecialistFinances: React.FC = () => {
 
   // State
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -273,6 +274,7 @@ const SpecialistFinances: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
 
       // Build filters
       const filters: Record<string, unknown> = { limit: 50, sortBy: 'date', sortOrder: 'desc' };
@@ -292,8 +294,8 @@ const SpecialistFinances: React.FC = () => {
       setExpenses(expensesResponse.expenses || []);
       setSummary(summaryResponse);
     } catch (error: unknown) {
-      console.error('Error loading expenses:', error);
-      toast.error(t('finances.loadError') || 'Failed to load expenses');
+      const msg = (error instanceof Error ? error.message : null) || t('finances.loadError') || 'Failed to load expenses';
+      setLoadError(msg);
     } finally {
       setLoading(false);
     }
@@ -478,6 +480,21 @@ const SpecialistFinances: React.FC = () => {
           </button>
         </div>
 
+        {/* Load error banner */}
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{loadError}</p>
+              <button
+                onClick={() => loadData()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
@@ -614,7 +631,7 @@ const SpecialistFinances: React.FC = () => {
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full ${config?.bgColor?.replace('bg-', 'bg-') || 'bg-gray-500'}`}
+                          className={`h-2 rounded-full ${config?.bgColor?.replace('-100', '-500') || 'bg-gray-500'}`}
                           style={{ width: `${cat.percentage}%` }}
                         />
                       </div>

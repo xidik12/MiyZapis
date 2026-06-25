@@ -44,27 +44,25 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
 
   const { overview, growth, recentActivity, analytics } = data;
 
-  // Prepare chart data — aggregate daily user-trend series from userAnalytics
-  // (falls back to the 2-point previous/current pair when not yet loaded)
+  // Prepare chart data — aggregate daily user-trend series from userAnalytics.
+  // When userTrends aren't loaded yet, render nothing rather than synthetic data.
   const rawTrends = userAnalyticsData?.userTrends || [];
   const dailyUserMap = new Map<string, number>();
   rawTrends.forEach((trend) => {
     const dateKey = typeof trend.date === 'string' ? trend.date.slice(0, 10) : String(trend.date);
     dailyUserMap.set(dateKey, (dailyUserMap.get(dateKey) || 0) + (trend.count || 0));
   });
-  const userGrowthData = dailyUserMap.size > 1
-    ? Array.from(dailyUserMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, users]) => ({ date, users }))
-    : [
-        { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), users: growth.newUsers.previous },
-        { date: new Date().toISOString().slice(0, 10), users: growth.newUsers.current }
-      ];
+  const userGrowthData = Array.from(dailyUserMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, users]) => ({ date, users }));
+  const userGrowthReady = userGrowthData.length > 0;
 
-  // Prepare booking status pie chart data
+  // Prepare booking status pie chart data.
+  // completedBookings is a real count; the remainder is labelled honestly as
+  // "Other / not completed" — it includes CANCELLED, CONFIRMED, IN_PROGRESS, etc.
   const bookingStatusData = [
     { name: t('admin.overview.completed'), value: overview.completedBookings, color: '#10B981' },
-    { name: t('admin.overview.pending'), value: overview.totalBookings - overview.completedBookings, color: '#F59E0B' }
+    { name: t('admin.overview.otherInProgress'), value: overview.totalBookings - overview.completedBookings, color: '#F59E0B' }
   ];
 
   // Prepare category stats for bar chart
@@ -194,13 +192,21 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {t('admin.overview.userGrowth')}
           </h3>
-          <TrendLineChart
-            data={userGrowthData}
-            dataKeys={[
-              { key: 'users', name: t('admin.overview.newUsers'), color: '#3B82F6' }
-            ]}
-            height={250}
-          />
+          {userGrowthReady ? (
+            <TrendLineChart
+              data={userGrowthData}
+              dataKeys={[
+                { key: 'users', name: t('admin.overview.newUsers'), color: '#3B82F6' }
+              ]}
+              height={250}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-[250px] text-gray-400 dark:text-gray-600 text-sm">
+              {userAnalyticsData === null
+                ? t('admin.overview.userGrowthNoData')
+                : t('admin.chart.loading')}
+            </div>
+          )}
         </div>
 
         {/* Booking Status Distribution */}
@@ -267,7 +273,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                 </div>
                 <div className="flex flex-col items-end shrink-0">
                   <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
-                    ${booking.totalAmount}
+                    ₴{booking.totalAmount}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${

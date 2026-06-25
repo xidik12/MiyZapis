@@ -195,7 +195,7 @@ const POS: React.FC = () => {
 
   const openTodaySummary = async () => {
     setTodayOpen(true);
-    if (todaySummary) return; // cached for the session
+    // Always refresh — stale figures after a completed sale/refund would be misleading.
     setTodayLoading(true);
     try {
       const s = await storeService.todaySummary();

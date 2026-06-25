@@ -89,6 +89,8 @@ export const adminTranslations: Record<string, { en: string; uk: string; ru: str
   'admin.overview.recentUsers': { en: 'Recent Users', uk: 'Нещодавні користувачі', ru: 'Недавние пользователи' },
   'admin.overview.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   'admin.overview.unverified': { en: 'Unverified', uk: 'Не підтверджено', ru: 'Не подтверждено' },
+  'admin.overview.otherInProgress': { en: 'Other / not completed', uk: 'Інші / не завершені', ru: 'Другие / не завершённые' },
+  'admin.overview.userGrowthNoData': { en: 'No trend data for the selected period', uk: 'Немає даних тренду за вибраний період', ru: 'Нет данных тренда за выбранный период' },
 
   // System Health Section
   'admin.system.failedToLoad': { en: 'Failed to Load System Health', uk: 'Не вдалося завантажити стан системи', ru: 'Не удалось загрузить состояние системы' },
@@ -120,6 +122,10 @@ export const adminTranslations: Record<string, { en: string; uk: string; ru: str
   'admin.users.confirmAction': { en: 'Are you sure you want to', uk: 'Ви впевнені, що хочете', ru: 'Вы уверены, что хотите' },
   'admin.users.userCount': { en: 'user(s)?', uk: 'користувача(ів)?', ru: 'пользователя(ей)?' },
   'admin.users.successfully': { en: 'Successfully', uk: 'Успішно', ru: 'Успешно' },
+  'admin.users.newInPeriod': { en: 'new in period', uk: 'нових за період', ru: 'новых за период' },
+  'admin.users.actionActivated': { en: 'Activated', uk: 'Активовано', ru: 'Активировано' },
+  'admin.users.actionDeactivated': { en: 'Deactivated', uk: 'Деактивовано', ru: 'Деактивировано' },
+  'admin.users.actionDeleted': { en: 'Deleted', uk: 'Видалено', ru: 'Удалено' },
   'admin.users.failedToLoad': { en: 'Failed to load users', uk: 'Не вдалося завантажити користувачів', ru: 'Не удалось загрузить пользователей' },
   'admin.users.searchPlaceholder': { en: 'Search by name or email...', uk: "Пошук за ім'ям або email...", ru: 'Поиск по имени или email...' },
   'admin.users.allTypes': { en: 'All Types', uk: 'Всі типи', ru: 'Все типы' },
@@ -177,4 +183,6 @@ export const adminTranslations: Record<string, { en: string; uk: string; ru: str
   'admin.analytics.noSpecialists': { en: 'No specialists found', uk: 'Спеціалістів не знайдено', ru: 'Специалистов не найдено' },
   'admin.analytics.referralAnalytics': { en: 'Referral Analytics', uk: 'Реферальна аналітика', ru: 'Реферальная аналитика' },
   'admin.analytics.referralDescription': { en: 'Referral tracking and performance metrics will be displayed here once the referral system is fully integrated.', uk: 'Відстеження рефералів та метрики ефективності відображатимуться тут після повної інтеграції реферальної системи.', ru: 'Отслеживание рефералов и метрики эффективности будут отображаться здесь после полной интеграции реферальной системы.' },
+  'admin.analytics.noDataBookings': { en: 'Booking analytics data is unavailable. Try refreshing.', uk: 'Дані аналітики бронювань недоступні. Спробуйте оновити.', ru: 'Данные аналитики бронирований недоступны. Попробуйте обновить.' },
+  'admin.analytics.noDataRevenue': { en: 'Revenue analytics data is unavailable. Try refreshing.', uk: 'Дані аналітики доходів недоступні. Спробуйте оновити.', ru: 'Данные аналитики доходов недоступны. Попробуйте обновить.' },
 };

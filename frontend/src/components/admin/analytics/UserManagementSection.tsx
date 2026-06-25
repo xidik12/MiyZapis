@@ -141,7 +141,11 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     try {
       setActionLoading(true);
       await adminAnalyticsService.manageUsers({ action, userIds });
-      toast.success(`${t('admin.users.successfully')} ${action}d ${userIds.length} ${t('admin.users.userCount')}`);
+      const actionLabel =
+        action === 'activate'   ? t('admin.users.actionActivated') :
+        action === 'deactivate' ? t('admin.users.actionDeactivated') :
+                                  t('admin.users.actionDeleted');
+      toast.success(`${actionLabel} ${userIds.length} ${t('admin.users.userCount')}`);
       setSelectedUsers(new Set());
       // Refresh user list
       fetchUsers();
@@ -255,25 +259,28 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Stats Cards
+          pagination.totalItems = all-time count from the paginated user list.
+          totalUsers / customerCount / specialistCount = registrations within the selected period
+          (sum of userTrends), so they are labelled "New in period" rather than all-time totals. */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title={t('admin.overview.totalUsers')}
-          value={totalUsers || pagination.totalItems}
+          value={pagination.totalItems}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${period} ${t('admin.analytics.period')}`}
+          subtitle={`+${totalUsers} ${t('admin.users.newInPeriod')}`}
         />
         <StatCard
           title={t('admin.users.customers')}
           value={customerCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((customerCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
+          subtitle={`${t('admin.users.newInPeriod')} · ${((customerCount / Math.max(totalUsers, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
         <StatCard
           title={t('admin.users.specialists')}
           value={specialistCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((specialistCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
+          subtitle={`${t('admin.users.newInPeriod')} · ${((specialistCount / Math.max(totalUsers, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
       </div>
 

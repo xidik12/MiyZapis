@@ -579,7 +579,7 @@ const SpecialistPurchasing: React.FC = () => {
                       <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {orders.map((po) => {
                           const poCur = asCurrency(po.currency);
-                          const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT';
+                          const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL';
                           const canCancel = po.status !== 'RECEIVED' && po.status !== 'CANCELLED';
                           const isBusy = busyOrder === po.id;
                           return (
@@ -666,7 +666,7 @@ const SpecialistPurchasing: React.FC = () => {
                   <div className="lg:hidden space-y-3 p-4">
                     {orders.map((po) => {
                       const poCur = asCurrency(po.currency);
-                      const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT';
+                      const canReceive = po.status === 'ORDERED' || po.status === 'PARTIAL';
                       const canCancel = po.status !== 'RECEIVED' && po.status !== 'CANCELLED';
                       const isBusy = busyOrder === po.id;
                       return (

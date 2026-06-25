@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDebounce } from '../../hooks/useDebounce';
 import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -184,11 +185,12 @@ const SpecialistInventory: React.FC = () => {
   const [filterLowStock, setFilterLowStock] = useState(false);
   const [filterExpiring, setFilterExpiring] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType, filterLowStock, filterExpiring, search]);
+  }, [filterType, filterLowStock, filterExpiring, debouncedSearch]);
 
   const loadData = async () => {
     try {
@@ -197,7 +199,7 @@ const SpecialistInventory: React.FC = () => {
       if (filterType) filters.type = filterType;
       if (filterLowStock) filters.lowStock = true;
       if (filterExpiring) filters.expiringSoon = true;
-      if (search.trim()) filters.search = search.trim();
+      if (debouncedSearch.trim()) filters.search = debouncedSearch.trim();
 
       const [productsResponse, summaryResponse] = await Promise.all([
         inventoryService.getProducts(filters),

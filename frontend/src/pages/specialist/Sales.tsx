@@ -250,6 +250,7 @@ const SpecialistSales: React.FC = () => {
       PAID: { en: 'Paid', uk: 'Оплачено', ru: 'Оплачено' },
       FULFILLED: { en: 'Fulfilled', uk: 'Виконано', ru: 'Выполнено' },
       CANCELLED: { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+      REFUNDED: { en: 'Refunded', uk: 'Повернено', ru: 'Возвращено' },
     };
     return labels[status]?.[language] || labels[status]?.en || status;
   };
@@ -262,7 +263,7 @@ const SpecialistSales: React.FC = () => {
     return labels[f]?.[language] || labels[f]?.en || f;
   };
 
-  // Order status badges: PENDING gray, PAID amber, FULFILLED green, CANCELLED red.
+  // Order status badges: PENDING gray, PAID amber, FULFILLED green, CANCELLED red, REFUNDED purple.
   const orderStatusBadgeClass = (status: OrderStatus): string => {
     switch (status) {
       case 'PENDING':
@@ -273,6 +274,8 @@ const SpecialistSales: React.FC = () => {
         return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       case 'CANCELLED':
         return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+      case 'REFUNDED':
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
       default:
         return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
     }
@@ -1473,7 +1476,7 @@ const SpecialistSales: React.FC = () => {
                                       {t('store.fulfil') || 'Fulfil'}
                                     </button>
                                   )}
-                                  {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
+                                  {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
                                     <button
                                       onClick={() => handleSetOrderStatus(order, 'CANCELLED')}
                                       disabled={acting === order.id}
@@ -1529,7 +1532,7 @@ const SpecialistSales: React.FC = () => {
                               <dd className="min-w-0 text-right text-gray-900 dark:text-white break-words">{fulfilmentLabel(order.fulfilment)}</dd>
                             </div>
                           </dl>
-                          {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && (
+                          {order.status !== 'FULFILLED' && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
                             <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
                               {order.status === 'PENDING' && (
                                 <button

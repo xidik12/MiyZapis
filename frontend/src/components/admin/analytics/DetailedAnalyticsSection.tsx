@@ -6,7 +6,8 @@ import {
   ArrowTrendingUpIcon,
   CalendarIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  InformationCircleIcon
 } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { StatCard } from '../ui/StatCard';
@@ -91,18 +92,41 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
       </div>
 
       {/* Booking Analytics Tab */}
-      {activeSubTab === 'bookings' && bookingAnalytics && (
-        <BookingAnalyticsTab data={bookingAnalytics} period={period} />
+      {activeSubTab === 'bookings' && (
+        bookingAnalytics
+          ? <BookingAnalyticsTab data={bookingAnalytics} period={period} />
+          : <AnalyticsEmptyState message={t('admin.analytics.noDataBookings')} onRetry={undefined} />
       )}
 
       {/* Revenue Analytics Tab */}
-      {activeSubTab === 'revenue' && financialAnalytics && (
-        <RevenueAnalyticsTab data={financialAnalytics} period={period} categoryRevenue={bookingAnalytics?.categoryRevenue} />
+      {activeSubTab === 'revenue' && (
+        financialAnalytics
+          ? <RevenueAnalyticsTab data={financialAnalytics} period={period} categoryRevenue={bookingAnalytics?.categoryRevenue} />
+          : <AnalyticsEmptyState message={t('admin.analytics.noDataRevenue')} onRetry={undefined} />
       )}
 
       {/* Referral Analytics Tab */}
       {activeSubTab === 'referrals' && (
         <ReferralAnalyticsTab data={data} period={period} />
+      )}
+    </div>
+  );
+};
+
+// Empty / error state shown when a sub-tab's analytics object is null after a fetch failure
+const AnalyticsEmptyState: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => {
+  const { t } = useLanguage();
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 flex flex-col items-center text-center gap-4">
+      <InformationCircleIcon className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+      <p className="text-gray-500 dark:text-gray-400 text-sm">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+        >
+          {t('admin.tryAgain')}
+        </button>
       )}
     </div>
   );
@@ -143,11 +167,11 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
       status.status === 'CANCELLED' ? '#EF4444' : '#6B7280'
   }));
 
-  // Prepare service popularity data - use popularServices from backend
+  // Prepare service popularity data — revenue per service is not tracked by the API,
+  // so only booking count is shown (no revenue column/series).
   const servicePopularityData = popularServices.slice(0, 10).map((service) => ({
     name: service.service?.name || 'Unknown Service',
-    bookings: service._count?.id || 0,
-    revenue: 0 // Not available in current API
+    bookings: service._count?.id || 0
   }));
 
   // Peak hours data - use hourlyStats from backend

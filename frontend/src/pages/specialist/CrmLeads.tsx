@@ -10,6 +10,7 @@ import {
   LEAD_STAGES,
   LEAD_SOURCES,
 } from '../../services/crm.service';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
 import {
@@ -37,11 +38,6 @@ const num = (v: number | string | null | undefined): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const fmtValue = (v?: number | null): string => {
-  const n = num(v);
-  if (n === 0) return '—';
-  return '₴ ' + n.toLocaleString('uk-UA', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-};
 
 // ---------------------------------------------------------------------------
 // Stage badge colours
@@ -145,9 +141,10 @@ interface LeadCardProps {
   onConvert: (lead: Lead) => void;
   onDelete: (lead: Lead) => void;
   t: (key: string) => string;
+  fmtDealValue: (v: number) => string;
 }
 
-const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit, onConvert, onDelete, t }) => {
+const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit, onConvert, onDelete, t, fmtDealValue }) => {
   const busy = acting === lead.id;
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm space-y-3">
@@ -166,7 +163,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
       {/* Value */}
       {lead.value != null && lead.value > 0 && (
         <p className="text-base font-bold tabular-nums text-gray-900 dark:text-white">
-          {fmtValue(lead.value)}
+          {fmtDealValue(lead.value)}
         </p>
       )}
 
@@ -306,6 +303,7 @@ const LEADS_HELP = {
 
 const CrmLeads: React.FC = () => {
   const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const h = (LEADS_HELP as Record<string, typeof LEADS_HELP.en>)[language] || LEADS_HELP.en;
 
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -447,6 +445,7 @@ const CrmLeads: React.FC = () => {
     onConvert: handleConvert,
     onDelete: handleDelete,
     t,
+    fmtDealValue: (v: number) => (v === 0 ? '—' : formatPrice(v)),
   });
 
   // ---- input/label class (same as Sales.tsx) --------------------------------
@@ -513,7 +512,7 @@ const CrmLeads: React.FC = () => {
               <div className="min-w-0">
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t('crm.pipelineValue') || 'Pipeline value'}</p>
                 <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-white truncate">
-                  {fmtValue(pipelineValue)}
+                  {pipelineValue === 0 ? '—' : formatPrice(pipelineValue)}
                 </p>
               </div>
             </div>
@@ -674,7 +673,7 @@ const CrmLeads: React.FC = () => {
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="example@email.com"
+                      placeholder={t('crm.emailPlaceholder') || 'email@example.com'}
                       className={inputClass}
                     />
                   </div>
@@ -684,7 +683,7 @@ const CrmLeads: React.FC = () => {
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      placeholder="+380..."
+                      placeholder={t('crm.phonePlaceholder') || '+…'}
                       className={inputClass}
                     />
                   </div>
@@ -721,7 +720,7 @@ const CrmLeads: React.FC = () => {
 
                 {/* Value */}
                 <div>
-                  <label className={labelClass}>{t('crm.value') || 'Deal value (₴)'}</label>
+                  <label className={labelClass}>{t('crm.value') || 'Deal value'}</label>
                   <input
                     type="number"
                     step="0.01"

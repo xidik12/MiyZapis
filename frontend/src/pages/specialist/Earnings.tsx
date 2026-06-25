@@ -218,10 +218,24 @@ const SpecialistEarnings: React.FC = () => {
       try {
         setLoading(prev => ({ ...prev, earnings: true, analytics: true }));
         setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
-        
+
+        // Derive date range from the selected period so the bookings query
+        // actually filters by window (week / month / year).
+        const periodEnd = new Date();
+        const periodStart = new Date();
+        if (selectedPeriod === 'week') {
+          periodStart.setDate(periodEnd.getDate() - 7);
+        } else if (selectedPeriod === 'month') {
+          periodStart.setMonth(periodEnd.getMonth() - 1);
+        } else {
+          periodStart.setFullYear(periodEnd.getFullYear() - 1);
+        }
+        const startDateStr = periodStart.toISOString().split('T')[0];
+        const endDateStr = periodEnd.toISOString().split('T')[0];
+
         // Load data from backend endpoints - prioritize bookings API over payments API for accurate amounts
         const [completedBookingsData, analyticsOverview, bookingAnalytics, _servicesData, _performanceData] = await Promise.allSettled([
-          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
+          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED', startDate: startDateStr, endDate: endDateStr }, 'specialist'), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getServiceAnalytics(), 2, 1000),
@@ -269,8 +283,7 @@ const SpecialistEarnings: React.FC = () => {
                 try {
                   const bookingDate = new Date(booking.updatedAt || booking.createdAt);
                   return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
-                } catch (e) {
-                  console.warn('Invalid booking date:', booking);
+                } catch {
                   return false;
                 }
               })
@@ -295,8 +308,8 @@ const SpecialistEarnings: React.FC = () => {
                   earnings: existing.earnings + convertedAmount,
                   bookings: existing.bookings + 1
                 });
-              } catch (e) {
-                console.warn('Error processing booking date:', booking, e);
+              } catch {
+                // skip booking with unparseable date
               }
             });
             
@@ -307,12 +320,12 @@ const SpecialistEarnings: React.FC = () => {
                 bookings: data.bookings
               }))
               .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
-          } catch (err) {
-            console.error('Error processing bookings data:', err);
+          } catch {
+            // bookings data processing failed; totals remain at 0
           }
-        } else if (completedBookingsData.status === 'rejected') {
-          console.warn('Completed bookings data failed to load:', completedBookingsData.reason);
         }
+        // If completedBookingsData is rejected, totals remain 0 and
+        // the catch below will set an error state.
         
         // Calculate analytics data from actual payment/booking data since analytics APIs are unreliable
         const totalBookingsFromPayments = monthlyBreakdown.reduce((sum, month) => sum + month.bookings, 0);
@@ -352,26 +365,24 @@ const SpecialistEarnings: React.FC = () => {
             if (overview.repeatCustomers > 0) {
               analyticsData.repeatCustomers = overview.repeatCustomers;
             }
-          } catch (err) {
-            console.error('Error processing analytics data:', err);
+          } catch {
+            // analytics overlay failed; fall back to booking-derived values
           }
-        } else {
-          console.warn('Analytics overview not available, using calculated data from payments');
         }
-        
+
         // Try to enhance with booking analytics if available
         if (bookingAnalytics.status === 'fulfilled' && bookingAnalytics.value) {
           try {
             const bookings = bookingAnalytics.value;
-            
+
             if (bookings.completedBookings > 0) {
               analyticsData.completedBookings = Math.max(analyticsData.completedBookings, bookings.completedBookings);
             }
             if (bookings.totalBookings > 0) {
               analyticsData.totalBookings = Math.max(analyticsData.totalBookings, bookings.totalBookings);
             }
-          } catch (err) {
-            console.error('Error processing booking analytics data:', err);
+          } catch {
+            // booking analytics failed; continue with existing values
           }
         }
         
@@ -409,11 +420,8 @@ const SpecialistEarnings: React.FC = () => {
         setEarningsData(transformedEarnings);
         setMonthlyEarnings(monthlyBreakdown);
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error('Error loading earnings:', error);
-
-        // Set fallback data instead of showing error
+      } catch {
+        // Set fallback data and show error state
         const fallbackEarnings: EarningsData = {
           totalEarnings: 0,
           thisMonth: 0,
@@ -434,15 +442,13 @@ const SpecialistEarnings: React.FC = () => {
         setEarningsData(fallbackEarnings);
         setMonthlyEarnings([]);
 
-        // Only show error if it's not a network/auth issue
-        if (!message?.includes('Network') && !message?.includes('401') && !message?.includes('Authentication')) {
-          setErrors(prev => ({ 
-            ...prev, 
-            earnings: t('earnings.someDataUnavailable'),
-            analytics: null // Don't duplicate error messages
-          }));
-        }
-        
+        // Always surface the error so users see "data unavailable" rather than
+        // silent all-zero cards (which are indistinguishable from an empty account).
+        setErrors(prev => ({
+          ...prev,
+          earnings: t('earnings.someDataUnavailable') || 'Earnings data unavailable. Please retry.',
+          analytics: null // avoid duplicate message
+        }));
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
       }
     };
@@ -478,9 +484,7 @@ const SpecialistEarnings: React.FC = () => {
         
         setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
-      } catch (error: unknown) {
-        console.error('Error loading recent completed bookings:', error);
-        
+      } catch {
         setPayoutHistory([]);
         setErrors(prev => ({ ...prev, payments: t('earnings.recentEarningsUnavailable') }));
         setLoading(prev => ({ ...prev, payments: false }));
@@ -493,8 +497,7 @@ const SpecialistEarnings: React.FC = () => {
 
         const summary = await expenseService.getExpenseSummary();
         setExpenseSummary(summary);
-      } catch (error: unknown) {
-        console.error('Error loading expense summary:', error);
+      } catch {
         setExpenseSummary(null);
       } finally {
         setLoadingExpenses(false);
@@ -520,8 +523,7 @@ const SpecialistEarnings: React.FC = () => {
       
       if (oldValue === 0) return newValue > 0 ? 100 : 0;
       return Math.round(((newValue - oldValue) / oldValue) * 100);
-    } catch (error) {
-      console.error('Error calculating growth rate:', error);
+    } catch {
       return 0;
     }
   };
@@ -554,8 +556,7 @@ const SpecialistEarnings: React.FC = () => {
       // This is a simplified implementation. In a real scenario, you'd analyze hourly data
       const hasData = breakdown && breakdown.some(item => item && item.revenue > 0);
       return hasData ? t('earnings.timeFormat.afternoon') : t('earnings.noData');
-    } catch (error) {
-      console.error('Error determining peak hours:', error);
+    } catch {
       return t('earnings.noData');
     }
   };
@@ -563,18 +564,17 @@ const SpecialistEarnings: React.FC = () => {
   const determineBestDay = (breakdown: Array<{ date: string; revenue: number }>) => {
     try {
       if (!breakdown || breakdown.length === 0) return t('earnings.noData');
-      
+
       const validData = breakdown.filter(item => item && typeof item.revenue === 'number' && !isNaN(item.revenue));
       if (validData.length === 0) return t('earnings.noData');
-      
-      const bestDay = validData.reduce((best, current) => 
+
+      const bestDay = validData.reduce((best, current) =>
         current.revenue > best.revenue ? current : best
       );
-      
+
       // For monthly data, just return the best month
       return bestDay.date || t('earnings.noData');
-    } catch (error) {
-      console.error('Error determining best day:', error);
+    } catch {
       return t('earnings.noData');
     }
   };
@@ -601,8 +601,7 @@ const SpecialistEarnings: React.FC = () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      } catch (exportError) {
-        console.warn('Analytics export failed, using fallback CSV generation:', exportError);
+      } catch {
         
         // Fallback to local CSV generation
         const csvContent = generateCSVReport();
@@ -617,8 +616,7 @@ const SpecialistEarnings: React.FC = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }
-    } catch (error) {
-      console.error('Export failed:', error);
+    } catch {
       setErrors(prev => ({ ...prev, analytics: t('earnings.exportFailed') }));
     } finally {
       setIsExporting(false);
@@ -626,7 +624,7 @@ const SpecialistEarnings: React.FC = () => {
   };
 
   const generateCSVReport = (): string => {
-    const headers = ['Date', 'Earnings (USD)', 'Bookings', 'Status'];
+    const headers = ['Date', `Earnings (${currency})`, 'Bookings', 'Status'];
     const rows = monthlyEarnings.map(item => [
       item.month,
       item.earnings.toString(),

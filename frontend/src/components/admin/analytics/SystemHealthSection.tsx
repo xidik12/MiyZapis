@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ClockIcon,
   ArrowPathIcon
 } from '@/components/icons';
 import {
@@ -10,7 +9,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HealthIndicator } from '../ui/HealthIndicator';
-import { MetricCard } from '../ui/MetricCard';
 import { adminAnalyticsService } from '@/services/adminAnalytics.service';
 import type { SystemHealth } from '@/types/admin.types';
 
@@ -271,38 +269,9 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
         </div>
       </div>
 
-      {/* Application Metrics */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          Application Performance
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
-            label={t('admin.system.activeConnections')}
-            value={health.app.activeConnections}
-            icon={<ServerIcon className="w-5 h-5" />}
-            color="primary"
-          />
-          <MetricCard
-            label={t('admin.system.requestsPerMin')}
-            value={health.app.requestsPerMinute}
-            icon={<ClockIcon className="w-5 h-5" />}
-            color="success"
-          />
-          <MetricCard
-            label={t('admin.system.avgResponseTime')}
-            value={`${health.app.averageResponseTime.toFixed(0)}ms`}
-            icon={<ClockIcon className="w-5 h-5" />}
-            color={health.app.averageResponseTime > 1000 ? 'warning' : 'success'}
-          />
-          <MetricCard
-            label={t('admin.system.errorRate')}
-            value={`${health.app.errorRate.toFixed(2)}%`}
-            icon={<ServerIcon className="w-5 h-5" />}
-            color={health.app.errorRate > 5 ? 'danger' : health.app.errorRate > 2 ? 'warning' : 'success'}
-          />
-        </div>
-      </div>
+      {/* Application performance metrics (activeConnections, requestsPerMinute, errorRate)
+          are not tracked by the backend — this card has been removed to avoid showing
+          hardcoded zeros as real data. Re-add when request-tracking middleware is wired. */}
 
       {/* Auto-refresh indicator */}
       {autoRefresh && (

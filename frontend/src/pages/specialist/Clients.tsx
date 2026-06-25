@@ -706,6 +706,8 @@ interface ClientCardProps {
   // Notes props
   notes: Array<{ id: string; content: string; category: string; updatedAt: string }>;
   loadingNotes: boolean;
+  notesError: string | null;
+  onRetryNotes: () => void;
   newNote: string;
   noteCategory: string;
   onNewNoteChange: (value: string) => void;
@@ -726,6 +728,8 @@ const ClientCard: React.FC<ClientCardProps> = ({
   onTagsChanged,
   notes,
   loadingNotes,
+  notesError,
+  onRetryNotes,
   newNote,
   noteCategory,
   onNewNoteChange,
@@ -845,7 +849,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
             className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-sm font-medium rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition duration-200 active:scale-[0.96]"
           >
             <EyeIcon className="w-4 h-4" />
-            <span>{t('clients.viewBookings') || 'History'}</span>
+            <span>{t('clients.notes') || 'Notes'}</span>
           </button>
           <button
             onClick={onSendMessage}
@@ -927,7 +931,17 @@ const ClientCard: React.FC<ClientCardProps> = ({
                 </div>
 
                 {/* Notes list */}
-                {loadingNotes ? (
+                {notesError ? (
+                  <div className="flex items-center justify-between gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-red-700 dark:text-red-400 text-xs">{notesError}</p>
+                    <button
+                      onClick={onRetryNotes}
+                      className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+                    >
+                      {t('common.retry') || 'Retry'}
+                    </button>
+                  </div>
+                ) : loadingNotes ? (
                   <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
                     {t('common.loading') || 'Loading notes...'}
                   </div>
@@ -1089,6 +1103,7 @@ const SpecialistClients: React.FC = () => {
   const [newNote, setNewNote] = useState<Record<string, string>>({});
   const [noteCategory, setNoteCategory] = useState<Record<string, string>>({});
   const [loadingNotes, setLoadingNotes] = useState<Record<string, boolean>>({});
+  const [notesError, setNotesError] = useState<Record<string, string | null>>({});
 
   // ---------------------------------------------------------------------------
   // Data Fetching
@@ -1245,10 +1260,11 @@ const SpecialistClients: React.FC = () => {
   const loadClientNotes = async (clientId: string) => {
     try {
       setLoadingNotes((prev) => ({ ...prev, [clientId]: true }));
+      setNotesError((prev) => ({ ...prev, [clientId]: null }));
       const response = await specialistService.getClientNotes(clientId);
       setClientNotes((prev) => ({ ...prev, [clientId]: response?.notes || [] }));
     } catch {
-      // silently fail
+      setNotesError((prev) => ({ ...prev, [clientId]: t('clients.notesLoadError') || 'Could not load notes' }));
     } finally {
       setLoadingNotes((prev) => ({ ...prev, [clientId]: false }));
     }
@@ -1567,6 +1583,8 @@ const SpecialistClients: React.FC = () => {
                         onTagsChanged={refreshClientTags}
                         notes={clientNotes[client.customerId] || []}
                         loadingNotes={loadingNotes[client.customerId] || false}
+                        notesError={notesError[client.customerId] ?? null}
+                        onRetryNotes={() => loadClientNotes(client.customerId)}
                         newNote={newNote[client.customerId] || ''}
                         noteCategory={noteCategory[client.customerId] || 'general'}
                         onNewNoteChange={(value) =>

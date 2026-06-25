@@ -419,7 +419,7 @@ const SpecialistSchedule: React.FC = () => {
   // Cancel a booking from the schedule view
   const handleCancelBookingOnSchedule = async (bookingId: string) => {
     try {
-      await dispatch(cancelBooking({ bookingId, reason: t('schedule.cancelledBySpecialist') || 'Cancelled by specialist' }));
+      await dispatch(cancelBooking({ bookingId, reason: t('schedule.cancelledBySpecialist') || 'Cancelled by specialist' })).unwrap();
       setShowBookingDetailModal(false);
       setSelectedBooking(null);
       toast.success(t('schedule.bookingCancelled') || 'Booking cancelled');

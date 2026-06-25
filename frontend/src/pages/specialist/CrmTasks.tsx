@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { crmService, ClientTask } from '../../services/crm.service';
+import { crmService, ClientTask, CrmClient } from '../../services/crm.service';
 import { PageLoader } from '@/components/ui';
 import { toast } from 'react-toastify';
 import {
@@ -110,10 +110,29 @@ const CrmTasks: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
 
+  // Client picker state
+  const [clients, setClients] = useState<CrmClient[]>([]);
+  const [clientsLoading, setClientsLoading] = useState(false);
+
   useEffect(() => {
     loadTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      setClientsLoading(true);
+      try {
+        const data = await crmService.getClients();
+        setClients(data || []);
+      } catch {
+        // clients are optional for the picker — swallow silently
+      } finally {
+        setClientsLoading(false);
+      }
+    };
+    fetchClients();
+  }, []);
 
   const loadTasks = async () => {
     try {
@@ -429,16 +448,17 @@ const CrmTasks: React.FC = () => {
                     {t('crm.clientId') || 'Link to client'}{' '}
                     <span className="font-normal text-gray-400 dark:text-gray-500">({t('crm.optional') || 'optional'})</span>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={taskForm.customerId}
                     onChange={(e) => setTaskForm({ ...taskForm, customerId: e.target.value })}
-                    placeholder={t('crm.clientIdPlaceholder') || 'Paste client ID from the Clients section'}
                     className={inputClass}
-                  />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {t('crm.clientIdHint') || 'To link: open the client\'s card in Clients → copy their ID. Leave blank for a general task.'}
-                  </p>
+                    disabled={clientsLoading}
+                  >
+                    <option value="">{clientsLoading ? (t('common.loading') || 'Loading…') : (t('crm.clientPickerNone') || '— No client —')}</option>
+                    {clients.map((c) => (
+                      <option key={c.customerId} value={c.customerId}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className={labelClass}>{t('crm.notes') || 'Notes'}</label>
