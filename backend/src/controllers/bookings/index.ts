@@ -837,6 +837,97 @@ export class BookingController {
     }
   }
 
+  // Reschedule booking to a new date/time (customer or specialist)
+  static async rescheduleBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: 'location' in error ? error.location : 'param' in error ? (error as ValidatorError).param : undefined,
+              message: 'msg' in error ? error.msg : (error as ValidatorError).message || 'Validation error',
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const { bookingId } = req.params;
+      const { newScheduledAt, reason } = req.body;
+
+      const booking = await BookingService.rescheduleBooking(
+        bookingId,
+        req.user.id,
+        new Date(newScheduledAt),
+        reason
+      );
+
+      // Send reschedule email (best-effort, non-blocking)
+      try {
+        const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+        await templatedEmailService.sendBookingStatusChangeEmail(booking.id, 'RESCHEDULED' as any, reason, customerLang);
+      } catch (e) {
+        // Don't block success on email errors
+      }
+
+      const isSpecialist = booking.specialistId === req.user.id;
+      res.json(
+        createSuccessResponse({
+          booking: isSpecialist ? booking : stripBookingSpecialistFields(booking),
+          notificationsSent: ['other_party'],
+          message: 'Booking rescheduled successfully',
+        })
+      );
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Reschedule booking error:', error);
+
+      if (err.message === 'BOOKING_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Booking not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      if (err.message === 'NOT_AUTHORIZED') {
+        res.status(403).json(
+          createErrorResponse(ErrorCodes.ACCESS_DENIED, 'You do not have permission to reschedule this booking', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      if (err.message === 'RESCHEDULE_NOT_ALLOWED') {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.BUSINESS_RULE_VIOLATION, 'Only pending or confirmed bookings can be rescheduled', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      if (err.message === 'RESCHEDULE_TIME_IN_PAST') {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'New scheduled time must be in the future', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      if (err.message === 'TIME_SLOT_NOT_AVAILABLE') {
+        res.status(409).json(
+          createErrorResponse(ErrorCodes.BOOKING_CONFLICT, 'The selected time slot is not available', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to reschedule booking', req.headers['x-request-id'] as string)
+      );
+    }
+  }
+
   // Complete booking with payment confirmation (specialist only)
   static async completeBookingWithPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {

@@ -72,6 +72,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const scheduledDate = new Date(booking.scheduledAt!);
   const isUpcoming = ['PENDING', 'CONFIRMED'].includes(booking.status) && scheduledDate > new Date();
   const canCancel = isUpcoming && scheduledDate > new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const canReschedule = isUpcoming;
   const canReview = booking.status === 'COMPLETED' && !booking.review;
   const canBookAgain = booking.status === 'COMPLETED';
 
@@ -449,7 +450,20 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </button>
             )}
 
-            {/* Reschedule button intentionally hidden — backend not implemented */}
+            {canReschedule && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onReschedule(booking.id);
+                  onClose();
+                }}
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition active:scale-[0.96] border border-primary-200 dark:border-primary-800 whitespace-nowrap justify-center flex items-center"
+              >
+                <ArrowPathIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span>{t('actions.reschedule') || 'Reschedule'}</span>
+              </button>
+            )}
 
             {canReview && (
               <button

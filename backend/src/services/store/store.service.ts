@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import { InventoryService } from '@/services/inventory/inventory.service';
 import { NotificationService } from '@/services/notification';
 import { logger } from '@/utils/logger';
+import { num, sumBy } from '@/utils/money';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ const prisma = new PrismaClient();
 // findFirst({ where: { id, ownerId } }) confirms the caller owns it.
 // ---------------------------------------------------------------------------
 
-export const ORDER_STATUSES = ['PENDING', 'PAID', 'FULFILLED', 'CANCELLED'] as const;
+export const ORDER_STATUSES = ['PENDING', 'PAID', 'FULFILLED', 'CANCELLED', 'REFUNDED'] as const;
 export type OrderStatus = typeof ORDER_STATUSES[number];
 
 export const FULFILMENT_TYPES = ['PICKUP', 'DELIVERY'] as const;
@@ -297,11 +298,15 @@ export class StoreService {
   // In-person point-of-sale: an instant counter sale. Creates a FULFILLED order
   // and deducts stock immediately, recording the payment method. Payment is
   // taken in person (cash/card) — the platform does not process it.
+  // `discount` is an optional fixed-amount reduction off the subtotal (clamped
+  // to [0, subtotal]); total = subtotal − discount. Uses num() from money utils
+  // to avoid Prisma Decimal string-concatenation bugs.
   static async posSale(ownerId: string, input: {
     items: { productId: string; quantity: number }[];
     paymentMethod?: string; // CASH | CARD | OTHER
     customerName?: string;
     note?: string;
+    discount?: number; // fixed amount off subtotal
   }) {
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw new StoreServiceError('EMPTY_ORDER', 'Sale must contain at least one item');
@@ -330,16 +335,20 @@ export class StoreService {
       if (!product) throw new StoreServiceError('PRODUCT_NOT_FOUND', 'Product not found in your inventory');
       if (!product.isActive) throw new StoreServiceError('NOT_ACTIVE', `"${product.name}" is not available`);
       const quantity = qtyByProduct.get(productId)!;
-      const stockQty = toNumber(product.stockQty);
+      const stockQty = num(product.stockQty);
       if (quantity > stockQty) throw new StoreServiceError('INSUFFICIENT_STOCK', `Not enough stock for "${product.name}"`);
-      const unitPrice = toNumber(product.salePrice ?? product.costPrice);
-      subtotal += unitPrice * quantity;
+      const unitPrice = num(product.salePrice ?? product.costPrice);
+      subtotal = subtotal + unitPrice * quantity; // num() + plain number — safe
       currency = product.currency || currency;
       businessId = product.businessId ?? businessId;
       lineItems.push({ productId, name: product.name, quantity, unitPrice });
     }
 
-    const total = subtotal;
+    // Clamp discount to [0, subtotal].
+    const discountRaw = num(input.discount);
+    const discount = Math.max(0, Math.min(discountRaw, subtotal));
+    const total = subtotal - discount;
+
     const method = (input.paymentMethod || 'CASH').toUpperCase();
     const note = `[POS:${method}]${input.note ? ' ' + input.note.trim() : ''}`;
 
@@ -353,7 +362,9 @@ export class StoreService {
         fulfilment: 'PICKUP',
         currency,
         subtotal,
+        discount,
         total,
+        paymentMethod: method,
         note,
         items: { create: lineItems.map((li) => ({ productId: li.productId, name: li.name, quantity: li.quantity, unitPrice: li.unitPrice })) },
       },
@@ -366,6 +377,79 @@ export class StoreService {
     }
 
     return order;
+  }
+
+  // Refund a POS/order sale: flip status to REFUNDED and restock each line.
+  // Ownership-scoped. Idempotent — throws if already REFUNDED.
+  // Only PAID and FULFILLED orders can be refunded (not PENDING/CANCELLED).
+  static async refundOrder(ownerId: string, orderId: string) {
+    const order = await prisma.productOrder.findFirst({
+      where: { id: orderId, ownerId },
+      include: { items: true },
+    });
+    if (!order) return null;
+
+    if (order.status === 'REFUNDED') {
+      throw new StoreServiceError('ALREADY_REFUNDED', 'This order has already been refunded');
+    }
+    if (order.status !== 'FULFILLED' && order.status !== 'PAID') {
+      throw new StoreServiceError(
+        'NOT_REFUNDABLE',
+        `Only PAID or FULFILLED orders can be refunded (current status: ${order.status})`
+      );
+    }
+
+    // Restock each item (delta = +quantity, reason RETURN).
+    for (const item of order.items) {
+      await InventoryService.adjustStock(
+        ownerId,
+        item.productId,
+        num(item.quantity),  // positive delta — add back to stock
+        'RETURN',
+        ownerId,
+        order.id
+      );
+    }
+
+    return prisma.productOrder.update({
+      where: { id: order.id },
+      data: { status: 'REFUNDED' },
+      include: { items: true },
+    });
+  }
+
+  // End-of-day summary: aggregate the owner's ProductOrders created today.
+  // Groups totals by paymentMethod; also reports refunded total separately.
+  static async todaySummary(ownerId: string) {
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const dayEnd   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const orders = await prisma.productOrder.findMany({
+      where: { ownerId, createdAt: { gte: dayStart, lte: dayEnd } },
+    });
+
+    let count = 0;
+    let gross = 0;
+    let refundedTotal = 0;
+    const byMethod: Record<string, number> = {};
+
+    for (const o of orders) {
+      if (o.status === 'REFUNDED') {
+        refundedTotal = refundedTotal + num(o.total);
+        continue;
+      }
+      if (o.status === 'CANCELLED') continue;
+      count++;
+      const t = num(o.total);
+      gross = gross + t;
+      const method = o.paymentMethod || 'CASH';
+      byMethod[method] = (byMethod[method] || 0) + t;
+    }
+
+    const currency = orders[0]?.currency || 'UAH';
+
+    return { date: dayStart.toISOString().slice(0, 10), count, gross, byMethod, refundedTotal, currency };
   }
 
   // Owner dashboard summary: count of pending orders + total of FULFILLED

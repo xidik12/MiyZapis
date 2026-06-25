@@ -1692,6 +1692,126 @@ export class BookingService {
     }
   }
 
+  // Reschedule a booking to a new date/time.
+  // Authorization: customer who booked OR the specialist.
+  // Allowed statuses: PENDING, CONFIRMED only.
+  // Validates: new time is in the future; no slot conflict for the specialist
+  // (excluding this booking itself so it doesn't self-conflict).
+  static async rescheduleBooking(
+    bookingId: string,
+    requesterId: string,
+    newScheduledAt: Date,
+    reason?: string
+  ): Promise<BookingWithDetails> {
+    try {
+      const booking = await this.getBooking(bookingId);
+
+      // Authorization: must be the customer OR the specialist
+      if (booking.customerId !== requesterId && booking.specialistId !== requesterId) {
+        throw new Error('NOT_AUTHORIZED');
+      }
+
+      // Only reschedule-able statuses
+      if (!['PENDING', 'CONFIRMED'].includes(booking.status)) {
+        throw new Error('RESCHEDULE_NOT_ALLOWED');
+      }
+
+      // New time must be in the future (5-min buffer already validated by middleware,
+      // but double-check here at the service layer too).
+      const now = new Date();
+      if (newScheduledAt.getTime() < now.getTime() - 5 * 60 * 1000) {
+        throw new Error('RESCHEDULE_TIME_IN_PAST');
+      }
+
+      // Slot-conflict check: find specialist's active bookings in the window,
+      // explicitly excluding THIS booking so it doesn't conflict with itself.
+      const bookingDuration = booking.duration;
+      const newStart = newScheduledAt;
+      const newEnd = new Date(newStart.getTime() + bookingDuration * 60 * 1000);
+
+      const conflictingBookings = await prisma.booking.findMany({
+        where: {
+          specialistId: booking.specialistId,
+          id: { not: bookingId }, // exclude self
+          status: { in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] },
+          scheduledAt: {
+            gte: new Date(newStart.getTime() - (bookingDuration + 60) * 60 * 1000),
+            lte: new Date(newEnd.getTime() + 60 * 60 * 1000),
+          },
+        },
+        select: { id: true, scheduledAt: true, duration: true },
+      });
+
+      const hasConflict = conflictingBookings.some((b) => {
+        const existingStart = new Date(b.scheduledAt);
+        const existingEnd = new Date(existingStart.getTime() + b.duration * 60 * 1000);
+        return newStart < existingEnd && existingStart < newEnd;
+      });
+
+      if (hasConflict) {
+        throw new Error('TIME_SLOT_NOT_AVAILABLE');
+      }
+
+      // Persist the new time (status unchanged)
+      const updatedBooking = await prisma.booking.update({
+        where: { id: bookingId },
+        data: {
+          scheduledAt: newScheduledAt,
+          updatedAt: new Date(),
+        },
+        include: {
+          customer: { select: bookingUserSelect },
+          specialist: { select: bookingUserSelect },
+          service: { include: { specialist: true } },
+        },
+      });
+
+      // Notify both parties
+      try {
+        const isCustomerRescheduling = requesterId === booking.customerId;
+        const serviceName = updatedBooking.service.name;
+        const newDateIso = newScheduledAt.toISOString();
+
+        // Notify the OTHER party
+        const notifyUserId = isCustomerRescheduling ? booking.specialistId : booking.customerId;
+        await BookingService.notificationService.sendNotification(notifyUserId, {
+          type: 'BOOKING_RESCHEDULED',
+          title: 'notifications.booking.rescheduled.title',
+          message: 'notifications.booking.rescheduled.message',
+          data: {
+            bookingId: booking.id,
+            serviceName,
+            scheduledAt: newScheduledAt,
+            _interpolate: {
+              serviceName,
+              date: newDateIso,
+              rescheduledBy: isCustomerRescheduling ? 'customer' : 'specialist',
+            },
+          },
+        });
+      } catch (notificationError) {
+        // Non-blocking
+        logger.error('Failed to send reschedule notification', { bookingId, error: notificationError });
+      }
+
+      // Sync updated time to connected calendars
+      BookingCalendarSync.syncBooking(bookingId);
+
+      logger.info('Booking rescheduled', {
+        bookingId,
+        requesterId,
+        oldScheduledAt: booking.scheduledAt,
+        newScheduledAt,
+        reason,
+      });
+
+      return updatedBooking as unknown as BookingWithDetails;
+    } catch (error) {
+      logger.error('Error rescheduling booking:', error);
+      throw error;
+    }
+  }
+
   // Complete booking with payment confirmation (specialist action)
   static async completeBookingWithPayment(
     bookingId: string,

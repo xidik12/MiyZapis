@@ -48,12 +48,23 @@ export interface ProductOrder {
   fulfilment: FulfilmentType;
   currency: string;
   subtotal: number | string;
+  discount: number | string;
   total: number | string;
+  paymentMethod?: string | null;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
   items?: ProductOrderItem[];
   _count?: { items: number };
+}
+
+export interface TodaySummary {
+  date: string;
+  count: number;
+  gross: number;
+  byMethod: Record<string, number>;
+  refundedTotal: number;
+  currency: string;
 }
 
 export interface StoreSummary {
@@ -107,10 +118,29 @@ export class StoreService {
     paymentMethod?: 'CASH' | 'CARD' | 'OTHER';
     customerName?: string;
     note?: string;
+    discount?: number;
   }): Promise<ProductOrder> {
     const response = await apiClient.post<ProductOrder>('/store/pos/sale', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to record sale');
+    }
+    return response.data;
+  }
+
+  // ---- POS: refund an order (restocks items) ----
+  async refundOrder(orderId: string): Promise<ProductOrder> {
+    const response = await apiClient.post<ProductOrder>(`/store/pos/orders/${encodeURIComponent(orderId)}/refund`, {});
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to refund order');
+    }
+    return response.data;
+  }
+
+  // ---- POS: end-of-day summary ----
+  async todaySummary(): Promise<TodaySummary> {
+    const response = await apiClient.get<TodaySummary>('/store/pos/today');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get today summary');
     }
     return response.data;
   }

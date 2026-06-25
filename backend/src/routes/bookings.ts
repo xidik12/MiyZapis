@@ -12,7 +12,8 @@ import {
   validateGetBookings,
   validateBookingId,
   validateConfirmBooking,
-  validateCancelBooking
+  validateCancelBooking,
+  validateRescheduleBooking
 } from '@/middleware/validation/bookings';
 
 const router = Router();
@@ -33,6 +34,7 @@ router.put('/:bookingId/confirm', validateConfirmBooking, BookingController.conf
 router.post('/:bookingId/complete', validateBookingId, BookingController.completeBookingWithPayment);
 router.put('/:bookingId/reject', validateBookingId, BookingController.rejectBooking);
 router.put('/:bookingId/cancel', validateCancelBooking, BookingController.cancelBooking);
+router.post('/:bookingId/reschedule', validateRescheduleBooking, BookingController.rescheduleBooking);
 
 // Unified post-appointment resolution. Either the customer or the specialist can
 // hit this to settle a past booking — Completed, or No-show with which party

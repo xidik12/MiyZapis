@@ -8,9 +8,9 @@ import {
 
 export class ServiceService {
   // Search for services and specialists
-  async searchServices(filters: SearchFilters = {}): Promise<SearchResult> {
+  async searchServices(filters: SearchFilters & { page?: number; limit?: number } = {}): Promise<SearchResult> {
     const params = new URLSearchParams();
-    
+
     // Map frontend filters to backend parameters
     if (filters.query) params.append('search', filters.query);
     if (filters.category) params.append('category', filters.category);
@@ -20,6 +20,8 @@ export class ServiceService {
     if (filters.rating) params.append('rating', filters.rating.toString());
     if (filters.sortBy) params.append('sortBy', filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.limit) params.append('limit', filters.limit.toString());
 
     const response = await apiClient.get<{
       services: Service[];
@@ -27,11 +29,11 @@ export class ServiceService {
       page: number;
       totalPages: number;
     }>(`/services?${params}`);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to search services');
     }
-    
+
     // Transform backend response to match frontend SearchResult interface
     return {
       services: response.data.services || [],
@@ -40,7 +42,7 @@ export class ServiceService {
         currentPage: response.data.page || 1,
         totalPages: response.data.totalPages || 1,
         totalItems: response.data.total || 0,
-        limit: 20,
+        limit: filters.limit || 20,
         hasNext: (response.data.page || 1) < (response.data.totalPages || 1),
         hasPrev: (response.data.page || 1) > 1
       },

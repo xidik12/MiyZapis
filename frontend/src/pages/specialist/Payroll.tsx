@@ -29,11 +29,21 @@ import {
   ArrowPathIcon,
   ClockIcon,
   CurrencyDollarIcon as ReceiptPercentIcon,
+  PencilIcon,
 } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
 
 type Currency = 'USD' | 'EUR' | 'UAH';
 type Tab = 'staff' | 'runs';
+
+interface RecordEditDraft {
+  baseSalary: string;
+  commissionTotal: string;
+  bonus: string;
+  deductions: string;
+  taxAmount: string;
+  notes: string;
+}
 
 const asCurrency = (c?: string | null): Currency =>
   c === 'USD' || c === 'EUR' || c === 'UAH' ? c : 'UAH';
@@ -352,6 +362,57 @@ const SpecialistPayroll: React.FC = () => {
 
   // Payslip view modal
   const [viewRecord, setViewRecord] = useState<PayrollRecord | null>(null);
+
+  // ── Edit DRAFT record ──────────────────────────────────────────────────
+  const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
+  const [editDraft, setEditDraft] = useState<RecordEditDraft>({
+    baseSalary: '', commissionTotal: '', bonus: '', deductions: '', taxAmount: '', notes: '',
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEditRecord = (rec: PayrollRecord) => {
+    setEditDraft({
+      baseSalary: String(num(rec.baseSalary)),
+      commissionTotal: String(num(rec.commissionTotal)),
+      bonus: String(num(rec.bonus)),
+      deductions: String(num(rec.deductions)),
+      taxAmount: String(num(rec.taxAmount)),
+      notes: rec.notes ?? '',
+    });
+    setEditingRecord(rec);
+  };
+
+  const editNet = () => {
+    return (
+      num(editDraft.baseSalary) +
+      num(editDraft.commissionTotal) +
+      num(editDraft.bonus) -
+      num(editDraft.deductions) -
+      num(editDraft.taxAmount)
+    );
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingRecord) return;
+    try {
+      setSavingEdit(true);
+      await payrollService.updateRecord(editingRecord.id, {
+        baseSalary: num(editDraft.baseSalary),
+        commissionTotal: num(editDraft.commissionTotal),
+        bonus: num(editDraft.bonus),
+        deductions: num(editDraft.deductions),
+        taxAmount: num(editDraft.taxAmount),
+        notes: editDraft.notes.trim() || null,
+      });
+      toast.success(t('payroll.recordUpdated') || 'Record updated');
+      setEditingRecord(null);
+      loadData();
+    } catch (error: unknown) {
+      toast.error((error as Error).message || t('payroll.saveError') || 'Failed to save');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -1277,6 +1338,15 @@ const SpecialistPayroll: React.FC = () => {
                                   </button>
                                   {rec.status === 'DRAFT' && (
                                     <button
+                                      onClick={() => openEditRecord(rec)}
+                                      aria-label={t('common.edit') || 'Edit'}
+                                      className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition active:scale-[0.96]"
+                                    >
+                                      <PencilIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {rec.status === 'DRAFT' && (
+                                    <button
                                       onClick={() => handleApprove(rec)}
                                       disabled={isBusy}
                                       aria-label={t('payroll.approve') || 'Approve'}
@@ -1357,6 +1427,16 @@ const SpecialistPayroll: React.FC = () => {
                               <EyeIcon className="h-4 w-4" />
                               {t('payroll.viewPayslip') || 'View'}
                             </button>
+                            {rec.status === 'DRAFT' && (
+                              <button
+                                onClick={() => openEditRecord(rec)}
+                                aria-label={t('common.edit') || 'Edit'}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 border border-amber-200 dark:border-amber-800 rounded-lg transition active:scale-[0.96]"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                                {t('common.edit') || 'Edit'}
+                              </button>
+                            )}
                             {rec.status === 'DRAFT' && (
                               <button
                                 onClick={() => handleApprove(rec)}
@@ -1472,6 +1552,119 @@ const SpecialistPayroll: React.FC = () => {
                     <p className="text-gray-900 dark:text-white">{viewRecord.notes}</p>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* ===================== Edit DRAFT Record Modal ===================== */}
+        {editingRecord && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {t('payroll.editRecord') || 'Edit Draft Record'}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {editingRecord.staffName || editingRecord.staffUserId}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setEditingRecord(null)}
+                  aria-label={t('common.close') || 'Close'}
+                  className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition active:scale-[0.96]"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Fields */}
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {t('payroll.period') || 'Period'}:&nbsp;
+                  <span className="tabular-nums">
+                    {new Date(editingRecord.periodStart).toLocaleDateString()} – {new Date(editingRecord.periodEnd).toLocaleDateString()}
+                  </span>
+                  <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[editingRecord.status]}`}>
+                    {getStatusLabel(editingRecord.status)}
+                  </span>
+                </p>
+
+                {([
+                  ['baseSalary', t('payroll.baseSalary') || 'Base salary', ph.baseSalary],
+                  ['commissionTotal', t('payroll.commission') || 'Commission', ph.commissionTotal],
+                  ['bonus', t('payroll.bonus') || 'Bonus', ph.bonus],
+                  ['deductions', t('payroll.deductions') || 'Deductions', ph.deductions],
+                  ['taxAmount', t('payroll.tax') || 'Tax (withheld)', ph.taxAmount],
+                ] as [Exclude<keyof RecordEditDraft, 'notes'>, string, string][]).map(([field, label, helpContent]) => (
+                  <div key={field}>
+                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {label}
+                      <HelpTip size={13} title={label} content={helpContent} />
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editDraft[field]}
+                      onChange={(e) => setEditDraft((prev) => ({ ...prev, [field]: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 tabular-nums"
+                    />
+                  </div>
+                ))}
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('payroll.notes') || 'Notes'}
+                  </label>
+                  <textarea
+                    value={editDraft.notes}
+                    onChange={(e) => setEditDraft((prev) => ({ ...prev, notes: e.target.value }))}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 resize-none"
+                  />
+                </div>
+
+                {/* Live net-pay preview */}
+                <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('payroll.netPay') || 'Net Pay'}
+                  </span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+                    {formatPrice(editNet(), asCurrency(editingRecord.currency))}
+                  </span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 pb-6">
+                <button
+                  onClick={() => setEditingRecord(null)}
+                  className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium transition active:scale-[0.96]"
+                >
+                  {t('common.cancel') || 'Cancel'}
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit}
+                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium transition disabled:opacity-50 inline-flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
+                >
+                  {savingEdit && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
+                  {t('common.save') || 'Save'}
+                </button>
               </div>
             </motion.div>
           </motion.div>

@@ -2605,11 +2605,13 @@ model ProductOrder {
   customerName   String?
   customerEmail  String?
   orderNumber    String
-  status         String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
+  status         String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED | REFUNDED
   fulfilment     String   @default("PICKUP") // PICKUP | DELIVERY
   currency       String   @default("UAH")
   subtotal       Decimal  @default(0)
+  discount       Decimal  @default(0)
   total          Decimal  @default(0)
+  paymentMethod  String?  // CASH | CARD | OTHER — stored for POS sales and reporting
   note           String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

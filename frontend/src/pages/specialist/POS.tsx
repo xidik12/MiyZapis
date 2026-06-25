@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { inventoryService, Product } from '@/services/inventory.service';
-import { storeService } from '@/services/store.service';
+import { storeService, TodaySummary } from '@/services/store.service';
 import BarcodeScanner from '@/components/common/BarcodeScanner';
 
 type PayMethod = 'CASH' | 'CARD' | 'OTHER';
@@ -46,8 +46,13 @@ const POS: React.FC = () => {
   const [scanOpen, setScanOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<PayMethod>('CASH');
+  const [discountInput, setDiscountInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<any | null>(null);
+  const [refunding, setRefunding] = useState(false);
+  const [todayOpen, setTodayOpen] = useState(false);
+  const [todaySummary, setTodaySummary] = useState<TodaySummary | null>(null);
+  const [todayLoading, setTodayLoading] = useState(false);
 
   const load = async () => {
     try {
@@ -72,7 +77,9 @@ const POS: React.FC = () => {
   }, [products, search]);
 
   const currency = cart[0]?.product.currency || products[0]?.currency || 'UAH';
-  const total = cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0);
+  const subtotal = cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0);
+  const discountAmt = Math.max(0, Math.min(num(discountInput), subtotal));
+  const total = subtotal - discountAmt;
   const itemCount = cart.reduce((s, l) => s + l.qty, 0);
 
   const addToCart = (product: Product, qty = 1) => {
@@ -119,9 +126,11 @@ const POS: React.FC = () => {
       const order = await storeService.posSale({
         items: cart.map((l) => ({ productId: l.product.id, quantity: l.qty })),
         paymentMethod: payMethod,
+        discount: discountAmt > 0 ? discountAmt : undefined,
       });
       setReceipt(order);
       setCart([]);
+      setDiscountInput('');
       setCheckoutOpen(false);
       await load(); // refresh stock
     } catch (err) {
@@ -131,11 +140,60 @@ const POS: React.FC = () => {
     }
   };
 
+  const handleRefund = async () => {
+    if (!receipt) return;
+    setRefunding(true);
+    try {
+      await storeService.refundOrder(receipt.id);
+      toast.success(t('pos.refundSuccess') || 'Sale refunded — stock restored');
+      setReceipt(null);
+      await load();
+    } catch (err) {
+      toast.error((err as Error).message || t('pos.refundFailed') || 'Refund failed');
+    } finally {
+      setRefunding(false);
+    }
+  };
+
+  const openTodaySummary = async () => {
+    setTodayOpen(true);
+    if (todaySummary) return; // cached for the session
+    setTodayLoading(true);
+    try {
+      const s = await storeService.todaySummary();
+      setTodaySummary(s);
+    } catch (err) {
+      toast.error((err as Error).message || t('pos.summaryFailed') || 'Could not load today\'s summary');
+    } finally {
+      setTodayLoading(false);
+    }
+  };
+
+  const refreshTodaySummary = async () => {
+    setTodayLoading(true);
+    try {
+      const s = await storeService.todaySummary();
+      setTodaySummary(s);
+    } catch (err) {
+      toast.error((err as Error).message || 'Refresh failed');
+    } finally {
+      setTodayLoading(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 pb-28">
       <div className="flex items-center gap-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('pos.title') || 'Point of Sale'}</h1>
         <HelpTip title={t('pos.title') || 'Point of Sale'} content={h.overview} />
+        <div className="ml-auto">
+          <button
+            onClick={openTodaySummary}
+            className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition active:scale-[0.96]"
+          >
+            {t('pos.todaySales') || "Today's sales"}
+          </button>
+        </div>
       </div>
 
       {/* Search + barcode */}
@@ -214,7 +272,7 @@ const POS: React.FC = () => {
             <button onClick={() => setCart([])} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>
             <div className="flex-1 text-right">
               <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{itemCount} {t('pos.items') || 'items'}</span>
-              <div className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(total, currency as any)}</div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(subtotal, currency as any)}</div>
             </div>
             <button onClick={() => { setCheckoutOpen(true); }} className="px-5 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold transition active:scale-[0.96]">
               {t('pos.checkout') || 'Checkout'}
@@ -257,9 +315,38 @@ const POS: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="px-4 pb-2 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
-              <span className="font-semibold text-gray-900 dark:text-white">{t('pos.total') || 'Total'}</span>
-              <span className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(total, currency as any)}</span>
+            <div className="px-4 pb-2 border-t border-gray-100 dark:border-gray-700 pt-3 space-y-1.5">
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                <span>{t('pos.subtotal') || 'Subtotal'}</span>
+                <span className="tabular-nums">{formatPrice(subtotal, currency as any)}</span>
+              </div>
+              {/* Discount row */}
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{t('pos.discount') || 'Discount'}</label>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{currency === 'UAH' ? '₴' : currency}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={subtotal}
+                    step="any"
+                    value={discountInput}
+                    onChange={(e) => setDiscountInput(e.target.value)}
+                    placeholder="0"
+                    className="w-24 px-2 py-1 text-sm text-right tabular-nums border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+              {discountAmt > 0 && (
+                <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+                  <span>{t('pos.discountApplied') || 'Discount applied'}</span>
+                  <span className="tabular-nums">−{formatPrice(discountAmt, currency as any)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700 pt-1.5">
+                <span>{t('pos.total') || 'Total'}</span>
+                <span className="text-xl tabular-nums">{formatPrice(total, currency as any)}</span>
+              </div>
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -279,6 +366,74 @@ const POS: React.FC = () => {
                 {submitting ? (t('pos.processing') || 'Processing…') : `${t('pos.completeSale') || 'Complete sale'} · ${formatPrice(total, currency as any)}`}
               </button>
             </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Today's sales summary modal */}
+      {todayOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+            className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('pos.todaySales') || "Today's sales"}
+                {todaySummary && <span className="ml-2 text-sm font-normal text-gray-400">({todaySummary.date})</span>}
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={refreshTodaySummary}
+                  disabled={todayLoading}
+                  className="text-sm text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50"
+                >
+                  {t('common.refresh') || 'Refresh'}
+                </button>
+                <button onClick={() => setTodayOpen(false)} aria-label={t('common.close') || 'Close'} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl transition active:scale-[0.96]">×</button>
+              </div>
+            </div>
+            {todayLoading && !todaySummary ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading') || 'Loading…'}</p>
+            ) : todaySummary ? (
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">{t('pos.sales') || 'Sales'}</span>
+                  <span className="font-semibold tabular-nums text-gray-900 dark:text-white">{todaySummary.count}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">{t('pos.gross') || 'Gross total'}</span>
+                  <span className="font-semibold tabular-nums text-gray-900 dark:text-white">{formatPrice(todaySummary.gross, todaySummary.currency as any)}</span>
+                </div>
+                {Object.keys(todaySummary.byMethod).length > 0 && (
+                  <div className="border-t border-gray-100 dark:border-gray-700 pt-2 space-y-1.5">
+                    {Object.entries(todaySummary.byMethod).map(([method, amount]) => (
+                      <div key={method} className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">{t(`pos.pay.${method.toLowerCase()}`) || method}</span>
+                        <span className="tabular-nums text-gray-900 dark:text-white">{formatPrice(amount, todaySummary.currency as any)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {todaySummary.refundedTotal > 0 && (
+                  <div className="flex justify-between text-sm border-t border-gray-100 dark:border-gray-700 pt-2">
+                    <span className="text-red-500 dark:text-red-400">{t('pos.refunded') || 'Refunded'}</span>
+                    <span className="tabular-nums text-red-500 dark:text-red-400">−{formatPrice(todaySummary.refundedTotal, todaySummary.currency as any)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
+                  <span>{t('pos.net') || 'Net'}</span>
+                  <span className="tabular-nums">{formatPrice(todaySummary.gross - todaySummary.refundedTotal, todaySummary.currency as any)}</span>
+                </div>
+              </div>
+            ) : null}
           </motion.div>
         </motion.div>
       )}
@@ -308,14 +463,38 @@ const POS: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
-              <span>{t('pos.total') || 'Total'}</span>
-              <span className="tabular-nums">{formatPrice(num(receipt.total), receipt.currency)}</span>
+            <div className="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2 space-y-1">
+              {num(receipt.discount) > 0 && (
+                <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                  <span>{t('pos.discount') || 'Discount'}</span>
+                  <span className="tabular-nums">−{formatPrice(num(receipt.discount), receipt.currency)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 dark:text-white">
+                <span>{t('pos.total') || 'Total'}</span>
+                <span className="tabular-nums">{formatPrice(num(receipt.total), receipt.currency)}</span>
+              </div>
+              {receipt.paymentMethod && (
+                <div className="text-xs text-center text-gray-400 dark:text-gray-500 tabular-nums">
+                  {t(`pos.pay.${receipt.paymentMethod.toLowerCase()}`) || receipt.paymentMethod}
+                </div>
+              )}
             </div>
             <div className="flex gap-2 mt-4 print:hidden">
               <button onClick={() => window.print()} className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition active:scale-[0.96]">{t('pos.print') || 'Print'}</button>
               <button onClick={() => setReceipt(null)} className="flex-1 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-medium transition active:scale-[0.96]">{t('pos.newSale') || 'New sale'}</button>
             </div>
+            {receipt.status !== 'REFUNDED' && (
+              <div className="mt-2 print:hidden">
+                <button
+                  onClick={handleRefund}
+                  disabled={refunding}
+                  className="w-full py-2 rounded-xl border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition active:scale-[0.96] disabled:opacity-60 disabled:active:scale-100"
+                >
+                  {refunding ? (t('pos.refunding') || 'Refunding…') : (t('pos.refundSale') || 'Refund this sale')}
+                </button>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

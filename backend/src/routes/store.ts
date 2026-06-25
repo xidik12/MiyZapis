@@ -141,7 +141,7 @@ ownerRouter.post('/orders/:id/status', async (req: Request, res: Response): Prom
 });
 
 // POS — instant in-person counter sale. Body: { items: [{productId, quantity}],
-// paymentMethod?, customerName?, note? }. Creates a FULFILLED order + deducts stock.
+// paymentMethod?, customerName?, note?, discount? }. Creates a FULFILLED order + deducts stock.
 ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
@@ -152,6 +152,7 @@ ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void>
         paymentMethod: req.body?.paymentMethod,
         customerName: req.body?.customerName,
         note: req.body?.note,
+        discount: req.body?.discount !== undefined ? Number(req.body.discount) : undefined,
       });
     } catch (svcError: unknown) {
       if (svcError instanceof StoreServiceError) {
@@ -165,6 +166,46 @@ ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void>
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger.error('Error in POS sale:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
+
+// POST /store/pos/orders/:orderId/refund — refund a FULFILLED or PAID order, restock items.
+ownerRouter.post('/pos/orders/:orderId/refund', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    let order;
+    try {
+      order = await StoreService.refundOrder(ownerId, req.params.orderId);
+    } catch (svcError: unknown) {
+      if (svcError instanceof StoreServiceError) {
+        const httpStatus = svcError.code === 'ALREADY_REFUNDED' ? 409 : 400;
+        res.status(httpStatus).json(createErrorResponse('VALIDATION_ERROR', svcError.message, requestId(req)));
+        return;
+      }
+      throw svcError;
+    }
+    if (!order) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Order not found', requestId(req)));
+      return;
+    }
+    logger.info(`Order ${order.orderNumber} refunded by owner ${ownerId}`);
+    res.json(createSuccessResponse(order));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error refunding order:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
+
+// GET /store/pos/today — end-of-day summary for the owner (today's orders).
+ownerRouter.get('/pos/today', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const summary = await StoreService.todaySummary(ownerIdOf(req));
+    res.json(createSuccessResponse(summary));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error getting today summary:', error);
     res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
   }
 });

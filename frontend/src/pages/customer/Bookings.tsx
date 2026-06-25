@@ -13,12 +13,14 @@ import { CalendarIcon, EyeIcon, ClockIcon, StarIcon, ListBulletsIcon, CheckCircl
 import { HelpTip } from '@/components/common/HelpTip';
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
+import RescheduleBookingModal from '../../components/modals/RescheduleBookingModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { ContentLoader } from '@/components/ui';
 import { getTranslatedServiceName, getTranslatedDuration, statusColors, getBookingCurrency } from '../../utils/bookingUtils';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { reviewsService } from '../../services/reviews.service';
+import { bookingService } from '../../services/booking.service';
 import { logger } from '@/utils/logger';
 import { MonthView } from '@/components/calendar/MonthView';
 import { waitlistService, type WaitlistEntry } from '@/services/waitlist.service';
@@ -66,6 +68,8 @@ const CustomerBookings: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [rescheduleBookingTarget, setRescheduleBookingTarget] = useState<Booking | null>(null);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [bookingToReview, setBookingToReview] = useState<Booking | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -168,8 +172,28 @@ const CustomerBookings: React.FC = () => {
     [filteredAndSortedBookings, currentPage, itemsPerPage]
   );
 
-  const handleRescheduleBooking = (_bookingId: string) => {
-    toast.info(t('booking.rescheduleAlert'));
+  const handleRescheduleBooking = (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (booking) {
+      setRescheduleBookingTarget(booking);
+    }
+  };
+
+  const handleConfirmReschedule = async (newScheduledAt: string, reason?: string) => {
+    if (!rescheduleBookingTarget) return;
+    setRescheduleLoading(true);
+    try {
+      await bookingService.rescheduleBooking(rescheduleBookingTarget.id, { newScheduledAt, reason });
+      setRescheduleBookingTarget(null);
+      toast.success(t('bookings.rescheduledSuccessfully') || 'Booking rescheduled successfully');
+      dispatch(fetchBookings({ filters: {}, userType: 'customer' }));
+    } catch (error: unknown) {
+      logger.error('Failed to reschedule booking:', error);
+      const msg = (error as any)?.message || t('bookings.rescheduleFailed') || 'Failed to reschedule booking';
+      throw new Error(msg);
+    } finally {
+      setRescheduleLoading(false);
+    }
   };
 
   const handleCancelBooking = (bookingId: string) => {
@@ -1023,6 +1047,18 @@ const CustomerBookings: React.FC = () => {
         getTranslatedServiceName={(serviceName: string) => getTranslatedServiceName(serviceName, t)}
         getTranslatedDuration={(duration: string | number) => getTranslatedDuration(duration, t)}
       />
+
+      {/* Reschedule Modal */}
+      {rescheduleBookingTarget && (
+        <RescheduleBookingModal
+          isOpen={!!rescheduleBookingTarget}
+          onClose={() => setRescheduleBookingTarget(null)}
+          onConfirm={handleConfirmReschedule}
+          serviceName={getTranslatedServiceName(rescheduleBookingTarget.service?.name || rescheduleBookingTarget.serviceName || 'Unknown Service', t)}
+          currentScheduledAt={rescheduleBookingTarget.scheduledAt || new Date().toISOString()}
+          isLoading={rescheduleLoading}
+        />
+      )}
 
       {/* Review Modal */}
       {showReviewModal && bookingToReview && (

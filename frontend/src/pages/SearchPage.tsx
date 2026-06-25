@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
 import { locationService, CityData } from '../services/location.service';
+import { searchService, Suggestion } from '../services/search.service';
 import PublicSeo from '@/components/common/PublicSeo';
 import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '@/utils/structuredData';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
@@ -99,6 +100,58 @@ const SearchPage: React.FC = () => {
   const [availableWithin, setAvailableWithin] = useState<string>('');
   // Quick filter tags state
   const [activeQuickFilters, setActiveQuickFilters] = useState<Set<string>>(new Set());
+
+  // ── Autocomplete ───────────────────────────────────────────────────────
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const suggestRef = React.useRef<HTMLDivElement>(null);
+
+  // Debounced suggest fetch — 300 ms
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    setSuggestLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchService.suggest(searchQuery, 6);
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
+      } catch {
+        // silent — autocomplete is non-critical
+      } finally {
+        setSuggestLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Dismiss on outside click
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const handler = (e: MouseEvent) => {
+      if (suggestRef.current && !suggestRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showSuggestions]);
+
+  const applySuggestion = (s: Suggestion) => {
+    setSearchQuery(s.label);
+    setShowSuggestions(false);
+    setSuggestions([]);
+  };
+
+  // ── Pagination ("Load more") ───────────────────────────────────────────
+  const PAGE_SIZE = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Abandoned booking recovery
   const [abandonedBooking, setAbandonedBooking] = useState<{
@@ -211,9 +264,10 @@ const SearchPage: React.FC = () => {
   }, [dispatch, isAuthenticated]);
 
   // Fetch services from API (extracted so we can call on Apply)
-  const fetchServices = React.useCallback(async () => {
+  const fetchServices = React.useCallback(async (page: number = 1) => {
       try {
-        setLoading(true);
+        if (page === 1) setLoading(true);
+        else setLoadingMore(true);
         setError(null);
         const filters = {
           query: debouncedSearchQuery,
@@ -228,6 +282,8 @@ const SearchPage: React.FC = () => {
           distance: selectedDistance > 0 ? selectedDistance : undefined,
           // Marketplace v2 — quick-filter chips
           verifiedOnly: activeQuickFilters.has('verifiedOnly') || undefined,
+          page,
+          limit: PAGE_SIZE,
         };
         // Search API responses come from multiple backend endpoints with subtly
         // different shapes; treat as opaque here and access dynamically.
@@ -238,7 +294,7 @@ const SearchPage: React.FC = () => {
             const coords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
               navigator.geolocation.getCurrentPosition((pos) => resolve(pos.coords), (err) => reject(err), { timeout: 5000 });
             });
-            const byLoc = await serviceService.getServicesByLocation(coords.latitude, coords.longitude, selectedDistance || 50, 1, 20);
+            const byLoc = await serviceService.getServicesByLocation(coords.latitude, coords.longitude, selectedDistance || 50, page, PAGE_SIZE);
             data = { services: byLoc.services, pagination: byLoc.pagination };
           } catch (e) {
             logger.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
@@ -323,20 +379,35 @@ const SearchPage: React.FC = () => {
         // For now, "Available Now" filter shows all results (no backend filtering)
         // Users can still enable the toggle, but it won't filter until backend is ready
 
-        setServices(servicesWithSpecialists);
+        if (page === 1) {
+          setServices(servicesWithSpecialists);
+        } else {
+          setServices((prev) => [...prev, ...servicesWithSpecialists]);
+        }
+        // Capture pagination from the raw response (SearchResult.pagination) or data.pagination
+        const pg = (data as any).pagination;
+        if (pg) {
+          setTotalPages(pg.totalPages ?? 1);
+          setCurrentPage(pg.currentPage ?? page);
+        } else {
+          setCurrentPage(page);
+        }
       } catch (error: unknown) {
         logger.error('Error fetching services:', error);
         const errorMessage = (error instanceof Error ? error.message : null) || String(error) || 'Failed to load services';
         setError(errorMessage);
-        setServices([]);
+        if (page === 1) setServices([]);
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow, availableWithin]);
 
-  // Fetch on first mount and when deps change
+  // Fetch on first mount and when deps change — always reset to page 1
   useEffect(() => {
-    fetchServices();
+    setCurrentPage(1);
+    fetchServices(1);
   }, [fetchServices]);
 
   // Update URL params
@@ -466,7 +537,8 @@ const SearchPage: React.FC = () => {
 
   // Apply in drawer: refetch, close
   const handleApplyFilters = async () => {
-    await fetchServices();
+    setCurrentPage(1);
+    await fetchServices(1);
     setIsFilterTrayOpen(false);
   };
 
@@ -816,15 +888,57 @@ const SearchPage: React.FC = () => {
 
         {/* Search Form */}
         <form onSubmit={handleSearch} className="mb-6 sm:mb-8">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
+          <div className="relative" ref={suggestRef}>
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 z-10 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+              onKeyDown={(e) => { if (e.key === 'Escape') setShowSuggestions(false); }}
               placeholder={t('search.placeholder')}
+              autoComplete="off"
               className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
             />
+            {/* Autocomplete dropdown */}
+            {showSuggestions && (
+              <ul
+                role="listbox"
+                className="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden"
+              >
+                {suggestLoading && (
+                  <li className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 flex items-center gap-2">
+                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                    {t('search.suggest.loading') || 'Searching…'}
+                  </li>
+                )}
+                {!suggestLoading && suggestions.map((s) => (
+                  <li
+                    key={`${s.type}-${s.id}`}
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={(e) => { e.preventDefault(); applySuggestion(s); }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <span className={`flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold ${
+                      s.type === 'specialist'
+                        ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                        : s.type === 'category'
+                        ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    }`}>
+                      {s.type === 'specialist' ? 'S' : s.type === 'category' ? 'C' : '•'}
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block font-medium text-gray-900 dark:text-white truncate">{s.label}</span>
+                      {s.sublabel && (
+                        <span className="block text-xs text-gray-500 dark:text-gray-400 tabular-nums truncate">{s.sublabel}</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </form>
 
@@ -1682,13 +1796,41 @@ const SearchPage: React.FC = () => {
             ))}
           </div>
         ) : getFilteredServices().length > 0 ? (
-          <div className={`grid gap-4 sm:gap-6 reveal-stagger ${
-            viewMode === 'grid'
-              ? 'grid-cols-1 lg:grid-cols-2'
-              : 'grid-cols-1'
-          }`}>
-            {getFilteredServices().map(renderServiceCard)}
-          </div>
+          <>
+            <div className={`grid gap-4 sm:gap-6 reveal-stagger ${
+              viewMode === 'grid'
+                ? 'grid-cols-1 lg:grid-cols-2'
+                : 'grid-cols-1'
+            }`}>
+              {getFilteredServices().map(renderServiceCard)}
+            </div>
+            {/* Load more */}
+            {currentPage < totalPages && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={async () => {
+                    const next = currentPage + 1;
+                    setCurrentPage(next);
+                    await fetchServices(next);
+                  }}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-60 active:scale-[0.97]"
+                >
+                  {loadingMore
+                    ? <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                    : null}
+                  {loadingMore
+                    ? (t('search.loadingMore') || 'Loading…')
+                    : (t('search.loadMore') || 'Load more')}
+                  {!loadingMore && (
+                    <span className="tabular-nums text-gray-400 dark:text-gray-500 text-xs">
+                      {t('search.page') || 'page'} {currentPage}/{totalPages}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         ) : !error ? (
           <EmptyState
             title={t('search.noResults')}
