@@ -55,7 +55,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
     <div className="space-y-6">
       {/* Sub-tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+        <nav className="-mb-px flex overflow-x-auto gap-x-6 sm:gap-x-8 scrollbar-hide" aria-label="Tabs">
           {subTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeSubTab === tab.id;
@@ -64,7 +64,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
                 className={`
-                  group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition duration-200 active:scale-[0.96]
+                  group inline-flex flex-shrink-0 items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition duration-200 active:scale-[0.96]
                   ${
                     isActive
                       ? 'border-primary-500 text-primary-600 dark:text-primary-400'

@@ -226,7 +226,9 @@ const GuestCheckout: React.FC<GuestCheckoutProps> = ({ onSuccess, onSignIn }) =>
 
   const inputBase =
     'w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 ' +
-    'px-4 py-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ' +
+    // py-3 = 12px top+bottom → 48px total height (≥44px touch target)
+    // text-base = 16px — prevents iOS auto-zoom on focus
+    'px-4 py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ' +
     'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition';
 
   if (step === 'form') {
@@ -308,13 +310,17 @@ const GuestCheckout: React.FC<GuestCheckoutProps> = ({ onSuccess, onSignIn }) =>
       <h3 className="font-semibold text-primary-900 dark:text-primary-100 text-base leading-snug mb-1">
         {t('guest.otpTitle') || 'Enter your verification code'}
       </h3>
-      <p className="text-sm text-primary-700 dark:text-primary-300 mb-4">
+      <p className="text-sm text-primary-700 dark:text-primary-300 mb-4 break-all">
         {(t('guest.otpDesc') || 'We sent a 6-digit code to {{email}}. It expires in 10 minutes.').replace('{{email}}', maskedEmail)}
       </p>
 
       <form onSubmit={handleVerify}>
-        {/* OTP cells */}
-        <div className="flex gap-2 justify-center mb-4" role="group" aria-label="Verification code">
+        {/* OTP cells
+            Layout math at 320px viewport:
+              p-5 container padding = 20px each side → 280px available
+              6 cells × 40px + 5 gaps × 6px = 240 + 30 = 270px  ✓ fits
+            At sm (640px+): cells grow to w-11 (44px), gaps to 8px = 6×44+5×8 = 304px ✓ */}
+        <div className="flex gap-1.5 sm:gap-2 justify-center mb-4" role="group" aria-label="Verification code">
           {otp.map((digit, i) => (
             <input
               key={i}
@@ -327,7 +333,9 @@ const GuestCheckout: React.FC<GuestCheckoutProps> = ({ onSuccess, onSignIn }) =>
               onKeyDown={e => handleOtpKeyDown(i, e)}
               aria-label={`Digit ${i + 1}`}
               className={
-                'w-11 h-14 text-center text-2xl font-bold tabular-nums rounded-xl border ' +
+                // w-10 h-12 on mobile (40×48px), w-11 h-14 on sm+ — both ≥44px touch targets
+                // text-xl on mobile, text-2xl on sm — 16px+ avoids iOS zoom
+                'w-10 h-12 sm:w-11 sm:h-14 text-center text-xl sm:text-2xl font-bold tabular-nums rounded-xl border ' +
                 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 ' +
                 'text-gray-900 dark:text-white focus:outline-none focus:ring-2 ' +
                 'focus:ring-primary-500 focus:border-transparent transition'

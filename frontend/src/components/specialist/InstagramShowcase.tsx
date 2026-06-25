@@ -95,9 +95,9 @@ const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ handle, profileUr
 
       {/* Embeds grid */}
       {posts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-hidden">{/* overflow-hidden guards against Instagram iframe width leaking */}
           {posts.map((url, idx) => (
-            <div key={idx} className="flex justify-center">
+            <div key={idx} className="flex justify-center overflow-hidden min-w-0">
               <blockquote
                 className="instagram-media"
                 data-instgrm-permalink={url}
@@ -108,8 +108,8 @@ const InstagramShowcase: React.FC<InstagramShowcaseProps> = ({ handle, profileUr
                   borderRadius: '3px',
                   boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)',
                   margin: '0',
-                  maxWidth: '540px',
-                  minWidth: '326px',
+                  maxWidth: '100%', // was '540px' — keeps embed within column width
+                  minWidth: '0',    // was '326px' — that literal value causes horizontal scroll on 320px screens
                   padding: '0',
                   width: '100%',
                 }}

@@ -461,6 +461,11 @@ model Booking {
   reviewRewards     ReviewReward[]
   rewardRedemptions RewardRedemption[] @relation("BookingRewardRedemptions")
 
+  // Booking lifecycle automation fields
+  confirmDeadlineAt   DateTime? // when the PENDING confirm window expires (null = auto-confirmed)
+  reminded30Sent      Boolean   @default(false) // 30-min customer reminder sent
+  postApptConfirmSent Boolean   @default(false) // post-appointment specialist confirm prompt sent
+
   // No-show protection state (depositStatus already exists above)
   noShowFeeAmount     Decimal   @default(0)
   noShowFeeStatus     String    @default("NONE") // NONE | CHARGED | WAIVED
@@ -487,6 +492,7 @@ model Booking {
   @@index([parentBookingId])
   @@index([customerId, serviceId, scheduledAt]) // Double-booking prevention composite
   @@index([specialistId, serviceId, scheduledAt]) // Specialist schedule conflict check
+  @@index([status, confirmDeadlineAt]) // Lifecycle worker: PENDING SLA expiry scan
   @@map("bookings")
 }
 

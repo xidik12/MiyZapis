@@ -31,6 +31,7 @@ import apiRoutes from '@/routes';
 // Telegram Bot (enhanced — i18n, full dashboards, webhook support)
 import { enhancedTelegramBot } from '@/services/telegram';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
+import { startBookingLifecycleWorker } from '@/workers/bookingLifecycleWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { startMarketingWorker } from '@/workers/marketing.worker';
 import { initializeVapid } from '@/services/push';
@@ -476,6 +477,14 @@ const startServer = async () => {
         logger.info('⏰ Booking reminder worker started');
       } catch (e) {
         logger.warn('Failed to start booking reminder worker', { error: (e as Error)?.message });
+      }
+
+      // Booking lifecycle worker: 30-min reminders, PENDING SLA cancels,
+      // post-appointment prompts, and anti-orphan auto-complete (every 3 min)
+      try {
+        startBookingLifecycleWorker();
+      } catch (e) {
+        logger.warn('Failed to start booking lifecycle worker', { error: (e as Error)?.message });
       }
 
       // Start subscription worker

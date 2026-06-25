@@ -1130,10 +1130,10 @@ Performance:
                   <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 ml-2">{t('analytics.vsAverage')}</span>
                 </div>
                 {revenueSplit && revenueSplit.retail > 0 && (
-                  <div className="mt-2 flex items-center gap-3 text-xs tabular-nums text-gray-500 dark:text-gray-400">
-                    <span>{language === 'uk' ? 'Послуги' : language === 'ru' ? 'Услуги' : 'Services'}&nbsp;{formatPrice(revenueSplit.service, currency)}</span>
-                    <span className="text-gray-300 dark:text-gray-600">·</span>
-                    <span>{language === 'uk' ? 'Роздріб' : language === 'ru' ? 'Розница' : 'Retail'}&nbsp;{formatPrice(revenueSplit.retail, currency)}</span>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs tabular-nums text-gray-500 dark:text-gray-400">
+                    <span className="min-w-0 truncate">{language === 'uk' ? 'Послуги' : language === 'ru' ? 'Услуги' : 'Services'}&nbsp;{formatPrice(revenueSplit.service, currency)}</span>
+                    <span className="text-gray-300 dark:text-gray-600 flex-shrink-0">·</span>
+                    <span className="min-w-0 truncate">{language === 'uk' ? 'Роздріб' : language === 'ru' ? 'Розница' : 'Retail'}&nbsp;{formatPrice(revenueSplit.retail, currency)}</span>
                   </div>
                 )}
               </div>

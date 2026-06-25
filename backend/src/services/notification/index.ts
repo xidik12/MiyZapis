@@ -119,6 +119,68 @@ export class NotificationService {
       uk: 'Ви підтвердили бронювання послуги "{{serviceName}}" з {{customerName}}.',
       ru: 'Вы подтвердили бронирование услуги "{{serviceName}}" с {{customerName}}.'
     },
+
+    // ── Lifecycle automation types ────────────────────────────────────────────
+
+    // BOOKING_REMINDER — 30-min heads-up to the customer
+    'notifications.booking.reminder.customer.title': {
+      en: 'Your appointment is in 30 minutes',
+      uk: 'Ваш запис починається через 30 хвилин',
+      ru: 'Ваша запись начнётся через 30 минут',
+    },
+    'notifications.booking.reminder.customer.message': {
+      en: 'Reminder: your appointment for {{serviceName}} with {{specialistName}} starts soon. See you there!',
+      uk: 'Нагадування: ваш запис на послугу "{{serviceName}}" у {{specialistName}} починається зовсім скоро. До зустрічі!',
+      ru: 'Напоминание: ваша запись на услугу "{{serviceName}}" у {{specialistName}} начинается совсем скоро. До встречи!',
+    },
+
+    // BOOKING_EXPIRED — auto-cancel because specialist didn't confirm (customer copy)
+    'notifications.booking.expired.customer.title': {
+      en: 'Booking could not be confirmed',
+      uk: 'Бронювання не вдалося підтвердити',
+      ru: 'Бронирование не удалось подтвердить',
+    },
+    'notifications.booking.expired.customer.message': {
+      en: 'Unfortunately, {{specialistName}} did not confirm your booking for "{{serviceName}}" in time and it has been automatically cancelled. Please search for another available specialist.',
+      uk: 'На жаль, {{specialistName}} не підтвердив ваш запис на "{{serviceName}}" вчасно, тому він був автоматично скасований. Будь ласка, знайдіть іншого доступного спеціаліста.',
+      ru: 'К сожалению, {{specialistName}} не подтвердил вашу запись на "{{serviceName}}" вовремя, и она была автоматически отменена. Пожалуйста, найдите другого доступного специалиста.',
+    },
+
+    // BOOKING_EXPIRED — specialist missed the window (specialist copy)
+    'notifications.booking.expired.specialist.title': {
+      en: 'Booking request expired',
+      uk: 'Час підтвердження запиту минув',
+      ru: 'Время подтверждения запроса истекло',
+    },
+    'notifications.booking.expired.specialist.message': {
+      en: 'A booking request for "{{serviceName}}" was not confirmed in time and has been automatically cancelled.',
+      uk: 'Запит на бронювання послуги "{{serviceName}}" не було підтверджено вчасно і його автоматично скасовано.',
+      ru: 'Запрос на бронирование услуги "{{serviceName}}" не был подтверждён вовремя и автоматически отменён.',
+    },
+
+    // BOOKING_CONFIRM_REQUEST — post-appointment prompt to specialist (did it happen?)
+    'notifications.booking.confirmRequest.specialist.title': {
+      en: 'Did this appointment take place?',
+      uk: 'Чи відбувся цей запис?',
+      ru: 'Состоялась ли эта запись?',
+    },
+    'notifications.booking.confirmRequest.specialist.message': {
+      en: 'Your appointment for "{{serviceName}}" with {{customerName}} has ended. Please mark it as Completed or No-show so it is not left open.',
+      uk: 'Ваш запис на "{{serviceName}}" з {{customerName}} завершився. Будь ласка, позначте його як виконаний або відсутність, щоб він не залишився відкритим.',
+      ru: 'Ваша запись на "{{serviceName}}" с {{customerName}} завершилась. Пожалуйста, отметьте её как выполненную или неявку, чтобы она не оставалась открытой.',
+    },
+
+    // BOOKING_RESCHEDULED — already used by booking service; was missing from map
+    'notifications.booking.rescheduled.title': {
+      en: 'Booking rescheduled',
+      uk: 'Запис перенесено',
+      ru: 'Запись перенесена',
+    },
+    'notifications.booking.rescheduled.message': {
+      en: 'Your booking for "{{serviceName}}" has been rescheduled to {{date}}.',
+      uk: 'Ваш запис на "{{serviceName}}" перенесено на {{date}}.',
+      ru: 'Ваша запись на "{{serviceName}}" перенесена на {{date}}.',
+    },
   };
 
   /**
@@ -511,6 +573,16 @@ export class NotificationService {
       // customer (their copy is informational).
       const actorRole = (data.data as Record<string, unknown> | undefined)?.actorRole;
       if (actorRole === 'CUSTOMER') return undefined;
+      return {
+        inline_keyboard: [[
+          { text: L('✅ Completed', '✅ Відбулося', '✅ Состоялось'), callback_data: `booking_action_complete_${bookingId}` },
+          { text: L('🚫 No-show', '🚫 Не прийшов', '🚫 Не пришёл'), callback_data: `booking_action_noshow_${bookingId}` },
+        ]],
+      };
+    }
+
+    // Post-appointment "did it happen?" prompt — same Completed/No-show actions
+    if (data.type === 'BOOKING_CONFIRM_REQUEST') {
       return {
         inline_keyboard: [[
           { text: L('✅ Completed', '✅ Відбулося', '✅ Состоялось'), callback_data: `booking_action_complete_${bookingId}` },

@@ -450,7 +450,23 @@ export class BookingService {
 
         // Determine initial booking status based on specialist's auto-booking setting
         const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
-        
+
+        // Compute confirmDeadlineAt for PENDING bookings (auto-confirmed ones skip it).
+        // Formula: min( createdAt+60min , max( scheduledAt-30min , createdAt+10min ) )
+        // Gives ≤1h for normal bookings, a short window for "sudden" ones (booked soon),
+        // always requires confirmation at least 30 min before the slot, and never less
+        // than 10 min from creation.
+        // Note: `now` is declared above (line ~345) and reused here.
+        const confirmDeadlineAt = service.specialist.autoBooking
+          ? null
+          : new Date(Math.min(
+              now.getTime() + 60 * 60 * 1000,                              // anchor + 60min
+              Math.max(
+                data.scheduledAt.getTime() - 30 * 60 * 1000,              // scheduledAt - 30min
+                now.getTime() + 10 * 60 * 1000                            // anchor + 10min
+              )
+            ));
+
         // Create booking within the transaction
         const createdBooking = await tx.booking.create({
           data: {
@@ -468,6 +484,7 @@ export class BookingService {
             deliverables: JSON.stringify([]), // Empty deliverables initially
             status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
             confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+            confirmDeadlineAt,  // null for auto-confirmed bookings; set for PENDING
             participantCount, // Add participant count for group sessions
             groupSessionId, // Add group session ID if applicable
             // Marketplace acquisition attribution.
@@ -1752,11 +1769,76 @@ export class BookingService {
         throw new Error('TIME_SLOT_NOT_AVAILABLE');
       }
 
-      // Persist the new time (status unchanged)
+      // Determine if the specialist has autoBooking enabled (needed for status reset logic)
+      const specialistRecord = await prisma.specialist.findUnique({
+        where: { userId: booking.specialistId },
+        select: { autoBooking: true },
+      });
+      const specialistHasAutoBooking = specialistRecord?.autoBooking ?? false;
+
+      const isCustomerRescheduling = requesterId === booking.customerId;
+
+      // When the CUSTOMER reschedules, reset the booking into the confirm flow:
+      //   • status → PENDING (unless the specialist has autoBooking, in which case stay CONFIRMED)
+      //   • recompute confirmDeadlineAt anchored on now (not the original createdAt)
+      //   • reset reminder and post-appointment flags for the new slot
+      // When the SPECIALIST reschedules, the booking stays CONFIRMED (no re-confirm needed).
+      let rescheduleStatusUpdate: Record<string, unknown> = {};
+      if (isCustomerRescheduling && booking.status === 'CONFIRMED' && !specialistHasAutoBooking) {
+        const rescheduleNow = new Date();
+        const newConfirmDeadline = new Date(Math.min(
+          rescheduleNow.getTime() + 60 * 60 * 1000,
+          Math.max(
+            newScheduledAt.getTime() - 30 * 60 * 1000,
+            rescheduleNow.getTime() + 10 * 60 * 1000
+          )
+        ));
+        rescheduleStatusUpdate = {
+          status: 'PENDING',
+          confirmedAt: null,
+          confirmDeadlineAt: newConfirmDeadline,
+          reminded30Sent: false,
+          postApptConfirmSent: false,
+        };
+        logger.info('Customer reschedule: resetting to PENDING confirm flow', {
+          bookingId,
+          newConfirmDeadline,
+        });
+      } else if (isCustomerRescheduling && booking.status === 'PENDING') {
+        // Already PENDING — just recompute the deadline for the new slot
+        const rescheduleNow = new Date();
+        const newConfirmDeadline = new Date(Math.min(
+          rescheduleNow.getTime() + 60 * 60 * 1000,
+          Math.max(
+            newScheduledAt.getTime() - 30 * 60 * 1000,
+            rescheduleNow.getTime() + 10 * 60 * 1000
+          )
+        ));
+        rescheduleStatusUpdate = {
+          confirmDeadlineAt: newConfirmDeadline,
+          reminded30Sent: false,
+          postApptConfirmSent: false,
+        };
+      } else if (isCustomerRescheduling && !specialistHasAutoBooking) {
+        // Any other status reset by customer (edge case): reset flags for the new slot
+        rescheduleStatusUpdate = {
+          reminded30Sent: false,
+          postApptConfirmSent: false,
+        };
+      } else {
+        // Specialist rescheduling: reset slot flags only (stays CONFIRMED)
+        rescheduleStatusUpdate = {
+          reminded30Sent: false,
+          postApptConfirmSent: false,
+        };
+      }
+
+      // Persist the new time + lifecycle fields
       const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           scheduledAt: newScheduledAt,
+          ...rescheduleStatusUpdate,
           updatedAt: new Date(),
         },
         include: {
@@ -1768,11 +1850,10 @@ export class BookingService {
 
       // Notify both parties
       try {
-        const isCustomerRescheduling = requesterId === booking.customerId;
         const serviceName = updatedBooking.service.name;
         const newDateIso = newScheduledAt.toISOString();
 
-        // Notify the OTHER party
+        // Notify the OTHER party (isCustomerRescheduling declared above)
         const notifyUserId = isCustomerRescheduling ? booking.specialistId : booking.customerId;
         await BookingService.notificationService.sendNotification(notifyUserId, {
           type: 'BOOKING_RESCHEDULED',

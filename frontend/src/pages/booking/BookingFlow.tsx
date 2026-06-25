@@ -1208,7 +1208,7 @@ const BookingFlow: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowGuestCheckout(true)}
-                        className="w-full text-center text-sm text-primary-700 dark:text-primary-300 hover:text-primary-900 dark:hover:text-primary-100 font-medium transition"
+                        className="w-full min-h-[44px] text-center text-sm text-primary-700 dark:text-primary-300 hover:text-primary-900 dark:hover:text-primary-100 font-medium transition py-2.5 active:scale-[0.97]"
                       >
                         {t('guest.continueAsGuest') || 'Or continue as guest with email verification →'}
                       </button>

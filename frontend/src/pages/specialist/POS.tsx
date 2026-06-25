@@ -382,34 +382,34 @@ const POS: React.FC = () => {
                 </div>
               )}
               {/* Gift card row */}
-              <div className="flex items-center justify-between gap-2 pt-0.5">
-                <label className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{t('pos.gc.label') || 'Gift card'}</label>
+              <div className="flex items-center justify-between gap-2 pt-0.5 min-w-0">
+                <label className="flex-shrink-0 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{t('pos.gc.label') || 'Gift card'}</label>
                 {appliedGiftCard ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-mono text-green-700 dark:text-green-400 tabular-nums">{appliedGiftCard.code}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-mono text-green-700 dark:text-green-400 tabular-nums truncate min-w-0">{appliedGiftCard.code}</span>
                     <button
                       type="button"
                       onClick={() => { setAppliedGiftCard(null); setGcInput(''); }}
-                      className="text-xs text-red-500 hover:underline transition active:scale-[0.96]"
+                      className="flex-shrink-0 text-xs text-red-500 hover:underline transition active:scale-[0.96] py-1 px-1"
                     >
                       {t('pos.gc.remove') || 'Remove'}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <input
                       type="text"
                       value={gcInput}
                       onChange={(e) => setGcInput(e.target.value.toUpperCase())}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleLookupGiftCard(); }}
                       placeholder={t('pos.gc.placeholder') || 'GC-XXXX-XXXX'}
-                      className="w-32 px-2 py-1 text-sm font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                      className="w-24 sm:w-32 min-w-0 px-2 py-2 text-sm font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                     />
                     <button
                       type="button"
                       onClick={handleLookupGiftCard}
                       disabled={gcLookupLoading || !gcInput.trim()}
-                      className="px-3 py-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
+                      className="px-3 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
                     >
                       {gcLookupLoading ? '…' : (t('pos.gc.apply') || 'Apply')}
                     </button>
