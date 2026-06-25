@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon
 } from '@/components/icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface Column<T> {
   key: string;
@@ -31,6 +32,7 @@ export function DataTable<T extends Record<string, any>>({
   emptyMessage = 'No data available',
   className = ''
 }: DataTableProps<T>) {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -180,25 +182,28 @@ export function DataTable<T extends Record<string, any>>({
               disabled={currentPage === 1}
               className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
             >
-              Previous
+              {t('admin.table.previous')}
             </button>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
             >
-              Next
+              {t('admin.table.next')}
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700 dark:text-gray-300 tabular-nums">
-                Showing{' '}
-                <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                {t('admin.table.showing')}{' '}
+                <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span>{' '}
+                {t('admin.table.to')}{' '}
                 <span className="font-medium">
                   {Math.min(currentPage * pageSize, data.length)}
                 </span>{' '}
-                of <span className="font-medium">{data.length}</span> results
+                {t('admin.table.of')}{' '}
+                <span className="font-medium">{data.length}</span>{' '}
+                {t('admin.table.results')}
               </p>
             </div>
             <div>
@@ -208,7 +213,7 @@ export function DataTable<T extends Record<string, any>>({
                   disabled={currentPage === 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
                 >
-                  <span className="sr-only">Previous</span>
+                  <span className="sr-only">{t('admin.table.previous')}</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
 
@@ -257,7 +262,7 @@ export function DataTable<T extends Record<string, any>>({
                   disabled={currentPage === totalPages}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-[0.96] disabled:active:scale-100"
                 >
-                  <span className="sr-only">Next</span>
+                  <span className="sr-only">{t('admin.table.next')}</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
               </nav>

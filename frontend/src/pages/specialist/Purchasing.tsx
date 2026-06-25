@@ -44,6 +44,7 @@ const num = (v: number | string | null | undefined): number => {
   const n = typeof v === 'number' ? v : parseFloat(v);
   return Number.isFinite(n) ? n : 0;
 };
+const round2 = (v: number): number => Math.round(v * 100) / 100;
 
 // ---------- Status badge styling ----------
 const STATUS_BADGE: Record<POStatus, string> = {
@@ -269,8 +270,8 @@ const SpecialistPurchasing: React.FC = () => {
   const removeLine = (idx: number) =>
     setPoLines((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
 
-  const poSubtotal = poLines.reduce((sum, l) => sum + num(l.quantity) * num(l.unitCost), 0);
-  const poTotal = poSubtotal + num(poTax);
+  const poSubtotal = round2(poLines.reduce((sum, l) => sum + num(l.quantity) * num(l.unitCost), 0));
+  const poTotal = round2(poSubtotal + num(poTax));
 
   const handlePOSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

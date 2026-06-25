@@ -191,7 +191,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
           <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
             <div className="flex justify-between">
-              <span>Duration:</span>
+              <span>{t('booking.duration')}:</span>
               <span>{service.duration} minutes</span>
             </div>
             <div className="flex justify-between">
@@ -199,7 +199,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               <span>{selectedDate?.toLocaleDateString()} at {selectedTime}</span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="flex-shrink-0">Specialist:</span>
+              <span className="flex-shrink-0">{t('booking.specialist')}:</span>
               <span className="text-right truncate">{specialist.user?.firstName} {specialist.user?.lastName}</span>
             </div>
           </div>
@@ -213,7 +213,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 <GiftIcon className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white">Loyalty Rewards</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white">{t('booking.loyaltyRewards')}</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {loyaltyData.tier || 'Bronze'} Member Benefits
                 </p>
@@ -293,7 +293,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         <div className="mb-6">
           <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
             <CreditCardIcon className="w-5 h-5 mr-2 text-blue-600" />
-            Payment Method
+            {t('booking.paymentMethod')}
           </h4>
 
           <div className="space-y-3">
@@ -313,7 +313,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                     <CreditCardIcon className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">Cryptocurrency Payment</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{t('booking.cryptoPayment')}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Secure payment via Coinbase Commerce</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Supports Bitcoin, Ethereum, and other cryptocurrencies</div>
                   </div>
@@ -388,7 +388,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              Use my wallet balance first (if available)
+              {t('booking.useWalletFirst')}
             </span>
           </label>
         </div>

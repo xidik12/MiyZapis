@@ -2,8 +2,8 @@ import React from 'react';
 import BookingFlow from '../../pages/booking/BookingFlow';
 
 const BookingRouter: React.FC = () => {
-  // Authentication is handled by ProtectedRoute wrapper in App.tsx
-  // The BookingFlow component will handle preventing specialists from self-booking.
+  // Booking route is public in App.tsx (no ProtectedRoute wrapper).
+  // BookingFlow handles specialist self-booking prevention internally.
   return <BookingFlow />;
 };
 

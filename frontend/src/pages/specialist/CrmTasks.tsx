@@ -181,7 +181,7 @@ const CrmTasks: React.FC = () => {
         title: taskForm.title.trim(),
         notes: taskForm.notes.trim() || undefined,
         dueDate: taskForm.dueDate ? new Date(taskForm.dueDate).toISOString() : undefined,
-        customerId: taskForm.customerId.trim() || undefined,
+        customerId: taskForm.customerId || undefined,
       };
       if (editingTask) {
         await crmService.updateTask(editingTask.id, payload);

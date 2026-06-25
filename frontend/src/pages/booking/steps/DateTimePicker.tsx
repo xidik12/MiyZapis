@@ -75,7 +75,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                     {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
                   </div>
                   <div className="text-xs text-primary-600 font-medium mt-1">
-                    {dateInfo.availableSlots} slots
+                    {t('booking.slotsCount').replace('{n}', String(dateInfo.availableSlots))}
                   </div>
                 </div>
                 {dateInfo.availableSlots === 1 && (
@@ -178,7 +178,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                             <div className="text-center">
                               <div className="font-medium">{time}</div>
                               {serviceDuration > 15 && (
-                                <div className="text-xs opacity-75">to {endTime}</div>
+                                <div className="text-xs opacity-75">{t('booking.toEndTime').replace('{endTime}', endTime)}</div>
                               )}
                             </div>
                             {count === 1 && (

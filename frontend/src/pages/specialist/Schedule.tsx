@@ -957,11 +957,11 @@ const SpecialistSchedule: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { key: 'pending', label: 'Pending', color: 'yellow', icon: '⏳' },
-                    { key: 'confirmed', label: 'Confirmed', color: 'blue', icon: '✓' },
-                    { key: 'in_progress', label: 'In Progress', color: 'purple', icon: '▶' },
-                    { key: 'completed', label: 'Completed', color: 'green', icon: '✓✓' },
-                    { key: 'cancelled', label: 'Cancelled', color: 'gray', icon: '✕' }
+                    { key: 'pending', label: t('status.pending') || 'Pending', color: 'yellow', icon: '⏳' },
+                    { key: 'confirmed', label: t('status.confirmed') || 'Confirmed', color: 'blue', icon: '✓' },
+                    { key: 'in_progress', label: t('status.inProgress') || 'In Progress', color: 'purple', icon: '▶' },
+                    { key: 'completed', label: t('status.completed') || 'Completed', color: 'green', icon: '✓✓' },
+                    { key: 'cancelled', label: t('status.cancelled') || 'Cancelled', color: 'gray', icon: '✕' }
                   ].map(status => (
                     <label
                       key={status.key}

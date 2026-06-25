@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { inventoryService, Product } from '@/services/inventory.service';
-import { storeService, TodaySummary, GiftCardLookup } from '@/services/store.service';
+import { storeService, TodaySummary, GiftCardLookup, ProductOrder } from '@/services/store.service';
 import BarcodeScanner from '@/components/common/BarcodeScanner';
 
 type PayMethod = 'CASH' | 'CARD' | 'OTHER';
@@ -13,6 +13,7 @@ interface CartLine { product: Product; qty: number }
 
 const num = (v: number | string | null | undefined): number =>
   v == null ? 0 : typeof v === 'number' ? v : Number(v) || 0;
+const round2 = (v: number): number => Math.round(v * 100) / 100;
 const priceOf = (p: Product): number => num(p.salePrice ?? p.costPrice);
 
 const POS_HELP = {
@@ -51,7 +52,7 @@ const POS: React.FC = () => {
   const [gcLookupLoading, setGcLookupLoading] = useState(false);
   const [appliedGiftCard, setAppliedGiftCard] = useState<GiftCardLookup | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<any | null>(null);
+  const [receipt, setReceipt] = useState<ProductOrder | null>(null);
   const [refunding, setRefunding] = useState(false);
   const [todayOpen, setTodayOpen] = useState(false);
   const [todaySummary, setTodaySummary] = useState<TodaySummary | null>(null);
@@ -80,13 +81,13 @@ const POS: React.FC = () => {
   }, [products, search]);
 
   const currency = cart[0]?.product.currency || products[0]?.currency || 'UAH';
-  const subtotal = cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0);
-  const discountAmt = Math.max(0, Math.min(num(discountInput), subtotal));
-  const amountAfterDiscount = subtotal - discountAmt;
+  const subtotal = round2(cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0));
+  const discountAmt = round2(Math.max(0, Math.min(num(discountInput), subtotal)));
+  const amountAfterDiscount = round2(subtotal - discountAmt);
   const gcAppliedAmt = appliedGiftCard
-    ? Math.max(0, Math.min(num(appliedGiftCard.balance), amountAfterDiscount))
+    ? round2(Math.max(0, Math.min(num(appliedGiftCard.balance), amountAfterDiscount)))
     : 0;
-  const total = amountAfterDiscount - gcAppliedAmt;
+  const total = round2(amountAfterDiscount - gcAppliedAmt);
   const itemCount = cart.reduce((s, l) => s + l.qty, 0);
 
   const addToCart = (product: Product, qty = 1) => {
@@ -307,7 +308,7 @@ const POS: React.FC = () => {
           className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4"
         >
           <div className="max-w-3xl mx-auto flex items-center gap-3">
-            <button onClick={() => { setCart([]); setAppliedGiftCard(null); setGcInput(''); }} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>
+            <button onClick={() => { setCart([]); setAppliedGiftCard(null); setGcInput(''); setDiscountInput(''); }} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>
             <div className="flex-1 text-right">
               <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{itemCount} {t('pos.items') || 'items'}</span>
               <div className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(subtotal, currency as any)}</div>

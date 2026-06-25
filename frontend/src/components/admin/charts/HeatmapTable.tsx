@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface HeatmapData {
   hour: number;
@@ -14,10 +15,11 @@ export interface HeatmapTableProps {
 
 export const HeatmapTable: React.FC<HeatmapTableProps> = ({
   data,
-  title = 'Activity Heatmap',
+  title,
   loading = false,
   className = ''
 }) => {
+  const { t } = useLanguage();
   // Find max count for normalization
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
@@ -74,7 +76,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 ${className}`}>
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {title}
+        {title ?? t('admin.heatmap.title')}
       </h3>
 
       <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">
@@ -85,7 +87,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
               relative rounded-lg p-3 transition duration-200 cursor-pointer
               ${getColorIntensity(item.count)}
             `}
-            title={`${formatHour(item.hour)}: ${item.count} bookings`}
+            title={`${formatHour(item.hour)}: ${item.count} ${t('admin.heatmap.bookings')}`}
           >
             <div className="text-center">
               <div className={`text-xs font-medium ${getTextColor(item.count)}`}>
@@ -101,7 +103,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
 
       {/* Legend */}
       <div className="mt-6 flex items-center justify-center space-x-4">
-        <span className="text-xs text-gray-500 dark:text-gray-400">Less</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{t('admin.heatmap.less')}</span>
         <div className="flex space-x-1">
           <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded"></div>
           <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/20 rounded"></div>
@@ -110,21 +112,21 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
           <div className="w-6 h-6 bg-blue-400 dark:bg-blue-900/80 rounded"></div>
           <div className="w-6 h-6 bg-blue-500 dark:bg-blue-900 rounded"></div>
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400">More</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{t('admin.heatmap.more')}</span>
       </div>
 
       {/* Peak hour indicator */}
       {data.length > 0 && (
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Peak hour:{' '}
+            {t('admin.heatmap.peakHour')}{' '}
             <span className="font-semibold text-primary-600 dark:text-primary-400">
               {formatHour(data.reduce((max, item) => item.count > max.count ? item : max, data[0]).hour)}
             </span>
-            {' '}with{' '}
+            {' '}{t('admin.heatmap.with')}{' '}
             <span className="font-semibold tabular-nums">
-              {Math.max(...data.map(d => d.count))} bookings
-            </span>
+              {Math.max(...data.map(d => d.count))}
+            </span>{' '}{t('admin.heatmap.bookings')}
           </p>
         </div>
       )}

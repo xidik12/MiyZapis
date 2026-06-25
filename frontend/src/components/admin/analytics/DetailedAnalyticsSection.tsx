@@ -304,8 +304,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
   });
   const revenueTimelineData = Array.from(revenueTimelineMap.entries()).map(([date, data]) => ({
     date,
-    revenue: data.revenue,
-    refunds: 0 // Refunds tracked separately via refundStats aggregate
+    revenue: data.revenue
   })).sort((a, b) => a.date.localeCompare(b.date));
 
   // Prepare payment method distribution - use paymentMethodStats from backend
@@ -411,8 +410,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
         <TrendLineChart
           data={revenueTimelineData}
           dataKeys={[
-            { key: 'revenue', name: t('admin.analytics.totalRevenue'), color: '#3B82F6' },
-            { key: 'refunds', name: t('admin.analytics.refunds'), color: '#EF4444' }
+            { key: 'revenue', name: t('admin.analytics.totalRevenue'), color: '#3B82F6' }
           ]}
           height={300}
         />

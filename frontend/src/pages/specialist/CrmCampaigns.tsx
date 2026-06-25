@@ -270,15 +270,15 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ filter }) => {
         {loading ? (
           <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
             <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
-            {' Checking...'}
+            {' '}{t('crm.preview.checking') || 'Checking…'}
           </span>
         ) : count !== null ? (
           <span className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">
             <span className="text-primary-600 dark:text-primary-400">{count}</span>
-            {' matched client' + (count !== 1 ? 's' : '')}
+            {' '}{count !== 1 ? (t('crm.preview.matchedPlural') || 'matched clients') : (t('crm.preview.matchedSingular') || 'matched client')}
           </span>
         ) : (
-          <span className="text-sm text-gray-400 dark:text-gray-500">Set filters to preview</span>
+          <span className="text-sm text-gray-400 dark:text-gray-500">{t('crm.preview.setFilters') || 'Set filters to preview'}</span>
         )}
       </div>
       {sample.length > 0 && (
@@ -290,7 +290,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ filter }) => {
             </li>
           ))}
           {count !== null && count > 5 && (
-            <li className="text-xs text-gray-400 dark:text-gray-500">…and {count - 5} more</li>
+            <li className="text-xs text-gray-400 dark:text-gray-500">{t('crm.preview.andMore', { n: count - 5 }) || `…and ${count - 5} more`}</li>
           )}
         </ul>
       )}

@@ -70,14 +70,14 @@ const Confirmation: React.FC<ConfirmationProps> = ({
         )}
 
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
+          {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? t('booking.paymentProcessingTitle') : t('booking.bookingRequested')}
         </h3>
 
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
           {isAutoBooked
             ? t('booking.autoBookingConfirmed')
             : isPendingPayment
-            ? 'Your payment is being processed. You will receive an email confirmation once the payment is verified and your booking is confirmed.'
+            ? t('booking.paymentBeingProcessed')
             : t('booking.manualBookingMessage')
           }
         </p>
@@ -101,7 +101,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
         {environment.PAYMENTS_ENABLED && needsPayment && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
             <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-              Payment Required
+              {t('booking.paymentRequired')}
             </h4>
 
             {paymentResult?.message && (
@@ -122,7 +122,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
                 >
                   <CreditCardIcon className="w-4 h-4 mr-2" />
-                  Complete Payment
+                  {t('booking.completePayment')}
                 </a>
               </div>
             )}

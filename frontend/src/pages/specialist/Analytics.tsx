@@ -1474,7 +1474,6 @@ Performance:
                   <p className={`text-xs ${conversionRateStatus.color}`}>
                     {conversionRateStatus.status}
                   </p>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('analytics.industryAvg')} 18%</span>
                 </div>
               </div>
               <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-xl">

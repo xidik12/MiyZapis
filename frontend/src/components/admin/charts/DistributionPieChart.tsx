@@ -8,6 +8,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface DistributionPieChartProps {
   data: Array<{
@@ -43,6 +44,7 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { t } = useLanguage();
 
   const formatValue = (value: number): string => {
     if (value >= 1000000) {
@@ -80,7 +82,7 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
     return (
       <div className={`bg-gray-50 dark:bg-gray-900 rounded-lg ${className}`} style={{ height }}>
         <div className="h-full flex items-center justify-center">
-          <span className="text-gray-500 dark:text-gray-400">No data available</span>
+          <span className="text-gray-500 dark:text-gray-400">{t('admin.chart.noData')}</span>
         </div>
       </div>
     );

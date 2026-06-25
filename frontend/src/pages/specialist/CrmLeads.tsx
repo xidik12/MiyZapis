@@ -242,8 +242,8 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, acting, onStageChange, onEdit
           aria-label={t('common.delete') || 'Delete'}
           className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition active:scale-[0.96] disabled:opacity-50"
         >
-          {busy && lead.stage === lead.stage /* always true, just keeps busy for delete */
-            ? <TrashIcon className="h-3.5 w-3.5" />
+          {busy
+            ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
             : <TrashIcon className="h-3.5 w-3.5" />}
         </button>
       </div>
