@@ -470,6 +470,15 @@ const SpecialistPayroll: React.FC = () => {
     return labels[role]?.[language] || labels[role]?.en || role;
   };
 
+  // The owner isn't a commissioned professional — they keep the business's
+  // service revenue as profit. Show a note instead of a commission editor.
+  const ownerCommissionNote =
+    ({
+      en: 'Owner — keeps the full service revenue; no commission applies.',
+      uk: 'Власник — отримує повний дохід від послуг; комісія не застосовується.',
+      ru: 'Владелец — получает полный доход от услуг; комиссия не применяется.',
+    } as Record<string, string>)[language] || 'Owner — keeps the full service revenue.';
+
   // ---------- Commission ----------
   const getDraft = (staffUserId: string): CommissionDraft =>
     commissionDraft[staffUserId] ?? { mode: 'FLAT', percent: '0', tiers: [{ minRevenue: '0', percent: '' }] };
@@ -808,6 +817,23 @@ const SpecialistPayroll: React.FC = () => {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                       {staff.map((s) => {
                         const d = getDraft(s.staffUserId);
+                        if (s.role === 'OWNER') {
+                          return (
+                            <tr key={s.staffUserId} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
+                              <td className="px-6 py-4">
+                                <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                  {getRoleLabel(s.role)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-sm italic text-gray-500 dark:text-gray-400" colSpan={2}>
+                                {ownerCommissionNote}
+                              </td>
+                            </tr>
+                          );
+                        }
                         return (
                         <tr key={s.staffUserId} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors align-top">
                           <td className="px-6 py-4">
@@ -930,6 +956,19 @@ const SpecialistPayroll: React.FC = () => {
                 <div className="lg:hidden space-y-3 p-4">
                   {staff.map((s) => {
                     const d = getDraft(s.staffUserId);
+                    if (s.role === 'OWNER') {
+                      return (
+                        <div key={s.staffUserId} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white break-words">{s.name}</p>
+                            <span className="flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                              {getRoleLabel(s.role)}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm italic text-gray-500 dark:text-gray-400">{ownerCommissionNote}</p>
+                        </div>
+                      );
+                    }
                     return (
                       <div key={s.staffUserId} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
                         {/* Title row */}
