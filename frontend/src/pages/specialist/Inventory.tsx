@@ -124,6 +124,7 @@ const SpecialistInventory: React.FC = () => {
 
   // State
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [summary, setSummary] = useState<InventorySummary | null>(null);
 
@@ -195,6 +196,7 @@ const SpecialistInventory: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const filters: Record<string, unknown> = {};
       if (filterType) filters.type = filterType;
       if (filterLowStock) filters.lowStock = true;
@@ -211,6 +213,7 @@ const SpecialistInventory: React.FC = () => {
     } catch (error: unknown) {
       console.error('Error loading inventory:', error);
       toast.error(t('inventory.loadError') || 'Failed to load inventory');
+      setError(t('inventory.loadError') || 'Failed to load inventory');
     } finally {
       setLoading(false);
     }
@@ -453,6 +456,21 @@ const SpecialistInventory: React.FC = () => {
           onDetected={(code) => { setFormData((prev) => ({ ...prev, barcode: code })); handleBarcodeLookup(code); }}
         />
         <LabelPrintModal isOpen={labelsOpen} onClose={() => setLabelsOpen(false)} products={products} />
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+              <button
+                onClick={() => loadData()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Summary Cards */}
         {summary && (

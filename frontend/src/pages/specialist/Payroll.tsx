@@ -361,6 +361,7 @@ const SpecialistPayroll: React.FC = () => {
 
   const [tab, setTab] = useState<Tab>('staff');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Data
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -453,6 +454,7 @@ const SpecialistPayroll: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const filters = filterStatus ? { status: filterStatus } : {};
       const [staffRes, recordsRes, summaryRes] = await Promise.all([
         payrollService.getStaff().catch(() => [] as StaffMember[]),
@@ -477,6 +479,7 @@ const SpecialistPayroll: React.FC = () => {
     } catch (error: unknown) {
       console.error('Error loading payroll data:', error);
       toast.error(t('payroll.loadError') || 'Failed to load payroll data');
+      setError(t('payroll.loadError') || 'Failed to load payroll data');
     } finally {
       setLoading(false);
     }
@@ -751,6 +754,21 @@ const SpecialistPayroll: React.FC = () => {
           </ol>
           <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">{ph.howNet}</p>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+              <button
+                onClick={() => loadData()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Summary Cards */}
         {summary && (

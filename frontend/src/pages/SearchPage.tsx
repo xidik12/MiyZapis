@@ -1783,7 +1783,7 @@ const SearchPage: React.FC = () => {
                 <p className="font-medium">{t('search.error.title') || 'Failed to load services'}</p>
                 <p className="text-sm mt-1">{error}</p>
                 <button
-                  onClick={fetchServices}
+                  onClick={() => fetchServices(1)}
                   className="mt-2 text-sm font-semibold underline hover:no-underline"
                 >
                   {t('actions.tryAgain') || 'Try Again'}

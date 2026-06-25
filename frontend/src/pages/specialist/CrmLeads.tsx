@@ -308,6 +308,7 @@ const CrmLeads: React.FC = () => {
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
 
@@ -320,11 +321,13 @@ const CrmLeads: React.FC = () => {
   const loadLeads = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await crmService.listLeads();
       setLeads(data || []);
     } catch (err: unknown) {
       console.error('Error loading leads:', err);
       toast.error(t('crm.leadsLoadError') || 'Failed to load leads');
+      setError(t('crm.leadsLoadError') || 'Failed to load leads');
     } finally {
       setLoading(false);
     }
@@ -487,6 +490,21 @@ const CrmLeads: React.FC = () => {
             {t('crm.addLead') || 'Add lead'}
           </button>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+              <button
+                onClick={() => loadLeads()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ---- Summary stats ---- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">

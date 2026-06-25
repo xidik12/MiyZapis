@@ -976,7 +976,13 @@ const SpecialistSchedule: React.FC = () => {
                         />
                         <span className="text-sm text-gray-700 dark:text-gray-300">{status.icon} {status.label}</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium bg-${status.color}-100 dark:bg-${status.color}-900/30 text-${status.color}-700 dark:text-${status.color}-300`}>
+                      <span className={({
+                        yellow: 'px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+                        blue:   'px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+                        purple: 'px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+                        green:  'px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+                        gray:   'px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300',
+                      } as Record<string, string>)[status.color] ?? 'px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300'}>
                         {bookings.filter(b => b.status.toLowerCase() === status.key).length}
                       </span>
                     </label>

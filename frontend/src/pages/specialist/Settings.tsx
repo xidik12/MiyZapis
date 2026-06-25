@@ -112,20 +112,88 @@ const SpecialistSettings: React.FC = () => {
   useEffect(() => {
     const loadSpecialistSettings = async () => {
       try {
-        const profile = await specialistService.getProfile();
-        setSpecialist(profile);
-        setSettings(prev => ({
+        // Run both fetches in parallel; preferences failure must not block the page
+        const [profile, prefsResult] = await Promise.allSettled([
+          specialistService.getProfile(),
+          userService.getPreferences(),
+        ]);
+
+        const profileData = profile.status === 'fulfilled' ? profile.value : null;
+        const prefsData =
+          prefsResult.status === 'fulfilled'
+            ? (prefsResult.value as any)?.preferences?.notifications
+            : null;
+
+        if (profileData) {
+          setSpecialist(profileData);
+        } else {
+          console.error('Error loading specialist profile:', (profile as PromiseRejectedResult).reason);
+        }
+
+        if (prefsResult.status === 'rejected') {
+          console.error('Error loading notification preferences:', prefsResult.reason);
+        }
+
+        // Build loaded settings outside the updater to avoid side-effects in strict-mode double-calls
+        setSettings(prev => {
+          const next = {
+            ...prev,
+            accountSettings: profileData
+              ? {
+                  ...prev.accountSettings,
+                  autoAcceptBookings: (profileData as any).autoBooking ?? false,
+                  requireVerification: (profileData as any).requireVerifiedCustomer ?? false,
+                  showProfileInSearch: (profileData as any).listedInSearch ?? true,
+                }
+              : prev.accountSettings,
+            notifications: {
+              ...prev.notifications,
+              ...(prefsData != null
+                ? {
+                    emailNotifications: prefsData.email ?? prev.notifications.emailNotifications,
+                    pushNotifications: prefsData.push ?? prev.notifications.pushNotifications,
+                  }
+                : {}),
+            },
+            business: profileData
+              ? {
+                  ...prev.business,
+                  cancellationWindow: (profileData as any).cancellationWindowHours ?? 24,
+                  allowPayAtVenue: (profileData as any).allowPayAtVenue ?? false,
+                }
+              : prev.business,
+          };
+          return next;
+        });
+        // Sync savedSettings separately so Cancel reverts to real DB values, not hardcoded defaults.
+        // We re-derive the same merged object using the default state as the base — this is safe
+        // because we call this once after mount and savedSettings starts from the same defaults.
+        setSavedSettings(prev => ({
           ...prev,
-          accountSettings: {
-            ...prev.accountSettings,
-            autoAcceptBookings: (profile as any).autoBooking ?? false,
-            requireVerification: (profile as any).requireVerifiedCustomer ?? false,
-            showProfileInSearch: (profile as any).listedInSearch ?? true,
+          accountSettings: profileData
+            ? {
+                ...prev.accountSettings,
+                autoAcceptBookings: (profileData as any).autoBooking ?? false,
+                requireVerification: (profileData as any).requireVerifiedCustomer ?? false,
+                showProfileInSearch: (profileData as any).listedInSearch ?? true,
+              }
+            : prev.accountSettings,
+          notifications: {
+            ...prev.notifications,
+            ...(prefsData != null
+              ? {
+                  emailNotifications: prefsData.email ?? prev.notifications.emailNotifications,
+                  pushNotifications: prefsData.push ?? prev.notifications.pushNotifications,
+                }
+              : {}),
           },
-          business: {
-            ...prev.business,
-            cancellationWindow: (profile as any).cancellationWindowHours ?? 24,
-          },
+          business: profileData
+            ? {
+                ...prev.business,
+                cancellationWindow: (profileData as any).cancellationWindowHours ?? 24,
+                allowPayAtVenue: (profileData as any).allowPayAtVenue ?? false,
+              }
+            : prev.business,
         }));
       } catch (error) {
         console.error('Error loading specialist settings:', error);
@@ -173,6 +241,7 @@ const SpecialistSettings: React.FC = () => {
       cancellationWindow: 24,
       rescheduleLimit: 2,
       autoReviewReminder: true,
+      allowPayAtVenue: false,
     },
   });
 
@@ -353,6 +422,7 @@ const SpecialistSettings: React.FC = () => {
         savePromises.push(
           specialistService.updateProfile({
             cancellationWindowHours: settings.business.cancellationWindow,
+            allowPayAtVenue: settings.business.allowPayAtVenue,
             autoBooking: settings.accountSettings.autoAcceptBookings,
             listedInSearch: settings.accountSettings.showProfileInSearch,
             requireVerifiedCustomer: settings.accountSettings.requireVerification,
@@ -1062,39 +1132,13 @@ const SpecialistSettings: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* Pay at Venue Option */}
-                    <div className="py-4 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {t('settings.allowPayAtVenue') || 'Allow Pay at Venue'}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {t('settings.allowPayAtVenueDescription') || 'Let clients choose to pay in person when they arrive'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={async () => {
-                            try {
-                              await specialistService.updateProfile({ allowPayAtVenue: !specialist?.allowPayAtVenue } as any);
-                              setSpecialist((prev: any) => prev ? { ...prev, allowPayAtVenue: !prev.allowPayAtVenue } : prev);
-                              toast.success(t('settings.saved') || 'Setting saved');
-                            } catch {
-                              toast.error(t('settings.saveFailed') || 'Failed to save');
-                            }
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            specialist?.allowPayAtVenue ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              specialist?.allowPayAtVenue ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
+                    {/* Pay at Venue Option — governed by Save/Cancel like the rest of this tab */}
+                    <ToggleSwitch
+                      enabled={settings.business.allowPayAtVenue}
+                      onChange={(value) => handleSettingChange('business', 'allowPayAtVenue', value)}
+                      label={t('settings.allowPayAtVenue') || 'Allow Pay at Venue'}
+                      description={t('settings.allowPayAtVenueDescription') || 'Let clients choose to pay in person when they arrive'}
+                    />
                   </div>
                 </div>
 

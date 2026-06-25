@@ -17,7 +17,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import TelegramLinkWidget from '../../components/auth/TelegramLinkWidget';
-import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
+import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, TrashIcon, PlusIcon, CameraIcon, LinkIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
 import PhoneVerifyButton from '@/components/common/PhoneVerifyButton';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
@@ -1165,9 +1165,6 @@ const CustomerSettings: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            {t('customer.settings.editAddress')}
-                          </button>
                           <button
                             onClick={() => handleRemoveAddress(address.id)}
                             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"

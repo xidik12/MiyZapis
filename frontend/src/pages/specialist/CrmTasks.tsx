@@ -101,6 +101,7 @@ const CrmTasks: React.FC = () => {
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('open');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<ClientTask[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -137,11 +138,13 @@ const CrmTasks: React.FC = () => {
   const loadTasks = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await crmService.listTasks({ status: statusFilter });
       setTasks(data || []);
     } catch (error: unknown) {
       console.error('CrmTasks load error:', error);
       toast.error(t('crm.loadError') || 'Failed to load tasks');
+      setError(t('crm.loadError') || 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
@@ -266,6 +269,21 @@ const CrmTasks: React.FC = () => {
             {t('crm.newTask') || 'New task'}
           </button>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+              <button
+                onClick={() => loadTasks()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Status tab bar */}
         <div className="flex flex-wrap gap-x-1 gap-y-0 mb-6 border-b border-gray-200 dark:border-gray-700">

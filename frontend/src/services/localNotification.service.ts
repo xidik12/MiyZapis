@@ -212,7 +212,7 @@ export class LocalNotificationService {
       title: 'Booking Update',
       message: `Your booking for ${bookingData.serviceName} has been updated`,
       isRead: false,
-      actionUrl: `/bookings/${bookingData.id}`,
+      actionUrl: `/customer/bookings`,
       metadata: { bookingId: bookingData.id }
     });
   }
@@ -223,7 +223,7 @@ export class LocalNotificationService {
       title: 'Payment Processed',
       message: `Payment of ${paymentData.amount} has been processed`,
       isRead: false,
-      actionUrl: `/payments/${paymentData.id}`,
+      actionUrl: `/payment/${paymentData.bookingId}`,
       metadata: { paymentId: paymentData.id }
     });
   }

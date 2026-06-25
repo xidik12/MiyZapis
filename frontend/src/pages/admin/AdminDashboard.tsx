@@ -188,6 +188,7 @@ const AdminDashboard: React.FC = () => {
               data={data}
               period={period}
               loading={loading}
+              onRetry={refetch}
             />
           )}
 

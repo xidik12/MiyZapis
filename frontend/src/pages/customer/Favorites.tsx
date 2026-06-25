@@ -167,7 +167,7 @@ const CustomerFavorites: React.FC = () => {
     const serviceDescription = service.description?.toLowerCase() || '';
     const category = service.category.toLowerCase();
     const specialistName = `${service.specialist?.user?.firstName ?? ''} ${service.specialist?.user?.lastName ?? ''}`.toLowerCase();
-    const businessName = service.specialist.businessName?.toLowerCase() || '';
+    const businessName = service.specialist?.businessName?.toLowerCase() || '';
     
     return serviceName.includes(query) ||
            serviceDescription.includes(query) ||
@@ -192,7 +192,7 @@ const CustomerFavorites: React.FC = () => {
           <button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={!pagination.hasPrev}
-            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -203,7 +203,7 @@ const CustomerFavorites: React.FC = () => {
               className={`px-3 py-2 text-sm font-medium border rounded-xl ${
                 pagination.currentPage === page
                   ? 'bg-blue-600 text-white border-blue-600'
-                  : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50'
+                  : 'text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               {page}
@@ -212,7 +212,7 @@ const CustomerFavorites: React.FC = () => {
           <button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={!pagination.hasNext}
-            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -463,7 +463,7 @@ const CustomerFavorites: React.FC = () => {
                             </button>
                             <button
                               onClick={() => navigate(`/search?specialist=${specialist.id}`)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition duration-200 active:scale-[0.96]"
+                              className="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.bookNow')}
                             </button>
@@ -595,7 +595,7 @@ const CustomerFavorites: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleBookService(service.id)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 transition duration-200 active:scale-[0.96]"
+                              className="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 active:scale-[0.96]"
                             >
                               {t('action.bookNow')}
                             </button>

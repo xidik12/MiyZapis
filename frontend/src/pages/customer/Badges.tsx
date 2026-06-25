@@ -194,7 +194,7 @@ const CustomerBadges: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('badges.completionRate')}</p>
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
-                  {Math.round((earnedCount / badges.length) * 100)}%
+                  {badges.length > 0 ? Math.round((earnedCount / badges.length) * 100) : 0}%
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">

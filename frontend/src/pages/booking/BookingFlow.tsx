@@ -440,6 +440,21 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleNextStep = async () => {
+    // Auth gate: block advancement to the booking-creation step for unauthenticated users.
+    // The next step after 'details' (payments disabled) or 'payment' (payments enabled)
+    // is 'confirmation', which triggers createBooking(). Intercept here instead of
+    // letting the API call fail with a 401.
+    if (!isAuthenticated) {
+      const nextStepId = steps[state.currentStep + 1]?.id;
+      const isAboutToCreateBooking =
+        (!environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'details' && nextStepId === 'confirmation') ||
+        (environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'payment');
+      if (isAboutToCreateBooking) {
+        setShowGuestCheckout(true);
+        return;
+      }
+    }
+
     if (environment.PAYMENTS_ENABLED && steps[state.currentStep]?.id === 'payment' && state.paymentMethod !== 'pay_at_venue') {
       if (!state.paymentResult || (state.paymentResult.requiresPayment && state.paymentResult.status !== 'COMPLETED')) {
         toast.error(t('booking.completePaymentFirst') || 'Please complete payment before proceeding to confirmation.');
@@ -537,6 +552,13 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleBookingSubmit = async () => {
+    // Auth gate: handleBookingSubmit is called from PaymentStep when payments are enabled.
+    // A guest who reaches this path without a session must verify first.
+    if (!isAuthenticated) {
+      setShowGuestCheckout(true);
+      return;
+    }
+
     if (bookingInProgressRef.current) {
       logger.warn('BookingFlow: Booking already in progress, ignoring duplicate submission');
       return;

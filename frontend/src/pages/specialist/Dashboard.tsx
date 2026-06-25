@@ -569,13 +569,13 @@ Repeat Clients: ${dashboardData.stats.repeatClients || 0}
 RECENT BOOKINGS
 ===============
 ${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: any) =>
-  `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
+  `- ${booking.serviceName || 'Service'}: ${booking.customerName || 'Customer'} (${booking.date})`
 ).join('\n') : 'No recent bookings'}
 
 UPCOMING APPOINTMENTS
 ====================
 ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: any) =>
-  `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
+  `- ${booking.serviceName || 'Service'}: ${booking.customerName || 'Customer'} (${booking.date})`
 ).join('\n') : 'No upcoming appointments'}
       `;
 

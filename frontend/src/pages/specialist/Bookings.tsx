@@ -1056,16 +1056,14 @@ const SpecialistBookings: React.FC = () => {
     const booking = cancelTarget;
     if (!booking) return;
     try {
-      const result = await dispatch(cancelBooking({ bookingId: booking.id, reason: 'Customer cancellation' }));
-      
-      if (cancelBooking.fulfilled.match(result)) {
-        // Refresh bookings after cancellation
-        const userType = activeTab === 'provider' ? 'specialist' : 'customer';
-        dispatch(fetchBookings({ filters: {}, userType }));
-      }
+      await dispatch(cancelBooking({ bookingId: booking.id, reason: 'Customer cancellation' })).unwrap();
+      // Refresh bookings after cancellation
+      const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+      dispatch(fetchBookings({ filters: {}, userType }));
+      toast.success(t('bookings.cancelledSuccessfully'));
     } catch (error: unknown) {
       console.error('❌ Failed to cancel booking:', error);
-      toast.error(t('specialist.bookings.toast.error'));
+      toast.error(t('bookings.cancelFailed'));
     }
     setCancelTarget(null);
   };
@@ -1425,10 +1423,10 @@ const SpecialistBookings: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.dateTime')}</p>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                    {(() => { const d = booking.scheduledAt ? new Date(booking.scheduledAt) : null; return d && !isNaN(d.getTime()) ? d.toLocaleDateString('uk-UA') : (booking.date || '—'); })()}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
+                    {(() => { const d = booking.scheduledAt ? new Date(booking.scheduledAt) : null; return d && !isNaN(d.getTime()) ? d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || '—'); })()}
                   </div>
                 </div>
                 <div>
@@ -1553,10 +1551,10 @@ const SpecialistBookings: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                        {(() => { const d = booking.scheduledAt ? new Date(booking.scheduledAt) : null; return d && !isNaN(d.getTime()) ? d.toLocaleDateString('uk-UA') : (booking.date || '—'); })()}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
+                        {(() => { const d = booking.scheduledAt ? new Date(booking.scheduledAt) : null; return d && !isNaN(d.getTime()) ? d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || '—'); })()}
                       </div>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
@@ -1567,9 +1565,9 @@ const SpecialistBookings: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        booking.meetingLink 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
+                        booking.meetingLink
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
                       }`}>
                         {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                       </span>

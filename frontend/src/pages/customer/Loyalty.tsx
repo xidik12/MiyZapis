@@ -135,6 +135,7 @@ const CustomerLoyalty: React.FC = () => {
   useCurrency();
 
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loyaltyProfile, setLoyaltyProfile] = useState<UserLoyalty | null>(null);
   const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
   const [transactions, setTransactions] = useState<LoyaltyTransaction[]>([]);
@@ -168,6 +169,7 @@ const CustomerLoyalty: React.FC = () => {
   const fetchLoyaltyData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const [profile, stats, transactionHistory, allTiers] = await Promise.all([
         loyaltyService.getUserLoyalty(),
         loyaltyService.getLoyaltyStats(),
@@ -228,6 +230,7 @@ const CustomerLoyalty: React.FC = () => {
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
       toast.error(t('loyalty.error.loadProgram') || 'Failed to load loyalty program data');
+      setLoadError(t('loyalty.error.loadProgram') || 'Failed to load loyalty program data');
     } finally {
       setLoading(false);
     }
@@ -482,6 +485,21 @@ const CustomerLoyalty: React.FC = () => {
             {t('loyalty.customerProgramSubtitle') || 'Earn points, unlock rewards, and enjoy exclusive benefits'}
           </p>
         </div>
+
+        {/* Error state */}
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{loadError}</p>
+              <button
+                onClick={() => fetchLoyaltyData()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Points Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">

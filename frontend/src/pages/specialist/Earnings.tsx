@@ -175,6 +175,7 @@ const SpecialistEarnings: React.FC = () => {
     payments: null,
     analytics: null
   });
+  const [retryCount, setRetryCount] = useState(0);
 
   // Translate month names
   const getTranslatedMonth = (monthAbbr: string): string => {
@@ -507,7 +508,8 @@ const SpecialistEarnings: React.FC = () => {
     loadEarningsData();
     loadRecentCompletedBookings();
     loadExpenseSummary();
-  }, [selectedPeriod]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPeriod, retryCount]);
 
   // Helper functions
   const calculateGrowthRate = (breakdown: Array<{ date: string; revenue: number }>) => {
@@ -663,18 +665,26 @@ const SpecialistEarnings: React.FC = () => {
       {/* Error Display */}
       {(errors.earnings || errors.payments || errors.analytics) && (
         <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-          <div className="flex items-start space-x-3">
-            <ExclamationTriangleIcon className="w-5 h-5 text-red-600 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                {t('earnings.errorTitle')}
-              </h3>
-              <div className="mt-2 text-sm text-red-700 dark:text-red-300 space-y-1">
-                {errors.earnings && <p>{errors.earnings}</p>}
-                {errors.payments && <p>{errors.payments}</p>}
-                {errors.analytics && <p>{errors.analytics}</p>}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start space-x-3 flex-1 min-w-0">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  {t('earnings.errorTitle')}
+                </h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300 space-y-1">
+                  {errors.earnings && <p>{errors.earnings}</p>}
+                  {errors.payments && <p>{errors.payments}</p>}
+                  {errors.analytics && <p>{errors.analytics}</p>}
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => setRetryCount(c => c + 1)}
+              className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+            >
+              {t('common.retry') || 'Retry'}
+            </button>
           </div>
         </div>
       )}

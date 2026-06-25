@@ -56,6 +56,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   // User list state
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     totalPages: 1,
@@ -78,6 +79,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   const fetchUsers = useCallback(async () => {
     try {
       setUsersLoading(true);
+      setUsersError(null);
       const result = await adminAnalyticsService.listUsers({
         page: currentPage,
         limit: 20,
@@ -90,6 +92,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     } catch (error: unknown) {
       console.error('Failed to fetch users:', error);
       toast.error(t('admin.users.failedToLoad'));
+      setUsersError(t('admin.users.failedToLoad') || 'Failed to load users');
     } finally {
       setUsersLoading(false);
     }
@@ -283,6 +286,21 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
           subtitle={`${t('admin.users.newInPeriod')} · ${((specialistCount / Math.max(totalUsers, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
       </div>
+
+      {/* Error state */}
+      {usersError && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-red-700 dark:text-red-400 text-sm">{usersError}</p>
+            <button
+              onClick={() => fetchUsers()}
+              className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+            >
+              {t('common.retry') || 'Retry'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

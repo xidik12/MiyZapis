@@ -21,12 +21,14 @@ export interface DetailedAnalyticsSectionProps {
   data: AdminDashboardData | null;
   period: Period;
   loading?: boolean;
+  onRetry?: () => void;
 }
 
 export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> = ({
   data,
   period,
-  loading = false
+  loading = false,
+  onRetry
 }) => {
   const { t } = useLanguage();
   const [activeSubTab, setActiveSubTab] = useState<'bookings' | 'revenue' | 'referrals'>('bookings');
@@ -95,14 +97,14 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
       {activeSubTab === 'bookings' && (
         bookingAnalytics
           ? <BookingAnalyticsTab data={bookingAnalytics} period={period} />
-          : <AnalyticsEmptyState message={t('admin.analytics.noDataBookings')} onRetry={undefined} />
+          : <AnalyticsEmptyState message={t('admin.analytics.noDataBookings')} onRetry={onRetry} />
       )}
 
       {/* Revenue Analytics Tab */}
       {activeSubTab === 'revenue' && (
         financialAnalytics
           ? <RevenueAnalyticsTab data={financialAnalytics} period={period} categoryRevenue={bookingAnalytics?.categoryRevenue} />
-          : <AnalyticsEmptyState message={t('admin.analytics.noDataRevenue')} onRetry={undefined} />
+          : <AnalyticsEmptyState message={t('admin.analytics.noDataRevenue')} onRetry={onRetry} />
       )}
 
       {/* Referral Analytics Tab */}

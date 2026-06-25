@@ -118,6 +118,7 @@ const SpecialistTeam: React.FC = () => {
   const h = (TEAM_HELP as any)[language] || TEAM_HELP.en;
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<HrSummary | null>(null);
 
   // My-day state
@@ -172,6 +173,7 @@ const SpecialistTeam: React.FC = () => {
   const loadAll = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const sum = await hrService.getSummary();
       setSummary(sum);
 
@@ -202,7 +204,9 @@ const SpecialistTeam: React.FC = () => {
         }
       }
     } catch (err: unknown) {
-      toast.error((err as Error).message || t('team.loadError'));
+      const msg = (err as Error).message || t('team.loadError');
+      toast.error(msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -437,6 +441,21 @@ const SpecialistTeam: React.FC = () => {
             {t('team.subtitle')}
           </p>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+              <button
+                onClick={() => loadAll()}
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex-shrink-0"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Employer summary cards ─────────────────────────────────────── */}
         {isEmployer && summary && (

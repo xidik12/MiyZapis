@@ -198,16 +198,30 @@ export class ReviewsService {
   // Get user's own reviews (as a customer)
   async getMyReviews(
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    filters?: {
+      rating?: number;
+      sortBy?: string;
+      sortOrder?: string;
+      withComment?: boolean;
+      verified?: boolean;
+    }
   ): Promise<{
     reviews: Review[];
     pagination: Pagination;
   }> {
     try {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (filters?.rating !== undefined) params.set('rating', String(filters.rating));
+      if (filters?.sortBy) params.set('sortBy', filters.sortBy);
+      if (filters?.sortOrder) params.set('sortOrder', filters.sortOrder);
+      if (filters?.withComment !== undefined) params.set('withComment', String(filters.withComment));
+      if (filters?.verified !== undefined) params.set('verified', String(filters.verified));
+
       const response = await apiClient.get<{
         reviews: Review[];
         pagination: Pagination;
-      }>(`/reviews/my-reviews?page=${page}&limit=${limit}`);
+      }>(`/reviews/my-reviews?${params.toString()}`);
 
       if (!response.success || !response.data) {
         return {

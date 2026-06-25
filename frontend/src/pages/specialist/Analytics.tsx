@@ -418,6 +418,7 @@ const SpecialistAnalytics: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'revenue' | 'bookings' | 'customers'>('revenue');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [profileViewStats, setProfileViewStats] = useState<ProfileViewStats | null>(null);
   const [revenueSplit, setRevenueSplit] = useState<{ service: number; retail: number } | null>(null);
 
@@ -940,7 +941,8 @@ Performance:
     };
 
     loadAnalyticsData();
-  }, [selectedPeriod]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPeriod, retryCount]);
   
   // Service name translation mapping
   const getTranslatedServiceName = (ukrainianName: string): string => {
@@ -1061,7 +1063,7 @@ Performance:
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('analytics.errorLoading') || 'Failed to Load Analytics'}</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => setRetryCount(c => c + 1)}
                 className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-4 py-2 rounded-xl font-medium transition duration-200 hover:shadow-md active:scale-[0.96]"
               >
                 {t('actions.tryAgain') || 'Try Again'}
