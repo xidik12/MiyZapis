@@ -26,6 +26,7 @@ import PublicSeo from '../components/common/PublicSeo';
 import { buildSpecialistJsonLd } from '../utils/structuredData';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
+import InstagramShowcase from '../components/specialist/InstagramShowcase';
 // Note: Use active prop for filled icons: <Icon active />
 
 const SpecialistProfilePage: React.FC = () => {
@@ -761,6 +762,44 @@ const SpecialistProfilePage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Instagram Showcase */}
+            {(() => {
+              let social: Record<string, any> = {};
+              try {
+                social = typeof specialist.socialMedia === 'string'
+                  ? JSON.parse(specialist.socialMedia)
+                  : (specialist.socialMedia || {});
+              } catch { /* ignore */ }
+
+              const rawIg: string = social.instagram || '';
+              const posts: string[] = Array.isArray(social.instagramPosts) ? social.instagramPosts.slice(0, 6) : [];
+
+              // Extract handle from stored value (may be full URL or bare handle)
+              let handle = '';
+              let profileUrl: string | null = null;
+              if (rawIg) {
+                try {
+                  const url = new URL(rawIg.startsWith('http') ? rawIg : `https://${rawIg}`);
+                  if (url.hostname.includes('instagram.com')) {
+                    handle = url.pathname.replace(/^\//, '').replace(/\/$/, '').split('/')[0];
+                    profileUrl = `https://www.instagram.com/${handle}/`;
+                  } else {
+                    handle = rawIg.replace(/^@/, '').trim();
+                    profileUrl = `https://www.instagram.com/${handle}/`;
+                  }
+                } catch {
+                  handle = rawIg.replace(/^@/, '').trim();
+                  profileUrl = handle ? `https://www.instagram.com/${handle}/` : null;
+                }
+              }
+
+              if (!handle && posts.length === 0) return null;
+
+              return (
+                <InstagramShowcase handle={handle} profileUrl={profileUrl} posts={posts} />
+              );
+            })()}
 
             {/* Lightbox */}
             {lightbox.open && lightbox.images.length > 0 && (

@@ -113,6 +113,7 @@ export interface SpecialistProfile {
   socialMedia: {
     website?: string;
     instagram?: string;
+    instagramPosts?: string[];
     facebook?: string;
     linkedin?: string;
   };
@@ -199,6 +200,7 @@ export const getEmptyProfile = (): SpecialistProfile => ({
   socialMedia: {
     website: '',
     instagram: '',
+    instagramPosts: [] as string[],
     facebook: '',
     linkedin: '',
   },

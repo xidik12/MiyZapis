@@ -104,6 +104,7 @@ interface SpecialistProfile {
   socialMedia: {
     website?: string;
     instagram?: string;
+    instagramPosts?: string[];
     facebook?: string;
     linkedin?: string;
   };
@@ -241,6 +242,7 @@ const getEmptyProfile = (): SpecialistProfile => ({
   socialMedia: {
     website: '',
     instagram: '',
+    instagramPosts: [],
     facebook: '',
     linkedin: '',
   },
@@ -355,6 +357,10 @@ const SpecialistProfile: React.FC = () => {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'payment' | 'portfolio'>('personal');
+
+  // Instagram post input state (for the professional tab showcase section)
+  const [igPostInput, setIgPostInput] = useState('');
+  const [igPostError, setIgPostError] = useState('');
 
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
@@ -1894,6 +1900,168 @@ const SpecialistProfile: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Instagram Showcase */}
+                    {(() => {
+                      // instagram field may store full URL or bare handle — extract clean handle for display
+                      const rawIg: string = profile.socialMedia?.instagram || '';
+                      const igPosts: string[] = Array.isArray(profile.socialMedia?.instagramPosts) ? profile.socialMedia!.instagramPosts! : [];
+
+                      // Always store as full Instagram profile URL for link compatibility.
+                      const normalizeToProfileUrl = (raw: string): string => {
+                        const trimmed = raw.trim().replace(/^@/, '');
+                        if (!trimmed) return '';
+                        try {
+                          const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+                          if (url.hostname.includes('instagram.com')) {
+                            const handle = url.pathname.replace(/^\//, '').replace(/\/$/, '').split('/')[0];
+                            return handle ? `https://www.instagram.com/${handle}/` : '';
+                          }
+                        } catch {}
+                        // plain handle or @handle
+                        return `https://www.instagram.com/${trimmed}/`;
+                      };
+
+                      // Extract display handle from stored value
+                      const extractHandle = (val: string): string => {
+                        try {
+                          const url = new URL(val.startsWith('http') ? val : `https://${val}`);
+                          if (url.hostname.includes('instagram.com')) {
+                            return url.pathname.replace(/^\//, '').replace(/\/$/, '').split('/')[0];
+                          }
+                        } catch {}
+                        return val.replace(/^@/, '').trim();
+                      };
+
+                      const isValidIgPost = (url: string): boolean =>
+                        /instagram\.com\/(p|reel|tv)\/[\w-]+/i.test(url);
+
+                      const handleAddPost = () => {
+                        const val = igPostInput.trim();
+                        if (!val) return;
+                        if (!isValidIgPost(val)) {
+                          setIgPostError(
+                            language === 'uk' ? 'Введіть коректне посилання на пост Instagram (instagram.com/p/ або /reel/)' :
+                            language === 'ru' ? 'Введите корректную ссылку на пост Instagram (instagram.com/p/ или /reel/)' :
+                            'Enter a valid Instagram post URL (instagram.com/p/ or /reel/)'
+                          );
+                          return;
+                        }
+                        if (igPosts.includes(val)) { setIgPostError(''); return; }
+                        if (igPosts.length >= 6) {
+                          setIgPostError(
+                            language === 'uk' ? 'Максимум 6 постів' :
+                            language === 'ru' ? 'Максимум 6 постов' : 'Maximum 6 posts'
+                          );
+                          return;
+                        }
+                        setIgPostError('');
+                        setIgPostInput('');
+                        handleProfileChange('socialMedia', { ...profile.socialMedia, instagramPosts: [...igPosts, val] });
+                      };
+
+                      return (
+                        <div>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <svg className="h-5 w-5 text-pink-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            Instagram
+                          </h3>
+
+                          {/* Handle input */}
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              {language === 'uk' ? '@нікнейм (або посилання на профіль)' : language === 'ru' ? '@никнейм (или ссылка на профиль)' : '@handle (or profile URL)'}
+                            </label>
+                            <div className="flex items-center">
+                              <span className="px-3 py-3 rounded-l-xl border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm select-none">@</span>
+                              <input
+                                type="text"
+                                value={extractHandle(rawIg)}
+                                disabled={!isEditing}
+                                placeholder={language === 'uk' ? 'ваш_нікнейм' : language === 'ru' ? 'ваш_никнейм' : 'your_handle'}
+                                onChange={(e) => {
+                                  const profileUrl = normalizeToProfileUrl(e.target.value);
+                                  handleProfileChange('socialMedia', { ...profile.socialMedia, instagram: profileUrl });
+                                }}
+                                className={`flex-1 px-4 py-3 rounded-r-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                                  !isEditing
+                                    ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                                } disabled:cursor-not-allowed dark:border-gray-600`}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Post URLs */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              {language === 'uk' ? `Пости для showcas'у (до 6)` : language === 'ru' ? 'Посты для витрины (до 6)' : 'Showcase posts (up to 6)'}
+                            </label>
+                            <div className="space-y-2 mb-3">
+                              {igPosts.map((url, idx) => (
+                                <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                  <svg className="h-4 w-4 text-pink-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 text-xs text-primary-600 dark:text-primary-400 truncate hover:underline"
+                                  >
+                                    {url}
+                                  </a>
+                                  {isEditing && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = igPosts.filter((_, i) => i !== idx);
+                                        handleProfileChange('socialMedia', { ...profile.socialMedia, instagramPosts: updated });
+                                      }}
+                                      className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                                      aria-label="Remove post"
+                                    >
+                                      <XCircleIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {isEditing && igPosts.length < 6 && (
+                              <div>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="url"
+                                    value={igPostInput}
+                                    placeholder="https://www.instagram.com/p/XXXX/"
+                                    onChange={(e) => { setIgPostInput(e.target.value); setIgPostError(''); }}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddPost(); } }}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 focus:border-primary-500 focus:ring-primary-500"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={handleAddPost}
+                                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition text-sm font-medium active:scale-[0.96]"
+                                  >
+                                    <PlusIcon className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                {igPostError && (
+                                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                    <ExclamationTriangleIcon className="h-3 w-3" />
+                                    {igPostError}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                  {language === 'uk' ? 'Підтримуються посилання типу instagram.com/p/ та instagram.com/reel/' :
+                                   language === 'ru' ? 'Поддерживаются ссылки вида instagram.com/p/ и instagram.com/reel/' :
+                                   'Supports instagram.com/p/ and instagram.com/reel/ links'}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
