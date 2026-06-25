@@ -62,7 +62,7 @@ export const TrendingRail: React.FC<TrendingRailProps> = ({ posts, label }) => {
           return (
             <Link
               key={post.id}
-              to={`/community/${post.id}`}
+              to={`/community/post/${post.id}`}
               className="shrink-0 w-64 sm:w-72 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-400 hover:shadow-lg transition active:scale-[0.96]"
               data-float
             >

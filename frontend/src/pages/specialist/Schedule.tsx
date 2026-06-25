@@ -1157,7 +1157,7 @@ const SpecialistSchedule: React.FC = () => {
                                     {booking.service?.name || 'Booking'}
                                   </div>
                                   <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                    {(() => { const d = new Date(booking.scheduledAt!); return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
+                                    {(() => { if (!booking.scheduledAt) return '—'; const d = new Date(booking.scheduledAt); return isNaN(d.getTime()) ? '—' : `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
                                   </div>
                                 </motion.div>
                               ))}

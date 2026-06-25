@@ -323,8 +323,8 @@ const SpecialistSettings: React.FC = () => {
       setIsUploadingImage(true);
       setUploadError('');
       
-      // Update user profile to remove avatar
-      await userService.updateProfile({ avatar: undefined });
+      // Update user profile to remove avatar (null clears the field on the backend)
+      await userService.updateProfile({ avatar: null });
 
       // Update Redux store with only the avatar field
       dispatch(updateUserProfile({ avatar: undefined }));

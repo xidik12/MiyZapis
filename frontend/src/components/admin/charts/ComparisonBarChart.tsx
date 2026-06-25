@@ -63,7 +63,7 @@ export const ComparisonBarChart: React.FC<ComparisonBarChartProps> = ({
     return (
       <div className={`bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse ${className}`} style={{ height }}>
         <div className="h-full flex items-center justify-center">
-          <span className="text-gray-400 dark:text-gray-600">Loading chart...</span>
+          <span className="text-gray-400 dark:text-gray-600">{t('admin.chart.loading')}</span>
         </div>
       </div>
     );

@@ -54,7 +54,7 @@ const ANALYTICS_HELP = {
 
     conversionRate: 'Conversion Rate',
     conversionRateBody:
-      'Ratio of completed bookings to unique customers (bookings ÷ unique customers, capped at 100 %).\n\nA higher number means the same customers book you repeatedly.\n\nIndustry average shown for reference: 18 %.',
+      'Ratio of completed bookings to unique customers (bookings ÷ unique customers, capped at 100 %).\n\nA higher number means the same customers book you repeatedly.',
   },
   uk: {
     pageTitle: 'Аналітика',
@@ -103,7 +103,7 @@ const ANALYTICS_HELP = {
 
     conversionRate: 'Коефіцієнт конверсії',
     conversionRateBody:
-      'Відношення завершених бронювань до унікальних клієнтів (бронювань ÷ унікальних клієнтів, максимум 100 %).\n\nВище значення означає, що ті самі клієнти бронюють вас знову і знову.\n\nСередньогалузевий показник для довідки: 18 %.',
+      'Відношення завершених бронювань до унікальних клієнтів (бронювань ÷ унікальних клієнтів, максимум 100 %).\n\nВище значення означає, що ті самі клієнти бронюють вас знову і знову.',
   },
   ru: {
     pageTitle: 'Аналитика',
@@ -152,7 +152,7 @@ const ANALYTICS_HELP = {
 
     conversionRate: 'Коэффициент конверсии',
     conversionRateBody:
-      'Отношение завершённых бронирований к уникальным клиентам (бронирований ÷ уникальных клиентов, максимум 100 %).\n\nВысокое значение означает, что одни и те же клиенты бронируют вас снова и снова.\n\nОтраслевой средний показатель для справки: 18 %.',
+      'Отношение завершённых бронирований к уникальным клиентам (бронирований ÷ уникальных клиентов, максимум 100 %).\n\nВысокое значение означает, что одни и те же клиенты бронируют вас снова и снова.',
   },
 };
 

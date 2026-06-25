@@ -7,7 +7,7 @@ export interface UpdateProfileRequest {
   lastName?: string;
   phoneNumber?: string;
   dateOfBirth?: string | null;
-  avatar?: string;
+  avatar?: string | null;
   bio?: string;
   location?: {
     address: string;

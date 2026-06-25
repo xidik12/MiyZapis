@@ -707,7 +707,7 @@ const BookingFlow: React.FC = () => {
         if (paypalResult.approvalUrl) {
           window.open(paypalResult.approvalUrl, '_blank');
 
-          dispatch({ type: 'SET_CURRENT_STEP', payload: 4 });
+          dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
           dispatch({
             type: 'SET_BOOKING_RESULT',
             payload: {
@@ -886,7 +886,7 @@ const BookingFlow: React.FC = () => {
         dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
       } else {
         logger.debug('BookingFlow: External payment required, navigating to payment step');
-        dispatch({ type: 'SET_CURRENT_STEP', payload: 3 });
+        dispatch({ type: 'SET_CURRENT_STEP', payload: steps.length - 1 });
       }
 
       return depositResult;

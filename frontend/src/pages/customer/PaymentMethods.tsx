@@ -82,7 +82,7 @@ const PaymentMethods: React.FC = () => {
       } else {
         // Add new method
         const newMethod = await PaymentMethodsService.addPaymentMethod({
-          type: 'CARD',
+          type: 'card',
           cardLast4: (paymentData.last4 as string) || '',
           cardBrand: (paymentData.name as string | undefined)?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
           cardExpMonth: paymentData.expiryMonth as number | undefined,
