@@ -11,10 +11,9 @@ import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
 import { MonthView } from '@/components/calendar/MonthView';
-import { fetchBookings } from '../../store/slices/bookingSlice';
+import { fetchBookings, cancelBooking } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
-import { RecurringBookingModal, RecurrenceData } from '../../components/modals/RecurringBookingModal';
 import { ContextMenu } from '../../components/ui/ContextMenu';
 import { Booking } from '../../types';
 import { findBookingConflicts } from '../../utils/bookingConflicts';
@@ -329,7 +328,6 @@ const SpecialistSchedule: React.FC = () => {
     in_progress: true
   });
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; booking: Booking | null }>({
     isOpen: false,
     x: 0,
@@ -418,8 +416,18 @@ const SpecialistSchedule: React.FC = () => {
     setShowBookingDetailModal(true);
   };
 
-  // Handle booking reschedule via drag and drop (TODO: implement)
-  // const handleBookingReschedule = async (bookingId: string, newDate: Date, newTime: string) => { ... };
+  // Cancel a booking from the schedule view
+  const handleCancelBookingOnSchedule = async (bookingId: string) => {
+    try {
+      await dispatch(cancelBooking({ bookingId, reason: t('schedule.cancelledBySpecialist') || 'Cancelled by specialist' }));
+      setShowBookingDetailModal(false);
+      setSelectedBooking(null);
+      toast.success(t('schedule.bookingCancelled') || 'Booking cancelled');
+      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+    } catch (err) {
+      toast.error(t('schedule.cancelError') || 'Failed to cancel booking');
+    }
+  };
 
   // Load availability blocks
   useEffect(() => {
@@ -1312,19 +1320,15 @@ const SpecialistSchedule: React.FC = () => {
             setSelectedBooking(null);
           }}
           onReschedule={(_bookingId) => {
-            toast.info(t('schedule.rescheduleBooking') || 'Reschedule booking feature coming soon');
             setShowBookingDetailModal(false);
           }}
-          onCancel={(_bookingId) => {
-            toast.info(t('schedule.cancelBooking') || 'Cancel booking feature coming soon');
-            setShowBookingDetailModal(false);
+          onCancel={(bookingId) => {
+            handleCancelBookingOnSchedule(bookingId);
           }}
           onBookAgain={(_booking) => {
-            toast.info(t('schedule.bookAgain') || 'Book again feature coming soon');
             setShowBookingDetailModal(false);
           }}
           onLeaveReview={(_bookingId) => {
-            toast.info(t('schedule.leaveReview') || 'Leave review feature coming soon');
             setShowBookingDetailModal(false);
           }}
           getTranslatedServiceName={(name) => name}
@@ -1371,35 +1375,19 @@ const SpecialistSchedule: React.FC = () => {
             },
             { divider: true, label: '', onClick: () => {} },
             {
-              label: t('schedule.reschedule') || 'Reschedule',
-              icon: <ClockIcon className="w-5 h-5" />,
-              onClick: () => {
-                toast.info(t('schedule.rescheduleBooking') || 'Reschedule feature coming soon');
-              },
-              disabled: contextMenu.booking?.status === 'completed' || contextMenu.booking?.status === 'cancelled'
-            },
-            {
               label: t('schedule.cancel') || 'Cancel Booking',
               icon: <XMarkIcon className="w-5 h-5" />,
               onClick: () => {
-                toast.info(t('schedule.cancelBooking') || 'Cancel booking feature coming soon');
+                if (contextMenu.booking) {
+                  handleCancelBookingOnSchedule(contextMenu.booking.id);
+                }
               },
               danger: true,
-              disabled: contextMenu.booking?.status === 'completed' || contextMenu.booking?.status === 'cancelled'
+              disabled: contextMenu.booking?.status === 'completed' || contextMenu.booking?.status === 'cancelled' || contextMenu.booking?.status === 'COMPLETED' || contextMenu.booking?.status === 'CANCELLED'
             }
           ]}
         />
       )}
-
-      {/* Recurring Booking Modal */}
-      <RecurringBookingModal
-        isOpen={showRecurringModal}
-        onClose={() => setShowRecurringModal(false)}
-        onSave={(_recurrenceData: RecurrenceData) => {
-          toast.info(t('schedule.recurringFeature') || 'Recurring booking feature coming soon');
-          // TODO: Implement recurring booking creation logic
-        }}
-      />
 
       {/* Conflict Warning */}
       {conflicts.length > 0 && (

@@ -285,7 +285,7 @@ const Promote: React.FC = () => {
             {/* BILLING NOTE: self-serve toggle for now. Once live payments land,
                 enabling a boost becomes a paid action (charge-gated). */}
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              {t('promote.billingNote') || 'Free during launch. Paid boosts coming soon.'}
+              {t('promote.billingNote') || 'Free during launch. Paid boosts will be introduced later.'}
             </p>
           </div>
         )}

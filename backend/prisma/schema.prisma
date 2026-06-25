@@ -207,6 +207,8 @@ model Specialist {
   privacy                 String? // JSON string for privacy settings
   socialMedia             String? // JSON string for social media profiles
   autoBooking             Boolean @default(false) // Auto-approve bookings without manual confirmation
+  listedInSearch          Boolean @default(true)  // Show this specialist in marketplace search results
+  requireVerifiedCustomer Boolean @default(false) // Only allow registered (non-guest) customers to book
   allowPayAtVenue         Boolean @default(false)
   cancellationWindowHours Int     @default(24) // Hours before booking that cancellation is allowed (2, 6, 12, 24, 48)
 

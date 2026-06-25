@@ -238,12 +238,14 @@ const navigation: SidebarNavItem[] = [
 const NAV_GROUP_OF: Record<string, string> = {
   Dashboard: 'pinned', Bookings: 'pinned',
   'Find Services': 'work', Services: 'work', Clients: 'work', Tasks: 'work', Schedule: 'work', Analytics: 'work',
-  Earnings: 'finance', Finances: 'finance', Inventory: 'finance', POS: 'finance', Purchasing: 'finance', Payroll: 'finance', Sales: 'finance', Team: 'finance',
+  Inventory: 'shop', POS: 'shop', Purchasing: 'shop', Sales: 'shop',
+  Earnings: 'finance', Finances: 'finance', Payroll: 'finance', Team: 'finance',
   'Segments & Campaigns': 'growth', Leads: 'growth', Marketing: 'growth', Promote: 'growth', Loyalty: 'growth', Referrals: 'growth', Reviews: 'growth',
   Community: 'account',
 };
 const SIDEBAR_GROUPS: { key: string; titleKey: string; fallback: string }[] = [
   { key: 'work', titleKey: 'nav.section.work', fallback: 'Work' },
+  { key: 'shop', titleKey: 'nav.section.shop', fallback: 'Shop' },
   { key: 'finance', titleKey: 'nav.section.finance', fallback: 'Finance' },
   { key: 'growth', titleKey: 'nav.section.growth', fallback: 'Growth' },
   { key: 'account', titleKey: 'nav.section.account', fallback: 'Account' },
@@ -573,15 +575,17 @@ const specialistSections: TabSection[] = [
     { nameKey: 'dashboard.nav.analytics', fallback: 'Analytics', href: '/specialist/analytics', icon: PresentationChartLineIcon },
     { nameKey: 'dashboard.nav.calendarSync', fallback: 'Calendar sync', href: '/specialist/calendar-settings', icon: ArrowPathIcon },
   ]},
+  { title: 'nav.section.shop', items: [
+    { nameKey: 'dashboard.nav.pos', fallback: 'POS', href: '/specialist/pos', icon: BuildingStorefrontIcon },
+    { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
+    { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: InboxIcon },
+    { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
+  ]},
   { title: 'nav.section.finance', items: [
     { nameKey: 'dashboard.nav.earnings', fallback: 'Earnings', href: '/specialist/earnings', icon: CurrencyDollarIcon },
     { nameKey: 'dashboard.nav.finances', fallback: 'Finances', href: '/specialist/finances', icon: ChartBarIcon },
-    { nameKey: 'dashboard.nav.inventory', fallback: 'Inventory', href: '/specialist/inventory', icon: ArchiveBoxIcon },
-    { nameKey: 'dashboard.nav.pos', fallback: 'POS', href: '/specialist/pos', icon: BuildingStorefrontIcon },
-    { nameKey: 'dashboard.nav.purchasing', fallback: 'Purchasing', href: '/specialist/purchasing', icon: InboxIcon },
     { nameKey: 'dashboard.nav.payroll', fallback: 'Payroll', href: '/specialist/payroll', icon: WalletIcon },
     { nameKey: 'dashboard.nav.team', fallback: 'Team', href: '/specialist/team', icon: UserGroupIcon },
-    { nameKey: 'dashboard.nav.sales', fallback: 'Sales', href: '/specialist/sales', icon: GiftIcon },
   ]},
   { title: 'nav.section.growth', items: [
     { nameKey: 'dashboard.nav.segments', fallback: 'Segments & Campaigns', href: '/specialist/segments', icon: FunnelIcon },

@@ -129,6 +129,17 @@ export class BookingController {
         return;
       }
 
+      if (err.message === 'CUSTOMER_VERIFICATION_REQUIRED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'This specialist only accepts bookings from registered accounts. Please sign up or log in to book.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (err.message === 'TIME_SLOT_NOT_AVAILABLE') {
         res.status(409).json(
           createErrorResponse(

@@ -1055,29 +1055,6 @@ const SearchPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-              {/* Availability */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('search.availability') || 'Availability'}</h3>
-                <label
-                  className="flex items-center gap-2 cursor-not-allowed text-sm text-gray-400 dark:text-gray-600 select-none"
-                  title={t('search.availableNowComingSoon') || 'Coming soon'}
-                >
-                  <input
-                    type="checkbox"
-                    disabled
-                    checked={false}
-                    readOnly
-                    className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 opacity-40 cursor-not-allowed"
-                  />
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
-                    {t('search.availableNow') || 'Available now'}
-                    <span className="text-xs font-normal text-gray-400 dark:text-gray-600">
-                      ({t('search.availableNowComingSoon') || 'coming soon'})
-                    </span>
-                  </span>
-                </label>
-              </div>
               {/* Quick filters */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('search.filters') || 'Filters'}</h3>
@@ -1664,22 +1641,6 @@ const SearchPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {/* Availability Toggle - Temporarily disabled until backend ready */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-100 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700 opacity-60">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-400">{t('search.availableNow') || 'Only available now'}</span>
-                    <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
-                      {t('common.comingSoon') || 'Coming Soon'}
-                    </span>
-                  </div>
-                  <button
-                    disabled
-                    className="relative inline-flex h-7 w-12 items-center rounded-full bg-gray-300 dark:bg-gray-700 cursor-not-allowed"
-                  >
-                    <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-md translate-x-1" />
-                  </button>
-                </div>
-
                 {/* City / Location Selector */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.location') || 'Location'}</label>

@@ -79,6 +79,8 @@ interface UpdateSpecialistData {
   portfolioImages?: string[];
   certifications?: string[];
   autoBooking?: boolean;
+  listedInSearch?: boolean;
+  requireVerifiedCustomer?: boolean;
   cancellationWindowHours?: number;
 }
 
@@ -549,6 +551,8 @@ export class SpecialistService {
           ...(data.portfolioImages && { portfolioImages: JSON.stringify(data.portfolioImages) }),
           ...(data.certifications && { certifications: JSON.stringify(data.certifications) }),
           ...(data.autoBooking !== undefined && { autoBooking: data.autoBooking }),
+          ...(data.listedInSearch !== undefined && { listedInSearch: data.listedInSearch }),
+          ...(data.requireVerifiedCustomer !== undefined && { requireVerifiedCustomer: data.requireVerifiedCustomer }),
           ...(data.cancellationWindowHours !== undefined && { cancellationWindowHours: data.cancellationWindowHours }),
           updatedAt: new Date(),
         },
@@ -833,6 +837,8 @@ export class SpecialistService {
         user: {
           isActive: true,
         },
+        // Only surface specialists who have opted in to search listing
+        listedInSearch: true,
       };
 
       if (query) {

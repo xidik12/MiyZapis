@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../components/ui/ConfirmModal';
@@ -64,6 +65,9 @@ interface BookingDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStatusChange: (bookingId: string, newStatus: keyof typeof statusColors) => void;
+  onCancel: (booking: Booking) => void;
+  onLeaveReview: (booking: Booking) => void;
+  onBookAgain: (booking: Booking) => void;
   getTranslatedServiceName: (serviceName: string) => string;
   activeTab: 'provider' | 'customer';
 }
@@ -75,11 +79,14 @@ interface PaymentConfirmationModalProps {
   onConfirm: (bookingId: string, paymentConfirmed: boolean, notes?: string, amount?: number) => void;
 }
 
-const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ 
-  booking, 
-  isOpen, 
-  onClose, 
+const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
+  booking,
+  isOpen,
+  onClose,
   onStatusChange,
+  onCancel,
+  onLeaveReview,
+  onBookAgain,
   getTranslatedServiceName,
   activeTab
 }) => {
@@ -509,20 +516,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {/* Cancel booking if allowed */}
                 {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                   <button
-                    onClick={async () => {
-                      const { confirm } = await import('../../components/ui/Confirm');
-                      const ok = await confirm({
-                        title: t('bookings.confirmCancelTitle') || 'Cancel booking?',
-                        message: t('bookings.confirmCancel') || 'Are you sure you want to cancel this booking?',
-                        confirmText: t('actions.cancel') || 'Cancel',
-                        cancelText: t('actions.back') || 'Back',
-                        variant: 'destructive'
-                      });
-                      if (ok) {
-                        // Handle cancellation
-                        onClose();
-                      }
-                    }}
+                    onClick={() => { onClose(); onCancel(booking); }}
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition active:scale-[0.96]"
                   >
                     {t('bookings.cancelBooking')}
@@ -533,7 +527,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {booking.status === 'COMPLETED' && (
                   <button
                     onClick={() => {
-                      // Handle review
+                      onLeaveReview(booking);
                       onClose();
                     }}
                     className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl transition active:scale-[0.96]"
@@ -541,11 +535,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     {t('customer.bookings.leaveReview')}
                   </button>
                 )}
-                
+
                 {/* Book again */}
                 <button
                   onClick={() => {
-                    // Handle book again
+                    onBookAgain(booking);
                     onClose();
                   }}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition active:scale-[0.96]"
@@ -802,6 +796,7 @@ const SpecialistBookings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   
   // Tab state for switching between provider/customer views
   const [activeTab, setActiveTab] = useState<'provider' | 'customer'>('provider');
@@ -847,7 +842,6 @@ const SpecialistBookings: React.FC = () => {
     searchTerm: ''
   });
   
-  const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -979,33 +973,6 @@ const SpecialistBookings: React.FC = () => {
     }
   };
   
-  const handleBulkStatusChange = async (_newStatus: keyof typeof statusColors) => {
-    try {
-      // In a real app, this would call the booking service to update multiple statuses
-      // TODO: Implement actual API call when backend bulk update is ready
-      // await dispatch(updateMultipleBookingStatuses({ bookingIds: selectedBookings, status: newStatus }));
-      setSelectedBookings([]);
-    } catch (error) {
-      console.error('Failed to bulk update booking statuses:', error);
-    }
-  };
-  
-  const handleSelectBooking = (bookingId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedBookings(prev => [...prev, bookingId]);
-    } else {
-      setSelectedBookings(prev => prev.filter(id => id !== bookingId));
-    }
-  };
-  
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedBookings(paginatedBookings.map(b => b.id));
-    } else {
-      setSelectedBookings([]);
-    }
-  };
-  
   const openBookingDetails = (booking: Booking) => {
     setSelectedBooking(booking);
     setShowDetailModal(true);
@@ -1014,6 +981,20 @@ const SpecialistBookings: React.FC = () => {
   const handleLeaveReview = (booking: Booking) => {
     setSelectedBooking(booking);
     setShowReviewModal(true);
+  };
+
+  const handleBookAgain = (booking: Booking) => {
+    const serviceId = booking.service?.id || booking.serviceId;
+    if (serviceId) {
+      navigate(`/booking/${serviceId}`);
+    } else {
+      const specialistId = booking.specialist?.id || booking.specialistId;
+      if (specialistId) {
+        navigate(`/specialist/${specialistId}`);
+      } else {
+        toast.error(t('errors.serviceNotFound'));
+      }
+    }
   };
 
   const handleSubmitReview = async (reviewData: {
@@ -1159,10 +1140,11 @@ const SpecialistBookings: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
       <ConfirmModal
         open={!!cancelTarget}
-        title={t('bookings.cancelBooking')}
-        message={cancelTarget ? `${t('bookings.confirmCancel')}\n${cancelTarget.service?.name || ''}` : ''}
-        confirmText={t('bookings.cancelBooking')}
-        cancelText={t('navigation.back')}
+        title={t('bookings.confirmCancelTitle') || 'Cancel booking?'}
+        message={cancelTarget ? `${t('bookings.confirmCancelBody') || 'Are you sure you want to cancel this booking? This cannot be undone.'}${cancelTarget.service?.name ? `\n\n${cancelTarget.service.name}` : ''}` : ''}
+        confirmText={t('bookings.confirmCancel') || 'Yes, cancel booking'}
+        cancelText={t('bookings.keepBooking') || 'Keep booking'}
+        variant="danger"
         onCancel={() => setCancelTarget(null)}
         onConfirm={confirmCancel}
       />
@@ -1341,36 +1323,6 @@ const SpecialistBookings: React.FC = () => {
           </div>
         </div>
         
-        {/* Bulk Actions */}
-        {selectedBookings.length > 0 && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-blue-800 dark:text-blue-300">
-                {selectedBookings.length} {t('bookings.selected')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleBulkStatusChange('confirmed')}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
-                >
-                  {t('bookings.confirm')}
-                </button>
-                <button
-                  onClick={() => handleBulkStatusChange('cancelled')}
-                  className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
-                >
-                  {t('bookings.cancel')}
-                </button>
-                <button
-                  onClick={() => setSelectedBookings([])}
-                  className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 transition-colors"
-                >
-                  {t('bookings.clear')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Kanban or List View */}
         {viewMode === 'kanban' ? (
@@ -1401,12 +1353,6 @@ const SpecialistBookings: React.FC = () => {
               {/* Header with checkbox and customer */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedBookings.includes(booking.id)}
-                    onChange={(e) => handleSelectBooking(booking.id, e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
                   <div className="flex items-center min-w-0">
                     <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3 flex-shrink-0">
                       {booking.customer
@@ -1507,14 +1453,6 @@ const SpecialistBookings: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedBookings.length === paginatedBookings.length && paginatedBookings.length > 0}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </th>
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {activeTab === 'provider' ? t('bookings.customer') : t('bookings.specialist')}
                   </th>
@@ -1541,14 +1479,6 @@ const SpecialistBookings: React.FC = () => {
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedBookings.map((booking) => (
                   <tr key={booking.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200">
-                    <td className="px-3 py-2 sm:px-6 sm:py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedBookings.includes(booking.id)}
-                        onChange={(e) => handleSelectBooking(booking.id, e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -1793,6 +1723,9 @@ const SpecialistBookings: React.FC = () => {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         onStatusChange={handleStatusChange}
+        onCancel={handleCancelBooking}
+        onLeaveReview={handleLeaveReview}
+        onBookAgain={handleBookAgain}
         getTranslatedServiceName={getTranslatedServiceName}
         activeTab={activeTab}
       />

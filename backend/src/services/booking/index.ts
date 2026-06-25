@@ -181,6 +181,13 @@ export class BookingService {
         throw new Error('CUSTOMER_NOT_ACTIVE');
       }
 
+      // ── Specialist gate: require registered account (non-guest) ───────────
+      // If the specialist has requireVerifiedCustomer=true, reject guest-checkout
+      // shell accounts (isGuest=true). Registered users always pass through.
+      if (service.specialist.requireVerifiedCustomer && customer.isGuest) {
+        throw new Error('CUSTOMER_VERIFICATION_REQUIRED');
+      }
+
       // ── Marketplace acquisition: source + new-client attribution ──────────
       // Normalize the incoming source (default DIRECT, reject unknown values).
       const bookingSource: BookingSource =

@@ -753,10 +753,10 @@ const HomePage: React.FC = () => {
                   <SparklesIcon className="w-8 h-8 text-sky-400 dark:text-sky-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 mz-heading">
-                  {t('popularServices.comingSoon') || 'Coming Soon'}
+                  {t('popularServices.emptyTitle')}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                  {t('popularServices.comingSoonDesc') || 'Specialists are adding their services. Check back soon or browse by category above!'}
+                  {t('popularServices.emptyDesc')}
                 </p>
                 <Link
                   to="/search"
