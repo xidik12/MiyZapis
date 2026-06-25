@@ -54,19 +54,19 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 ${className}`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-0 truncate">
           {label}
         </span>
         {icon && (
-          <div className={`p-2 rounded-md ${colorClasses[color]}`}>
+          <div className={`shrink-0 p-2 rounded-md ${colorClasses[color]}`}>
             <div className="w-4 h-4">{icon}</div>
           </div>
         )}
       </div>
 
-      <div className="flex items-baseline justify-between">
-        <h4 className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
+      <div className="flex items-baseline justify-between gap-2">
+        <h4 className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums truncate min-w-0">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </h4>
 

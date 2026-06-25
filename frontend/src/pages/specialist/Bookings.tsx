@@ -1439,7 +1439,7 @@ const SpecialistBookings: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.service')}</p>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-gray-900 dark:text-white truncate">
                     {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">

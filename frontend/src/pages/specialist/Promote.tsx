@@ -347,7 +347,7 @@ const Promote: React.FC = () => {
           </div>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {/* header row */}
-            <div className="grid grid-cols-3 px-5 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+            <div className="grid grid-cols-[2fr_1fr_1fr] px-5 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
               <span>{t('promote.source') || 'Source'}</span>
               <span className="text-right">{t('promote.bookings') || 'Bookings'}</span>
               <span className="text-right">{t('promote.newClients') || 'New clients'}</span>
@@ -357,7 +357,7 @@ const Promote: React.FC = () => {
                 const meta = SOURCE_META[src];
                 const Icon = meta.icon;
                 return (
-                  <div key={src} className="grid grid-cols-3 items-center px-5 py-3">
+                  <div key={src} className="grid grid-cols-[2fr_1fr_1fr] items-center px-5 py-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className={`p-1.5 rounded-lg ${meta.iconBg}`}>
                         <Icon className={`w-4 h-4 ${meta.accent}`} />

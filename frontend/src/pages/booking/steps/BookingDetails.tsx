@@ -260,16 +260,16 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
         </h3>
 
         <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-400">{t('booking.specialist')}</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+          <div className="flex justify-between gap-3">
+            <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">{t('booking.specialist')}</span>
+            <span className="font-medium text-gray-900 dark:text-white text-right truncate">
               {specialist.user?.firstName} {specialist.user?.lastName}
             </span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-600 dark:text-gray-400">{t('booking.service')}</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+          <div className="flex justify-between gap-3">
+            <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">{t('booking.service')}</span>
+            <span className="font-medium text-gray-900 dark:text-white text-right truncate">
               {service.name}
             </span>
           </div>

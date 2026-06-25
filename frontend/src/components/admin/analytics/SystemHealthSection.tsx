@@ -131,15 +131,15 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
       )}
 
       {/* Header with Status and Refresh */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center">
           <HealthIndicator
             status={health.overall}
             label={health.overall === 'healthy' ? t('admin.system.allOperational') : health.overall === 'degraded' ? t('admin.system.degradedPerformance') : t('admin.system.systemDown')}
             size="lg"
           />
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {t('admin.system.updated')} {lastUpdated.toLocaleTimeString()}
           </span>

@@ -222,7 +222,7 @@ const POS: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 pb-28">
       <div className="flex items-center gap-2 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('pos.title') || 'Point of Sale'}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white min-w-0 truncate">{t('pos.title') || 'Point of Sale'}</h1>
         <HelpTip title={t('pos.title') || 'Point of Sale'} content={h.overview} />
         <div className="ml-auto">
           <button

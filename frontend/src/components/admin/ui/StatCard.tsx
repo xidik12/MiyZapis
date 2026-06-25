@@ -68,22 +68,22 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 ${className}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 truncate">
             {title}
           </p>
-          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1 tabular-nums">
+          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1 tabular-nums truncate">
             {formatValue(value)}
           </h3>
           {subtitle && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
               {subtitle}
             </p>
           )}
         </div>
         {icon && (
-          <div className="ml-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <div className="shrink-0 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
             <div className="text-primary-600 dark:text-primary-400">
               {icon}
             </div>

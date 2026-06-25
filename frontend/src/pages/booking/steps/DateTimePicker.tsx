@@ -102,8 +102,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             {t('booking.selectTime')}
           </h3>
           {conflictHint.active && (
-            <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl mb-4">
-              <div className="text-sm">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
+            <div className="flex items-center justify-between gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl mb-4">
+              <div className="text-sm flex-1 min-w-0">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
               <button
                 onClick={() => {
                   if (!availableSlots || availableSlots.length === 0) return;
@@ -112,7 +112,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                   onTimeSelect(next);
                   onConflictHintDismiss();
                 }}
-                className="btn btn-error btn-sm text-white"
+                className="btn btn-error btn-sm text-white flex-shrink-0"
               >
                 {t('booking.tryNextAvailable') || 'Try next available'}
               </button>

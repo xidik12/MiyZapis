@@ -295,13 +295,13 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
           </div>
 
           {/* Filters */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <FunnelIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0" />
               <select
                 value={userTypeFilter}
                 onChange={(e) => setUserTypeFilter(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                className="min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">{t('admin.users.allTypes')}</option>
                 <option value="CUSTOMER">{t('admin.users.customers')}</option>
@@ -313,7 +313,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              className="min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">{t('admin.users.allStatus')}</option>
               <option value="active">{t('admin.users.active')}</option>
@@ -332,11 +332,11 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
         {/* Bulk Actions */}
         {selectedUsers.size > 0 && (
-          <div className="mt-4 flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-            <span className="text-sm font-medium text-primary-900 dark:text-primary-100 tabular-nums">
+          <div className="mt-4 flex flex-wrap items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+            <span className="text-sm font-medium text-primary-900 dark:text-primary-100 tabular-nums mr-auto">
               {selectedUsers.size} {t('admin.users.selected')}
             </span>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => handleUserAction('activate', Array.from(selectedUsers))}
                 disabled={actionLoading}
@@ -377,11 +377,11 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
           <div className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
             {t('admin.users.page')} {currentPage} {t('admin.table.of')} {pagination.totalPages} ({pagination.totalItems} {t('admin.users.totalUsers')})
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={!pagination.hasPrev}

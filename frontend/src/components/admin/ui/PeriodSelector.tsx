@@ -29,28 +29,30 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   const { t } = useLanguage();
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
+    <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${className}`}>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-1 shrink-0">
         {t('admin.period.label')}
       </span>
-      <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-        {PERIOD_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            className={`
-              px-4 py-2 text-sm font-medium rounded-md transition duration-200 active:scale-[0.96]
-              ${
-                selected === option.value
-                  ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-              }
-            `}
-            title={t(option.descriptionKey)}
-          >
-            {t(option.labelKey)}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          {PERIOD_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              className={`
+                px-3 py-1.5 text-sm font-medium rounded-md transition duration-200 active:scale-[0.96] whitespace-nowrap
+                ${
+                  selected === option.value
+                    ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }
+              `}
+              title={t(option.descriptionKey)}
+            >
+              {t(option.labelKey)}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

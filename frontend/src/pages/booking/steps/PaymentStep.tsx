@@ -168,9 +168,9 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
         {/* Order Summary */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
-            <span className="font-bold text-gray-900 dark:text-white">
+          <div className="flex justify-between items-center gap-3 mb-3">
+            <span className="font-medium text-gray-900 dark:text-white truncate min-w-0">{service.name}</span>
+            <span className="font-bold text-gray-900 dark:text-white flex-shrink-0">
               {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
             </span>
           </div>
@@ -198,9 +198,9 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               <span>Date:</span>
               <span>{selectedDate?.toLocaleDateString()} at {selectedTime}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Specialist:</span>
-              <span>{specialist.user?.firstName} {specialist.user?.lastName}</span>
+            <div className="flex justify-between gap-2">
+              <span className="flex-shrink-0">Specialist:</span>
+              <span className="text-right truncate">{specialist.user?.firstName} {specialist.user?.lastName}</span>
             </div>
           </div>
         </div>

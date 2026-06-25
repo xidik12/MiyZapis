@@ -255,17 +255,17 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
             {recentActivity.bookings.slice(0, 5).map((booking) => (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg"
+                className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {booking.service.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {booking.customer.firstName} {booking.customer.lastName}
                   </p>
                 </div>
-                <div className="flex flex-col items-end ml-4">
+                <div className="flex flex-col items-end shrink-0">
                   <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                     ${booking.totalAmount}
                   </span>
@@ -295,7 +295,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
             {recentActivity.users.slice(0, 5).map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg"
+                className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg"
               >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
                   <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
@@ -314,7 +314,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                   </div>
                 </div>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full ml-4 flex-shrink-0 ${
+                  className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
                     user.userType === 'SPECIALIST'
                       ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-400'
                       : 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400'

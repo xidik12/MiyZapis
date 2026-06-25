@@ -1122,9 +1122,9 @@ const HomePage: React.FC = () => {
                         {post.price.toLocaleString()} {post.currency || 'UAH'}
                       </p>
                     )}
-                    <div className="flex justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{post.author.firstName}</span>
-                      <span className="tabular-nums">
+                    <div className="flex justify-between mt-4 text-xs text-gray-500 dark:text-gray-400 gap-2">
+                      <span className="truncate min-w-0">{post.author.firstName}</span>
+                      <span className="tabular-nums flex-shrink-0">
                         {post.likeCount} {t('community.likes')} &middot; {post.commentCount} {t('community.comments')}
                       </span>
                     </div>

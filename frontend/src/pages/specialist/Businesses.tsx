@@ -384,13 +384,13 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
       <ul className="divide-y divide-gray-100 dark:divide-gray-700">
         {members.map((m: any) => (
           <li key={m.id} className="flex items-center justify-between py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium flex-shrink-0">
                 {(m.user?.firstName?.[0] ?? '?') + (m.user?.lastName?.[0] ?? '')}
               </div>
-              <div>
-                <div className="font-medium text-gray-900 dark:text-white">{m.user?.firstName} {m.user?.lastName}</div>
-                <div className="text-xs text-gray-500">{m.user?.email}</div>
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 dark:text-white truncate">{m.user?.firstName} {m.user?.lastName}</div>
+                <div className="text-xs text-gray-500 truncate">{m.user?.email}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -409,10 +409,10 @@ const MembersTab: React.FC<{ business: Business; canManage: boolean; onReload: (
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {invites.map((inv) => (
               <li key={inv.id} className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300">✉</div>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">{inv.email}</div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300 flex-shrink-0">✉</div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-gray-900 dark:text-white truncate">{inv.email}</div>
                     <div className="text-xs text-gray-500">{t('businesses.invitePending.invited')}</div>
                   </div>
                 </div>

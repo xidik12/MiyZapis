@@ -19,12 +19,12 @@ const ServiceSelect: React.FC<ServiceSelectProps> = ({ service }) => {
         </h3>
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900 dark:text-white">
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium text-gray-900 dark:text-white break-words">
                 {service.name as string}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 break-words">
                 {service.description as string}
               </p>
               <div className="flex items-center mt-2 text-sm text-gray-500">

@@ -124,7 +124,7 @@ export const DistributionPieChart: React.FC<DistributionPieChartProps> = ({
           {showLegend && (
             <Legend
               verticalAlign="bottom"
-              height={36}
+              wrapperStyle={{ paddingTop: 8, lineHeight: '1.6' }}
               formatter={((value: any, entry: any) => {
                 const percentage = calculatePercentage(entry?.payload?.value || 0, total);
                 return `${value} (${percentage})`;

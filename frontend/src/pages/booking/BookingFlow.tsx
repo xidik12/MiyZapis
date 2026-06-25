@@ -1159,7 +1159,7 @@ const BookingFlow: React.FC = () => {
             {t('booking.bookService')}
           </h1>
 
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 dark:text-gray-400 mt-2 truncate">
             {state.specialist.user?.firstName} {state.specialist.user?.lastName} · {translateProfession(state.specialist.businessName, t)}
           </p>
         </div>

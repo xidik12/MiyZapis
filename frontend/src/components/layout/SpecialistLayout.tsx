@@ -176,6 +176,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: UserGroupIcon,
   },
   {
+    name: 'Businesses',
+    nameUk: 'Бізнеси',
+    href: '/specialist/businesses',
+    icon: BuildingOfficeIcon,
+    iconActive: BuildingOfficeIcon,
+  },
+  {
     name: 'Reviews',
     nameUk: 'Відгуки',
     href: '/specialist/reviews',
