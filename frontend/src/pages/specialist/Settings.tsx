@@ -643,30 +643,91 @@ const SpecialistSettings: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-6">
+                    {/* autoAcceptBookings — wired to autoBooking on the specialist profile */}
                     <ToggleSwitch
                       enabled={settings.accountSettings.autoAcceptBookings}
                       onChange={(value) => handleSettingChange('accountSettings', 'autoAcceptBookings', value)}
                       label={t('settings.autoAcceptBookings')}
                       description={t('settings.autoAcceptBookingsDesc')}
                     />
-                    <ToggleSwitch
-                      enabled={settings.accountSettings.allowInstantBookings}
-                      onChange={(value) => handleSettingChange('accountSettings', 'allowInstantBookings', value)}
-                      label={t('settings.allowInstantBookings')}
-                      description={t('settings.allowInstantBookingsDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.accountSettings.requireVerification}
-                      onChange={(value) => handleSettingChange('accountSettings', 'requireVerification', value)}
-                      label={t('settings.requireVerification')}
-                      description={t('settings.requireVerificationDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.accountSettings.showProfileInSearch}
-                      onChange={(value) => handleSettingChange('accountSettings', 'showProfileInSearch', value)}
-                      label={t('settings.showProfileInSearch')}
-                      description={t('settings.showProfileInSearchDesc')}
-                    />
+                    {/* allowInstantBookings — no backend field yet; disabled until implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.allowInstantBookings') || 'Allow instant bookings'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.allowInstantBookingsDesc') || 'Let clients book without manual confirmation'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5"
+                        >
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* requireVerification — no backend field yet; disabled until implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.requireVerification') || 'Require customer verification'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.requireVerificationDesc') || 'Only allow verified clients to book'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5"
+                        >
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* showProfileInSearch — no backend field yet; disabled until implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.showProfileInSearch') || 'Show profile in search'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.showProfileInSearchDesc') || 'Appear in platform-wide specialist search'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5"
+                        >
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 )}
@@ -921,18 +982,35 @@ const SpecialistSettings: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-6">
+                    {/* emailNotifications — persisted via user profile */}
                     <ToggleSwitch
                       enabled={settings.notifications.emailNotifications}
                       onChange={(value) => handleSettingChange('notifications', 'emailNotifications', value)}
                       label={t('settings.emailNotifications')}
                       description={t('settings.emailNotificationsDesc')}
                     />
-                    <ToggleSwitch
-                      enabled={settings.notifications.smsNotifications}
-                      onChange={(value) => handleSettingChange('notifications', 'smsNotifications', value)}
-                      label={t('settings.smsNotifications')}
-                      description={t('settings.smsNotificationsDesc')}
-                    />
+                    {/* smsNotifications — no backend field; disabled until SMS is implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.smsNotifications') || 'SMS notifications'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.smsNotificationsDesc') || 'Receive SMS alerts for bookings'}
+                          </p>
+                        </div>
+                        <button type="button" disabled aria-disabled="true" className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5">
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* pushNotifications — persisted via user profile */}
                     <ToggleSwitch
                       enabled={settings.notifications.pushNotifications}
                       onChange={(value) => handleSettingChange('notifications', 'pushNotifications', value)}
@@ -972,18 +1050,48 @@ const SpecialistSettings: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    <ToggleSwitch
-                      enabled={settings.notifications.newBookingAlert}
-                      onChange={(value) => handleSettingChange('notifications', 'newBookingAlert', value)}
-                      label={t('settings.newBookingAlert')}
-                      description={t('settings.newBookingAlertDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.notifications.bookingReminders}
-                      onChange={(value) => handleSettingChange('notifications', 'bookingReminders', value)}
-                      label={t('settings.bookingReminders')}
-                      description={t('settings.bookingRemindersDesc')}
-                    />
+                    {/* newBookingAlert — no backend field yet; disabled until implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.newBookingAlert') || 'New booking alert'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.newBookingAlertDesc') || 'Get notified when a new booking is made'}
+                          </p>
+                        </div>
+                        <button type="button" disabled aria-disabled="true" className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5">
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* bookingReminders — no backend field yet; disabled until implemented */}
+                    <div className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {t('settings.bookingReminders') || 'Booking reminders'}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                              {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('settings.bookingRemindersDesc') || 'Reminder notifications before appointments'}
+                          </p>
+                        </div>
+                        <button type="button" disabled aria-disabled="true" className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5">
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 )}
@@ -1004,30 +1112,34 @@ const SpecialistSettings: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-6">
-                    <ToggleSwitch
-                      enabled={settings.privacy.showPhoneNumber}
-                      onChange={(value) => handleSettingChange('privacy', 'showPhoneNumber', value)}
-                      label={t('settings.showPhoneNumber')}
-                      description={t('settings.showPhoneNumberDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.privacy.showEmail}
-                      onChange={(value) => handleSettingChange('privacy', 'showEmail', value)}
-                      label={t('settings.showEmail')}
-                      description={t('settings.showEmailDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.privacy.allowDirectMessages}
-                      onChange={(value) => handleSettingChange('privacy', 'allowDirectMessages', value)}
-                      label={t('settings.allowDirectMessages')}
-                      description={t('settings.allowDirectMessagesDesc')}
-                    />
-                    <ToggleSwitch
-                      enabled={settings.privacy.dataProcessingConsent}
-                      onChange={(value) => handleSettingChange('privacy', 'dataProcessingConsent', value)}
-                      label={t('settings.dataProcessingConsent')}
-                      description={t('settings.dataProcessingConsentDesc')}
-                    />
+                    {/* Privacy toggles — no backend fields yet; all disabled until implemented */}
+                    {[
+                      { key: 'showPhoneNumber', labelKey: 'settings.showPhoneNumber', descKey: 'settings.showPhoneNumberDesc', labelFb: 'Show phone number', descFb: 'Let clients see your personal phone number' },
+                      { key: 'showEmail', labelKey: 'settings.showEmail', descKey: 'settings.showEmailDesc', labelFb: 'Show email', descFb: 'Let clients see your email address' },
+                      { key: 'allowDirectMessages', labelKey: 'settings.allowDirectMessages', descKey: 'settings.allowDirectMessagesDesc', labelFb: 'Allow direct messages', descFb: 'Let clients message you outside of bookings' },
+                      { key: 'dataProcessingConsent', labelKey: 'settings.dataProcessingConsent', descKey: 'settings.dataProcessingConsentDesc', labelFb: 'Data processing consent', descFb: 'Allow platform to process your data for analytics' },
+                    ].map((item) => (
+                      <div key={item.key} className="py-4 border-b border-gray-200 dark:border-gray-700 opacity-60">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 pr-4">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {t(item.labelKey) || item.labelFb}
+                              </h4>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                {language === 'uk' ? 'Незабаром' : language === 'ru' ? 'Скоро' : 'Coming soon'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              {t(item.descKey) || item.descFb}
+                            </p>
+                          </div>
+                          <button type="button" disabled aria-disabled="true" className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 cursor-not-allowed flex-shrink-0 mt-0.5">
+                            <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sumBy } from '@/utils/money';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -31,6 +32,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
   const [referralAnalytics, setReferralAnalytics] = useState<ReferralAnalytics | null>(null);
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const user = useAppSelector(selectUser);
 
   // Only specialists should see earnings tab
@@ -149,11 +151,11 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                     {t('wallet.quickActions.subtitle')}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
+                    <Button variant="secondary" onClick={() => navigate('/customer/loyalty')} className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
                       <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.redeemRewards')}</span>
                     </Button>
-                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
+                    <Button variant="secondary" onClick={() => navigate('/customer/referrals')} className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm cursor-pointer hover:shadow-md transition-all duration-200">
                       <Users className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.referFriends')}</span>
                     </Button>

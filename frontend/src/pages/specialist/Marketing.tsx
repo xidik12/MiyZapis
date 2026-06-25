@@ -304,12 +304,13 @@ const Marketing: React.FC = () => {
             const enabled = !!automation?.isEnabled && !cardDisabled;
             const channel = (automation?.channel as MarketingChannel) || 'BOTH';
 
+            // Birthday card: hide entirely while not supported — don't occupy prominent space for a dead feature
+            if (cardDisabled) return null;
+
             return (
               <div
                 key={type}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 transition-all ${
-                  cardDisabled ? 'opacity-70' : 'hover-lift'
-                }`}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 transition-all hover-lift"
               >
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-4">
@@ -326,29 +327,20 @@ const Marketing: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {!cardDisabled && (
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
-                        {enabled ? t('marketing.enabled') : t('marketing.disabled')}
-                      </span>
-                      <Toggle
-                        checked={enabled}
-                        disabled={saving === type}
-                        onChange={(next) => patch(type, { isEnabled: next })}
-                        label={t('marketing.enable')}
-                      />
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+                      {enabled ? t('marketing.enabled') : t('marketing.disabled')}
+                    </span>
+                    <Toggle
+                      checked={enabled}
+                      disabled={saving === type}
+                      onChange={(next) => patch(type, { isEnabled: next })}
+                      label={t('marketing.enable')}
+                    />
+                  </div>
                 </div>
 
-                {cardDisabled ? (
-                  <div className="mt-4 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-dashed border-gray-300 dark:border-gray-600 p-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {t('marketing.birthday.comingSoon')}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-5 space-y-4">
+                <div className="mt-5 space-y-4">
                     {/* Day setting + channel */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {type === 'WINBACK' && (
@@ -456,7 +448,6 @@ const Marketing: React.FC = () => {
                       {t('marketing.lastRun')}: {formatDate(automation?.lastRunAt)}
                     </div>
                   </div>
-                )}
               </div>
             );
           })}

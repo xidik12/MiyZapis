@@ -729,27 +729,6 @@ const SpecialistEarnings: React.FC = () => {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1 mb-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.pending')}</p>
-                <HelpTip title={t('earnings.pending')} content={eh.pending} />
-              </div>
-              {loading.earnings ? (
-                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              ) : (
-                <p className="text-xl sm:text-2xl font-bold text-orange-600 truncate tabular-nums">
-                  {formatPrice(earningsData.pending || 0, currency)}
-                </p>
-              )}
-            </div>
-            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
-              <ClockIcon className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1 mb-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.averageBookingValue')}</p>
                 <HelpTip title={t('earnings.averageBookingValue')} content={eh.avgPerBooking} />
               </div>
@@ -807,27 +786,6 @@ const SpecialistEarnings: React.FC = () => {
             </div>
             <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
               <UserGroupIcon className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1 mb-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('earnings.averageBookingValue')}</p>
-                <HelpTip title={t('earnings.averageBookingValue')} content={eh.avgPerBooking} />
-              </div>
-              {loading.earnings ? (
-                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              ) : (
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate tabular-nums">
-                  {formatPrice(earningsData.averageBookingValue || 0, currency)}
-                </p>
-              )}
-            </div>
-            <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
-              <ChartBarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
@@ -1066,7 +1024,7 @@ const SpecialistEarnings: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl cursor-pointer transition active:scale-[0.96]">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('earnings.detailedAnalytics')}</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Performance Metrics */}
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.performanceMetrics')}</h4>
@@ -1102,46 +1060,6 @@ const SpecialistEarnings: React.FC = () => {
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
                   <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right tabular-nums">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Time Analysis */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-gray-900 dark:text-white">{t('earnings.timeAnalysis')}</h4>
-            <div className="space-y-3">
-              <div className="flex justify-between gap-2">
-                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
-                  <span className="truncate">{t('earnings.peakHours')}</span>
-                  <HelpTip title={t('earnings.peakHours')} content={eh.peakHours} />
-                </span>
-                {loading.earnings ? (
-                  <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.peakHours || t('earnings.noData')}</span>
-                )}
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
-                  <span className="truncate">{t('earnings.bestDay')}</span>
-                  <HelpTip title={t('earnings.bestDay')} content={eh.bestDay} />
-                </span>
-                {loading.earnings ? (
-                  <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{earningsData.bestDay || t('earnings.noData')}</span>
-                )}
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400 min-w-0">
-                  <span className="truncate">{t('earnings.avgBookingDuration')}</span>
-                  <HelpTip title={t('earnings.avgBookingDuration')} content={eh.avgDuration} />
-                </span>
-                {loading.earnings ? (
-                  <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                ) : (
-                  <span className="font-medium text-gray-900 dark:text-white flex-shrink-0 text-right">{t('earnings.noData')}</span>
                 )}
               </div>
             </div>

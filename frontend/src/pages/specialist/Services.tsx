@@ -1646,9 +1646,10 @@ const SpecialistServices: React.FC = () => {
                       value={formData.rebookCycleDays || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, rebookCycleDays: e.target.value ? parseInt(e.target.value) : undefined }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                      placeholder={t('services.rebookCycleDaysPlaceholder') || 'e.g., 28 for monthly'}
+                      placeholder={t('services.rebookCycleDaysPlaceholder') || 'e.g., 30'}
                     />
-                    <p className="text-xs text-gray-500 mt-1">{t('services.rebookCycleDaysHint') || 'Remind client to rebook after this many days'}</p>
+                    {/* rebookCycleDays = days after last completed visit before sending a reminder to rebook */}
+                    <p className="text-xs text-gray-500 mt-1">{t('services.rebookCycleDaysHint') || 'Send client a reminder after this many days since their last visit'}</p>
                   </div>
                 </div>
               </div>

@@ -40,6 +40,9 @@ const SpecialistProfilePage: React.FC = () => {
   
   const [specialist, setSpecialist] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsHasMore, setReviewsHasMore] = useState(false);
+  const [reviewsLoadingMore, setReviewsLoadingMore] = useState(false);
+  const [reviewsPage, setReviewsPage] = useState(1);
   const [services, setServices] = useState<any[]>([]);
   const [beforeAfterPhotos, setBeforeAfterPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -247,10 +250,13 @@ const SpecialistProfilePage: React.FC = () => {
 
         // Fetch specialist reviews with basic parameters
         try {
-          const reviewsData = await reviewsService.getSpecialistReviews(specialistId, 1, 10);
+          const reviewsData = await reviewsService.getSpecialistReviews(specialistId, 1, 5);
           setReviews(reviewsData.reviews || []);
+          setReviewsHasMore(reviewsData.pagination?.hasNext ?? false);
+          setReviewsPage(1);
         } catch (reviewError) {
           setReviews([]);
+          setReviewsHasMore(false);
         }
 
         // Fetch specialist services
@@ -360,6 +366,22 @@ const SpecialistProfilePage: React.FC = () => {
     user?.id &&
     (specialist?.user?.id === user.id || specialist?.userId === user.id)
   );
+
+  const handleLoadMoreReviews = async () => {
+    if (!specialistId || reviewsLoadingMore || !reviewsHasMore) return;
+    try {
+      setReviewsLoadingMore(true);
+      const nextPage = reviewsPage + 1;
+      const reviewsData = await reviewsService.getSpecialistReviews(specialistId, nextPage, 5);
+      setReviews(prev => [...prev, ...(reviewsData.reviews || [])]);
+      setReviewsHasMore(reviewsData.pagination?.hasNext ?? false);
+      setReviewsPage(nextPage);
+    } catch {
+      // non-critical
+    } finally {
+      setReviewsLoadingMore(false);
+    }
+  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -967,7 +989,7 @@ const SpecialistProfilePage: React.FC = () => {
               
               {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-4 sm:space-y-6">
-                  {reviews.slice(0, 5).map((review: any) => (
+                  {reviews.map((review: any) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-6 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg px-2 -mx-2 transition-all duration-200">
                       <div className="flex items-start space-x-2 sm:space-x-4">
                         <Avatar
@@ -982,10 +1004,10 @@ const SpecialistProfilePage: React.FC = () => {
                               {`${review.customer?.firstName || ''} ${review.customer?.lastName || ''}`.trim() || t('reviews.anonymousUser')}
                             </h4>
                             <div className="flex items-center mt-1 sm:mt-0">
-                              {renderStars(review.rating).map((star, index) => 
-                                React.cloneElement(star, { 
-                                  key: index, 
-                                  className: `w-3 h-3 sm:w-5 sm:h-5 ${star.props.className}` 
+                              {renderStars(review.rating).map((star, index) =>
+                                React.cloneElement(star, {
+                                  key: index,
+                                  className: `w-3 h-3 sm:w-5 sm:h-5 ${star.props.className}`
                                 })
                               )}
                             </div>
@@ -1008,6 +1030,19 @@ const SpecialistProfilePage: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                  {reviewsHasMore && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        onClick={handleLoadMoreReviews}
+                        disabled={reviewsLoadingMore}
+                        className="px-5 py-2 text-sm font-semibold text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-200 active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {reviewsLoadingMore
+                          ? (t('common.loading') || 'Loading...')
+                          : (t('reviews.showMore') || 'Show more reviews')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4 sm:py-8">

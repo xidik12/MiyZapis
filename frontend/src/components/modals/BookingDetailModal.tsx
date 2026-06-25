@@ -429,6 +429,12 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
         {/* Actions */}
         <div className="p-3 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-b-xl">
+          {/* Within-24h cancellation notice — shown instead of the Cancel button */}
+          {isUpcoming && !canCancel && (
+            <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl px-3 py-2 mb-3">
+              {t('bookings.cancelWindowClosed') || 'Cancellations within 24 hours of the appointment aren’t available here — message the specialist to arrange it.'}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {canCancel && (
               <button

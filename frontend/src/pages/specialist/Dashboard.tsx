@@ -47,7 +47,7 @@ const DASHBOARD_HELP = {
 
     responseTime: 'How quickly you act on new booking requests, measured in your working hours only.\n\nFormula: for each completed booking, count business-hours minutes between booking creation and your first status change; average those values.\n\nOnly counts time within your configured working schedule — overnight and off-day gaps are excluded. Bookings with response times over 24 business hours are treated as outliers and excluded from the average.',
 
-    completionRate: 'What share of your bookings actually got done.\n\nFormula: completed ÷ (completed + upcoming) × 100.\n\nCancellations are excluded. A low rate can mean clients are cancelling or you are not marking sessions as completed.',
+    completionRate: 'What share of your concluded bookings actually got done.\n\nFormula: completed ÷ (completed + no-shows) × 100.\n\nUpcoming bookings are excluded from the denominator — they have not had a chance to complete yet. A low rate means sessions are resulting in no-shows rather than completions.',
 
     repeatClients: 'What share of your clients came back more than once.\n\nFormula: clients with more than one completed booking ÷ all unique clients with at least one completed booking × 100.\n\nA high percentage means strong client loyalty.',
 
@@ -65,7 +65,7 @@ const DASHBOARD_HELP = {
 
     responseTime: 'Наскільки швидко ви реагуєте на нові запити на запис — вимірюється лише у ваших робочих годинах.\n\nФормула: для кожного завершеного запису рахуються хвилини робочого часу між створенням запису та вашою першою зміною статусу; потім береться середнє.\n\nНічні перерви та вихідні дні не враховуються. Записи з часом реакції понад 24 робочі години вважаються викидами і виключаються.',
 
-    completionRate: 'Яка частка ваших записів дійсно відбулася.\n\nФормула: завершені ÷ (завершені + майбутні) × 100.\n\nСкасування не враховуються. Низький показник може означати, що клієнти скасовують записи або ви не позначаєте сесії як завершені.',
+    completionRate: 'Яка частка завершених (термінальних) записів дійсно відбулася.\n\nФормула: завершені ÷ (завершені + неявки) × 100.\n\nМайбутні записи не враховуються в знаменнику — вони ще не мали можливості завершитися. Низький показник означає, що записи завершуються неявками, а не проведеними сесіями.',
 
     repeatClients: 'Яка частка ваших клієнтів повернулася більше одного разу.\n\nФормула: клієнти з більше ніж одним завершеним записом ÷ усі унікальні клієнти з хоча б одним завершеним записом × 100.\n\nВисокий відсоток свідчить про сильну лояльність клієнтів.',
 
@@ -83,7 +83,7 @@ const DASHBOARD_HELP = {
 
     responseTime: 'Насколько быстро вы реагируете на новые запросы на запись — измеряется только в ваших рабочих часах.\n\nФормула: для каждой завершённой записи считаются минуты рабочего времени между созданием записи и вашим первым изменением статуса; затем берётся среднее.\n\nНочные перерывы и выходные дни не учитываются. Записи со временем реакции более 24 рабочих часов считаются выбросами и исключаются.',
 
-    completionRate: 'Какая доля ваших записей действительно состоялась.\n\nФормула: завершённые ÷ (завершённые + предстоящие) × 100.\n\nОтмены не учитываются. Низкий показатель может означать, что клиенты отменяют записи или вы не отмечаете сессии как завершённые.',
+    completionRate: 'Какая доля завершённых (терминальных) записей действительно состоялась.\n\nФормула: завершённые ÷ (завершённые + неявки) × 100.\n\nПредстоящие записи не учитываются в знаменателе — у них ещё не было возможности завершиться. Низкий показатель означает, что записи завершаются неявками, а не проведёнными сессиями.',
 
     repeatClients: 'Какая доля ваших клиентов вернулась более одного раза.\n\nФормула: клиенты с более чем одной завершённой записью ÷ все уникальные клиенты хотя бы с одной завершённой записью × 100.\n\nВысокий процент свидетельствует о сильной лояльности клиентов.',
 
@@ -229,14 +229,17 @@ const SpecialistDashboard: React.FC = () => {
             }
             stats.monthlyRevenue = Math.round((monthlyBookingRevenue + retailRevenue) * 100) / 100;
             
-            // Calculate completion rate based on completed vs total (real calculation only)
-            if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
-              const upcomingBookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
-              const totalAllBookings = completedBookings.length + upcomingBookings.length;
-              if (totalAllBookings > 0) {
-                stats.completionRate = Math.round((completedBookings.length / totalAllBookings) * 100);
-                stats.conversionRate = stats.completionRate; // Use same real calculation
-              }
+            // Calculate completion rate: completed ÷ (completed + noShows) only.
+            // Upcoming bookings are excluded — they haven't had a chance to complete
+            // and dragging them into the denominator unfairly suppresses the rate.
+            // noShowBookingsData is fetched in parallel above and used below.
+            const noShowsForRate = (noShowBookingsData.status === 'fulfilled' && noShowBookingsData.value)
+              ? (Array.isArray(noShowBookingsData.value.bookings) ? noShowBookingsData.value.bookings.length : 0)
+              : 0;
+            const terminalTotal = completedBookings.length + noShowsForRate;
+            if (terminalTotal > 0) {
+              stats.completionRate = Math.round((completedBookings.length / terminalTotal) * 100);
+              stats.conversionRate = stats.completionRate;
             }
             
             // Calculate response time counting only business working hours

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import {
   StarIcon,
   CheckCircleIcon as CheckBadgeIcon,
-  ChatCircleIcon as ChatBubbleLeftIcon,
   ChartBarIcon
 } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -32,8 +31,6 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
     ? Math.round((stats.verifiedReviewsCount / stats.totalReviews) * 100)
     : 0;
 
-  const responseCount = 0; // Placeholder - would need to be passed from parent
-
   const statCards = [
     {
       icon: <StarIcon className="w-8 h-8 text-yellow-500" active />,
@@ -55,13 +52,6 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
       value: `${verifiedPercentage}%`,
       unit: '',
       color: 'from-green-500/10 to-green-600/5'
-    },
-    {
-      icon: <ChatBubbleLeftIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />,
-      label: t('reviews.stats.responseRate'),
-      value: responseCount.toString(),
-      unit: '',
-      color: 'from-indigo-500/10 to-indigo-600/5'
     }
   ];
 

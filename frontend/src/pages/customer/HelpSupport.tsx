@@ -94,8 +94,8 @@ const CustomerHelpSupport: React.FC = () => {
         window.location.href = `tel:${method.value}`;
         break;
       case 'chat':
-        // In a real app, this would open a chat widget
-        toast.info(t('action.liveChatAlert'));
+        // No live chat widget yet — fall back to support email
+        window.location.href = 'mailto:support@miyzapis.com';
         break;
     }
   };
@@ -230,22 +230,22 @@ const CustomerHelpSupport: React.FC = () => {
                     {
                       title: t('guides.gettingStarted'),
                       description: t('guides.gettingStartedDesc'),
-                      link: '#',
+                      link: '/customer/search',
                     },
                     {
                       title: t('guides.bookingProcess'),
                       description: t('guides.bookingProcessDesc'),
-                      link: '#',
+                      link: '/customer/bookings',
                     },
                     {
                       title: t('guides.paymentMethods'),
                       description: t('guides.paymentMethodsDesc'),
-                      link: '#',
+                      link: 'mailto:support@miyzapis.com',
                     },
                     {
                       title: t('guides.accountSecurity'),
                       description: t('guides.accountSecurityDesc'),
-                      link: '#',
+                      link: '/customer/settings',
                     },
                   ].map((guide, index) => (
                     <a

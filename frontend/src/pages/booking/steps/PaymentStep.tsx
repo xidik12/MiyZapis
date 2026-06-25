@@ -180,11 +180,11 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             <div className="text-sm space-y-1 mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
                 <span>Original Price:</span>
-                <span>{formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}</span>
+                <span>{formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
               </div>
               <div className="flex justify-between text-green-600 dark:text-green-400">
                 <span>Reward Discount:</span>
-                <span>-{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}</span>
+                <span>-{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
               </div>
             </div>
           )}
@@ -260,7 +260,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
               {redemptions.map(r => (
                 <option key={r.id} value={r.id}>
-                  {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
+                  {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-${formatPrice(r.reward.discountAmount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
                   {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
                 </option>
               ))}
@@ -280,7 +280,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                       {t('booking.rewardApplied') || 'Reward Applied!'}
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-300">
-                      {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                      {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                     </p>
                   </div>
                 </div>
@@ -399,8 +399,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             <div className="text-sm">
               <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
               <div className="space-y-1 text-blue-800 dark:text-blue-200">
-                <div>Deposit Amount: ${paymentOptions.depositConfiguration.amountUSD}</div>
-                <div>Currency: USD</div>
+                <div>Deposit Amount: {formatPrice(paymentOptions.depositConfiguration.amountUSD, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</div>
               </div>
             </div>
           </div>
@@ -465,7 +464,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                    Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                   </p>
                   <a
                     href={paymentResult.paymentUrl}
@@ -506,7 +505,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                     {paymentResult.paymentUrl && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                         </p>
                         <a
                           href={paymentResult.paymentUrl}

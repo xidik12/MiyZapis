@@ -113,7 +113,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
             {hasPaymentUrl && (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Amount: ${paymentResult.finalAmount ? (paymentResult.finalAmount / 100).toFixed(2) : 'N/A'}
+                  Amount: {paymentResult.finalAmount ? formatPrice(paymentResult.finalAmount / 100, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH') : 'N/A'}
                 </p>
                 <a
                   href={paymentResult.paymentUrl}
@@ -420,7 +420,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
               <div className="flex justify-between mt-3">
                 <span className="text-gray-600 dark:text-gray-400">{t('booking.servicePrice') || 'Service Price'}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {formatPrice(finalPrice, service.currency as 'USD' | 'EUR' | 'UAH' || 'USD')}
+                  {formatPrice(finalPrice, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                 </span>
               </div>
             </>
@@ -451,7 +451,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
                     {svc.duration} min
                   </span>
                   <span className="font-semibold text-primary-600 dark:text-primary-400">
-                    {formatPrice(svc.basePrice || svc.price || 0, svc.currency || 'USD')}
+                    {formatPrice(svc.basePrice || svc.price || 0, (svc.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                   </span>
                 </div>
               </Link>

@@ -255,13 +255,14 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   };
 
   const renderStars = () => {
+    const rounded = Math.round(review.rating);
     return (
       <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <StarIcon
             key={star}
-            className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500"
-            active={true}
+            className={`w-4 h-4 sm:w-5 sm:h-5 ${star <= rounded ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
+            active={star <= rounded}
           />
         ))}
       </div>

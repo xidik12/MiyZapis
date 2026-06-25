@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { reviewsService, ReviewStats, Review } from '@/services/reviews.service';
@@ -260,9 +261,17 @@ const CustomerReviews: React.FC = () => {
             </h1>
             <HelpTip title={language === 'uk' ? 'Мої відгуки' : language === 'ru' ? 'Мои отзывы' : 'My Reviews'} content={h.overview} />
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('reviews.subtitle') || 'View and manage your reviews'}
-          </p>
+          <div className="flex items-center justify-between flex-wrap gap-3 mt-1">
+            <p className="text-gray-600 dark:text-gray-400">
+              {t('reviews.subtitle') || 'View and manage your reviews'}
+            </p>
+            <Link
+              to="/customer/bookings"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.96]"
+            >
+              {t('reviews.writeReview') || 'Write a Review'}
+            </Link>
+          </div>
         </div>
 
         {/* Review Feed */}

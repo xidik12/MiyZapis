@@ -261,10 +261,10 @@ const SearchPage: React.FC = () => {
           name: service.name,
           description: service.description,
           price: Number(service.basePrice || service.price) || 0,
-          currency: service.currency || 'USD',
+          currency: service.currency || 'UAH',
           duration: service.duration || 0,
           category: service.category || '',
-          location: '', // Backend doesn't seem to have location info yet
+          location: service.specialist?.city || service.specialist?.address || '',
           rating: service.specialist?.rating || 0,
           reviewCount: service.specialist?.reviewCount || 0,
           specialist: {
@@ -278,7 +278,7 @@ const SearchPage: React.FC = () => {
               createdAt: service.specialist?.user?.createdAt || undefined,
             },
             businessName: service.specialist?.businessName || '',
-            location: '', // Backend doesn't seem to have location info yet
+            location: service.specialist?.city || service.specialist?.address || '',
             isOnline: true, // Assume online for now
             responseTime: toMinutes(service.specialist?.responseTime) as any, // minutes if available
             completedBookings: service.specialist?.completedBookings
@@ -615,7 +615,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
-                {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                {formatPrice(service.price ?? 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
               </p>
             </div>
           </div>

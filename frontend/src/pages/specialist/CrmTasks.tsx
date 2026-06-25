@@ -426,16 +426,19 @@ const CrmTasks: React.FC = () => {
                 </div>
                 <div>
                   <label className={labelClass}>
-                    {t('crm.clientId') || 'Client ID'}{' '}
+                    {t('crm.clientId') || 'Link to client'}{' '}
                     <span className="font-normal text-gray-400 dark:text-gray-500">({t('crm.optional') || 'optional'})</span>
                   </label>
                   <input
                     type="text"
                     value={taskForm.customerId}
                     onChange={(e) => setTaskForm({ ...taskForm, customerId: e.target.value })}
-                    placeholder={t('crm.clientIdPlaceholder') || 'Customer ID if linked to a client'}
+                    placeholder={t('crm.clientIdPlaceholder') || 'Paste client ID from the Clients section'}
                     className={inputClass}
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {t('crm.clientIdHint') || 'To link: open the client\'s card in Clients → copy their ID. Leave blank for a general task.'}
+                  </p>
                 </div>
                 <div>
                   <label className={labelClass}>{t('crm.notes') || 'Notes'}</label>
