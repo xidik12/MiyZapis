@@ -2612,6 +2612,8 @@ model ProductOrder {
   discount       Decimal  @default(0)
   total          Decimal  @default(0)
   paymentMethod  String?  // CASH | CARD | OTHER — stored for POS sales and reporting
+  giftCardId     String?  // which gift card was applied (if any)
+  giftCardAmount Decimal  @default(0) // amount offset by the gift card
   note           String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

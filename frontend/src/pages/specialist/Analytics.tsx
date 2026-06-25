@@ -13,7 +13,7 @@ const ANALYTICS_HELP = {
 
     revenue: 'Revenue',
     revenueBody:
-      'Total earnings from completed bookings in the selected period.\n\nThe arrow shows the trend: the period is split in two halves and the percentage compares the second half to the first — a positive number means the recent half outperformed the earlier half.',
+      'Total earnings from completed bookings plus fulfilled retail / POS sales in the selected period.\n\nThe "Services / Retail" split below the amount breaks this down by source.\n\nThe arrow shows the trend: the period is split in two halves and the percentage compares the second half to the first — a positive number means the recent half outperformed the earlier half.',
 
     avgRevenue: 'Average Revenue',
     avgRevenueBody:
@@ -62,7 +62,7 @@ const ANALYTICS_HELP = {
 
     revenue: 'Дохід',
     revenueBody:
-      'Загальний дохід від завершених бронювань за обраний період.\n\nСтрілка показує тренд: період ділиться навпіл, а відсоток порівнює другу половину з першою — позитивне значення означає, що остання половина виявилась кращою.',
+      'Загальний дохід від завершених бронювань та виконаних роздрібних / POS-продажів за обраний період.\n\nРозбивка «Послуги / Роздріб» під сумою показує джерела доходу.\n\nСтрілка показує тренд: період ділиться навпіл, а відсоток порівнює другу половину з першою — позитивне значення означає, що остання половина виявилась кращою.',
 
     avgRevenue: 'Середній дохід',
     avgRevenueBody:
@@ -111,7 +111,7 @@ const ANALYTICS_HELP = {
 
     revenue: 'Доход',
     revenueBody:
-      'Общий доход от завершённых бронирований за выбранный период.\n\nСтрелка показывает тренд: период делится пополам, и процент сравнивает вторую половину с первой — положительное значение означает, что последняя половина оказалась лучше.',
+      'Общий доход от завершённых бронирований и выполненных розничных / POS-продаж за выбранный период.\n\nРазбивка «Услуги / Розница» под суммой показывает источники дохода.\n\nСтрелка показывает тренд: период делится пополам, и процент сравнивает вторую половину с первой — положительное значение означает, что последняя половина оказалась лучше.',
 
     avgRevenue: 'Средний доход',
     avgRevenueBody:
@@ -169,6 +169,7 @@ import { reviewsService } from '../../services/reviews.service';
 import { profileViewService, ProfileViewStats } from '../../services/profileView.service';
 import { retryRequest } from '../../services/api';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { storeService } from '../../services/store.service';
 
 // Combined analytics data structure
 interface AnalyticsData {
@@ -417,6 +418,7 @@ const SpecialistAnalytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profileViewStats, setProfileViewStats] = useState<ProfileViewStats | null>(null);
+  const [revenueSplit, setRevenueSplit] = useState<{ service: number; retail: number } | null>(null);
 
   // Export handlers
   const handleExportPDF = async () => {
@@ -552,25 +554,52 @@ Performance:
         setLoading(true);
         setError(null);
         
-        // Load booking data instead of broken analytics APIs
-        const completedBookingsResult = await retryRequest(
-          () => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 
-          2, 1000
-        );
-        
+        // Load booking data and retail (POS) orders in parallel
+        const [completedBookingsResult, fulfilledOrders] = await Promise.all([
+          retryRequest(
+            () => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'),
+            2, 1000
+          ),
+          retryRequest(
+            () => storeService.listOrders({ status: 'FULFILLED' }),
+            2, 1000
+          ).catch(() => [] as Awaited<ReturnType<typeof storeService.listOrders>>),
+        ]);
+
         // Calculate analytics from actual booking data
         const completedBookings = Array.isArray(completedBookingsResult.bookings) ? completedBookingsResult.bookings : [];
-        
+
+        // Filter retail orders to the selected period
+        const periodStart = startDate.getTime();
+        const periodEnd = endDate.getTime();
+        const periodOrders = fulfilledOrders.filter(order => {
+          const t = new Date(order.updatedAt).getTime();
+          return t >= periodStart && t <= periodEnd;
+        });
+
         // Calculate real metrics from booking data with proper currency conversion
-        const totalRevenue = completedBookings.reduce((sum, booking) => {
+        const serviceRevenue = completedBookings.reduce((sum, booking) => {
           const amount = Number(booking.totalAmount) || 0;
           const bookingCurrency = getBookingCurrency(booking);
-          
+
           // Convert to user's preferred currency for consistent total
           const convertedAmount = convertPrice(amount, bookingCurrency);
-          
+
           return sum + Math.round(convertedAmount * 100) / 100;
         }, 0);
+
+        // Retail revenue — orders use the owner's stored currency; convert to
+        // the user's selected display currency for a consistent total.
+        const retailRevenue = periodOrders.reduce((sum, order) => {
+          const amount = Number(order.total) || 0;
+          const orderCurrency = (order.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+          return sum + Math.round(convertPrice(amount, orderCurrency) * 100) / 100;
+        }, 0);
+
+        const totalRevenue = serviceRevenue + retailRevenue;
+
+        // Expose the split for the KPI card
+        setRevenueSplit({ service: serviceRevenue, retail: retailRevenue });
         
         const totalBookings = completedBookings.length;
         
@@ -1100,6 +1129,13 @@ Performance:
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 ml-2">{t('analytics.vsAverage')}</span>
                 </div>
+                {revenueSplit && revenueSplit.retail > 0 && (
+                  <div className="mt-2 flex items-center gap-3 text-xs tabular-nums text-gray-500 dark:text-gray-400">
+                    <span>{language === 'uk' ? 'Послуги' : language === 'ru' ? 'Услуги' : 'Services'}&nbsp;{formatPrice(revenueSplit.service, currency)}</span>
+                    <span className="text-gray-300 dark:text-gray-600">·</span>
+                    <span>{language === 'uk' ? 'Роздріб' : language === 'ru' ? 'Розница' : 'Retail'}&nbsp;{formatPrice(revenueSplit.retail, currency)}</span>
+                  </div>
+                )}
               </div>
               <div className="p-3 bg-primary-100 dark:bg-primary-900/20 dark:bg-primary-900/20 rounded-xl">
                 <svg className="w-6 h-6 text-primary-600 dark:text-primary-400 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

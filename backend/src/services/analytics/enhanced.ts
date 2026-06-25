@@ -16,7 +16,12 @@ export interface SpecialistAnalyticsData {
   completedBookings: number;
   cancelledBookings: number;
   pendingBookings: number;
+  /** Bookings + retail combined. Use this for the headline revenue KPI. */
   totalRevenue: number;
+  /** Revenue from completed bookings only (services). */
+  serviceRevenue: number;
+  /** Revenue from FULFILLED product/POS orders. */
+  retailRevenue: number;
   averageRating: number;
   totalReviews: number;
   responseTimeAvg: number;
@@ -118,6 +123,8 @@ export class EnhancedAnalyticsService {
         // Return empty analytics instead of throwing error
         return {
           totalRevenue: 0,
+          serviceRevenue: 0,
+          retailRevenue: 0,
           totalBookings: 0,
           completedBookings: 0,
           cancelledBookings: 0,
@@ -157,11 +164,23 @@ export class EnhancedAnalyticsService {
         ...(endDate && { createdAt: { lte: endDate } }),
       };
 
+      // Retail (POS/store) orders are scoped by ownerId = specialist's userId,
+      // status FULFILLED (matches Accounting service). Date range uses updatedAt
+      // (set on fulfilment) — same as AccountingService.getProfitLoss.
+      const retailWhere = {
+        ownerId: specialist.userId,
+        status: 'FULFILLED' as const,
+        ...(startDate || endDate
+          ? { updatedAt: { ...(startDate ? { gte: startDate } : {}), ...(endDate ? { lte: endDate } : {}) } }
+          : {}),
+      };
+
       const [
         totalBookings,
         completedBookings,
         cancelledBookings,
         revenueAgg,
+        retailAgg,
         bookingDetails,
         reviews,
         popularServices,
@@ -172,6 +191,11 @@ export class EnhancedAnalyticsService {
         prisma.booking.aggregate({
           where: { ...bookingWhere, status: 'COMPLETED' },
           _sum: { totalAmount: true },
+        }),
+        // Retail / POS revenue — FULFILLED product orders in the same period.
+        prisma.productOrder.aggregate({
+          where: retailWhere,
+          _sum: { total: true },
         }),
         // Still need bookingDetails for customer analysis
         prisma.booking.findMany({
@@ -199,8 +223,10 @@ export class EnhancedAnalyticsService {
         this.getPopularServices(specialist.userId, dateFilter),
       ]);
 
-      // Revenue from aggregate (no JS filtering needed)
-      const totalRevenue = Number(revenueAgg._sum.totalAmount || 0);
+      // Revenue from aggregate (no JS filtering needed, Number() for Decimal safety)
+      const serviceRevenue = Number(revenueAgg._sum.totalAmount ?? 0);
+      const retailRevenue = Number(retailAgg._sum.total ?? 0);
+      const totalRevenue = serviceRevenue + retailRevenue;
 
       // Calculate average rating
       const averageRating = reviews.length > 0
@@ -234,15 +260,25 @@ export class EnhancedAnalyticsService {
       const previousDateFilter = this.buildDateFilter(previousStart, previousEnd);
       const previousBookingWhere = { specialistId: specialist.userId, ...previousDateFilter };
 
-      const [previousBookingCount, previousRevenueAgg] = await Promise.all([
+      const previousRetailWhere = {
+        ownerId: specialist.userId,
+        status: 'FULFILLED' as const,
+        updatedAt: { gte: previousStart, lte: previousEnd },
+      };
+
+      const [previousBookingCount, previousRevenueAgg, previousRetailAgg] = await Promise.all([
         prisma.booking.count({ where: previousBookingWhere }),
         prisma.booking.aggregate({
           where: { ...previousBookingWhere, status: 'COMPLETED' },
           _sum: { totalAmount: true },
         }),
+        prisma.productOrder.aggregate({
+          where: previousRetailWhere,
+          _sum: { total: true },
+        }),
       ]);
 
-      const previousRevenue = Number(previousRevenueAgg._sum.totalAmount || 0);
+      const previousRevenue = Number(previousRevenueAgg._sum.totalAmount ?? 0) + Number(previousRetailAgg._sum.total ?? 0);
       const revenueGrowth = previousRevenue > 0
         ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
         : totalRevenue > 0 ? 100 : 0;
@@ -256,6 +292,8 @@ export class EnhancedAnalyticsService {
         cancelledBookings,
         pendingBookings,
         totalRevenue,
+        serviceRevenue,
+        retailRevenue,
         averageRating: Math.round(averageRating * 10) / 10,
         totalReviews: reviews.length,
         responseTimeAvg: specialist.responseTime,

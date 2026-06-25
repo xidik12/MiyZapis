@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { inventoryService, Product } from '@/services/inventory.service';
-import { storeService, TodaySummary } from '@/services/store.service';
+import { storeService, TodaySummary, GiftCardLookup } from '@/services/store.service';
 import BarcodeScanner from '@/components/common/BarcodeScanner';
 
 type PayMethod = 'CASH' | 'CARD' | 'OTHER';
@@ -47,6 +47,9 @@ const POS: React.FC = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<PayMethod>('CASH');
   const [discountInput, setDiscountInput] = useState('');
+  const [gcInput, setGcInput] = useState('');
+  const [gcLookupLoading, setGcLookupLoading] = useState(false);
+  const [appliedGiftCard, setAppliedGiftCard] = useState<GiftCardLookup | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<any | null>(null);
   const [refunding, setRefunding] = useState(false);
@@ -79,7 +82,11 @@ const POS: React.FC = () => {
   const currency = cart[0]?.product.currency || products[0]?.currency || 'UAH';
   const subtotal = cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0);
   const discountAmt = Math.max(0, Math.min(num(discountInput), subtotal));
-  const total = subtotal - discountAmt;
+  const amountAfterDiscount = subtotal - discountAmt;
+  const gcAppliedAmt = appliedGiftCard
+    ? Math.max(0, Math.min(num(appliedGiftCard.balance), amountAfterDiscount))
+    : 0;
+  const total = amountAfterDiscount - gcAppliedAmt;
   const itemCount = cart.reduce((s, l) => s + l.qty, 0);
 
   const addToCart = (product: Product, qty = 1) => {
@@ -119,6 +126,34 @@ const POS: React.FC = () => {
     } catch { toast.error(t('pos.lookupFailed') || 'Lookup failed'); }
   };
 
+  const handleLookupGiftCard = async () => {
+    const code = gcInput.trim();
+    if (!code) return;
+    setGcLookupLoading(true);
+    try {
+      const card = await storeService.lookupGiftCard(code);
+      // Currency guard (client-side warning; server enforces too).
+      if (card.currency && currency && card.currency !== currency) {
+        toast.error(
+          (t('pos.gc.currencyMismatch') || 'Gift card currency does not match order currency') +
+          ` (${card.currency} ≠ ${currency})`
+        );
+        return;
+      }
+      if (num(card.balance) <= 0) {
+        toast.info(t('pos.gc.noBalance') || 'Gift card has no remaining balance');
+        return;
+      }
+      setAppliedGiftCard(card);
+      setGcInput('');
+      toast.success(t('pos.gc.applied') || 'Gift card applied');
+    } catch (err) {
+      toast.error((err as Error).message || t('pos.gc.notFound') || 'Gift card not found');
+    } finally {
+      setGcLookupLoading(false);
+    }
+  };
+
   const completeSale = async () => {
     if (cart.length === 0) return;
     setSubmitting(true);
@@ -127,10 +162,13 @@ const POS: React.FC = () => {
         items: cart.map((l) => ({ productId: l.product.id, quantity: l.qty })),
         paymentMethod: payMethod,
         discount: discountAmt > 0 ? discountAmt : undefined,
+        giftCardCode: appliedGiftCard ? appliedGiftCard.code : undefined,
       });
       setReceipt(order);
       setCart([]);
       setDiscountInput('');
+      setGcInput('');
+      setAppliedGiftCard(null);
       setCheckoutOpen(false);
       await load(); // refresh stock
     } catch (err) {
@@ -269,7 +307,7 @@ const POS: React.FC = () => {
           className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4"
         >
           <div className="max-w-3xl mx-auto flex items-center gap-3">
-            <button onClick={() => setCart([])} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>
+            <button onClick={() => { setCart([]); setAppliedGiftCard(null); setGcInput(''); }} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>
             <div className="flex-1 text-right">
               <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{itemCount} {t('pos.items') || 'items'}</span>
               <div className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">{formatPrice(subtotal, currency as any)}</div>
@@ -297,7 +335,7 @@ const POS: React.FC = () => {
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('pos.reviewSale') || 'Review sale'}</h3>
-              <button onClick={() => setCheckoutOpen(false)} aria-label={t('common.close') || 'Close'} className="w-10 h-10 -mr-2 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl transition active:scale-[0.96]">×</button>
+              <button onClick={() => { setCheckoutOpen(false); setGcInput(''); setAppliedGiftCard(null); }} aria-label={t('common.close') || 'Close'} className="w-10 h-10 -mr-2 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl transition active:scale-[0.96]">×</button>
             </div>
             <div className="p-4 space-y-2">
               {cart.map((l) => (
@@ -341,6 +379,47 @@ const POS: React.FC = () => {
                 <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
                   <span>{t('pos.discountApplied') || 'Discount applied'}</span>
                   <span className="tabular-nums">−{formatPrice(discountAmt, currency as any)}</span>
+                </div>
+              )}
+              {/* Gift card row */}
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                <label className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{t('pos.gc.label') || 'Gift card'}</label>
+                {appliedGiftCard ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-mono text-green-700 dark:text-green-400 tabular-nums">{appliedGiftCard.code}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setAppliedGiftCard(null); setGcInput(''); }}
+                      className="text-xs text-red-500 hover:underline transition active:scale-[0.96]"
+                    >
+                      {t('pos.gc.remove') || 'Remove'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={gcInput}
+                      onChange={(e) => setGcInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleLookupGiftCard(); }}
+                      placeholder={t('pos.gc.placeholder') || 'GC-XXXX-XXXX'}
+                      className="w-32 px-2 py-1 text-sm font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleLookupGiftCard}
+                      disabled={gcLookupLoading || !gcInput.trim()}
+                      className="px-3 py-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium transition active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100"
+                    >
+                      {gcLookupLoading ? '…' : (t('pos.gc.apply') || 'Apply')}
+                    </button>
+                  </div>
+                )}
+              </div>
+              {appliedGiftCard && gcAppliedAmt > 0 && (
+                <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+                  <span>{t('pos.gc.appliedLine') || 'Gift card applied'}</span>
+                  <span className="tabular-nums">−{formatPrice(gcAppliedAmt, currency as any)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700 pt-1.5">
@@ -468,6 +547,12 @@ const POS: React.FC = () => {
                 <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                   <span>{t('pos.discount') || 'Discount'}</span>
                   <span className="tabular-nums">−{formatPrice(num(receipt.discount), receipt.currency)}</span>
+                </div>
+              )}
+              {num(receipt.giftCardAmount) > 0 && (
+                <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                  <span>{t('pos.gc.receiptLine') || 'Gift card'}</span>
+                  <span className="tabular-nums">−{formatPrice(num(receipt.giftCardAmount), receipt.currency)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white">

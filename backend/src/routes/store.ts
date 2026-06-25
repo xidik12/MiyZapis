@@ -7,6 +7,7 @@ import {
   OrderStatus,
   FulfilmentType,
 } from '@/services/store/store.service';
+import { SalesServiceError } from '@/services/sales/sales.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { authenticateToken, optionalAuth, requireSpecialist } from '@/middleware/auth/jwt';
@@ -140,8 +141,37 @@ ownerRouter.post('/orders/:id/status', async (req: Request, res: Response): Prom
   }
 });
 
+// GET /store/pos/giftcard/:code — owner-scoped gift-card lookup for POS checkout.
+// Returns balance/currency/status for a card belonging to this owner that is
+// ACTIVE and not expired. 404 if not found, expired, or belongs to another owner.
+ownerRouter.get('/pos/giftcard/:code', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const code = req.params.code?.trim();
+    if (!code) {
+      res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Gift card code is required', requestId(req)));
+      return;
+    }
+    const card = await StoreService.getGiftCardByCodeForOwner(ownerId, code);
+    if (!card) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Gift card not found or not available', requestId(req)));
+      return;
+    }
+    if (card.status !== 'ACTIVE') {
+      res.status(404).json(createErrorResponse('NOT_FOUND', `Gift card is ${card.status.toLowerCase()}`, requestId(req)));
+      return;
+    }
+    res.json(createSuccessResponse(card));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error looking up gift card at POS:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
+
 // POS — instant in-person counter sale. Body: { items: [{productId, quantity}],
-// paymentMethod?, customerName?, note?, discount? }. Creates a FULFILLED order + deducts stock.
+// paymentMethod?, customerName?, note?, discount?, giftCardCode? }.
+// Creates a FULFILLED order + deducts stock. Gift card is redeemed atomically.
 ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
@@ -153,10 +183,11 @@ ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void>
         customerName: req.body?.customerName,
         note: req.body?.note,
         discount: req.body?.discount !== undefined ? Number(req.body.discount) : undefined,
+        giftCardCode: typeof req.body?.giftCardCode === 'string' ? req.body.giftCardCode.trim() : undefined,
       });
     } catch (svcError: unknown) {
-      if (svcError instanceof StoreServiceError) {
-        res.status(statusForServiceError(svcError.code)).json(createErrorResponse('VALIDATION_ERROR', svcError.message, requestId(req)));
+      if (svcError instanceof StoreServiceError || svcError instanceof SalesServiceError) {
+        res.status(statusForServiceError((svcError as StoreServiceError).code)).json(createErrorResponse('VALIDATION_ERROR', svcError.message, requestId(req)));
         return;
       }
       throw svcError;

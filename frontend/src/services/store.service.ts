@@ -67,6 +67,15 @@ export interface TodaySummary {
   currency: string;
 }
 
+export interface GiftCardLookup {
+  id: string;
+  code: string;
+  balance: number;
+  currency: string;
+  status: string;
+  expiresAt?: string | null;
+}
+
 export interface StoreSummary {
   pendingOrders: number;
   monthSalesTotal: number;
@@ -112,6 +121,17 @@ export class StoreService {
     return response.data;
   }
 
+  // ---- POS: look up a gift card by code (owner-scoped) ----
+  async lookupGiftCard(code: string): Promise<GiftCardLookup> {
+    const response = await apiClient.get<GiftCardLookup>(
+      `/store/pos/giftcard/${encodeURIComponent(code.trim())}`
+    );
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Gift card not found');
+    }
+    return response.data;
+  }
+
   // ---- POS: instant in-person counter sale ----
   async posSale(data: {
     items: { productId: string; quantity: number }[];
@@ -119,6 +139,7 @@ export class StoreService {
     customerName?: string;
     note?: string;
     discount?: number;
+    giftCardCode?: string;
   }): Promise<ProductOrder> {
     const response = await apiClient.post<ProductOrder>('/store/pos/sale', data);
     if (!response.success || !response.data) {

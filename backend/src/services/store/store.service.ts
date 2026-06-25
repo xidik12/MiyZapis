@@ -4,6 +4,7 @@ import { InventoryService } from '@/services/inventory/inventory.service';
 import { NotificationService } from '@/services/notification';
 import { logger } from '@/utils/logger';
 import { num, sumBy } from '@/utils/money';
+import { SalesServiceError } from '@/services/sales/sales.service';
 
 const prisma = new PrismaClient();
 
@@ -295,18 +296,48 @@ export class StoreService {
     });
   }
 
+  // Look up a gift card by code scoped to this owner — for the POS lookup endpoint.
+  // Returns minimal fields (code, balance, currency, status) or null if not found/owned.
+  // Auto-expires stale cards on access.
+  static async getGiftCardByCodeForOwner(ownerId: string, code: string) {
+    const card = await prisma.giftCard.findFirst({
+      where: { code: code.trim(), ownerId },
+    });
+    if (!card) return null;
+
+    // Auto-expire on access.
+    if (card.expiresAt && card.expiresAt < new Date()) {
+      await prisma.giftCard.update({ where: { id: card.id }, data: { status: 'EXPIRED' } });
+      return null; // treat expired as not found for POS
+    }
+
+    return {
+      id: card.id,
+      code: card.code,
+      balance: num(card.balance),
+      currency: card.currency,
+      status: card.status,
+      expiresAt: card.expiresAt,
+    };
+  }
+
   // In-person point-of-sale: an instant counter sale. Creates a FULFILLED order
   // and deducts stock immediately, recording the payment method. Payment is
   // taken in person (cash/card) — the platform does not process it.
   // `discount` is an optional fixed-amount reduction off the subtotal (clamped
   // to [0, subtotal]); total = subtotal − discount. Uses num() from money utils
   // to avoid Prisma Decimal string-concatenation bugs.
+  // `giftCardCode` is an optional gift-card code to apply. The card must belong
+  // to this owner, be ACTIVE, have balance > 0, and share the order's currency.
+  // The applied amount is min(card.balance, amountDue after discount). Redemption
+  // is performed atomically inside the same Prisma transaction as order creation.
   static async posSale(ownerId: string, input: {
     items: { productId: string; quantity: number }[];
     paymentMethod?: string; // CASH | CARD | OTHER
     customerName?: string;
     note?: string;
     discount?: number; // fixed amount off subtotal
+    giftCardCode?: string; // optional gift-card code
   }) {
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw new StoreServiceError('EMPTY_ORDER', 'Sale must contain at least one item');
@@ -347,28 +378,83 @@ export class StoreService {
     // Clamp discount to [0, subtotal].
     const discountRaw = num(input.discount);
     const discount = Math.max(0, Math.min(discountRaw, subtotal));
-    const total = subtotal - discount;
+    const amountAfterDiscount = subtotal - discount;
+
+    // Resolve gift card (if provided). Owner-scoped; ACTIVE; same currency.
+    let giftCard: { id: string; balance: number; currency: string } | null = null;
+    if (input.giftCardCode?.trim()) {
+      const raw = await prisma.giftCard.findFirst({
+        where: { code: input.giftCardCode.trim(), ownerId },
+      });
+      if (raw) {
+        // Auto-expire stale cards.
+        if (raw.expiresAt && raw.expiresAt < new Date()) {
+          await prisma.giftCard.update({ where: { id: raw.id }, data: { status: 'EXPIRED' } });
+        } else if (raw.status === 'ACTIVE' && num(raw.balance) > 0) {
+          const cardCurrency = raw.currency || 'UAH';
+          if (cardCurrency !== currency) {
+            throw new StoreServiceError('GIFT_CARD_CURRENCY_MISMATCH',
+              `Gift card currency (${cardCurrency}) does not match order currency (${currency})`);
+          }
+          giftCard = { id: raw.id, balance: num(raw.balance), currency: cardCurrency };
+        }
+        // If card not found/inactive/expired/zero-balance: just ignore (caller already
+        // validated via the lookup endpoint, so this is only a safety guard).
+      }
+    }
+
+    // Gift card amount = min(balance, amount due after discount), clamped ≥ 0.
+    const giftCardAmount = giftCard
+      ? Math.max(0, Math.min(giftCard.balance, amountAfterDiscount))
+      : 0;
+
+    const total = amountAfterDiscount - giftCardAmount;
 
     const method = (input.paymentMethod || 'CASH').toUpperCase();
     const note = `[POS:${method}]${input.note ? ' ' + input.note.trim() : ''}`;
 
-    const order = await prisma.productOrder.create({
-      data: {
-        ownerId,
-        businessId,
-        customerName: input.customerName?.trim() || 'Walk-in',
-        orderNumber: generateOrderNumber(),
-        status: 'FULFILLED',
-        fulfilment: 'PICKUP',
-        currency,
-        subtotal,
-        discount,
-        total,
-        paymentMethod: method,
-        note,
-        items: { create: lineItems.map((li) => ({ productId: li.productId, name: li.name, quantity: li.quantity, unitPrice: li.unitPrice })) },
-      },
-      include: { items: true },
+    const order = await prisma.$transaction(async (tx) => {
+      const created = await tx.productOrder.create({
+        data: {
+          ownerId,
+          businessId,
+          customerName: input.customerName?.trim() || 'Walk-in',
+          orderNumber: generateOrderNumber(),
+          status: 'FULFILLED',
+          fulfilment: 'PICKUP',
+          currency,
+          subtotal,
+          discount,
+          total,
+          giftCardId: giftCard ? giftCard.id : null,
+          giftCardAmount,
+          paymentMethod: method,
+          note,
+          items: { create: lineItems.map((li) => ({ productId: li.productId, name: li.name, quantity: li.quantity, unitPrice: li.unitPrice })) },
+        },
+        include: { items: true },
+      });
+
+      // Atomically redeem gift card balance inside the same transaction.
+      if (giftCard && giftCardAmount > 0) {
+        const newBalance = giftCard.balance - giftCardAmount;
+        await tx.giftCard.update({
+          where: { id: giftCard.id },
+          data: {
+            balance: newBalance,
+            status: newBalance <= 0 ? 'REDEEMED' : 'ACTIVE',
+          },
+        });
+        await tx.giftCardTransaction.create({
+          data: {
+            giftCardId: giftCard.id,
+            amount: -giftCardAmount, // negative = redeemed
+            reason: 'REDEEM',
+          },
+        });
+      }
+
+      return created;
     });
 
     // Deduct stock for each line (reason SALE), referencing this order.
