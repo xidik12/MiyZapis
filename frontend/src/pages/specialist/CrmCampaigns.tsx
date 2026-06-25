@@ -742,6 +742,8 @@ const CrmCampaigns: React.FC = () => {
                         <th className="px-6 py-3 font-medium">{t('crm.status') || 'Status'}</th>
                         <th className="px-6 py-3 font-medium text-right">{t('crm.recipients') || 'Recipients'}</th>
                         <th className="px-6 py-3 font-medium text-right">{t('crm.sent') || 'Sent'}</th>
+                        <th className="px-6 py-3 font-medium text-right">{t('crm.opens') || 'Opens'}</th>
+                        <th className="px-6 py-3 font-medium text-right">{t('crm.clicks') || 'Clicks'}</th>
                         <th className="px-6 py-3 font-medium">{t('crm.sentAt') || 'Sent at'}</th>
                         <th className="px-6 py-3 font-medium text-right">
                           <span className="sr-only">{t('common.actions') || 'Actions'}</span>
@@ -767,6 +769,24 @@ const CrmCampaigns: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 text-right whitespace-nowrap text-gray-600 dark:text-gray-300 tabular-nums">
                             {c.sentCount}
+                          </td>
+                          <td className="px-6 py-4 text-right whitespace-nowrap tabular-nums">
+                            {c.status === 'sent' ? (
+                              <span title={`${c.openCount} opens`} className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                {c.openRate}%
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right whitespace-nowrap tabular-nums">
+                            {c.status === 'sent' ? (
+                              <span title={`${c.clickCount} clicks`} className="text-blue-600 dark:text-blue-400 font-medium">
+                                {c.clickRate}%
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
                             {fmtDate(c.sentAt)}
@@ -824,6 +844,17 @@ const CrmCampaigns: React.FC = () => {
                           <dt className="flex-shrink-0 text-gray-500 dark:text-gray-400">{t('crm.sentAt') || 'Sent at'}</dt>
                           <dd className="min-w-0 text-right text-gray-900 dark:text-white">{fmtDate(c.sentAt)}</dd>
                         </div>
+                        {c.status === 'sent' && (
+                          <div className="flex items-center justify-end gap-3 pt-1">
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400 tabular-nums font-medium">
+                              {t('crm.opens') || 'Opens'} {c.openRate}%
+                            </span>
+                            <span className="text-gray-300 dark:text-gray-600">·</span>
+                            <span className="text-xs text-blue-600 dark:text-blue-400 tabular-nums font-medium">
+                              {t('crm.clicks') || 'Clicks'} {c.clickRate}%
+                            </span>
+                          </div>
+                        )}
                       </dl>
                       {(c.status === 'draft' || c.status === 'failed') && (
                         <div className="mt-3 flex justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">

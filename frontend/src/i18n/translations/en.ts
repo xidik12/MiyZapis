@@ -4305,6 +4305,8 @@ const en: Record<string, string> = {
   'crm.recipients': 'Recipients',
   'crm.sent': 'Sent',
   'crm.sentAt': 'Sent at',
+  'crm.opens': 'Opens',
+  'crm.clicks': 'Clicks',
   'crm.sendCampaign': 'Send campaign',
   'crm.noCampaigns': 'No campaigns yet',
   'crm.campaignSent': 'Campaign sent',

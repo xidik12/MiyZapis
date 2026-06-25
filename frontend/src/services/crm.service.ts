@@ -77,6 +77,12 @@ export interface SegmentCampaign {
   status: 'draft' | 'sending' | 'sent' | 'failed';
   recipientCount: number;
   sentCount: number;
+  openCount: number;
+  clickCount: number;
+  /** Percentage (0–100, one decimal). */
+  openRate: number;
+  /** Percentage (0–100, one decimal). */
+  clickRate: number;
   createdAt: string;
   sentAt?: string | null;
 }

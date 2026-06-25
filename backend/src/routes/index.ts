@@ -55,6 +55,7 @@ import promoteRoutes from './promote';
 import promotedRoutes from './promoted';
 import discoveryRoutes from './discovery';
 import crmRoutes from './crm';
+import trackRoutes from './track';
 
 const router = Router();
 
@@ -115,6 +116,9 @@ router.use('/promote', promoteRoutes);
 
 // Public promoted-listing surfaces (no auth): marketplace ad slots + tracking.
 router.use('/promoted', promotedRoutes);
+
+// Public email tracking surfaces (no auth): open pixels + click redirects.
+router.use('/track', trackRoutes);
 
 // Public AI/search discoverability surfaces (no auth): JSON booking feed + sitemap.
 router.use('/discovery', discoveryRoutes);

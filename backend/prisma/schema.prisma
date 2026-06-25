@@ -2699,11 +2699,29 @@ model SegmentCampaign {
   status         String    @default("draft") // draft | sending | sent | failed
   recipientCount Int       @default(0)
   sentCount      Int       @default(0)
+  openCount      Int       @default(0)
+  clickCount     Int       @default(0)
   createdAt      DateTime  @default(now())
   sentAt         DateTime?
 
+  events CampaignEvent[]
+
   @@index([specialistId])
   @@map("segment_campaigns")
+}
+
+model CampaignEvent {
+  id         String   @id @default(cuid())
+  campaignId String
+  customerId String
+  type       String   // "OPEN" | "CLICK"
+  url        String?  // original URL for CLICK events
+  createdAt  DateTime @default(now())
+
+  campaign SegmentCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("campaign_events")
 }
 
 model ClientTask {

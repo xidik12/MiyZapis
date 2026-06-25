@@ -3,6 +3,7 @@ import { prisma } from '@/config/database';
 import { emailService } from '@/services/email';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
+import { injectTracking } from '@/utils/emailTracking';
 
 // ---------------------------------------------------------------------------
 // CRM Service — tags, segments, campaigns, tasks, consent, leads,
@@ -535,12 +536,18 @@ export class CrmService {
     const plainBody = campaign.body.replace(/<[^>]+>/g, '').trim();
 
     // Email
+    const baseApiUrl = `${config.baseUrl}/api/${config.apiVersion}`;
     for (const client of emailEligible) {
       try {
+        const trackedHtml = injectTracking(campaign.body, {
+          campaignId,
+          customerId: client.customerId,
+          baseApiUrl,
+        });
         await emailService.sendEmail({
           to: client.email!,
           subject: campaign.subject ?? campaign.name,
-          html: campaign.body,
+          html: trackedHtml,
           text: plainBody,
         });
         sentCount++;
@@ -816,8 +823,11 @@ export class CrmService {
 function campaignShape(row: {
   id: string; name: string; channel: string; subject: string | null; body: string;
   filter: unknown; segmentId: string | null; status: string; recipientCount: number;
-  sentCount: number; createdAt: Date; sentAt: Date | null;
+  sentCount: number; openCount: number; clickCount: number; createdAt: Date; sentAt: Date | null;
 }) {
+  const sent = Number(row.sentCount) || 0;
+  const opens = Number(row.openCount) || 0;
+  const clicks = Number(row.clickCount) || 0;
   return {
     id: row.id,
     name: row.name,
@@ -828,7 +838,11 @@ function campaignShape(row: {
     segmentId: row.segmentId,
     status: row.status,
     recipientCount: row.recipientCount,
-    sentCount: row.sentCount,
+    sentCount: sent,
+    openCount: opens,
+    clickCount: clicks,
+    openRate: sent > 0 ? Math.round((opens / sent) * 1000) / 10 : 0,   // e.g. 42.3
+    clickRate: sent > 0 ? Math.round((clicks / sent) * 1000) / 10 : 0,
     createdAt: row.createdAt.toISOString(),
     sentAt: row.sentAt ? row.sentAt.toISOString() : null,
   };

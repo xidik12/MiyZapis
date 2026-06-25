@@ -4308,6 +4308,8 @@ const uk: Record<string, string> = {
   'crm.recipients': 'Отримувачі',
   'crm.sent': 'Надіслано',
   'crm.sentAt': 'Надіслано',
+  'crm.opens': 'Відкрито',
+  'crm.clicks': 'Кліки',
   'crm.sendCampaign': 'Надіслати кампанію',
   'crm.noCampaigns': 'Кампаній ще немає',
   'crm.campaignSent': 'Кампанію надіслано',

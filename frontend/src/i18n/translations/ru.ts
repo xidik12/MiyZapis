@@ -4308,6 +4308,8 @@ const ru: Record<string, string> = {
   'crm.recipients': 'Получатели',
   'crm.sent': 'Отправлено',
   'crm.sentAt': 'Отправлено',
+  'crm.opens': 'Открытий',
+  'crm.clicks': 'Кликов',
   'crm.sendCampaign': 'Отправить кампанию',
   'crm.noCampaigns': 'Кампаний пока нет',
   'crm.campaignSent': 'Кампания отправлена',
