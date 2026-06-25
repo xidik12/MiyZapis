@@ -294,7 +294,7 @@ const SpecialistSettings: React.FC = () => {
         'Telegram unlinked'
       );
     } catch (error: unknown) {
-      toast.error((error as any).message || 'Failed to unlink Telegram');
+      toast.error((error as any).message || t('settings.telegramUnlinkFailed'));
     } finally {
       setIsUnlinkingTelegram(false);
       setShowUnlinkTelegramModal(false);

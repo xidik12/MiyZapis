@@ -21,7 +21,7 @@ const CalendarSettings: React.FC = () => {
       setGoogle(g);
       setApple(a);
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to load calendar status');
+      toast.error(err?.message || t('calendarSync.toast.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -31,8 +31,8 @@ const CalendarSettings: React.FC = () => {
     reload();
     // OAuth callback redirects to /dashboard?calendar=connected; surface the toast there or here.
     const params = new URLSearchParams(window.location.search);
-    if (params.get('calendar') === 'connected') toast.success('Google Calendar connected!');
-    if (params.get('calendar') === 'error') toast.error('Google Calendar connection failed.');
+    if (params.get('calendar') === 'connected') toast.success(t('calendarSync.toast.googleConnected'));
+    if (params.get('calendar') === 'error') toast.error(t('calendarSync.toast.googleConnectFailed'));
   }, []);
 
   const connectGoogle = async () => {
@@ -40,7 +40,7 @@ const CalendarSettings: React.FC = () => {
       const url = await calendarService.googleConnectUrl();
       window.location.href = url;
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to start Google OAuth');
+      toast.error(err?.message || t('calendarSync.toast.googleOAuthFailed'));
     }
   };
 
@@ -48,10 +48,10 @@ const CalendarSettings: React.FC = () => {
     if (!await confirm('Disconnect Google Calendar? Future bookings will stop syncing.')) return;
     try {
       await calendarService.googleDisconnect();
-      toast.success('Google Calendar disconnected');
+      toast.success(t('calendarSync.toast.googleDisconnected'));
       await reload();
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to disconnect');
+      toast.error(err?.message || t('calendarSync.toast.disconnectFailed'));
     }
   };
 
@@ -59,19 +59,19 @@ const CalendarSettings: React.FC = () => {
     if (!await confirm('Disconnect iCloud Calendar? Future bookings will stop syncing.')) return;
     try {
       await calendarService.appleDisconnect();
-      toast.success('iCloud Calendar disconnected');
+      toast.success(t('calendarSync.toast.appleDisconnected'));
       await reload();
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to disconnect');
+      toast.error(err?.message || t('calendarSync.toast.disconnectFailed'));
     }
   };
 
   const resync = async () => {
     try {
       const res = await calendarService.resync();
-      toast.success(`Queued ${res.queued} booking(s) for sync`);
+      toast.success(t('calendarSync.toast.resyncQueued').replace('{{count}}', String(res.queued)));
     } catch (err: any) {
-      toast.error(err?.message || 'Resync failed');
+      toast.error(err?.message || t('calendarSync.toast.resyncFailed'));
     }
   };
 
@@ -184,16 +184,16 @@ const AppleConnectModal: React.FC<{ onClose: () => void; onConnected: () => void
 
   const submit = async () => {
     if (!appleId || !appPassword) {
-      toast.error('Apple ID and app-specific password are both required');
+      toast.error(t('calendarSync.toast.appleRequired'));
       return;
     }
     setSaving(true);
     try {
       await calendarService.appleConnect(appleId, appPassword);
-      toast.success('iCloud Calendar connected!');
+      toast.success(t('calendarSync.toast.appleConnected'));
       onConnected();
     } catch (err: any) {
-      toast.error(err?.message || 'Connection failed — check the password and try again.');
+      toast.error(err?.message || t('calendarSync.toast.appleConnectionFailed'));
     } finally {
       setSaving(false);
     }

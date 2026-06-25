@@ -772,11 +772,11 @@ const SpecialistProfilePage: React.FC = () => {
                     <button
                       className="btn btn-secondary"
                       onClick={() => setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length })}
-                    >Prev</button>
+                    >{t('lightbox.prev')}</button>
                     <button
                       className="btn btn-secondary"
                       onClick={() => setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length })}
-                    >Next</button>
+                    >{t('lightbox.next')}</button>
                   </div>
                 </motion.div>
               </motion.div>

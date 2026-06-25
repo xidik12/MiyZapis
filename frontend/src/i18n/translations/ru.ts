@@ -4418,6 +4418,101 @@ const ru: Record<string, string> = {
   'team.deleteShiftMsg': 'Вы уверены, что хотите удалить эту смену?',
   'team.shiftStart': 'Время начала',
   'team.shiftEnd': 'Время окончания',
+
+  // ── BUG FIX: missing keys referenced with t() || 'fallback' ─────────────
+  // VerifyEmailPage
+  'auth.verifyEmail.noToken': 'Токен подтверждения отсутствует.',
+  'auth.verifyEmail.verifiedSuccess': 'Электронная почта успешно подтверждена!',
+  'auth.verifyEmail.verifyFailed': 'Не удалось подтвердить электронную почту.',
+  'auth.verifyEmail.linkExpired': 'Срок действия ссылки истёк. Запросите новую.',
+  'auth.verifyEmail.invalidLinkFull': 'Недействительная ссылка для подтверждения. Проверьте почту и попробуйте снова.',
+  'auth.verifyEmail.verifyFailedRetry': 'Не удалось подтвердить электронную почту. Повторите попытку.',
+  'auth.verifyEmail.emailRequired': 'Пожалуйста, введите адрес электронной почты.',
+  'auth.verifyEmail.emailSent': 'Письмо отправлено! Проверьте входящие сообщения.',
+  'auth.verifyEmail.sendFailed': 'Не удалось отправить письмо для подтверждения.',
+  'auth.verifyEmail.heading': 'Подтверждение электронной почты',
+  'auth.verifyEmail.headingPending': 'Подождите, подтверждаем вашу почту...',
+  'auth.verifyEmail.headingSuccess': 'Электронная почта подтверждена!',
+  'auth.verifyEmail.redirecting': 'Через несколько секунд вы будете перенаправлены на страницу входа...',
+  'auth.verifyEmail.goToLogin': 'Перейти ко входу',
+  'auth.verifyEmail.headingPendingTitle': 'Требуется подтверждение почты',
+  'auth.verifyEmail.checkInbox': 'Проверьте почту и перейдите по ссылке для подтверждения, чтобы активировать аккаунт.',
+  'auth.verifyEmail.didntReceive': 'Не получили письмо?',
+  'auth.verifyEmail.resendBtn': 'Отправить письмо повторно',
+  'auth.verifyEmail.sending': 'Отправка...',
+  'auth.verifyEmail.backToLogin': 'Вернуться ко входу',
+  'auth.verifyEmail.headingFailed': 'Подтверждение не удалось',
+  'auth.verifyEmail.requestNew': 'Отправить новое письмо для подтверждения',
+  'auth.verifyEmail.emailAddressLabel': 'Электронная почта',
+  'auth.verifyEmail.sendBtn': 'Отправить письмо для подтверждения',
+  'auth.verifyEmail.loginRedirectMsg': 'Почта подтверждена! Войдите, чтобы продолжить.',
+
+  // CalendarSettings toasts
+  'calendarSync.toast.googleConnected': 'Google Календарь подключён!',
+  'calendarSync.toast.googleConnectFailed': 'Не удалось подключить Google Календарь.',
+  'calendarSync.toast.googleOAuthFailed': 'Не удалось начать авторизацию Google',
+  'calendarSync.toast.googleDisconnected': 'Google Календарь отключён',
+  'calendarSync.toast.disconnectFailed': 'Не удалось отключить',
+  'calendarSync.toast.appleRequired': 'Необходимо указать Apple ID и пароль для приложения',
+  'calendarSync.toast.appleConnected': 'iCloud Календарь подключён!',
+  'calendarSync.toast.appleConnectionFailed': 'Ошибка подключения — проверьте пароль и попробуйте снова.',
+  'calendarSync.toast.appleDisconnected': 'iCloud Календарь отключён',
+  'calendarSync.toast.resyncQueued': '{{count}} бронирований поставлено в очередь на синхронизацию',
+  'calendarSync.toast.resyncFailed': 'Не удалось выполнить повторную синхронизацию',
+  'calendarSync.toast.loadFailed': 'Не удалось загрузить статус календаря',
+
+  // BookingFlow missing keys
+  'booking.signInToBook': 'Войдите, чтобы записаться',
+  'booking.signInToBookDesc': 'Для завершения записи необходим аккаунт.',
+  'booking.detailsAndPayment': 'Детали и оплата',
+  'booking.payAtVenue': 'Оплата на месте',
+  'booking.payAtVenueDesc': 'Оплатите наличными или картой при посещении',
+  'booking.payAtVenueNote': 'Онлайн-оплата не требуется',
+  'booking.payAtVenueConfirm': 'Оплата при посещении',
+  'booking.payAtVenueInfo': 'Оплата сейчас не требуется. Вы рассчитаетесь со специалистом на месте наличными или картой.',
+  'booking.confirmBookingPayLater': 'Подтвердить запись — оплата на месте',
+  'booking.bookingConfirmedPayAtVenue': 'Запись подтверждена! Оплатите на месте.',
+
+  // ReviewFilters — Most Helpful sort option
+  'reviews.filters.mostHelpful': 'Наиболее полезные',
+
+  // Badges page
+  'badges.pageTitle': 'Коллекция значков',
+  'badges.pageSubtitle': 'Получайте достижения и демонстрируйте успехи',
+  'badges.earnedCount': 'Получено значков',
+  'badges.earnedOf': 'из {{total}} всего',
+  'badges.badgePoints': 'Баллы за значки',
+  'badges.completionRate': 'Процент выполнения',
+  'badges.categoryLabel': 'Категория',
+  'badges.allCategories': 'Все категории',
+  'badges.rarityLabel': 'Редкость',
+  'badges.allRarities': 'Вся редкость',
+  'badges.progressLabel': 'Прогресс',
+  'badges.earnedOn': 'Получено',
+  'badges.pointsLabel': '{{count}} баллов',
+  'badges.noBadgesFound': 'Значки не найдены',
+  'badges.noBadgesFoundDesc': 'Попробуйте изменить фильтры, чтобы увидеть больше значков',
+
+  // SpecialistProfilePage lightbox
+  'lightbox.prev': 'Назад',
+  'lightbox.next': 'Вперёд',
+
+  // Bookings.tsx — message sent toast
+  'specialist.bookings.messageSentSuccess': 'Сообщение отправлено',
+
+  // Clients.tsx — note error toasts
+  'clients.noteSaveFailed': 'Не удалось сохранить заметку',
+  'clients.noteDeleteFailed': 'Не удалось удалить заметку',
+
+  // ForgotPasswordPage — error fallback
+  'auth.forgotPassword.sendFailed': 'Не удалось отправить письмо для сброса пароля. Повторите попытку.',
+
+  // ResetPasswordPage — error fallbacks
+  'auth.resetPassword.missingToken': 'Токен сброса отсутствует или недействителен',
+  'auth.resetPassword.resetFailed': 'Не удалось сбросить пароль. Повторите попытку.',
+
+  // customer/Settings.tsx & specialist/Settings.tsx — Telegram unlink fallback
+  'settings.telegramUnlinkFailed': 'Не удалось отвязать Telegram',
 };
 
 export default ru;

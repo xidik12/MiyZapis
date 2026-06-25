@@ -1277,7 +1277,7 @@ const SpecialistClients: React.FC = () => {
       }));
       setNewNote((prev) => ({ ...prev, [clientId]: '' }));
     } catch {
-      toast.error('Failed to save note');
+      toast.error(t('clients.noteSaveFailed'));
     }
   };
 
@@ -1289,7 +1289,7 @@ const SpecialistClients: React.FC = () => {
         [clientId]: (prev[clientId] || []).filter((n) => n.id !== noteId),
       }));
     } catch {
-      toast.error('Failed to delete note');
+      toast.error(t('clients.noteDeleteFailed'));
     }
   };
 

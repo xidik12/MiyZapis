@@ -4425,6 +4425,101 @@ const en: Record<string, string> = {
   'team.deleteShiftMsg': 'Are you sure you want to delete this shift?',
   'team.shiftStart': 'Start time',
   'team.shiftEnd': 'End time',
+
+  // ── BUG FIX: missing keys referenced with t() || 'fallback' ─────────────
+  // VerifyEmailPage
+  'auth.verifyEmail.noToken': 'No verification token provided.',
+  'auth.verifyEmail.verifiedSuccess': 'Email verified successfully!',
+  'auth.verifyEmail.verifyFailed': 'Email verification failed.',
+  'auth.verifyEmail.linkExpired': 'Your verification link has expired. Please request a new one.',
+  'auth.verifyEmail.invalidLinkFull': 'Invalid verification link. Please check your email and try again.',
+  'auth.verifyEmail.verifyFailedRetry': 'Email verification failed. Please try again.',
+  'auth.verifyEmail.emailRequired': 'Please enter your email address.',
+  'auth.verifyEmail.emailSent': 'Verification email sent! Please check your inbox.',
+  'auth.verifyEmail.sendFailed': 'Failed to send verification email.',
+  'auth.verifyEmail.heading': 'Verifying Your Email',
+  'auth.verifyEmail.headingPending': 'Please wait while we verify your email address...',
+  'auth.verifyEmail.headingSuccess': 'Email Verified Successfully!',
+  'auth.verifyEmail.redirecting': 'You will be redirected to the login page in a few seconds...',
+  'auth.verifyEmail.goToLogin': 'Go to Login',
+  'auth.verifyEmail.headingPendingTitle': 'Email Verification Required',
+  'auth.verifyEmail.checkInbox': 'Please check your email and click the verification link to activate your account.',
+  'auth.verifyEmail.didntReceive': "Didn't receive the email?",
+  'auth.verifyEmail.resendBtn': 'Resend Verification Email',
+  'auth.verifyEmail.sending': 'Sending...',
+  'auth.verifyEmail.backToLogin': 'Back to Login',
+  'auth.verifyEmail.headingFailed': 'Verification Failed',
+  'auth.verifyEmail.requestNew': 'Request New Verification Email',
+  'auth.verifyEmail.emailAddressLabel': 'Email Address',
+  'auth.verifyEmail.sendBtn': 'Send Verification Email',
+  'auth.verifyEmail.loginRedirectMsg': 'Email verified successfully! Please sign in to continue.',
+
+  // CalendarSettings toasts
+  'calendarSync.toast.googleConnected': 'Google Calendar connected!',
+  'calendarSync.toast.googleConnectFailed': 'Google Calendar connection failed.',
+  'calendarSync.toast.googleOAuthFailed': 'Failed to start Google OAuth',
+  'calendarSync.toast.googleDisconnected': 'Google Calendar disconnected',
+  'calendarSync.toast.disconnectFailed': 'Failed to disconnect',
+  'calendarSync.toast.appleRequired': 'Apple ID and app-specific password are both required',
+  'calendarSync.toast.appleConnected': 'iCloud Calendar connected!',
+  'calendarSync.toast.appleConnectionFailed': 'Connection failed — check the password and try again.',
+  'calendarSync.toast.appleDisconnected': 'iCloud Calendar disconnected',
+  'calendarSync.toast.resyncQueued': '{{count}} booking(s) queued for sync',
+  'calendarSync.toast.resyncFailed': 'Resync failed',
+  'calendarSync.toast.loadFailed': 'Failed to load calendar status',
+
+  // BookingFlow missing keys
+  'booking.signInToBook': 'Sign in to book this appointment',
+  'booking.signInToBookDesc': 'You need an account to complete your booking.',
+  'booking.detailsAndPayment': 'Details & Payment',
+  'booking.payAtVenue': 'Pay at Venue',
+  'booking.payAtVenueDesc': 'Pay with cash or card when you arrive',
+  'booking.payAtVenueNote': 'No online payment required',
+  'booking.payAtVenueConfirm': 'Pay when you arrive',
+  'booking.payAtVenueInfo': 'No payment is required now. You will pay directly to the specialist at the venue using cash or card.',
+  'booking.confirmBookingPayLater': 'Confirm Booking — Pay at Venue',
+  'booking.bookingConfirmedPayAtVenue': 'Booking confirmed! Pay at the venue.',
+
+  // ReviewFilters — Most Helpful sort option
+  'reviews.filters.mostHelpful': 'Most Helpful',
+
+  // Badges page
+  'badges.pageTitle': 'Badge Collection',
+  'badges.pageSubtitle': 'Unlock achievements and show off your accomplishments',
+  'badges.earnedCount': 'Badges Earned',
+  'badges.earnedOf': 'of {{total}} total',
+  'badges.badgePoints': 'Badge Points',
+  'badges.completionRate': 'Completion Rate',
+  'badges.categoryLabel': 'Category',
+  'badges.allCategories': 'All Categories',
+  'badges.rarityLabel': 'Rarity',
+  'badges.allRarities': 'All Rarities',
+  'badges.progressLabel': 'Progress',
+  'badges.earnedOn': 'Earned',
+  'badges.pointsLabel': '{{count}} points',
+  'badges.noBadgesFound': 'No badges found',
+  'badges.noBadgesFoundDesc': 'Try adjusting your filters to see more badges',
+
+  // SpecialistProfilePage lightbox
+  'lightbox.prev': 'Prev',
+  'lightbox.next': 'Next',
+
+  // Bookings.tsx — message sent toast (duplicate path via modal)
+  'specialist.bookings.messageSentSuccess': 'Message sent',
+
+  // Clients.tsx — note error toasts
+  'clients.noteSaveFailed': 'Failed to save note',
+  'clients.noteDeleteFailed': 'Failed to delete note',
+
+  // ForgotPasswordPage — error fallback
+  'auth.forgotPassword.sendFailed': 'Failed to send reset email. Please try again.',
+
+  // ResetPasswordPage — error fallbacks
+  'auth.resetPassword.missingToken': 'Reset token is missing or invalid',
+  'auth.resetPassword.resetFailed': 'Failed to reset password. Please try again.',
+
+  // customer/Settings.tsx & specialist/Settings.tsx — Telegram unlink fallback
+  'settings.telegramUnlinkFailed': 'Failed to unlink Telegram',
 };
 
 export default en;

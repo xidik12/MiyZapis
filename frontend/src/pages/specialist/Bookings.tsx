@@ -169,7 +169,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       await messagesService.sendMessage(conversationId, { content: text });
 
       setMessage('');
-      toast.success('Message sent');
+      toast.success(t('specialist.bookings.messageSentSuccess'));
     } catch (error: unknown) {
       console.error('Failed to send booking message:', error);
       toast.error((error instanceof Error ? error.message : String(error)) || t('specialist.bookings.toast.error'));

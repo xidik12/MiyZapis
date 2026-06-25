@@ -34,7 +34,7 @@ const VerifyEmailPage: React.FC = () => {
     // Original flow - verify token from email link
     if (!token) {
       setStatus('invalid');
-      setMessage('No verification token provided.');
+      setMessage(t('auth.verifyEmail.noToken'));
       return;
     }
 
@@ -58,42 +58,42 @@ const VerifyEmailPage: React.FC = () => {
       
       if (result.success) {
         setStatus('success');
-        setMessage(result.data.message || 'Email verified successfully!');
-        
+        setMessage(result.data.message || t('auth.verifyEmail.verifiedSuccess'));
+
         // Store tokens if provided
         if (result.data.tokens) {
           localStorage.setItem('accessToken', result.data.tokens.accessToken);
           localStorage.setItem('refreshToken', result.data.tokens.refreshToken);
         }
-        
+
         // Redirect to login after 3 seconds (user needs to login after verification)
         setTimeout(() => {
-          navigate('/auth/login', { 
-            state: { message: 'Email verified successfully! Please sign in to continue.' } 
+          navigate('/auth/login', {
+            state: { message: t('auth.verifyEmail.loginRedirectMsg') }
           });
         }, 3000);
       } else {
         setStatus('error');
-        setMessage(result.error?.message || 'Email verification failed.');
+        setMessage(result.error?.message || t('auth.verifyEmail.verifyFailed'));
       }
     } catch (error: unknown) {
       setStatus('error');
-      
+
       if ((error as any).message?.includes('expired')) {
         setStatus('expired');
-        setMessage('Your verification link has expired. Please request a new one.');
+        setMessage(t('auth.verifyEmail.linkExpired'));
       } else if ((error as any).message?.includes('invalid')) {
         setStatus('invalid');
-        setMessage('Invalid verification link. Please check your email and try again.');
+        setMessage(t('auth.verifyEmail.invalidLinkFull'));
       } else {
-        setMessage((error as any).message || 'Email verification failed. Please try again.');
+        setMessage((error as any).message || t('auth.verifyEmail.verifyFailedRetry'));
       }
     }
   };
 
   const handleResendVerification = async () => {
     if (!email.trim()) {
-      setResendMessage('Please enter your email address.');
+      setResendMessage(t('auth.verifyEmail.emailRequired'));
       return;
     }
 
@@ -112,12 +112,12 @@ const VerifyEmailPage: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        setResendMessage('Verification email sent! Please check your inbox.');
+        setResendMessage(t('auth.verifyEmail.emailSent'));
       } else {
-        setResendMessage(result.error?.message || 'Failed to send verification email.');
+        setResendMessage(result.error?.message || t('auth.verifyEmail.sendFailed'));
       }
     } catch (error: unknown) {
-      setResendMessage((error as any).message || 'Failed to send verification email.');
+      setResendMessage((error as any).message || t('auth.verifyEmail.sendFailed'));
     } finally {
       setIsResending(false);
     }
@@ -130,10 +130,10 @@ const VerifyEmailPage: React.FC = () => {
           <div className="text-center">
             <LoadingSpinner className="mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Verifying Your Email
+              {t('auth.verifyEmail.heading')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Please wait while we verify your email address...
+              {t('auth.verifyEmail.headingPending')}
             </p>
           </div>
         );
@@ -143,19 +143,19 @@ const VerifyEmailPage: React.FC = () => {
           <div className="text-center">
             <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Email Verified Successfully!
+              {t('auth.verifyEmail.headingSuccess')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {message}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              You will be redirected to the login page in a few seconds...
+              {t('auth.verifyEmail.redirecting')}
             </p>
             <Link
               to="/auth/login"
               className="inline-block mt-4 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-semibold transition-all duration-200"
             >
-              Go to Login
+              {t('auth.verifyEmail.goToLogin')}
             </Link>
           </div>
         );
@@ -165,20 +165,20 @@ const VerifyEmailPage: React.FC = () => {
           <div className="text-center">
             <EnvelopeIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Email Verification Required
+              {t('auth.verifyEmail.headingPendingTitle')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {message}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Please check your email ({email}) and click the verification link to activate your account.
+              {t('auth.verifyEmail.checkInbox')} ({email})
             </p>
-            
+
             <div className="bg-gray-50/80 dark:bg-gray-700 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                Didn't receive the email?
+                {t('auth.verifyEmail.didntReceive')}
               </h3>
-              
+
               <button
                 onClick={handleResendVerification}
                 disabled={isResending}
@@ -187,18 +187,18 @@ const VerifyEmailPage: React.FC = () => {
                 {isResending ? (
                   <>
                     <LoadingSpinner className="w-4 h-4 mr-2" />
-                    Sending...
+                    {t('auth.verifyEmail.sending')}
                   </>
                 ) : (
                   <>
                     <EnvelopeIcon className="w-4 h-4 mr-2" />
-                    Resend Verification Email
+                    {t('auth.verifyEmail.resendBtn')}
                   </>
                 )}
               </button>
-              
+
               {resendMessage && (
-                <div className={`text-sm mt-4 ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-sm mt-4 ${resendMessage.includes('sent') || resendMessage.includes('надісла') || resendMessage.includes('отправл') ? 'text-green-600' : 'text-red-600'}`}>
                   {resendMessage}
                 </div>
               )}
@@ -209,7 +209,7 @@ const VerifyEmailPage: React.FC = () => {
                 to="/auth/login"
                 className="text-primary-600 hover:text-primary-500 text-sm font-semibold px-2 py-1 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200"
               >
-                Back to Login
+                {t('auth.verifyEmail.backToLogin')}
               </Link>
             </div>
           </div>
@@ -222,7 +222,7 @@ const VerifyEmailPage: React.FC = () => {
           <div className="text-center">
             <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Verification Failed
+              {t('auth.verifyEmail.headingFailed')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {message}
@@ -231,13 +231,13 @@ const VerifyEmailPage: React.FC = () => {
             {(status === 'expired' || status === 'error') && (
               <div className="bg-gray-50/80 dark:bg-gray-700 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                  Request New Verification Email
+                  {t('auth.verifyEmail.requestNew')}
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      Email Address
+                      {t('auth.verifyEmail.emailAddressLabel')}
                     </label>
                     <input
                       type="email"
@@ -248,7 +248,7 @@ const VerifyEmailPage: React.FC = () => {
                       placeholder={t('auth.register.emailPlaceholder')}
                     />
                   </div>
-                  
+
                   <button
                     onClick={handleResendVerification}
                     disabled={isResending || !email.trim()}
@@ -257,18 +257,18 @@ const VerifyEmailPage: React.FC = () => {
                     {isResending ? (
                       <>
                         <LoadingSpinner className="w-4 h-4 mr-2" />
-                        Sending...
+                        {t('auth.verifyEmail.sending')}
                       </>
                     ) : (
                       <>
                         <EnvelopeIcon className="w-4 h-4 mr-2" />
-                        Send Verification Email
+                        {t('auth.verifyEmail.sendBtn')}
                       </>
                     )}
                   </button>
-                  
+
                   {resendMessage && (
-                    <div className={`text-sm ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`text-sm ${resendMessage.includes('sent') || resendMessage.includes('надісла') || resendMessage.includes('отправл') ? 'text-green-600' : 'text-red-600'}`}>
                       {resendMessage}
                     </div>
                   )}
@@ -281,7 +281,7 @@ const VerifyEmailPage: React.FC = () => {
                 to="/auth/login"
                 className="text-primary-600 hover:text-primary-500 text-sm font-semibold px-2 py-1 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200"
               >
-                Back to Login
+                {t('auth.verifyEmail.backToLogin')}
               </Link>
             </div>
           </div>

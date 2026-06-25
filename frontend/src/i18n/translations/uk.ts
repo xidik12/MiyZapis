@@ -4418,6 +4418,101 @@ const uk: Record<string, string> = {
   'team.deleteShiftMsg': 'Ви впевнені, що хочете видалити цю зміну?',
   'team.shiftStart': 'Час початку',
   'team.shiftEnd': 'Час закінчення',
+
+  // ── BUG FIX: missing keys referenced with t() || 'fallback' ─────────────
+  // VerifyEmailPage
+  'auth.verifyEmail.noToken': 'Токен підтвердження відсутній.',
+  'auth.verifyEmail.verifiedSuccess': 'Електронну адресу успішно підтверджено!',
+  'auth.verifyEmail.verifyFailed': 'Не вдалося підтвердити електронну адресу.',
+  'auth.verifyEmail.linkExpired': 'Термін дії посилання для підтвердження закінчився. Надішліть нове.',
+  'auth.verifyEmail.invalidLinkFull': 'Недійсне посилання для підтвердження. Перевірте пошту та спробуйте знову.',
+  'auth.verifyEmail.verifyFailedRetry': 'Не вдалося підтвердити електронну адресу. Спробуйте ще раз.',
+  'auth.verifyEmail.emailRequired': 'Будь ласка, введіть електронну адресу.',
+  'auth.verifyEmail.emailSent': 'Листа надіслано! Перевірте вхідні повідомлення.',
+  'auth.verifyEmail.sendFailed': 'Не вдалося надіслати лист для підтвердження.',
+  'auth.verifyEmail.heading': 'Підтвердження електронної пошти',
+  'auth.verifyEmail.headingPending': 'Зачекайте, підтверджуємо вашу адресу...',
+  'auth.verifyEmail.headingSuccess': 'Електронну адресу підтверджено!',
+  'auth.verifyEmail.redirecting': 'За кілька секунд вас буде перенаправлено на сторінку входу...',
+  'auth.verifyEmail.goToLogin': 'Перейти до входу',
+  'auth.verifyEmail.headingPendingTitle': 'Необхідно підтвердити електронну адресу',
+  'auth.verifyEmail.checkInbox': 'Будь ласка, перевірте пошту та натисніть посилання для підтвердження, щоб активувати акаунт.',
+  'auth.verifyEmail.didntReceive': 'Не отримали листа?',
+  'auth.verifyEmail.resendBtn': 'Надіслати лист повторно',
+  'auth.verifyEmail.sending': 'Надсилання...',
+  'auth.verifyEmail.backToLogin': 'Повернутися до входу',
+  'auth.verifyEmail.headingFailed': 'Підтвердження не вдалося',
+  'auth.verifyEmail.requestNew': 'Надіслати новий лист для підтвердження',
+  'auth.verifyEmail.emailAddressLabel': 'Електронна адреса',
+  'auth.verifyEmail.sendBtn': 'Надіслати лист для підтвердження',
+  'auth.verifyEmail.loginRedirectMsg': 'Електронну адресу підтверджено! Будь ласка, увійдіть, щоб продовжити.',
+
+  // CalendarSettings toasts
+  'calendarSync.toast.googleConnected': 'Google Календар підключено!',
+  'calendarSync.toast.googleConnectFailed': 'Не вдалося підключити Google Календар.',
+  'calendarSync.toast.googleOAuthFailed': 'Не вдалося розпочати авторизацію Google',
+  'calendarSync.toast.googleDisconnected': 'Google Календар відключено',
+  'calendarSync.toast.disconnectFailed': 'Не вдалося відключити',
+  'calendarSync.toast.appleRequired': 'Необхідно вказати Apple ID та пароль для додатка',
+  'calendarSync.toast.appleConnected': 'iCloud Календар підключено!',
+  'calendarSync.toast.appleConnectionFailed': 'Помилка підключення — перевірте пароль та спробуйте знову.',
+  'calendarSync.toast.appleDisconnected': 'iCloud Календар відключено',
+  'calendarSync.toast.resyncQueued': '{{count}} бронювань поставлено в чергу на синхронізацію',
+  'calendarSync.toast.resyncFailed': 'Не вдалося виконати повторну синхронізацію',
+  'calendarSync.toast.loadFailed': 'Не вдалося завантажити статус календаря',
+
+  // BookingFlow missing keys
+  'booking.signInToBook': 'Увійдіть, щоб забронювати',
+  'booking.signInToBookDesc': 'Для завершення бронювання потрібен акаунт.',
+  'booking.detailsAndPayment': 'Деталі та оплата',
+  'booking.payAtVenue': 'Оплата на місці',
+  'booking.payAtVenueDesc': 'Оплатіть готівкою або карткою при відвідуванні',
+  'booking.payAtVenueNote': 'Онлайн-оплата не потрібна',
+  'booking.payAtVenueConfirm': 'Оплата при відвідуванні',
+  'booking.payAtVenueInfo': 'Оплата зараз не потрібна. Ви розрахуєтесь безпосередньо зі спеціалістом на місці готівкою або карткою.',
+  'booking.confirmBookingPayLater': 'Підтвердити бронювання — оплата на місці',
+  'booking.bookingConfirmedPayAtVenue': 'Бронювання підтверджено! Оплатіть на місці.',
+
+  // ReviewFilters — Most Helpful sort option
+  'reviews.filters.mostHelpful': 'Найкорисніші',
+
+  // Badges page
+  'badges.pageTitle': 'Колекція бейджів',
+  'badges.pageSubtitle': 'Отримуйте досягнення та демонструйте свої успіхи',
+  'badges.earnedCount': 'Отримано бейджів',
+  'badges.earnedOf': 'з {{total}} усього',
+  'badges.badgePoints': 'Бали за бейджі',
+  'badges.completionRate': 'Відсоток виконання',
+  'badges.categoryLabel': 'Категорія',
+  'badges.allCategories': 'Усі категорії',
+  'badges.rarityLabel': 'Рідкісність',
+  'badges.allRarities': 'Уся рідкісність',
+  'badges.progressLabel': 'Прогрес',
+  'badges.earnedOn': 'Отримано',
+  'badges.pointsLabel': '{{count}} балів',
+  'badges.noBadgesFound': 'Бейджі не знайдено',
+  'badges.noBadgesFoundDesc': 'Спробуйте змінити фільтри, щоб побачити більше бейджів',
+
+  // SpecialistProfilePage lightbox
+  'lightbox.prev': 'Назад',
+  'lightbox.next': 'Вперед',
+
+  // Bookings.tsx — message sent toast
+  'specialist.bookings.messageSentSuccess': 'Повідомлення надіслано',
+
+  // Clients.tsx — note error toasts
+  'clients.noteSaveFailed': 'Не вдалося зберегти нотатку',
+  'clients.noteDeleteFailed': 'Не вдалося видалити нотатку',
+
+  // ForgotPasswordPage — error fallback
+  'auth.forgotPassword.sendFailed': 'Не вдалося надіслати лист для скидання пароля. Спробуйте ще раз.',
+
+  // ResetPasswordPage — error fallbacks
+  'auth.resetPassword.missingToken': 'Токен скидання відсутній або недійсний',
+  'auth.resetPassword.resetFailed': 'Не вдалося скинути пароль. Спробуйте ще раз.',
+
+  // customer/Settings.tsx & specialist/Settings.tsx — Telegram unlink fallback
+  'settings.telegramUnlinkFailed': 'Не вдалося від\'єднати Telegram',
 };
 
 export default uk;

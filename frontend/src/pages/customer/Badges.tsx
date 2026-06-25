@@ -147,12 +147,12 @@ const CustomerBadges: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Badge Collection
+              {t('badges.pageTitle')}
             </h1>
             <HelpTip title={language === 'uk' ? 'Бейджі' : language === 'ru' ? 'Значки' : 'Badges'} content={h.overview} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Unlock achievements and show off your accomplishments
+            {t('badges.pageSubtitle')}
           </p>
         </div>
 
@@ -161,12 +161,12 @@ const CustomerBadges: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Badges Earned</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('badges.earnedCount')}</p>
                 <p className="text-3xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                   {earnedCount}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500 tabular-nums">
-                  of {badges.length} total
+                  {t('badges.earnedOf').replace('{{total}}', String(badges.length))}
                 </p>
               </div>
               <div className="h-12 w-12 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
@@ -178,7 +178,7 @@ const CustomerBadges: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Badge Points</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('badges.badgePoints')}</p>
                 <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                   {totalPoints.toLocaleString()}
                 </p>
@@ -192,7 +192,7 @@ const CustomerBadges: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completion Rate</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('badges.completionRate')}</p>
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
                   {Math.round((earnedCount / badges.length) * 100)}%
                 </p>
@@ -209,14 +209,14 @@ const CustomerBadges: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Category
+                {t('badges.categoryLabel')}
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t('badges.allCategories')}</option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -227,14 +227,14 @@ const CustomerBadges: React.FC = () => {
 
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Rarity
+                {t('badges.rarityLabel')}
               </label>
               <select
                 value={selectedRarity}
                 onChange={(e) => setSelectedRarity(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="all">All Rarities</option>
+                <option value="all">{t('badges.allRarities')}</option>
                 {rarities.map((rarity) => (
                   <option key={rarity} value={rarity}>
                     {rarity.charAt(0) + rarity.slice(1).toLowerCase()}
@@ -310,7 +310,7 @@ const CustomerBadges: React.FC = () => {
                     <div className="flex items-center space-x-1">
                       <StarIcon className="h-4 w-4 text-yellow-500" active />
                       <span className={`tabular-nums ${badge.isEarned ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
-                        {badge.points} points
+                        {t('badges.pointsLabel').replace('{{count}}', String(badge.points))}
                       </span>
                     </div>
                     
@@ -325,7 +325,7 @@ const CustomerBadges: React.FC = () => {
                   {!badge.isEarned && badge.progress !== undefined && badge.progress > 0 && (
                     <div className="mt-3">
                       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        <span>Progress</span>
+                        <span>{t('badges.progressLabel')}</span>
                         <span className="tabular-nums">{Math.round(badge.progress)}%</span>
                       </div>
                       <div className="overflow-hidden h-2 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
@@ -342,7 +342,7 @@ const CustomerBadges: React.FC = () => {
                     <div className="flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 mt-2">
                       <ClockIcon className="h-3 w-3" />
                       <span>
-                        Earned {new Date(badge.earnedAt).toLocaleDateString()}
+                        {t('badges.earnedOn')} {new Date(badge.earnedAt).toLocaleDateString()}
                       </span>
                     </div>
                   )}
@@ -367,10 +367,10 @@ const CustomerBadges: React.FC = () => {
           <div className="text-center py-12">
             <TrophyIcon className="h-16 w-16 text-gray-500 dark:text-gray-400 mx-auto mb-4" active />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No badges found
+              {t('badges.noBadgesFound')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your filters to see more badges
+              {t('badges.noBadgesFoundDesc')}
             </p>
           </div>
         )}

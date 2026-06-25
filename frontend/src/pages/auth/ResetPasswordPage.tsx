@@ -37,7 +37,7 @@ const ResetPasswordPage: React.FC = () => {
   // Check if token exists
   useEffect(() => {
     if (!token) {
-      setError('Reset token is missing or invalid');
+      setError(t('auth.resetPassword.missingToken'));
     }
   }, [token]);
 
@@ -52,7 +52,7 @@ const ResetPasswordPage: React.FC = () => {
       setIsSuccess(true);
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
-      setError((error as any).message || 'Failed to reset password. Please try again.');
+      setError((error as any).message || t('auth.resetPassword.resetFailed'));
     } finally {
       setIsLoading(false);
     }
