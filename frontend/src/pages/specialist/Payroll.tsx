@@ -810,8 +810,7 @@ const SpecialistPayroll: React.FC = () => {
                       <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         <th scope="col" className="px-6 py-3 font-medium">{t('payroll.name') || 'Name'}</th>
                         <th scope="col" className="px-6 py-3 font-medium">{t('payroll.role') || 'Role'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium">{t('payroll.commission') || 'Commission'}</th>
-                        <th scope="col" className="px-6 py-3 font-medium text-right"><span className="sr-only">{t('common.actions') || 'Actions'}</span></th>
+                        <th scope="col" className="px-6 py-3 font-medium w-full">{t('payroll.commission') || 'Commission'}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -828,7 +827,7 @@ const SpecialistPayroll: React.FC = () => {
                                   {getRoleLabel(s.role)}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-sm italic text-gray-500 dark:text-gray-400" colSpan={2}>
+                              <td className="px-6 py-4 w-full text-sm italic text-gray-500 dark:text-gray-400">
                                 {ownerCommissionNote}
                               </td>
                             </tr>
@@ -844,7 +843,7 @@ const SpecialistPayroll: React.FC = () => {
                               {getRoleLabel(s.role)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 min-w-[18rem]">
+                          <td className="px-6 py-4 w-full min-w-[18rem]">
                             {/* Mode selector */}
                             <div className="flex items-center gap-2 mb-2">
                               <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
@@ -934,12 +933,10 @@ const SpecialistPayroll: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
                             <button
                               onClick={() => handleSaveCommission(s.staffUserId)}
                               disabled={savingCommission === s.staffUserId}
-                              className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50 inline-flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
+                              className="mt-3 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50 inline-flex items-center gap-2 active:scale-[0.96] disabled:active:scale-100"
                             >
                               {savingCommission === s.staffUserId && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                               {t('common.save') || 'Save'}
