@@ -360,24 +360,35 @@ export class SpecialistController {
         maxPrice,
         verifiedOnly,
         language,
+        // ── Near-me / distance params ──────────────────────────────
+        lat,
+        lng,
+        radiusKm,
       } = req.query;
 
       const parsedSpecialties = specialties
         ? (typeof specialties === 'string' ? [specialties] : specialties as string[])
         : undefined;
 
+      const userLat = lat != null && lat !== '' ? parseFloat(lat as string) : undefined;
+      const userLng = lng != null && lng !== '' ? parseFloat(lng as string) : undefined;
+      const parsedRadiusKm = radiusKm != null && radiusKm !== '' ? parseFloat(radiusKm as string) : undefined;
+
       const result = await SpecialistService.searchSpecialists(
         query as string,
         parsedSpecialties,
         city as string,
         minRating ? parseFloat(minRating as string) : undefined,
-        sortBy as 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc',
+        sortBy as 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc' | 'distance',
         parseInt(page as string, 10),
         parseInt(limit as string, 10),
         minPrice != null && minPrice !== '' ? parseFloat(minPrice as string) : undefined,
         maxPrice != null && maxPrice !== '' ? parseFloat(maxPrice as string) : undefined,
         verifiedOnly === 'true' || verifiedOnly === '1',
         (language as string) || undefined,
+        isFinite(userLat as number) ? userLat : undefined,
+        isFinite(userLng as number) ? userLng : undefined,
+        isFinite(parsedRadiusKm as number) ? parsedRadiusKm : undefined,
       );
 
       const strippedResult = {

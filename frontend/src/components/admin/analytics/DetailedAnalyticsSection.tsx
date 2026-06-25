@@ -101,7 +101,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
       )}
 
       {/* Referral Analytics Tab */}
-      {activeSubTab === 'referrals' && data.stats && (
+      {activeSubTab === 'referrals' && (
         <ReferralAnalyticsTab data={data} period={period} />
       )}
     </div>
@@ -279,8 +279,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
   const revenueTimelineData = Array.from(revenueTimelineMap.entries()).map(([date, data]) => ({
     date,
     revenue: data.revenue,
-    fees: 0, // Platform fees not in current API
-    refunds: 0 // Refunds tracked separately
+    refunds: 0 // Refunds tracked separately via refundStats aggregate
   })).sort((a, b) => a.date.localeCompare(b.date));
 
   // Prepare payment method distribution - use paymentMethodStats from backend
@@ -321,7 +320,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       sortable: true,
       render: (row) => (
         <span className="font-semibold text-green-600 dark:text-green-400 tabular-nums">
-          ${(row.revenue || 0).toFixed(2)}
+          ₴{(row.revenue || 0).toFixed(2)}
         </span>
       )
     },
@@ -334,7 +333,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       key: 'avgBookingValue',
       label: t('admin.analytics.avgValue'),
       sortable: true,
-      render: (row) => `$${(row.avgBookingValue || 0).toFixed(2)}`
+      render: (row) => `₴${(row.avgBookingValue || 0).toFixed(2)}`
     }
   ];
 
@@ -346,7 +345,6 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
 
   // Calculate metrics from revenueTrends
   const totalRevenue = revenueTrends.reduce((sum, t) => sum + (t.total_amount || 0), 0);
-  const totalFees = 0; // Platform fees not in current API
   const refundStats = data?.refundStats;
   const totalRefunds = refundStats?._sum?.amount || 0;
   const netRevenue = totalRevenue - totalRefunds;
@@ -357,29 +355,23 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
 
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPI Cards — Platform Fees omitted: MiyZapis takes 0% commission */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title={t('admin.analytics.totalRevenue')}
-          value={`$${(totalRevenue / 1000).toFixed(1)}K`}
+          value={`₴${(totalRevenue / 1000).toFixed(1)}K`}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
           subtitle={`${period} ${t('admin.analytics.period')}`}
         />
         <StatCard
-          title={t('admin.analytics.platformFees')}
-          value={`$${(totalFees / 1000).toFixed(1)}K`}
-          icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
-          subtitle={`${((totalFees / Math.max(totalRevenue, 1)) * 100).toFixed(1)}${t('admin.analytics.ofRevenue')}`}
-        />
-        <StatCard
           title={t('admin.analytics.netRevenue')}
-          value={`$${(netRevenue / 1000).toFixed(1)}K`}
+          value={`₴${(netRevenue / 1000).toFixed(1)}K`}
           icon={<ChartBarIcon className="w-6 h-6" />}
           subtitle={t('admin.analytics.afterRefunds')}
         />
         <StatCard
           title={t('admin.analytics.avgTransaction')}
-          value={`$${avgTransactionValue.toFixed(2)}`}
+          value={`₴${avgTransactionValue.toFixed(2)}`}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
           subtitle={t('admin.analytics.perBooking')}
         />
@@ -394,7 +386,6 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
           data={revenueTimelineData}
           dataKeys={[
             { key: 'revenue', name: t('admin.analytics.totalRevenue'), color: '#3B82F6' },
-            { key: 'fees', name: t('admin.analytics.platformFees'), color: '#10B981' },
             { key: 'refunds', name: t('admin.analytics.refunds'), color: '#EF4444' }
           ]}
           height={300}
@@ -446,23 +437,106 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
 };
 
 // Referral Analytics Sub-component
-const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period }> = (_props) => {
+const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period }> = ({ data }) => {
   const { t } = useLanguage();
-  // This would need referral data from the API
-  // For now, showing placeholder with the structure
-  // Note: _props contains data and period for future implementation
+  const ref = data.referralAnalytics;
+
+  if (!ref) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+        <UserGroupIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+        <p className="text-gray-500 dark:text-gray-400">{t('admin.analytics.referralDescription')}</p>
+      </div>
+    );
+  }
+
+  const { overview, byType, recentActivity, topReferrers } = ref;
+
+  const referrerColumns: Column<typeof topReferrers[0]>[] = [
+    {
+      key: 'name',
+      label: t('admin.analytics.specialist'),
+      sortable: true,
+      render: (row) => (
+        <div>
+          <div className="font-medium text-gray-900 dark:text-white">{row.name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{row.userType}</div>
+        </div>
+      )
+    },
+    {
+      key: 'completedReferrals',
+      label: t('admin.analytics.completed'),
+      sortable: true,
+      render: (row) => (
+        <span className="font-semibold text-green-600 dark:text-green-400 tabular-nums">
+          {row.completedReferrals}
+        </span>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
-        <UserGroupIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          {t('admin.analytics.referralAnalytics')}
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          {t('admin.analytics.referralDescription')}
-        </p>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t('admin.analytics.totalReferrals') || 'Total Referrals'}
+          value={overview.totalReferrals}
+          icon={<UserGroupIcon className="w-6 h-6" />}
+          subtitle={`${recentActivity.newReferrals} ${t('admin.analytics.last7Days') || 'last 7 days'}`}
+        />
+        <StatCard
+          title={t('admin.analytics.completed') || 'Completed'}
+          value={overview.completedReferrals}
+          icon={<CheckCircleIcon className="w-6 h-6" />}
+          subtitle={`${overview.conversionRate.toFixed(1)}% ${t('admin.analytics.conversionRate') || 'conversion rate'}`}
+        />
+        <StatCard
+          title={t('admin.analytics.pending') || 'Pending'}
+          value={overview.pendingReferrals}
+          icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
+          subtitle={`${recentActivity.completedReferrals} ${t('admin.analytics.completedLast7d') || 'completed in last 7d'}`}
+        />
+        <StatCard
+          title={t('admin.analytics.expired') || 'Expired'}
+          value={overview.expiredReferrals}
+          icon={<XCircleIcon className="w-6 h-6" />}
+          subtitle={t('admin.analytics.expiredReferrals') || 'Expired referrals'}
+        />
       </div>
+
+      {/* Referral type breakdown */}
+      {Object.keys(byType).length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('admin.analytics.referralsByType') || 'Referrals by Type'}
+          </h3>
+          <DistributionPieChart
+            data={Object.entries(byType).map(([type, count], i) => ({
+              name: type,
+              value: count as number,
+              color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366f1'][i % 5]
+            }))}
+            height={250}
+          />
+        </div>
+      )}
+
+      {/* Top referrers table */}
+      {topReferrers.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('admin.analytics.topReferrers') || 'Top Referrers'}
+          </h3>
+          <DataTable
+            columns={referrerColumns}
+            data={topReferrers}
+            pageSize={10}
+            emptyMessage={t('admin.analytics.noReferrers') || 'No referrers yet'}
+          />
+        </div>
+      )}
     </div>
   );
 };

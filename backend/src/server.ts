@@ -491,6 +491,13 @@ const startServer = async () => {
       SpecialistService.backfillMissingSlugs().catch((e) =>
         logger.warn('Specialist slug backfill failed', { error: (e as Error)?.message }));
 
+      // Backfill lat/lng for specialists that have a city/address but no coords.
+      // Rate-limited to 1.1 s/call (Nominatim policy). Idempotent: no-op after
+      // all specialists are geocoded. Runs after slug backfill so it doesn't
+      // compete for the same DB rows.
+      SpecialistService.backfillCoordinates().catch((e) =>
+        logger.warn('Specialist coordinates backfill failed', { error: (e as Error)?.message }));
+
       // Start marketing automation worker
       try {
         startMarketingWorker();

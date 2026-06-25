@@ -24,8 +24,6 @@ const AdminDashboard: React.FC = () => {
     data,
     stats,
     userAnalytics,
-    bookingAnalytics: _bookingAnalytics,
-    financialAnalytics: _financialAnalytics,
     loading,
     error,
     refetch,
@@ -169,6 +167,7 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'overview' && (
             <OverviewSection
               data={stats}
+              userAnalyticsData={userAnalytics}
               period={period}
               loading={loading}
             />

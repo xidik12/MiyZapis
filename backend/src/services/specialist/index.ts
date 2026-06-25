@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import { Specialist, User, Service } from '@prisma/client';
 import { convertCurrency } from '@/utils/currency';
 import { encryptField, decryptField } from '@/utils/encryption';
+import { geocodeAddress } from '@/utils/geocode';
 
 interface CreateSpecialistData {
   businessName?: string;
@@ -193,6 +194,77 @@ export class SpecialistService {
     return fixed;
   }
 
+  /**
+   * Idempotent backfill: geocode every specialist that has a city/address but
+   * no coordinates yet. Respects Nominatim's 1 req/sec policy (1.1 s spacing).
+   * Runs fire-and-forget on boot after slug backfill — after the first pass it
+   * becomes a no-op (no matching rows).
+   */
+  static async backfillCoordinates(): Promise<number> {
+    const missing = await prisma.specialist.findMany({
+      where: {
+        latitude: null,
+        OR: [
+          { city: { not: null } },
+          { address: { not: null } },
+        ],
+      },
+      select: { id: true, preciseAddress: true, address: true, city: true },
+    });
+
+    if (missing.length === 0) return 0;
+    logger.info(`Coordinates backfill: ${missing.length} specialist(s) need geocoding`);
+
+    let fixed = 0;
+    for (const s of missing) {
+      const query = [s.preciseAddress || s.address, s.city, 'Ukraine']
+        .filter(Boolean)
+        .join(', ');
+
+      if (!query.replace(/,\s*/g, '').trim()) continue;
+
+      try {
+        const coords = await geocodeAddress(query);
+        if (coords) {
+          await prisma.specialist.update({
+            where: { id: s.id },
+            data: { latitude: coords.lat, longitude: coords.lng },
+          });
+          fixed++;
+          logger.info('Backfill: geocoded specialist', {
+            specialistId: s.id,
+            lat: coords.lat,
+            lng: coords.lng,
+          });
+        }
+      } catch (e) {
+        logger.warn('Backfill: geocoding failed', {
+          specialistId: s.id,
+          error: (e as Error).message,
+        });
+      }
+
+      // Nominatim rate limit: 1 req/sec. 1.1 s gives a small safety margin.
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+    }
+
+    if (fixed > 0) logger.info(`Coordinates backfill complete: ${fixed}/${missing.length} specialist(s) geocoded`);
+    return fixed;
+  }
+
+  /** Haversine great-circle distance in km between two lat/lng points. */
+  private static haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // Earth radius km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
+  }
+
   private static parseJsonField<T>(field: string | null, defaultValue: T): T {
     if (!field) return defaultValue;
     try {
@@ -318,10 +390,41 @@ export class SpecialistService {
         logger.info('User type updated to SPECIALIST', { userId });
       }
 
-      logger.info('Specialist profile created successfully', { 
-        userId, 
-        specialistId: specialist.id 
+      logger.info('Specialist profile created successfully', {
+        userId,
+        specialistId: specialist.id
       });
+
+      // ── Geocoding on create: fire-and-forget ──────────────────────────────
+      if (!data.latitude && !data.longitude) {
+        const geocodeQuery = [
+          data.preciseAddress || data.address,
+          data.city,
+          'Ukraine',
+        ].filter(Boolean).join(', ');
+
+        if (geocodeQuery.replace(/,\s*/g, '').trim()) {
+          geocodeAddress(geocodeQuery).then(async (coords) => {
+            if (!coords) return;
+            try {
+              await prisma.specialist.update({
+                where: { id: specialist.id },
+                data: { latitude: coords.lat, longitude: coords.lng },
+              });
+              logger.info('Specialist coordinates set via geocoding on create', {
+                specialistId: specialist.id,
+                lat: coords.lat,
+                lng: coords.lng,
+              });
+            } catch (e) {
+              logger.warn('Failed to persist geocoded coordinates on create', {
+                specialistId: specialist.id,
+                error: (e as Error).message,
+              });
+            }
+          }).catch(() => {/* already swallowed in geocodeAddress */});
+        }
+      }
 
       // Generate initial availability blocks from working hours
       try {
@@ -507,6 +610,40 @@ export class SpecialistService {
         }
       });
 
+      // ── Geocoding: fire-and-forget, never blocks profile save ────────────
+      // Re-geocode when city or address changed, or when lat/lng are still null.
+      const addressChanged = data.city !== undefined || data.address !== undefined;
+      const needsGeocode = addressChanged || (result.latitude == null && result.longitude == null);
+      if (needsGeocode) {
+        const geocodeQuery = [
+          data.preciseAddress || result.preciseAddress || data.address || result.address,
+          data.city || result.city,
+          'Ukraine',
+        ].filter(Boolean).join(', ');
+
+        if (geocodeQuery.replace(/,\s*/g, '').trim()) {
+          geocodeAddress(geocodeQuery).then(async (coords) => {
+            if (!coords) return;
+            try {
+              await prisma.specialist.update({
+                where: { id: result.id },
+                data: { latitude: coords.lat, longitude: coords.lng },
+              });
+              logger.info('Specialist coordinates updated via geocoding', {
+                specialistId: result.id,
+                lat: coords.lat,
+                lng: coords.lng,
+              });
+            } catch (e) {
+              logger.warn('Failed to persist geocoded coordinates', {
+                specialistId: result.id,
+                error: (e as Error).message,
+              });
+            }
+          }).catch(() => {/* already swallowed in geocodeAddress */});
+        }
+      }
+
       // If working hours were updated, regenerate availability blocks
       if (data.workingHours) {
         try {
@@ -521,9 +658,9 @@ export class SpecialistService {
         }
       }
 
-      logger.info('Specialist profile updated successfully', { 
-        userId, 
-        specialistId: result.id 
+      logger.info('Specialist profile updated successfully', {
+        userId,
+        specialistId: result.id
       });
 
       return result;
@@ -671,7 +808,7 @@ export class SpecialistService {
     specialties?: string[],
     city?: string,
     minRating?: number,
-    sortBy: 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc' = 'rating',
+    sortBy: 'rating' | 'reviews' | 'newest' | 'priceAsc' | 'priceDesc' | 'distance' = 'rating',
     page: number = 1,
     limit: number = 20,
     // ── Marketplace v2 filters ────────────────────────────────────────
@@ -679,6 +816,10 @@ export class SpecialistService {
     maxPrice?: number,
     verifiedOnly?: boolean,
     language?: string,
+    // ── Near-me / distance filters ────────────────────────────────────
+    userLat?: number,
+    userLng?: number,
+    radiusKm?: number,
   ): Promise<{
     specialists: SpecialistWithUser[];
     total: number;
@@ -911,6 +1052,35 @@ export class SpecialistService {
         const bf = b.isFeatured ? 1 : 0;
         return bf - af; // active-featured first; stable for equal keys
       });
+
+      // ── Near-me / distance ──────────────────────────────────────────────────
+      // Attach distanceKm to each specialist if the caller provided coords.
+      // Then optionally filter by radiusKm (keeping those without coords) and
+      // sort ascending if sortBy=distance.
+      if (userLat != null && userLng != null) {
+        finalList = finalList.map((s: any) => ({
+          ...s,
+          distanceKm: (s.latitude != null && s.longitude != null)
+            ? SpecialistService.haversineKm(userLat, userLng, s.latitude, s.longitude)
+            : null,
+        }));
+
+        if (radiusKm != null && radiusKm > 0) {
+          // Keep specialists within radius OR without coords (lat/lng null)
+          finalList = finalList.filter(
+            (s: any) => s.distanceKm == null || s.distanceKm <= radiusKm
+          );
+        }
+
+        if (sortBy === 'distance') {
+          finalList = [...finalList].sort((a: any, b: any) => {
+            if (a.distanceKm == null && b.distanceKm == null) return 0;
+            if (a.distanceKm == null) return 1; // nulls last
+            if (b.distanceKm == null) return -1;
+            return a.distanceKm - b.distanceKm;
+          });
+        }
+      }
 
       const totalPages = Math.ceil(total / limit);
 

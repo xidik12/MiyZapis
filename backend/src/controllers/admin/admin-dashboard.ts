@@ -220,7 +220,7 @@ export class AdminController {
           totalSpecialists,
           totalServices,
           totalBookings,
-          totalRevenue: totalRevenue._sum.amount || 0,
+          totalRevenue: Number(totalRevenue._sum.amount || 0),
           activeUsers,
           completedBookings,
           conversionRate: totalUsers > 0 ? (totalBookings / totalUsers) * 100 : 0
@@ -238,11 +238,11 @@ export class AdminController {
             growthRate: calculateGrowthRate(newBookingsThisPeriod, previousBookings)
           },
           revenue: {
-            current: revenueThisPeriod._sum.amount || 0,
-            previous: previousRevenue._sum.amount || 0,
+            current: Number(revenueThisPeriod._sum.amount || 0),
+            previous: Number(previousRevenue._sum.amount || 0),
             growthRate: calculateGrowthRate(
-              revenueThisPeriod._sum.amount || 0, 
-              previousRevenue._sum.amount || 0
+              Number(revenueThisPeriod._sum.amount || 0),
+              Number(previousRevenue._sum.amount || 0)
             )
           }
         },

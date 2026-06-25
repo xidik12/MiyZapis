@@ -204,7 +204,7 @@ export class AdminAnalyticsService {
     if (cached) return cached;
 
     try {
-      const response = await apiClient.get<ReferralAnalytics>(
+      const response = await apiClient.get<{ referralAnalytics: ReferralAnalytics }>(
         '/admin/analytics/referrals'
       );
 
@@ -212,8 +212,10 @@ export class AdminAnalyticsService {
         throw new Error(response.error?.message || 'Failed to get referral analytics');
       }
 
-      this.cache.set(cacheKey, response.data);
-      return response.data;
+      // Backend wraps in { referralAnalytics: {...} }
+      const analytics = response.data.referralAnalytics;
+      this.cache.set(cacheKey, analytics);
+      return analytics;
     } catch (error: unknown) {
       console.error('Admin referral analytics error:', error);
       throw new Error((error as any).message || 'Failed to get referral analytics');
@@ -443,9 +445,9 @@ export class AdminAnalyticsService {
         trafficSources: [],
         topViewedProfiles: [],
         referralMetrics: {
-          totalClicks: referralData.totalReferrals || 0,
-          totalConversions: referralData.completedReferrals || 0,
-          conversionRate: referralData.conversionRate || 0
+          totalClicks: referralData.overview?.totalReferrals || 0,
+          totalConversions: referralData.overview?.completedReferrals || 0,
+          conversionRate: referralData.overview?.conversionRate || 0
         }
       };
 

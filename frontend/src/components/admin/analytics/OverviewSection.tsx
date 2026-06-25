@@ -17,12 +17,14 @@ import type { DashboardStats, Period } from '@/types/admin.types';
 
 export interface OverviewSectionProps {
   data: DashboardStats | null;
+  userAnalyticsData?: import('@/types/admin.types').UserAnalytics | null;
   period: Period;
   loading?: boolean;
 }
 
 export const OverviewSection: React.FC<OverviewSectionProps> = ({
   data,
+  userAnalyticsData,
   loading = false
 }) => {
   const { t } = useLanguage();
@@ -42,17 +44,22 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
 
   const { overview, growth, recentActivity, analytics } = data;
 
-  // Prepare chart data
-  const userGrowthData = [
-    {
-      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-      users: growth.newUsers.previous
-    },
-    {
-      date: new Date().toISOString(),
-      users: growth.newUsers.current
-    }
-  ];
+  // Prepare chart data — aggregate daily user-trend series from userAnalytics
+  // (falls back to the 2-point previous/current pair when not yet loaded)
+  const rawTrends = userAnalyticsData?.userTrends || [];
+  const dailyUserMap = new Map<string, number>();
+  rawTrends.forEach((trend) => {
+    const dateKey = typeof trend.date === 'string' ? trend.date.slice(0, 10) : String(trend.date);
+    dailyUserMap.set(dateKey, (dailyUserMap.get(dateKey) || 0) + (trend.count || 0));
+  });
+  const userGrowthData = dailyUserMap.size > 1
+    ? Array.from(dailyUserMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, users]) => ({ date, users }))
+    : [
+        { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), users: growth.newUsers.previous },
+        { date: new Date().toISOString().slice(0, 10), users: growth.newUsers.current }
+      ];
 
   // Prepare booking status pie chart data
   const bookingStatusData = [
@@ -144,10 +151,10 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         />
         <StatCard
           title={t('admin.overview.totalRevenue')}
-          value={`$${(overview.totalRevenue / 1000).toFixed(1)}K`}
+          value={`₴${(overview.totalRevenue / 1000).toFixed(1)}K`}
           growth={growth.revenue.growthRate}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
-          subtitle={`+$${(growth.revenue.current / 1000).toFixed(1)}${t('admin.overview.kThisPeriod')}`}
+          subtitle={`+₴${(growth.revenue.current / 1000).toFixed(1)}${t('admin.overview.kThisPeriod')}`}
         />
       </div>
 

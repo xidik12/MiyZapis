@@ -79,6 +79,10 @@ const SearchPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [selectedRating, setSelectedRating] = useState(0);
   const [selectedDistance, setSelectedDistance] = useState<number>(0); // km, 0 means ignore
+  // Near-me: geolocation coords acquired when the user enables near-me or picks sortBy=distance
+  const [nearMeActive, setNearMeActive] = useState<boolean>(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [nearMeError, setNearMeError] = useState<string | null>(null);
   const [availableNow, setAvailableNow] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -289,15 +293,37 @@ const SearchPage: React.FC = () => {
         // different shapes; treat as opaque here and access dynamically.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any;
-        if (sortBy === 'distance' && typeof navigator !== 'undefined' && navigator.geolocation) {
-          try {
-            const coords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition((pos) => resolve(pos.coords), (err) => reject(err), { timeout: 5000 });
-            });
-            const byLoc = await serviceService.getServicesByLocation(coords.latitude, coords.longitude, selectedDistance || 50, page, PAGE_SIZE);
+        // Use location-based search when near-me is active OR sort is distance.
+        // Prefer already-acquired coords (nearMeActive path) to avoid a second
+        // geolocation prompt on every re-fetch.
+        const useLocationSearch = nearMeActive || sortBy === 'distance';
+        if (useLocationSearch) {
+          // Resolve coords: use cached near-me coords if available, otherwise
+          // ask the browser (legacy sortBy=distance path).
+          let resolvedCoords = userCoords;
+          if (!resolvedCoords && typeof navigator !== 'undefined' && navigator.geolocation) {
+            try {
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, maximumAge: 60000 });
+              });
+              resolvedCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+              // Cache so sub-fetches don't re-prompt
+              setUserCoords(resolvedCoords);
+            } catch (e) {
+              logger.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
+            }
+          }
+          if (resolvedCoords) {
+            const byLoc = await serviceService.getServicesByLocation(
+              resolvedCoords.lat,
+              resolvedCoords.lng,
+              selectedDistance > 0 ? selectedDistance : 50,
+              page,
+              PAGE_SIZE
+            );
             data = { services: byLoc.services, pagination: byLoc.pagination };
-          } catch (e) {
-            logger.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
+          } else {
+            // Coords unavailable — fall back to normal search
             data = await serviceService.searchServices(filters as Parameters<typeof serviceService.searchServices>[0]);
           }
         } else {
@@ -349,7 +375,8 @@ const SearchPage: React.FC = () => {
             isFeatured: service.specialist?.isFeatured || false,
           },
           _count: service._count,
-          distance: undefined, // Not available in backend response
+          // distanceKm from /specialists/ endpoint, or distance from /services/location endpoint
+          distance: service.distanceKm ?? service.specialist?.distance ?? undefined,
           isAvailable: true, // Assume available if service exists
           portfolioImages: service.specialist?.portfolioImages || service.images || undefined,
           // Phase 3: marketplace fields from backend
@@ -402,7 +429,7 @@ const SearchPage: React.FC = () => {
         setLoadingMore(false);
       }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow, availableWithin]);
+  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow, availableWithin, nearMeActive, userCoords]);
 
   // Fetch on first mount and when deps change — always reset to page 1
   useEffect(() => {
@@ -479,6 +506,38 @@ const SearchPage: React.FC = () => {
     setSelectedDistance(0);
     setSortBy('rating');
     setShowFavoritesOnly(false);
+    setNearMeActive(false);
+    setUserCoords(null);
+    setNearMeError(null);
+  };
+
+  // ── Near-me toggle ────────────────────────────────────────────────────────
+  const handleNearMeToggle = () => {
+    if (nearMeActive) {
+      // Turn off
+      setNearMeActive(false);
+      setUserCoords(null);
+      setNearMeError(null);
+      return;
+    }
+    if (!navigator?.geolocation) {
+      setNearMeError(t('search.nearMe.noGeolocation') || 'Geolocation is not supported by your browser');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearMeActive(true);
+        setNearMeError(null);
+        // Auto-switch sort to distance so results are immediately useful
+        setSortBy('distance');
+      },
+      () => {
+        setNearMeError(t('search.nearMe.denied') || 'Location access denied. Please allow location access and try again.');
+        setNearMeActive(false);
+      },
+      { timeout: 8000, maximumAge: 60000 }
+    );
   };
 
   // Filter services (search query, favorites, availability)
@@ -652,9 +711,15 @@ const SearchPage: React.FC = () => {
               <ClockIcon className="w-4 h-4 mr-1" />
               <span>{service.duration} {t('common.minutes')}</span>
             </div>
-            {service.distance && (
-              <div className="flex items-center tabular-nums">
-                <span>{service.distance.toFixed(1)} km</span>
+            {service.distance != null && (
+              <div className="flex items-center gap-1 tabular-nums text-primary-600 dark:text-primary-400 font-medium">
+                <MapPinIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>
+                  {service.distance < 1
+                    ? `${Math.round(service.distance * 1000)} m`
+                    : `${service.distance.toFixed(1)} km`}
+                  {' '}{t('search.nearMe.away') || 'away'}
+                </span>
               </div>
             )}
           </div>
@@ -1057,6 +1122,7 @@ const SearchPage: React.FC = () => {
                     activeQuickFilters.size > 0,
                     showFavoritesOnly,
                     selectedDistance > 0,
+                    nearMeActive,
                   ].filter(Boolean).length;
                   return (
                     <button onClick={() => setIsFilterTrayOpen(v => !v)} className="lg:hidden btn btn-secondary text-sm relative">
@@ -1333,6 +1399,13 @@ const SearchPage: React.FC = () => {
                 <button onClick={() => setSelectedRating(0)} className="ml-1 hover:text-blue-600">×</button>
               </span>
             )}
+            {nearMeActive && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 text-xs font-medium">
+                <MapPinIcon className="w-3.5 h-3.5" />
+                {t('search.nearMe.button') || 'Near me'}
+                <button onClick={() => { setNearMeActive(false); setUserCoords(null); setNearMeError(null); }} className="ml-1 hover:text-primary-600">×</button>
+              </span>
+            )}
             {selectedDistance > 0 && (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs font-medium">
                 ≤ {selectedDistance} km
@@ -1347,7 +1420,7 @@ const SearchPage: React.FC = () => {
             )}
 
             {/* Clear All Filters */}
-            {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly || selectedDistance > 0 || priceRange.min > 0 || priceRange.max < 1000) && (
+            {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly || selectedDistance > 0 || nearMeActive || priceRange.min > 0 || priceRange.max < 1000) && (
               <button
                 onClick={clearFilters}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
@@ -1368,7 +1441,7 @@ const SearchPage: React.FC = () => {
               >
                 {t('actions.apply') || 'Apply'}
               </button>
-              {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
+              {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || nearMeActive || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                 <button
                   onClick={clearFilters}
                   className="inline-flex items-center gap-2 h-10 px-3 rounded-full border border-red-200 text-red-700 hover:bg-red-50"
@@ -1447,6 +1520,15 @@ const SearchPage: React.FC = () => {
                   {t('search.distance') || 'Distance'}: ≤ {selectedDistance} km ×
                 </button>
               )}
+              {nearMeActive && (
+                <button
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300"
+                  onClick={() => { setNearMeActive(false); setUserCoords(null); setNearMeError(null); }}
+                >
+                  <MapPinIcon className="w-3.5 h-3.5" />
+                  {t('search.nearMe.button') || 'Near me'} ×
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1460,7 +1542,7 @@ const SearchPage: React.FC = () => {
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
                 <div className="flex items-center gap-3">
-                  {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
+                  {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || nearMeActive || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                     <button
                       onClick={clearFilters}
                       className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
@@ -1663,9 +1745,28 @@ const SearchPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Distance Slider */}
+                {/* Near Me + Distance */}
                 <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.distance') || 'Distance (km)'}</label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.distance') || 'Distance (km)'}</label>
+                    {/* Near me toggle button */}
+                    <button
+                      type="button"
+                      onClick={handleNearMeToggle}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                        nearMeActive
+                          ? 'bg-primary-600 text-white shadow'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-600'
+                      }`}
+                      aria-pressed={nearMeActive}
+                    >
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      {t('search.nearMe.button') || 'Near me'}
+                    </button>
+                  </div>
+                  {nearMeError && (
+                    <p className="text-xs text-red-600 dark:text-red-400">{nearMeError}</p>
+                  )}
                   <div className="flex items-center gap-4">
                     <input
                       type="range"
@@ -1676,7 +1777,7 @@ const SearchPage: React.FC = () => {
                       onChange={(e) => setSelectedDistance(Number(e.target.value))}
                       className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] sm:min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] sm:min-w-[4.5rem] text-right tabular-nums">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
                   </div>
                 </div>
 

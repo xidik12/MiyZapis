@@ -258,22 +258,23 @@ export interface FinancialAnalytics {
 // ============================================================================
 
 export interface ReferralAnalytics {
-  totalReferrals: number;
-  completedReferrals: number;
-  pendingReferrals: number;
-  expiredReferrals: number;
-  totalPointsAwarded: number;
-  conversionRate: number;
+  overview: {
+    totalReferrals: number;
+    completedReferrals: number;
+    pendingReferrals: number;
+    expiredReferrals: number;
+    conversionRate: number;
+  };
+  byType: Record<string, number>;
+  recentActivity: {
+    newReferrals: number;
+    completedReferrals: number;
+  };
   topReferrers: Array<{
     userId: string;
-    userName: string;
-    referralCount: number;
-    completedCount: number;
-    pointsEarned: number;
-  }>;
-  referralsByType: Array<{
-    type: string;
-    count: number;
+    name: string;
+    userType: string;
+    completedReferrals: number;
   }>;
 }
 
