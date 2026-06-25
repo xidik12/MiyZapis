@@ -12,7 +12,7 @@ const CONTENT = {
     title: 'User Agreement',
     lastUpdated: 'Last updated: 1 June 2026',
     legalNote:
-      'This document is template content only and does not constitute legal advice. It should be reviewed and adapted by a qualified lawyer before being relied upon. The operating entity name is marked as a placeholder below.',
+      'This document is template content only and does not constitute legal advice. It should be reviewed and adapted by a qualified lawyer before being relied upon.',
     intro:
       'This User Agreement ("Agreement") governs the relationship between MiyZapis and all persons who access or use the platform — whether as customers, specialists, or business accounts. By creating an account or using any part of the platform you confirm that you have read, understood, and agree to be bound by this Agreement.',
     sections: [
@@ -23,7 +23,7 @@ const CONTENT = {
           'By registering an account or using MiyZapis in any way you agree to this Agreement. If you do not agree, do not use the platform.',
           'You must be at least 18 years old and have full legal capacity under applicable law to enter into binding contracts. By using the platform you represent and warrant that you meet these requirements.',
           'If you are registering on behalf of a legal entity you represent that you are authorised to bind that entity to this Agreement, and "you" includes that entity.',
-          'The platform is operated by MiyZapis, hereinafter referred to as "MiyZapis", "we", "us", or "our".',
+          'The platform is operated by МійЗапис, hereinafter referred to as "MiyZapis", "we", "us", or "our".',
         ],
       },
       {
@@ -192,7 +192,7 @@ const CONTENT = {
     title: 'Угода користувача',
     lastUpdated: 'Останнє оновлення: 1 червня 2026 р.',
     legalNote:
-      'Цей документ є шаблонним текстом і не є юридичною консультацією. Перед тим як покладатися на нього, він має бути перевірений і адаптований кваліфікованим юристом. Назва юридичної особи-оператора позначена заповнювачем нижче.',
+      'Цей документ є шаблонним текстом і не є юридичною консультацією. Перед тим як покладатися на нього, він має бути перевірений і адаптований кваліфікованим юристом.',
     intro:
       'Ця Угода користувача («Угода») регулює відносини між MiyZapis та всіма особами, які отримують доступ до платформи або використовують її — як клієнти, спеціалісти чи бізнес-акаунти. Реєструючи акаунт або використовуючи будь-яку частину платформи, ви підтверджуєте, що ознайомилися з цією Угодою, зрозуміли її та погоджуєтеся дотримуватися її умов.',
     sections: [
@@ -203,7 +203,7 @@ const CONTENT = {
           'Реєструючи акаунт або використовуючи MiyZapis будь-яким способом, ви погоджуєтеся з цією Угодою. Якщо ви не погоджуєтеся, не використовуйте платформу.',
           'Вам має бути не менше 18 років, і ви повинні мати повну дієздатність відповідно до чинного законодавства для укладення обов’язкових договорів. Використовуючи платформу, ви підтверджуєте, що відповідаєте цим вимогам.',
           'Якщо ви реєструєтеся від імені юридичної особи, ви підтверджуєте, що уповноважені зобов’язати цю особу умовами Угоди, а «ви» включає і цю юридичну особу.',
-          'Платформа управляється MiyZapis, далі іменованою «MiyZapis», «ми», «нас» або «нам».',
+          'Платформою керує МійЗапис, далі іменована «MiyZapis», «ми», «нас» або «наш».',
         ],
       },
       {
@@ -372,7 +372,7 @@ const CONTENT = {
     title: 'Пользовательское соглашение',
     lastUpdated: 'Последнее обновление: 1 июня 2026 г.',
     legalNote:
-      'Данный документ является шаблонным текстом и не является юридической консультацией. Перед тем как полагаться на него, он должен быть проверен и адаптирован квалифицированным юристом. Название юридического лица-оператора обозначено заполнителем ниже.',
+      'Данный документ является шаблонным текстом и не является юридической консультацией. Перед тем как полагаться на него, он должен быть проверен и адаптирован квалифицированным юристом.',
     intro:
       'Настоящее Пользовательское соглашение («Соглашение») регулирует отношения между MiyZapis и всеми лицами, получающими доступ к платформе или использующими её — в качестве клиентов, специалистов или бизнес-аккаунтов. Регистрируя аккаунт или используя любую часть платформы, вы подтверждаете, что ознакомились с настоящим Соглашением, поняли его и соглашаетесь соблюдать его условия.',
     sections: [
@@ -383,7 +383,7 @@ const CONTENT = {
           'Регистрируя аккаунт или используя MiyZapis любым способом, вы соглашаетесь с настоящим Соглашением. Если вы не согласны, не используйте платформу.',
           'Вам должно быть не менее 18 лет, и вы должны обладать полной дееспособностью в соответствии с применимым законодательством для заключения обязательных договоров. Используя платформу, вы подтверждаете, что отвечаете этим требованиям.',
           'Если вы регистрируетесь от имени юридического лица, вы подтверждаете, что уполномочены обязать это лицо условиями Соглашения, а «вы» включает данное юридическое лицо.',
-          'Платформа управляется MiyZapis, далее именуемым «MiyZapis», «мы», «нас» или «нам».',
+          'Платформа управляется МійЗапис, далее именуемой «MiyZapis», «мы», «нас» или «нам».',
         ],
       },
       {

@@ -34,7 +34,7 @@ const en: PolicyContent = {
   lastUpdatedDate: 'June 1, 2026',
   legalNotice:
     'This document is a policy template and does not constitute legal advice. We recommend having it reviewed by a qualified lawyer before relying on it in a legal context.',
-  entityPlaceholder: 'MiyZapis',
+  entityPlaceholder: 'МійЗапис',
   contactBoxLabel: 'Billing questions?',
   sections: [
     {
@@ -57,7 +57,7 @@ const en: PolicyContent = {
             </li>
           </ol>
           <p>
-            Operating entity: MiyZapis (
+            Operating entity: МійЗапис (
             <span className="italic text-gray-500 dark:text-gray-400">MiyZapis</span>
             ).
           </p>
@@ -261,7 +261,7 @@ const uk: PolicyContent = {
   lastUpdatedDate: '1 червня 2026 р.',
   legalNotice:
     'Цей документ є шаблоном політики і не є юридичною порадою. Рекомендуємо проконсультуватися з кваліфікованим юристом перед використанням у правовому контексті.',
-  entityPlaceholder: 'MiyZapis',
+  entityPlaceholder: 'МійЗапис',
   contactBoxLabel: 'Питання щодо оплати?',
   sections: [
     {
@@ -490,7 +490,7 @@ const ru: PolicyContent = {
   lastUpdatedDate: '1 июня 2026 г.',
   legalNotice:
     'Этот документ является шаблоном политики и не является юридической консультацией. Рекомендуем проконсультироваться с квалифицированным юристом перед использованием в правовом контексте.',
-  entityPlaceholder: 'MiyZapis',
+  entityPlaceholder: 'МійЗапис',
   contactBoxLabel: 'Вопросы по оплате?',
   sections: [
     {
@@ -513,7 +513,7 @@ const ru: PolicyContent = {
             </li>
           </ol>
           <p>
-            Оператор: МийЗапис (
+            Оператор: МійЗапис (
             <span className="italic text-gray-500 dark:text-gray-400">MiyZapis</span>
             ).
           </p>
