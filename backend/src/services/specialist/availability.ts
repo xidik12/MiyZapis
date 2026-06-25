@@ -716,8 +716,9 @@ export class AvailabilityService {
     const slots: TimeSlot[] = [];
     const slotDuration = 60; // 1 hour slots
 
-    const startStr = workingHours.start as string | undefined;
-    const endStr = workingHours.end as string | undefined;
+    // Support both new format (startTime/endTime) and legacy format (start/end)
+    const startStr = (workingHours.startTime ?? workingHours.start) as string | undefined;
+    const endStr = (workingHours.endTime ?? workingHours.end) as string | undefined;
     if (!startStr || !endStr) {
       return slots;
     }

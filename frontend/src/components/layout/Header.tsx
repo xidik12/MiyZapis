@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
-import { selectNotifications } from '@/store/slices/notificationSlice';
+import { selectNotifications, fetchNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Logo } from '@/components/ui/Logo';
@@ -55,6 +55,13 @@ export const Header: React.FC = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Fetch notifications on mount (once the user is authenticated)
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchNotifications());
+    }
+  }, [isAuthenticated, dispatch]);
 
   // Update notification messages when language changes
   // Note: Removed dispatch call to prevent Redux serialization error

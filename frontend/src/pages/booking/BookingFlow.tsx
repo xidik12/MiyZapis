@@ -38,6 +38,8 @@ const BookingFlow: React.FC = () => {
   const { serviceId: paramServiceId, specialistId } = useParams();
   const [searchParams] = useSearchParams();
   const queryServiceId = searchParams.get('service');
+  // If this booking was opened from a notified waitlist entry, claim the slot on success
+  const waitlistIdFromParam = searchParams.get('waitlistId') || null;
 
   // Marketplace acquisition: where this booking originated. Threaded from the
   // entry point via ?source= (search results = DISCOVERY, embed widget = EMBED);
@@ -439,6 +441,18 @@ const BookingFlow: React.FC = () => {
     }
   };
 
+  // If this booking was initiated from a waitlist "Book Now", silently mark the entry BOOKED.
+  // bookingId must be the ID of the booking that was just created.
+  const claimWaitlistIfNeeded = async (bookingId: string) => {
+    if (!waitlistIdFromParam) return;
+    try {
+      await waitlistService.bookWaitlistSlot(waitlistIdFromParam, { bookingId });
+    } catch (err) {
+      // Non-critical: booking already created; don't block the user
+      logger.warn('BookingFlow: Failed to mark waitlist entry BOOKED', err);
+    }
+  };
+
   const handleNextStep = async () => {
     // Auth gate: block advancement to the booking-creation step for unauthenticated users.
     // The next step after 'details' (payments disabled) or 'payment' (payments enabled)
@@ -510,6 +524,10 @@ const BookingFlow: React.FC = () => {
           result = await bookingService.createBooking(bookingData as any);
         }
         logger.debug('BookingFlow: Booking created successfully:', result);
+
+        // Mark waitlist entry BOOKED if this booking came from a waitlist notification
+        const _bookingId1 = (result as any).booking?.id || (result as any).id;
+        if (_bookingId1) await claimWaitlistIfNeeded(_bookingId1);
 
         dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
         localStorage.removeItem('miyzapis_abandoned_booking');
@@ -646,6 +664,10 @@ const BookingFlow: React.FC = () => {
         } else {
           result = await bookingService.createBooking(bookingData as any);
         }
+
+        // Mark waitlist entry BOOKED if this booking came from a waitlist notification
+        const _bookingId2 = (result as any).booking?.id || (result as any).id;
+        if (_bookingId2) await claimWaitlistIfNeeded(_bookingId2);
 
         dispatch({ type: 'SET_BOOKING_RESULT', payload: result });
         localStorage.removeItem('miyzapis_abandoned_booking');
@@ -880,6 +902,9 @@ const BookingFlow: React.FC = () => {
           paymentId: depositResult.paymentId!
         });
         logger.debug('BookingFlow: Booking created after wallet payment:', bookingResult);
+        // Mark waitlist entry BOOKED if this booking came from a waitlist notification
+        const _bookingId3 = (bookingResult as any).booking?.id || (bookingResult as any).id;
+        if (_bookingId3) await claimWaitlistIfNeeded(_bookingId3);
         dispatch({ type: 'SET_BOOKING_RESULT', payload: bookingResult });
         localStorage.removeItem('miyzapis_abandoned_booking');
         fireSuccessConfetti();
@@ -921,17 +946,27 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleJoinWaitlist = async () => {
-    if (!user || !state.service || !state.selectedDate) return;
+    if (!user || !state.service) return;
 
     const currentSpecialistId = getSpecialistId();
     if (!currentSpecialistId) return;
+
+    // Use selected date if available; otherwise use tomorrow as a "notify me whenever" placeholder
+    const preferredDate = state.selectedDate
+      ? state.selectedDate.toISOString()
+      : (() => {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(0, 0, 0, 0);
+          return tomorrow.toISOString();
+        })();
 
     dispatch({ type: 'SET_WAITLIST_LOADING', payload: true });
     try {
       await waitlistService.joinWaitlist({
         serviceId: state.service.id,
         specialistId: currentSpecialistId,
-        preferredDate: state.selectedDate.toISOString(),
+        preferredDate,
         preferredTime: state.waitlistPreferredTime || undefined,
         notes: state.waitlistNotes || undefined,
       });
@@ -945,6 +980,8 @@ const BookingFlow: React.FC = () => {
       if (code === 'ALREADY_ON_WAITLIST') {
         dispatch({ type: 'SET_WAITLIST_JOINED', payload: true });
         dispatch({ type: 'SET_SHOW_WAITLIST_MODAL', payload: false });
+      } else {
+        toast.error(t('waitlist.joinFailed') || 'Failed to join waitlist. Please try again.');
       }
     } finally {
       dispatch({ type: 'SET_WAITLIST_LOADING', payload: false });

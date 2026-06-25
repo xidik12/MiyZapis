@@ -1,6 +1,8 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { WaitlistService } from '@/services/waitlist';
+import { BookingService } from '@/services/booking';
+import { prisma } from '@/config/database';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
@@ -163,6 +165,122 @@ router.get('/specialist', authenticateToken as RequestHandler, async (req: Reque
     logger.error('Get specialist waitlist error:', error);
     res.status(500).json(
       createErrorResponse('INTERNAL_ERROR', 'Failed to get specialist waitlist', req.headers['x-request-id'] as string)
+    );
+  }
+});
+
+// POST /api/waitlist/:id/book — Mark a notified waitlist entry as BOOKED.
+//
+// Two modes:
+//   • { bookingId } — the caller already created a booking; just stamp the entry BOOKED.
+//   • { scheduledAt, notes? } — create a booking via the normal path then stamp BOOKED.
+//
+// The BookingFlow uses mode 1 (it creates the booking itself and passes the resulting id).
+// Direct API callers that want a single-step claim use mode 2.
+router.post('/:id/book', authenticateToken as RequestHandler, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json(
+        createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string)
+      );
+      return;
+    }
+
+    const { id: waitlistId } = req.params;
+    const { bookingId, scheduledAt, notes } = req.body;
+
+    if (!bookingId && !scheduledAt) {
+      res.status(400).json(
+        createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Either bookingId or scheduledAt is required', req.headers['x-request-id'] as string)
+      );
+      return;
+    }
+
+    // Fetch the waitlist entry
+    const entry = await prisma.waitlist.findUnique({ where: { id: waitlistId } });
+
+    if (!entry) {
+      res.status(404).json(
+        createErrorResponse('WAITLIST_ENTRY_NOT_FOUND', 'Waitlist entry not found', req.headers['x-request-id'] as string)
+      );
+      return;
+    }
+
+    if (entry.userId !== user.id) {
+      res.status(403).json(
+        createErrorResponse('UNAUTHORIZED', 'Not your waitlist entry', req.headers['x-request-id'] as string)
+      );
+      return;
+    }
+
+    if (entry.status !== 'NOTIFIED' && entry.status !== 'BOOKED') {
+      res.status(400).json(
+        createErrorResponse('WAITLIST_NOT_NOTIFIED', 'This waitlist entry has not been notified of an available slot', req.headers['x-request-id'] as string)
+      );
+      return;
+    }
+
+    let resolvedBookingId: string = bookingId;
+
+    if (!bookingId) {
+      // Mode 2: create booking then claim
+      const booking = await BookingService.createBooking({
+        customerId: user.id,
+        serviceId: entry.serviceId,
+        scheduledAt: new Date(scheduledAt),
+        customerNotes: notes || undefined,
+      });
+      resolvedBookingId = booking.id;
+
+      await WaitlistService.claimWaitlistSlot(waitlistId, user.id, resolvedBookingId);
+
+      return void res.status(201).json(
+        createSuccessResponse({
+          booking,
+          waitlistEntryId: waitlistId,
+          message: 'Booking created from waitlist',
+        })
+      );
+    }
+
+    // Mode 1: booking already exists — just stamp the entry BOOKED
+    await WaitlistService.claimWaitlistSlot(waitlistId, user.id, resolvedBookingId);
+
+    res.json(
+      createSuccessResponse({
+        waitlistEntryId: waitlistId,
+        bookingId: resolvedBookingId,
+        message: 'Waitlist entry marked as booked',
+      })
+    );
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Claim waitlist slot error:', error);
+
+    if (err.message === 'WAITLIST_ENTRY_NOT_FOUND') {
+      res.status(404).json(createErrorResponse('WAITLIST_ENTRY_NOT_FOUND', 'Waitlist entry not found', req.headers['x-request-id'] as string));
+      return;
+    }
+    if (err.message === 'WAITLIST_NOT_NOTIFIED') {
+      res.status(400).json(createErrorResponse('WAITLIST_NOT_NOTIFIED', 'Slot not yet available for this entry', req.headers['x-request-id'] as string));
+      return;
+    }
+    if (err.message === 'DUPLICATE_BOOKING') {
+      res.status(409).json(createErrorResponse('DUPLICATE_BOOKING', 'You already have a booking at this time', req.headers['x-request-id'] as string));
+      return;
+    }
+    if (err.message === 'SERVICE_NOT_FOUND' || err.message === 'SERVICE_NOT_ACTIVE') {
+      res.status(404).json(createErrorResponse(err.message, 'Service unavailable', req.headers['x-request-id'] as string));
+      return;
+    }
+    if (err.message === 'SCHEDULED_TIME_MUST_BE_FUTURE') {
+      res.status(400).json(createErrorResponse('SCHEDULED_TIME_MUST_BE_FUTURE', 'Scheduled time must be in the future', req.headers['x-request-id'] as string));
+      return;
+    }
+
+    res.status(500).json(
+      createErrorResponse('INTERNAL_ERROR', 'Failed to claim waitlist slot', req.headers['x-request-id'] as string)
     );
   }
 });

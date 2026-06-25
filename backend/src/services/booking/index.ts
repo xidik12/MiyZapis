@@ -154,6 +154,10 @@ export class BookingService {
         throw new Error('SERVICE_NOT_ACTIVE');
       }
 
+      if (service.isDeleted) {
+        throw new Error('SERVICE_NOT_FOUND');
+      }
+
       // Prevent specialists from booking their own services
       // service.specialist.userId is the User ID of the specialist who owns the service
       if (data.customerId === service.specialist.userId) {

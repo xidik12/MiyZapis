@@ -2911,6 +2911,7 @@ const uk: Record<string, string> = {
   'waitlist.statusWaiting': 'Очікування',
   'waitlist.bookNow': 'Забронювати',
   'waitlist.cancel': 'Скасувати',
+  'waitlist.joinFailed': 'Не вдалося стати в чергу. Будь ласка, спробуйте ще раз.',
   'bookings.listView': 'Список',
   'bookings.calendarView': 'Календар',
   'bookings.serviceLocation': 'Місце надання послуги',

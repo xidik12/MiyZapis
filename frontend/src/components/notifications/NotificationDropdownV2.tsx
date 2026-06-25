@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
-import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
+import { selectNotifications, markAsRead, markAllAsRead, removeNotification, addNotification } from '@/store/slices/notificationSlice';
 import { selectUser } from '@/store/slices/authSlice';
+import { notificationService } from '@/services/notification.service';
 // Local re-typing: the app's Notification matches the shape NotificationGroup expects.
 // Avoids the DOM global Notification clashing with app data.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,39 +78,85 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
 
   const totalUnread = notifications.filter(n => !n.isRead).length;
 
-  const handleMarkAsRead = (notificationId: string, e: React.MouseEvent) => {
+  const handleMarkAsRead = async (notificationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Optimistic update
     dispatch(markAsRead(notificationId));
-  };
-
-  const handleMarkAllAsRead = () => {
-    dispatch(markAllAsRead());
-  };
-
-  const handleMarkGroupAsRead = (group: Notification[]) => {
-    group.forEach(notification => {
-      if (!notification.isRead) {
-        dispatch(markAsRead(notification.id));
+    try {
+      await notificationService.markAsRead(notificationId);
+    } catch {
+      // Rollback: re-add the unread state by restoring via addNotification won't work cleanly,
+      // so we re-fetch state indirectly — mark back as unread by dispatching markAsRead with inverse.
+      // Simplest rollback: find the notification in current state and flip it back.
+      const snapshot = notifications.find(n => n.id === notificationId);
+      if (snapshot && !snapshot.isRead) {
+        // It was unread before optimistic update; restore by re-adding with isRead=false
+        dispatch(addNotification({ ...snapshot, isRead: false, readAt: undefined }));
       }
-    });
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    // Capture pre-optimistic state for rollback
+    const unreadSnapshot = notifications.filter(n => !n.isRead);
+    // Optimistic update
+    dispatch(markAllAsRead());
+    try {
+      await notificationService.markAllAsRead();
+    } catch {
+      // Rollback: restore each previously-unread notification
+      unreadSnapshot.forEach(n => {
+        dispatch(addNotification({ ...n, isRead: false, readAt: undefined }));
+      });
+    }
+  };
+
+  const handleMarkGroupAsRead = async (group: Notification[]) => {
+    const unreadInGroup = group.filter(n => !n.isRead);
+    // Optimistic
+    unreadInGroup.forEach(n => dispatch(markAsRead(n.id)));
+    try {
+      await Promise.all(unreadInGroup.map(n => notificationService.markAsRead(n.id)));
+    } catch {
+      // Rollback
+      unreadInGroup.forEach(n => dispatch(addNotification({ ...n, isRead: false, readAt: undefined })));
+    }
   };
 
   const handleDelete = (notificationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Capture for rollback
+    const snapshot = notifications.find(n => n.id === notificationId);
     setDeletingIds(prev => new Set(prev).add(notificationId));
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Optimistic remove
       dispatch(removeNotification(notificationId));
       setDeletingIds(prev => {
         const next = new Set(prev);
         next.delete(notificationId);
         return next;
       });
+      try {
+        await notificationService.deleteNotification(notificationId);
+      } catch {
+        // Rollback: re-add the notification
+        if (snapshot) {
+          dispatch(addNotification(snapshot));
+        }
+      }
     }, 300);
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
+      // Optimistic
       dispatch(markAsRead(notification.id));
+      try {
+        await notificationService.markAsRead(notification.id);
+      } catch {
+        // Rollback
+        dispatch(addNotification({ ...notification, isRead: false, readAt: undefined }));
+      }
     }
     if (notification.actionUrl) {
       navigate(notification.actionUrl);

@@ -316,6 +316,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedDate, setPreSelectedDate] = useState<Date | undefined>();
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
+  const [specialistWorkingHours, setSpecialistWorkingHours] = useState<Record<string, unknown> | null>(null);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'card' | 'month'>('card');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -513,13 +514,29 @@ const SpecialistSchedule: React.FC = () => {
     }
   }, [bookings]);
 
+  // Fetch specialist profile once to get working hours (auth user object doesn't carry them)
+  useEffect(() => {
+    specialistService.getProfile()
+      .then((profile) => {
+        const wh = (profile as any)?.workingHours;
+        if (wh) {
+          setSpecialistWorkingHours(
+            typeof wh === 'string' ? JSON.parse(wh) : wh
+          );
+        }
+      })
+      .catch(() => {
+        // Non-fatal — prompt simply won't show if profile can't be loaded
+      });
+  }, []);
+
   // Check if we should prompt to generate availability from working hours
   useEffect(() => {
-    if (!loading && availabilityBlocks.length === 0 && (user as any)?.workingHours) {
-      // User has working hours but no availability blocks - offer to generate
+    if (!loading && availabilityBlocks.length === 0 && specialistWorkingHours) {
+      // Specialist has working hours configured but no availability blocks — offer to generate
       setShowGeneratePrompt(true);
     }
-  }, [loading, availabilityBlocks.length, user]);
+  }, [loading, availabilityBlocks.length, specialistWorkingHours]);
 
   const handleGenerateFromWorkingHours = async () => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {

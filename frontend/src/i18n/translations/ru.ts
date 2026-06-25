@@ -2911,6 +2911,7 @@ const ru: Record<string, string> = {
   'waitlist.statusWaiting': 'Ожидание',
   'waitlist.bookNow': 'Забронировать',
   'waitlist.cancel': 'Отменить',
+  'waitlist.joinFailed': 'Не удалось встать в очередь. Пожалуйста, попробуйте ещё раз.',
   'bookings.listView': 'Список',
   'bookings.calendarView': 'Календарь',
   'bookings.serviceLocation': 'Место оказания услуги',

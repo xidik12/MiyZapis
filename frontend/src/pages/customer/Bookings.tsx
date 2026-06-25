@@ -1008,7 +1008,7 @@ const CustomerBookings: React.FC = () => {
                             onClick={() => {
                               const serviceId = entry.serviceId;
                               if (serviceId) {
-                                navigate(`/booking/${serviceId}`);
+                                navigate(`/booking/${serviceId}?waitlistId=${entry.id}`);
                               }
                             }}
                             className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-xl transition active:scale-[0.96]"

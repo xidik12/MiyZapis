@@ -89,9 +89,24 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             <p className="text-gray-500 dark:text-gray-400 mb-2">
               {t('booking.noAvailableDates')}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {t('booking.noSlotsInNext30Days')}
             </p>
+            {user && !waitlistJoined && (
+              <button
+                onClick={onShowWaitlist}
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <ClockIcon className="w-4 h-4 mr-2" />
+                {t('waitlist.joinWaitlist') || 'Join Waitlist'}
+              </button>
+            )}
+            {waitlistJoined && (
+              <div className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl">
+                <CheckCircleIcon className="w-4 h-4 mr-2" />
+                {t('waitlist.alreadyJoined') || 'You are on the waitlist'}
+              </div>
+            )}
           </div>
         )}
       </div>

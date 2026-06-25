@@ -661,6 +661,7 @@ export class NotificationService {
       }
 
       // Send Web Push notification via web-push VAPID
+      let webPushSent = false;
       try {
         const { sendPushToUser, isVapidInitialized } = await import('@/services/push');
         if (isVapidInitialized()) {
@@ -675,20 +676,24 @@ export class NotificationService {
             ...data.data,
           });
           logger.info('Web Push notification result', { userId: user.id, sent: result.sent, failed: result.failed });
+          webPushSent = result.sent > 0;
         }
       } catch (webPushError) {
         logger.warn('Web Push delivery error (non-fatal):', webPushError);
       }
 
-      // Update notification status
-      await this.prisma.notification.update({
-        where: { id: notificationId },
-        data: { pushSent: true }
-      });
+      // Only mark pushSent:true when at least one push was actually delivered
+      if (webPushSent) {
+        await this.prisma.notification.update({
+          where: { id: notificationId },
+          data: { pushSent: true }
+        });
+      }
 
       logger.info('Push notification queued successfully', {
         userId: user.id,
-        type: data.type
+        type: data.type,
+        webPushSent,
       });
     } catch (error) {
       logger.error('Error sending push notification:', error);
@@ -697,8 +702,9 @@ export class NotificationService {
 
   private async sendSMS(options: SMSOptions): Promise<void> {
     // Integrate with SMS provider (Twilio, MessageBird, etc.)
-    // This is a placeholder implementation
-    logger.info('SMS would be sent:', options);
+    // Until a real provider is wired up, log and throw so smsSent is NOT marked true.
+    logger.info('SMS not sent — no provider configured:', { to: options.to });
+    throw new Error('SMS provider not configured');
   }
 
   private replaceTemplateVariables(template: string, variables: Record<string, any>): string {

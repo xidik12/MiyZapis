@@ -386,6 +386,59 @@ export class WaitlistService {
   }
 
   /**
+   * Claim a notified waitlist slot: create a booking and mark the entry BOOKED.
+   * The caller must pass the bookingId created by BookingService.createBooking so this
+   * is an atomic post-processing step rather than a duplicate create.
+   */
+  static async claimWaitlistSlot(
+    waitlistId: string,
+    userId: string,
+    bookingId: string
+  ) {
+    try {
+      const entry = await prisma.waitlist.findUnique({
+        where: { id: waitlistId },
+      });
+
+      if (!entry) {
+        throw new Error('WAITLIST_ENTRY_NOT_FOUND');
+      }
+
+      if (entry.userId !== userId) {
+        throw new Error('UNAUTHORIZED_WAITLIST_ACTION');
+      }
+
+      if (entry.status === 'BOOKED') {
+        return entry; // idempotent – already claimed
+      }
+
+      if (entry.status !== 'NOTIFIED') {
+        throw new Error('WAITLIST_NOT_NOTIFIED');
+      }
+
+      const updatedEntry = await prisma.waitlist.update({
+        where: { id: waitlistId },
+        data: {
+          status: 'BOOKED',
+          bookedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info('Waitlist entry claimed', {
+        waitlistId,
+        userId,
+        bookingId,
+      });
+
+      return updatedEntry;
+    } catch (error) {
+      logger.error('Error claiming waitlist slot:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Check and notify waitlist entries when a booking is cancelled.
    * Called after a booking cancellation to find users waiting for that date/specialist.
    */

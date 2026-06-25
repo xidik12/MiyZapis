@@ -2908,6 +2908,7 @@ const en: Record<string, string> = {
   'waitlist.statusWaiting': 'Waiting',
   'waitlist.bookNow': 'Book Now',
   'waitlist.cancel': 'Cancel',
+  'waitlist.joinFailed': 'Couldn\'t join the waitlist. Please try again.',
   'bookings.listView': 'List View',
   'bookings.calendarView': 'Calendar View',
   'bookings.serviceLocation': 'Service Location',

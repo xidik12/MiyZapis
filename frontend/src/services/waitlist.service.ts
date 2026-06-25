@@ -120,6 +120,28 @@ export class WaitlistService {
   }
 
   /**
+   * Claim a notified waitlist slot.
+   *
+   * Mode 1 (BookingFlow): booking was already created — pass bookingId to just stamp BOOKED.
+   * Mode 2 (direct): pass scheduledAt to create a booking + stamp BOOKED in one step.
+   */
+  async bookWaitlistSlot(
+    waitlistId: string,
+    opts: { bookingId: string } | { scheduledAt: string; notes?: string }
+  ): Promise<{ waitlistEntryId: string; bookingId?: string; booking?: Record<string, unknown>; message: string }> {
+    const response = await apiClient.post<{ waitlistEntryId: string; bookingId?: string; booking?: Record<string, unknown>; message: string }>(
+      `/waitlist/${waitlistId}/book`,
+      opts
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to claim waitlist slot');
+    }
+
+    return response.data;
+  }
+
+  /**
    * Leave/cancel a waitlist entry
    */
   async leaveWaitlist(waitlistId: string): Promise<{ waitlistEntry: WaitlistEntry; message: string }> {

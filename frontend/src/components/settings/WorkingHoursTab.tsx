@@ -121,7 +121,32 @@ const WorkingHoursTab: React.FC<WorkingHoursTabProps> = ({
     [profile.businessHours, onProfileChange],
   );
 
-  // ── Save + sync ────────────────────────────────────────────────────────────
+  // ── Save only (preserves existing manual availability blocks) ────────────
+
+  const handleSave = useCallback(async () => {
+    try {
+      await onSave();
+      toast.success(
+        label(
+          'Графік роботи збережено',
+          'График работы сохранён',
+          'Working hours saved',
+        ),
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : String(error);
+      toast.error(
+        label(
+          `Помилка збереження: ${message}`,
+          `Ошибка сохранения: ${message}`,
+          `Save error: ${message}`,
+        ),
+      );
+    }
+  }, [onSave, label]);
+
+  // ── Save + regenerate (overwrites uncovered dates with new slots) ─────────
 
   const handleSaveAndSync = useCallback(async () => {
     try {
@@ -176,9 +201,9 @@ const WorkingHoursTab: React.FC<WorkingHoursTabProps> = ({
         </svg>
         <p className="text-sm text-blue-700 dark:text-blue-300">
           {label(
-            'Збереження графіку роботи автоматично згенерує слоти доступності на наступні 4 тижні у вашому Розкладі.',
-            'Сохранение графика работы автоматически сгенерирует слоты доступности на следующие 4 недели в вашем Расписании.',
-            'Saving working hours will automatically generate availability slots for the next 4 weeks in your Schedule.',
+            'Натисніть «Зберегти» щоб зберегти графік роботи без зміни вашого розкладу. Натисніть «Зберегти та оновити розклад», щоб також заповнити доступність на наступні 4 тижні (порожні дні будуть заповнені відповідно до нового графіку).',
+            'Нажмите «Сохранить», чтобы сохранить рабочие часы без изменения расписания. Нажмите «Сохранить и обновить расписание», чтобы также заполнить доступность на ближайшие 4 недели (незаполненные дни будут созданы по новому графику).',
+            'Click Save to persist your working hours without touching your existing schedule. Click Save & Update Schedule to also fill availability for the next 4 weeks — empty days will be populated according to the new hours.',
           )}
         </p>
       </div>
@@ -313,20 +338,32 @@ const WorkingHoursTab: React.FC<WorkingHoursTabProps> = ({
         </div>
       </div>
 
-      {/* ── Save button ────────────────────────────────────────────────────── */}
-      <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+      {/* ── Save buttons ───────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        {/* Plain save — does NOT regenerate availability */}
+        <button
+          type="button"
+          disabled={isBusy}
+          onClick={handleSave}
+          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-primary-600 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-50 font-medium rounded-xl transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 active:scale-[0.96] disabled:active:scale-100"
+        >
+          {saving && <InlineLoader size="sm" />}
+          {saving
+            ? label('Збереження...', 'Сохранение...', 'Saving...')
+            : label('Зберегти', 'Сохранить', 'Save')}
+        </button>
+
+        {/* Save + regenerate — fills empty dates from working hours */}
         <button
           type="button"
           disabled={isBusy}
           onClick={handleSaveAndSync}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium rounded-xl transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 active:scale-[0.96] disabled:active:scale-100"
+          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium rounded-xl transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 active:scale-[0.96] disabled:active:scale-100"
         >
-          {isBusy && (
-            <InlineLoader size="sm" color="white" />
-          )}
-          {isBusy
-            ? label('Збереження...', 'Сохранение...', 'Saving...')
-            : label('Зберегти', 'Сохранить', 'Save')}
+          {syncing && <InlineLoader size="sm" color="white" />}
+          {syncing
+            ? label('Оновлення...', 'Обновление...', 'Updating...')
+            : label('Зберегти та оновити розклад', 'Сохранить и обновить расписание', 'Save & Update Schedule')}
         </button>
       </div>
     </div>

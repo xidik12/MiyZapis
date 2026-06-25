@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { addNotification } from '@/store/slices/notificationSlice';
@@ -43,6 +45,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -196,6 +199,26 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const handleNewNotification = (event: NotificationSocketEvent) => {
       if (environment.DEBUG) {
         console.log('New notification:', event);
+      }
+
+      // WAITLIST_SLOT_AVAILABLE: surface a prompt so the user can act immediately
+      const notif = (event as any)?.data?.notification || (event as any);
+      if (notif?.type === 'WAITLIST_SLOT_AVAILABLE') {
+        const waitlistId = notif?.data?.waitlistId;
+        const serviceId = notif?.data?.serviceId;
+        toast.info(
+          notif?.message || 'A slot is now available — book before it fills up!',
+          {
+            autoClose: 10000,
+            onClick: () => {
+              if (serviceId && waitlistId) {
+                navigate(`/booking/${serviceId}?waitlistId=${waitlistId}`);
+              } else {
+                navigate('/customer/bookings?tab=waitlist');
+              }
+            },
+          }
+        );
       }
 
       dispatch(addNotification(event.data.notification));
