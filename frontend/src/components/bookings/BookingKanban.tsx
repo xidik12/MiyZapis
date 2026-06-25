@@ -8,6 +8,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   DragStartEvent,
   DragEndEvent
 } from '@dnd-kit/core';
@@ -63,6 +64,64 @@ const columnHeaderColors = {
   red: 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
 };
 
+// Wraps each column's card list in a proper droppable container so that
+// `over.id` in handleDragEnd is always the column id (not a card id).
+interface DroppableColumnContentProps {
+  columnId: string;
+  columnBookings: BookingData[];
+  userRole: 'customer' | 'specialist';
+  onBookingClick?: (booking: BookingData) => void;
+  onQuickAction?: (bookingId: string, action: string) => void;
+  t: (key: string) => string;
+}
+
+const DroppableColumnContent: React.FC<DroppableColumnContentProps> = ({
+  columnId,
+  columnBookings,
+  userRole,
+  onBookingClick,
+  onQuickAction,
+  t
+}) => {
+  const { setNodeRef, isOver } = useDroppable({ id: columnId });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`p-3 space-y-3 min-h-[200px] max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar transition-colors duration-150 ${
+        isOver ? 'bg-white/20 dark:bg-black/10' : ''
+      }`}
+    >
+      <SortableContext
+        id={columnId}
+        items={columnBookings.map((b) => b.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <AnimatePresence mode="popLayout">
+          {columnBookings.map((booking) => (
+            <SortableBookingCard
+              key={booking.id}
+              booking={booking}
+              userRole={userRole}
+              onClick={() => onBookingClick && onBookingClick(booking)}
+              onQuickAction={(action) => onQuickAction && onQuickAction(booking.id, action)}
+            />
+          ))}
+        </AnimatePresence>
+        {columnBookings.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-8 text-gray-400 dark:text-gray-600 text-sm"
+          >
+            {t('booking.kanban.dropHere')}
+          </motion.div>
+        )}
+      </SortableContext>
+    </div>
+  );
+};
+
 export const BookingKanban: React.FC<BookingKanbanProps> = ({
   bookings,
   userRole,
@@ -99,7 +158,12 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
     }
 
     const activeBooking = bookings.find((b) => b.id === active.id);
-    const overColumnId = over.id as string;
+    // `over.id` may be either the droppable column id (when dropped on empty space)
+    // or a card id (when dropped on top of another card). Resolve to column id.
+    const overId = over.id as string;
+    const overColumnId = COLUMN_DEFS.find((c) => c.id === overId)?.id
+      ?? bookings.find((b) => b.id === overId)?.status
+      ?? overId;
 
     if (activeBooking && activeBooking.status !== overColumnId) {
       const allowed = VALID_TRANSITIONS[activeBooking.status] ?? [];
@@ -111,7 +175,7 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
         if (allowed.length === 0) {
           toast.info(
             t('bookings.kanbanFinalState') ||
-              'This booking is in a final state and can’t be moved.'
+              'This booking is in a final state and can\'t be moved.'
           );
         } else {
           toast.info(
@@ -162,35 +226,16 @@ export const BookingKanban: React.FC<BookingKanbanProps> = ({
                 </div>
               </div>
 
-              {/* Column Content - Droppable Area */}
-              <SortableContext
-                id={column.id}
-                items={columnBookings.map((b) => b.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="p-3 space-y-3 min-h-[200px] max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
-                  <AnimatePresence mode="popLayout">
-                    {columnBookings.map((booking) => (
-                      <SortableBookingCard
-                        key={booking.id}
-                        booking={booking}
-                        userRole={userRole}
-                        onClick={() => onBookingClick && onBookingClick(booking)}
-                        onQuickAction={(action) => onQuickAction && onQuickAction(booking.id, action)}
-                      />
-                    ))}
-                  </AnimatePresence>
-                  {columnBookings.length === 0 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-center py-8 text-gray-400 dark:text-gray-600 text-sm"
-                    >
-                      {t('booking.kanban.dropHere')}
-                    </motion.div>
-                  )}
-                </div>
-              </SortableContext>
+              {/* Column Content — each column registers as a useDroppable target
+                  so over.id in handleDragEnd resolves to the column id. */}
+              <DroppableColumnContent
+                columnId={column.id}
+                columnBookings={columnBookings}
+                userRole={userRole}
+                onBookingClick={onBookingClick}
+                onQuickAction={onQuickAction}
+                t={t}
+              />
             </div>
           );
         })}

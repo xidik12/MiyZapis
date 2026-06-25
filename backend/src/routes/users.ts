@@ -244,6 +244,71 @@ router.post('/avatar', authenticateToken, async (req: AuthenticatedRequest, res:
   }
 });
 
+// Get notification preferences
+router.get('/preferences', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+      return;
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { emailNotifications: true, pushNotifications: true, telegramNotifications: true },
+    });
+    res.json(createSuccessResponse({
+      preferences: {
+        notifications: {
+          email: user?.emailNotifications ?? true,
+          push: user?.pushNotifications ?? true,
+          telegram: user?.telegramNotifications ?? true,
+        },
+      },
+    }));
+  } catch (error) {
+    logger.error('Get preferences error:', error);
+    res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to get preferences', req.headers['x-request-id'] as string));
+  }
+});
+
+// Update notification preferences — accepts the nested { notifications: { email, push, telegram } }
+// shape the frontend sends, and also tolerates already-flat fields.
+router.put('/preferences', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json(createErrorResponse(ErrorCodes.AUTHENTICATION_REQUIRED, 'Authentication required', req.headers['x-request-id'] as string));
+      return;
+    }
+    const body = (req.body || {}) as Record<string, unknown>;
+    const n = (body.notifications || {}) as Record<string, unknown>;
+    const data: Record<string, boolean> = {};
+    if (typeof n.email === 'boolean') data.emailNotifications = n.email;
+    if (typeof n.push === 'boolean') data.pushNotifications = n.push;
+    if (typeof n.telegram === 'boolean') data.telegramNotifications = n.telegram;
+    if (typeof body.emailNotifications === 'boolean') data.emailNotifications = body.emailNotifications as boolean;
+    if (typeof body.pushNotifications === 'boolean') data.pushNotifications = body.pushNotifications as boolean;
+    if (typeof body.telegramNotifications === 'boolean') data.telegramNotifications = body.telegramNotifications as boolean;
+    if (Object.keys(data).length > 0) {
+      await prisma.user.update({ where: { id: req.user.id }, data });
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { emailNotifications: true, pushNotifications: true, telegramNotifications: true },
+    });
+    res.json(createSuccessResponse({
+      preferences: {
+        notifications: {
+          email: user?.emailNotifications,
+          push: user?.pushNotifications,
+          telegram: user?.telegramNotifications,
+        },
+      },
+    }));
+  } catch (error) {
+    logger.error('Update preferences error:', error);
+    res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to update preferences', req.headers['x-request-id'] as string));
+  }
+});
+
 // Update password
 router.put('/password', authenticateToken, validateUpdatePassword, async (req: AuthenticatedRequest, res: Response) => {
   try {

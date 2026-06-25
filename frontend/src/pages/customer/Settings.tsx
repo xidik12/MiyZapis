@@ -87,8 +87,9 @@ const CustomerSettings: React.FC = () => {
     smsReminders: true,
   });
 
-  // Privacy settings
-  const [privacy, setPrivacy] = useState({
+  // Privacy settings — no backend fields exist for these; section shows an info note instead.
+  // State kept as a placeholder in case a backend endpoint is added later.
+  const [_privacy, _setPrivacy] = useState({
     profileVisibility: 'public' as 'public' | 'private',
     showEmail: false,
     showPhone: false,
@@ -183,11 +184,41 @@ const CustomerSettings: React.FC = () => {
     }));
   };
 
-  const handlePrivacyChange = (key: keyof typeof privacy, value: unknown) => {
-    setPrivacy(prev => ({
+  // handlePrivacyChange kept for future use when a backend endpoint is available.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handlePrivacyChange = (key: string, value: unknown) => {
+    _setPrivacy(prev => ({
       ...prev,
       [key]: value
     }));
+  };
+
+  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+
+  const handleSaveNotifications = async () => {
+    try {
+      setIsSavingNotifications(true);
+      // Map sub-toggles to the top-level email/push flags the backend supports.
+      // email = true if any email notification category is enabled.
+      // push = true if any push notification category is enabled.
+      await userService.updatePreferences({
+        notifications: {
+          email: notifications.emailBookingConfirmation || notifications.emailReminders || notifications.emailPromotions,
+          push: notifications.pushBookingConfirmation || notifications.pushReminders || notifications.pushPromotions,
+          telegram: false, // no telegram notification toggle in this UI
+        },
+      });
+      toast.success(t('customer.settings.notificationsSaved'));
+    } catch (error) {
+      console.error('Error saving notification preferences:', error);
+      toast.error(
+        language === 'uk' ? 'Помилка збереження налаштувань сповіщень' :
+        language === 'ru' ? 'Ошибка сохранения настроек уведомлений' :
+        'Failed to save notification preferences'
+      );
+    } finally {
+      setIsSavingNotifications(false);
+    }
   };
 
   const handleRemoveAddress = (id: string) => {
@@ -964,28 +995,20 @@ const CustomerSettings: React.FC = () => {
                         ))}
                       </div>
                     </div>
+                    {/* SMS notifications removed — no smsNotifications field on backend */}
+                  </div>
 
-                    {/* SMS Notifications */}
-                    <div>
-                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.smsNotifications')}</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{t('customer.settings.appointmentReminders')}</span>
-                          <button
-                            onClick={() => handleNotificationChange('smsReminders')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              notifications.smsReminders ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                notifications.smsReminders ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Save button — persists email + push master flags via userService.updatePreferences */}
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={handleSaveNotifications}
+                      disabled={isSavingNotifications}
+                      className={`px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 ${isSavingNotifications ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isSavingNotifications
+                        ? (t('common.saving') || 'Saving...')
+                        : t('common.save')}
+                    </button>
                   </div>
                 </div>
               )}
@@ -996,47 +1019,9 @@ const CustomerSettings: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">
                     {t('customer.settings.privacy')}
                   </h2>
-
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('customer.settings.profileVisibility')}
-                      </label>
-                      <select
-                        value={privacy.profileVisibility}
-                        onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
-                      >
-                        <option value="public">{t('customer.settings.publicProfile')}</option>
-                        <option value="private">{t('customer.settings.privateProfile')}</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-3">
-                      {[
-                        { key: 'showEmail', label: t('customer.settings.showEmailProfile') },
-                        { key: 'showPhone', label: t('customer.settings.showPhoneProfile') },
-                        { key: 'allowReviews', label: t('customer.settings.allowReviews') },
-                        { key: 'dataProcessing', label: t('customer.settings.dataProcessing') },
-                      ].map(({ key, label }) => (
-                        <div key={key} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
-                          <button
-                            onClick={() => handlePrivacyChange(key as keyof typeof privacy, !privacy[key as keyof typeof privacy])}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              privacy[key as keyof typeof privacy] ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                privacy[key as keyof typeof privacy] ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('customer.settings.privacyNoBackend')}
+                  </p>
                 </div>
               )}
 
@@ -1127,7 +1112,7 @@ const CustomerSettings: React.FC = () => {
               {/* Addresses */}
               {activeSection === 'addresses' && (
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.addresses')}
                     </h2>
@@ -1139,6 +1124,11 @@ const CustomerSettings: React.FC = () => {
                       {t('customer.settings.addAddress')}
                     </button>
                   </div>
+
+                  {/* Local-storage caveat */}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+                    {t('customer.settings.addressesLocalOnly')}
+                  </p>
 
                   <div className="space-y-4">
                     {addresses.length === 0 ? (

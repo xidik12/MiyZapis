@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { HelpTip } from '@/components/common/HelpTip';
+import { formatDate as sharedFormatDate } from '@/utils/dateUtils';
 import { notificationService } from '../../services/notification.service';
 import { BellIcon, CheckIcon, XIcon as XMarkIcon, EyeIcon, CalendarIcon, UserIcon, CreditCardIcon, WarningIcon as ExclamationTriangleIcon, InformationCircleIcon } from '@/components/icons';
 
@@ -11,7 +12,6 @@ interface Notification {
   message: string;
   timestamp: string;
   isRead: boolean;
-  priority: 'low' | 'medium' | 'high';
   actionUrl?: string;
 }
 
@@ -20,13 +20,13 @@ const CustomerNotifications: React.FC = () => {
 
   const HELP = {
     en: {
-      overview: 'All your alerts and updates in one feed.\n\nNotification types:\n• Booking — confirmations, cancellations, and reminders for your appointments.\n• System — platform updates, policy changes, and announcements.\n• Unread — filter to see only notifications you haven\'t opened yet.\n\nActions:\n• Mark as read — hover a notification and tap the eye icon to mark it read.\n• Mark all read — button top-right clears the unread count in one tap.\n• Delete — tap the × icon to permanently remove a notification.\n\nThe coloured bar on the left edge shows priority: red = high, yellow = medium, blue = low.',
+      overview: 'All your alerts and updates in one feed.\n\nNotification types:\n• Booking — confirmations, cancellations, and reminders for your appointments.\n• System — platform updates, policy changes, and announcements.\n• Unread — filter to see only notifications you haven\'t opened yet.\n\nActions:\n• Mark as read — hover a notification and tap the eye icon to mark it read.\n• Mark all read — button top-right clears the unread count in one tap.\n• Delete — tap the × icon to permanently remove a notification.',
     },
     uk: {
-      overview: 'Усі ваші сповіщення в одному місці.\n\nТипи сповіщень:\n• Записи — підтвердження, скасування та нагадування про ваші відвідування.\n• Системні — оновлення платформи, зміни правил та оголошення.\n• Непрочитані — фільтр, щоб бачити лише ті, що ви ще не відкривали.\n\nДії:\n• Позначити як прочитане — наведіть на сповіщення та натисніть іконку ока.\n• Позначити всі — кнопка вгорі праворуч скидає лічильник непрочитаних.\n• Видалити — натисніть × для постійного видалення сповіщення.\n\nКольорова смуга зліва показує пріоритет: червона = високий, жовта = середній, синя = низький.',
+      overview: 'Усі ваші сповіщення в одному місці.\n\nТипи сповіщень:\n• Записи — підтвердження, скасування та нагадування про ваші відвідування.\n• Системні — оновлення платформи, зміни правил та оголошення.\n• Непрочитані — фільтр, щоб бачити лише ті, що ви ще не відкривали.\n\nДії:\n• Позначити як прочитане — наведіть на сповіщення та натисніть іконку ока.\n• Позначити всі — кнопка вгорі праворуч скидає лічильник непрочитаних.\n• Видалити — натисніть × для постійного видалення сповіщення.',
     },
     ru: {
-      overview: 'Все ваши уведомления в одном месте.\n\nТипы уведомлений:\n• Записи — подтверждения, отмены и напоминания о посещениях.\n• Системные — обновления платформы, изменения правил и объявления.\n• Непрочитанные — фильтр для просмотра только непрочитанных.\n\nДействия:\n• Отметить прочитанным — наведите на уведомление и нажмите иконку глаза.\n• Отметить все — кнопка вверху справа сбрасывает счётчик непрочитанных.\n• Удалить — нажмите × для постоянного удаления уведомления.\n\nЦветная полоса слева показывает приоритет: красная = высокий, жёлтая = средний, синяя = низкий.',
+      overview: 'Все ваши уведомления в одном месте.\n\nТипы уведомлений:\n• Записи — подтверждения, отмены и напоминания о посещениях.\n• Системные — обновления платформы, изменения правил и объявления.\n• Непрочитанные — фильтр для просмотра только непрочитанных.\n\nДействия:\n• Отметить прочитанным — наведите на уведомление и нажмите иконку глаза.\n• Отметить все — кнопка вверху справа сбрасывает счётчик непрочитанных.\n• Удалить — нажмите × для постоянного удаления уведомления.',
     },
   };
   const h = (HELP as any)[language] || HELP.en;
@@ -66,7 +66,7 @@ const CustomerNotifications: React.FC = () => {
         message: translateField(notif.message),
         timestamp: notif.createdAt,
         isRead: notif.isRead,
-        priority: 'medium' as const,
+
         actionUrl: notif.actionUrl
       }));
 
@@ -88,7 +88,7 @@ const CustomerNotifications: React.FC = () => {
           message: translateField(notif.message),
           timestamp: notif.createdAt,
           isRead: notif.isRead,
-          priority: 'medium' as const,
+  
           actionUrl: notif.actionUrl
         }));
 
@@ -118,14 +118,6 @@ const CustomerNotifications: React.FC = () => {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'border-l-red-500 bg-red-50 dark:bg-red-900/20';
-      case 'medium': return 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
-      case 'low': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20';
-      default: return 'border-l-gray-500 bg-gray-50 dark:bg-gray-800';
-    }
-  };
 
   const markAsRead = async (id: string) => {
     try {
@@ -291,20 +283,14 @@ const CustomerNotifications: React.FC = () => {
                 <div
                   key={notification.id}
                   className={`
-                    group border-l-4 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300
-                    ${getPriorityColor(notification.priority)}
+                    group border-l-4 border-l-primary-400 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 transition-all duration-300
                     ${!notification.isRead ? 'ring-1 ring-primary-500/20' : ''}
                     ${deletingIds.has(notification.id) ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
                   `}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3 flex-1 min-w-0">
-                      <div className={`
-                        p-2.5 rounded-xl
-                        ${notification.priority === 'high' ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400' : ''}
-                        ${notification.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400' : ''}
-                        ${notification.priority === 'low' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' : ''}
-                      `}>
+                      <div className="p-2.5 rounded-xl bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">
                         <IconComponent className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -324,7 +310,7 @@ const CustomerNotifications: React.FC = () => {
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
-                          {notification.timestamp}
+                          {sharedFormatDate(notification.timestamp, language)}
                         </p>
                       </div>
                     </div>

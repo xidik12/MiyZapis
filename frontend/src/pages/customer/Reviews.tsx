@@ -73,11 +73,12 @@ const CustomerReviews: React.FC = () => {
             }
           });
 
+          const loadedCount = response.reviews.length;
           const totalForAverage = response.reviews.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0);
-          const avgRating = totalReviews > 0 ? totalForAverage / totalReviews : 0;
+          const avgRating = loadedCount > 0 ? totalForAverage / loadedCount : 0;
           const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
-          const recommendationRate = totalReviews > 0
-            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / totalReviews
+          const recommendationRate = loadedCount > 0
+            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / loadedCount
             : 0;
 
           setReviewStats({

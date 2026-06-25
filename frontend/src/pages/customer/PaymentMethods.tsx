@@ -8,6 +8,7 @@ import { PaymentMethodRecord } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { toast } from 'react-toastify';
 import { CreditCardIcon, PlusIcon, PencilIcon, TrashIcon } from '@/components/icons';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();
@@ -30,6 +31,8 @@ const PaymentMethods: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethodRecord | null>(null);
   const [_loading, setLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Load payment methods from backend when component mounts
   useEffect(() => {
@@ -103,17 +106,23 @@ const PaymentMethods: React.FC = () => {
     }
   };
 
-  const handleRemovePaymentMethod = async (id: string) => {
+  const handleRemovePaymentMethod = (id: string) => {
+    setPendingDeleteId(id);
+  };
+
+  const confirmDeletePaymentMethod = async () => {
+    if (!pendingDeleteId) return;
     try {
-      setLoading(true);
-      await PaymentMethodsService.deletePaymentMethod(id);
-      setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
+      setDeleteLoading(true);
+      await PaymentMethodsService.deletePaymentMethod(pendingDeleteId);
+      setPaymentMethods(prev => prev.filter(pm => pm.id !== pendingDeleteId));
       toast.success(t('payments.removeSuccess') || 'Payment method removed successfully');
     } catch (error) {
       console.error('Failed to remove payment method:', error);
       toast.error(t('payments.removeError') || 'Failed to remove payment method');
     } finally {
-      setLoading(false);
+      setDeleteLoading(false);
+      setPendingDeleteId(null);
     }
   };
 
@@ -431,6 +440,23 @@ const PaymentMethods: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
+
+      <ConfirmModal
+        open={!!pendingDeleteId}
+        title={t('payments.deleteConfirmTitle') || 'Remove payment method?'}
+        message={
+          language === 'uk'
+            ? 'Ви впевнені, що хочете видалити цей спосіб оплати? Цю дію неможливо скасувати.'
+            : language === 'ru'
+            ? 'Вы уверены, что хотите удалить этот способ оплаты? Это действие нельзя отменить.'
+            : 'Are you sure you want to remove this payment method? This action cannot be undone.'
+        }
+        confirmText={language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
+        loading={deleteLoading}
+        variant="danger"
+        onConfirm={confirmDeletePaymentMethod}
+        onCancel={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 };

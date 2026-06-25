@@ -166,7 +166,7 @@ const CustomerFavorites: React.FC = () => {
     const serviceName = service.name.toLowerCase();
     const serviceDescription = service.description?.toLowerCase() || '';
     const category = service.category.toLowerCase();
-    const specialistName = `${service.specialist.user.firstName} ${service.specialist.user.lastName}`.toLowerCase();
+    const specialistName = `${service.specialist?.user?.firstName ?? ''} ${service.specialist?.user?.lastName ?? ''}`.toLowerCase();
     const businessName = service.specialist.businessName?.toLowerCase() || '';
     
     return serviceName.includes(query) ||
@@ -374,15 +374,15 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-start space-x-3">
                               <Avatar
-                                src={specialist.user.avatar}
-                                alt={`${specialist.user.firstName} ${specialist.user.lastName}`}
+                                src={specialist.user?.avatar}
+                                alt={`${specialist.user?.firstName ?? ''} ${specialist.user?.lastName ?? ''}`.trim() || specialist.businessName || 'Specialist'}
                                 size="lg"
                                 lazy={true}
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2">
                                   <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                                    {translateProfession(specialist.businessName, t) || `${specialist.user.firstName} ${specialist.user.lastName}`}
+                                    {translateProfession(specialist.businessName, t) || `${specialist.user?.firstName ?? ''} ${specialist.user?.lastName ?? ''}`.trim() || 'Specialist'}
                                   </h3>
                                   {specialist.isVerified && (
                                     <span className="text-blue-600 text-xs">✓</span>
@@ -562,14 +562,14 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex items-center space-x-2 mb-4">
                             <Avatar
                               src={null}
-                              alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+                              alt={`${service.specialist?.user?.firstName ?? ''} ${service.specialist?.user?.lastName ?? ''}`.trim() || service.specialist?.businessName || 'Specialist'}
                               size="sm"
                               lazy={true}
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {service.specialist.businessName || 
-                                 `${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+                                {service.specialist?.businessName ||
+                                 `${service.specialist?.user?.firstName ?? ''} ${service.specialist?.user?.lastName ?? ''}`.trim() || 'Specialist'}
                               </p>
                             </div>
                           </div>

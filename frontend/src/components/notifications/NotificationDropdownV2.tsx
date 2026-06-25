@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
+import { selectUser } from '@/store/slices/authSlice';
 // Local re-typing: the app's Notification matches the shape NotificationGroup expects.
 // Avoids the DOM global Notification clashing with app data.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,8 +63,10 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
+  const user = useAppSelector(selectUser);
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const notificationsPath = user?.userType === 'specialist' ? '/specialist/notifications' : '/customer/notifications';
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   // Group notifications by time
@@ -261,7 +264,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
           {hasNotifications && (
             <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30 sticky bottom-0">
               <Link
-                to="/notifications"
+                to={notificationsPath}
                 onClick={onClose}
                 className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-3 py-2 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 active:scale-95"
               >

@@ -80,14 +80,6 @@ interface FavoriteSpecialist {
   specialistId?: string;
 }
 
-interface SpecialOffer {
-  id: string;
-  title: string;
-  description: string;
-  discount: number;
-  expiryDate: string;
-}
-
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
   const { formatPrice, convertPrice, currency, getCurrencySymbol } = useCurrency();
@@ -100,7 +92,6 @@ const CustomerDashboard: React.FC = () => {
   const [nextAppointment, setNextAppointment] = useState<NextAppointment | null>(null);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
-  const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
   const [unreadMessages, setUnreadMessages] = useState<number>(0);
   const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
   const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
@@ -286,7 +277,7 @@ const CustomerDashboard: React.FC = () => {
         setFavoriteSpecialists(favSimple);
         setFavoritesPage(favPage.pagination?.currentPage || 1);
         setFavoritesHasMore(Boolean(favPage.pagination?.hasNext || (favPage.pagination?.currentPage || 1) < (favPage.pagination?.totalPages || 1)));
-        setSpecialOffers([]);
+
         // Unread messages
         setUnreadMessages((unread as any).count || 0);
       } catch (err) {
@@ -850,35 +841,6 @@ const CustomerDashboard: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Special Offers */}
-          {specialOffers && specialOffers.length > 0 && (
-            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.specialOffers')}</h3>
-                <GiftIcon className="w-5 h-5 text-primary-600" active />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                {specialOffers.map((offer) => (
-                  <div key={offer.id} className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-4 border border-primary-200 dark:border-primary-700">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 px-2 py-1 rounded-full">
-                        -{offer.discount}%
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {language === 'uk' ? 'до' : language === 'ru' ? 'до' : 'until'} {offer.expiryDate}
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{offer.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{offer.description}</p>
-                    <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium">
-                      {t('dashboard.customer.viewOffers')}
-                    </button>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
     </div>

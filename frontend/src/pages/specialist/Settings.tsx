@@ -338,33 +338,63 @@ const SpecialistSettings: React.FC = () => {
   // State to track saving in progress
   const [isSaving, setIsSaving] = useState(false);
 
+  // Snapshot of settings at last save — used by Cancel to reset unsaved changes
+  const [savedSettings, setSavedSettings] = useState(settings);
+
   // Handle saving all settings
   const handleSaveSettings = async () => {
     try {
       setIsSaving(true);
-      setUploadError('');
 
-      // Save cancellation window and other business settings to the specialist profile
-      await specialistService.updateProfile({
-        cancellationWindowHours: settings.business.cancellationWindow,
-        autoBooking: settings.accountSettings.autoAcceptBookings,
-        listedInSearch: settings.accountSettings.showProfileInSearch,
-        requireVerifiedCustomer: settings.accountSettings.requireVerification,
-      } as any);
+      const savePromises: Promise<unknown>[] = [];
 
-      setUploadSuccess(true);
-      setTimeout(() => setUploadSuccess(false), 3000);
+      // Account + Business tabs: persist specialist profile fields
+      if (['account', 'business'].includes(activeTab)) {
+        savePromises.push(
+          specialistService.updateProfile({
+            cancellationWindowHours: settings.business.cancellationWindow,
+            autoBooking: settings.accountSettings.autoAcceptBookings,
+            listedInSearch: settings.accountSettings.showProfileInSearch,
+            requireVerifiedCustomer: settings.accountSettings.requireVerification,
+          } as any)
+        );
+      }
+
+      // Notifications tab: persist email + push prefs via userService.updatePreferences
+      if (activeTab === 'notifications') {
+        savePromises.push(
+          userService.updatePreferences({
+            notifications: {
+              email: settings.notifications.emailNotifications,
+              push: settings.notifications.pushNotifications,
+              telegram: false, // no telegram toggle in this UI
+            },
+          })
+        );
+      }
+
+      await Promise.all(savePromises);
+
+      setSavedSettings(settings);
+      toast.success(
+        language === 'uk' ? 'Налаштування збережено' :
+        language === 'ru' ? 'Настройки сохранены' :
+        'Settings saved'
+      );
     } catch (error) {
       console.error('Error saving settings:', error);
-      setUploadError(
+      toast.error(
         language === 'uk' ? 'Помилка збереження налаштувань' :
         language === 'ru' ? 'Ошибка сохранения настроек' :
         'Failed to save settings'
       );
-      setTimeout(() => setUploadError(''), 3000);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCancelSettings = () => {
+    setSettings(savedSettings);
   };
 
   return (
@@ -782,9 +812,6 @@ const SpecialistSettings: React.FC = () => {
                               {user?.email || t('customer.settings.notSet')}
                             </p>
                           </div>
-                          <button className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
-                            {t('common.update')}
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -1148,10 +1175,14 @@ const SpecialistSettings: React.FC = () => {
                 </div>
                 )}
 
-                {/* Save Button */}
+                {/* Global Save/Cancel — only shown on tabs that have no own save mechanism */}
+                {['account', 'notifications', 'business'].includes(activeTab) && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                   <div className="flex justify-end space-x-3">
-                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    <button
+                      onClick={handleCancelSettings}
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    >
                       {t('common.cancel')}
                     </button>
                     <button
@@ -1163,6 +1194,7 @@ const SpecialistSettings: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                )}
               </div>
             </div>
         </div>

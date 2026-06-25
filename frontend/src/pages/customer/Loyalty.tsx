@@ -141,10 +141,16 @@ const CustomerLoyalty: React.FC = () => {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'tiers' | 'rewards'>('overview');
 
+  // Transaction pagination state
+  const [txPage, setTxPage] = useState(1);
+  const [txHasMore, setTxHasMore] = useState(false);
+  const [txLoadingMore, setTxLoadingMore] = useState(false);
+
   // Rewards state
   const [availableRewards, setAvailableRewards] = useState<LoyaltyReward[]>([]);
   const [myRedemptions, setMyRedemptions] = useState<RewardRedemption[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [rewardsError, setRewardsError] = useState(false);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
   const [redeemReward, setRedeemReward] = useState<LoyaltyReward | null>(null);
 
@@ -172,6 +178,8 @@ const CustomerLoyalty: React.FC = () => {
       setLoyaltyProfile(profile);
       setLoyaltyStats(stats);
       setTransactions(transactionHistory.transactions);
+      setTxPage(1);
+      setTxHasMore(transactionHistory.pagination.hasNext);
       // Normalize tiers ranges to fixed thresholds
       const normalizeTiers = (tiers: LoyaltyTier[]): LoyaltyTier[] => {
         const byKey = new Map<string, LoyaltyTier>();
@@ -225,10 +233,27 @@ const CustomerLoyalty: React.FC = () => {
     }
   };
 
+  const loadMoreTransactions = async () => {
+    if (txLoadingMore || !txHasMore) return;
+    try {
+      setTxLoadingMore(true);
+      const nextPage = txPage + 1;
+      const result = await loyaltyService.getTransactions(nextPage, 10);
+      setTransactions(prev => [...prev, ...result.transactions]);
+      setTxPage(nextPage);
+      setTxHasMore(result.pagination.hasNext);
+    } catch {
+      toast.error(t('loyalty.error.loadTransactions') || 'Failed to load more transactions');
+    } finally {
+      setTxLoadingMore(false);
+    }
+  };
+
   // Rewards functions
   const fetchRewards = async () => {
     try {
       setRewardsLoading(true);
+      setRewardsError(false);
       const [rewards, redemptions] = await Promise.all([
         RewardsService.getAvailableRewards(),
         RewardsService.getUserRedemptions()
@@ -237,7 +262,7 @@ const CustomerLoyalty: React.FC = () => {
       setMyRedemptions(redemptions);
     } catch (error) {
       console.error('Error fetching rewards:', error);
-      toast.error(t('loyalty.error.loadRewards') || 'Failed to load rewards');
+      setRewardsError(true);
     } finally {
       setRewardsLoading(false);
     }
@@ -534,32 +559,46 @@ const CustomerLoyalty: React.FC = () => {
         </div>
 
         {/* Tier Progress */}
-        {loyaltyStats?.nextTier && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {(t('loyalty.progressTo') || 'Progress to') + ' ' + translateTier(loyaltyStats.nextTier.name)}
-              </h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
-                {Math.round(getTierProgress())}%
-              </span>
-            </div>
-
-            <div className="relative">
-              <div className="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
-                <div
-                  style={{ width: `${getTierProgress()}%` }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500"
-                ></div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
+          {loyaltyStats?.nextTier ? (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {(t('loyalty.progressTo') || 'Progress to') + ' ' + translateTier(loyaltyStats.nextTier.name)}
+                </h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
+                  {Math.round(getTierProgress())}%
+                </span>
               </div>
 
-              <div className="flex flex-wrap justify-between gap-1 text-sm text-gray-600 dark:text-gray-400">
-                <span className="shrink-0">{translateTier(loyaltyStats.currentTier?.name)} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
-                <span className="shrink-0">{translateTier(loyaltyStats.nextTier.name)} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+              <div className="relative">
+                <div className="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
+                  <div
+                    style={{ width: `${getTierProgress()}%` }}
+                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500"
+                  ></div>
+                </div>
+
+                <div className="flex flex-wrap justify-between gap-1 text-sm text-gray-600 dark:text-gray-400">
+                  <span className="shrink-0">{translateTier(loyaltyStats.currentTier?.name)} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
+                  <span className="shrink-0">{translateTier(loyaltyStats.nextTier.name)} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {translateTier(loyaltyStats?.currentTier?.name)}
+                </h3>
+                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                  {t('loyalty.maxTierReached') || 'Max tier reached'}
+                </span>
+              </div>
+              <div className="overflow-hidden h-4 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600" />
+            </>
+          )}
+        </div>
 
         {/* Customer Benefits Banner */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-sm p-4 sm:p-6 border border-blue-200 dark:border-blue-800 mb-6 sm:mb-8">
@@ -711,6 +750,11 @@ const CustomerLoyalty: React.FC = () => {
               <div className="space-y-4">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.transactionHistory') || 'Transaction History'}</h4>
                 <div className="space-y-3">
+                  {transactions.length === 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+                      {t('loyalty.noTransactions') || 'No transactions yet'}
+                    </p>
+                  )}
                   {transactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-xl">
                       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
@@ -747,6 +791,17 @@ const CustomerLoyalty: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                {txHasMore && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={loadMoreTransactions}
+                      disabled={txLoadingMore}
+                      className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {txLoadingMore ? (t('common.loading') || 'Loading...') : (t('common.loadMore') || 'Load more')}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -939,6 +994,18 @@ const CustomerLoyalty: React.FC = () => {
 
                 {rewardsLoading ? (
                   <ContentLoader />
+                ) : rewardsError ? (
+                  <div className="py-8 text-center bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-700 dark:text-red-300 mb-3">
+                      {t('loyalty.error.loadRewards') || 'Failed to load rewards'}
+                    </p>
+                    <button
+                      onClick={fetchRewards}
+                      className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-xl transition active:scale-[0.96]"
+                    >
+                      {t('common.retry') || 'Try again'}
+                    </button>
+                  </div>
                 ) : (
                   <div className="grid gap-4 sm:gap-6">
                     {/* Available Rewards Section */}

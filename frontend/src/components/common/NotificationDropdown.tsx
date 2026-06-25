@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
+import { selectUser } from '@/store/slices/authSlice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDistanceToNow } from 'date-fns';
 import { BellIcon, CheckIcon, CalendarIcon, CreditCardIcon, StarIcon, WarningIcon as ExclamationTriangleIcon, TrashIcon, XIcon } from '@/components/icons';
@@ -36,7 +37,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
+  const user = useAppSelector(selectUser);
   const { t } = useLanguage();
+  const notificationsPath = user?.userType === 'specialist' ? '/specialist/notifications' : '/customer/notifications';
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -217,7 +220,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {recentNotifications.length > 0 && (
         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-transparent to-gray-50/80 dark:to-gray-700/30">
           <Link
-            to="/notifications"
+            to={notificationsPath}
             onClick={() => {
               setIsAnimating(false);
               setTimeout(onClose, 200);

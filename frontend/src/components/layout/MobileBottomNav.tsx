@@ -13,6 +13,7 @@ import {
   ShareIcon,
   BellIcon,
   Cog6ToothIcon,
+  TrophyIcon,
 } from '@/components/icons';
 import { MobileTabBar, TabItem, TabSection } from './MobileTabBar';
 
@@ -33,6 +34,7 @@ const sections: TabSection[] = [
     { nameKey: 'customer.nav.wallet', fallback: 'Wallet', href: '/customer/wallet', icon: WalletIcon },
     { nameKey: 'customer.nav.payments', fallback: 'Payments', href: '/customer/payments', icon: CreditCardIcon },
     { nameKey: 'customer.nav.loyalty', fallback: 'Loyalty Points', href: '/customer/loyalty', icon: GiftIcon },
+    { nameKey: 'customer.nav.badges', fallback: 'Badges', href: '/customer/badges', icon: TrophyIcon },
     { nameKey: 'customer.nav.referrals', fallback: 'Referrals', href: '/customer/referrals', icon: ShareIcon },
   ]},
   { title: 'nav.section.account', items: [

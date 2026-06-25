@@ -500,8 +500,8 @@ const SpecialistDashboard: React.FC = () => {
                   hour: '2-digit',
                   minute: '2-digit'
                 }),
-                duration: '60 min', // Default duration
-                type: 'offline' // Default type
+                duration: booking.duration != null ? `${booking.duration} min` : (booking.service?.duration != null ? `${booking.service.duration} min` : '—'),
+                type: booking.meetingLink ? 'online' : 'offline'
               }));
           } catch (err) {
             console.warn('Error processing upcoming bookings data:', err);
@@ -914,10 +914,18 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2 flex-shrink-0">
-                  <button className="p-2.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition duration-200 active:scale-[0.96]">
+                  <button
+                    onClick={() => navigate('/specialist/messages')}
+                    className="p-2.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition duration-200 active:scale-[0.96]"
+                    title={t('dashboard.specialist.goToMessages') || 'Messages'}
+                  >
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]">
+                  <button
+                    onClick={() => navigate('/specialist/schedule')}
+                    className="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition duration-200 active:scale-[0.96]"
+                    title={t('dashboard.specialist.goToSchedule') || 'Schedule'}
+                  >
                     <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>

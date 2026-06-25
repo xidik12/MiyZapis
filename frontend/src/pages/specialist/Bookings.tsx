@@ -303,12 +303,22 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
                 <p className="font-medium text-gray-900 dark:text-white tabular-nums">
-                  {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                  {(() => {
+                    if (!booking.scheduledAt) return booking.date || '—';
+                    const d = new Date(booking.scheduledAt);
+                    return isNaN(d.getTime()) ? (booking.date || '—') : d.toLocaleDateString('uk-UA');
+                  })()}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.time')}</label>
-                <p className="font-medium text-gray-900 dark:text-white tabular-nums">{booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : (booking.time || 'N/A')}</p>
+                <p className="font-medium text-gray-900 dark:text-white tabular-nums">
+                  {(() => {
+                    if (!booking.scheduledAt) return booking.time || '—';
+                    const d = new Date(booking.scheduledAt);
+                    return isNaN(d.getTime()) ? (booking.time || '—') : d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                  })()}
+                </p>
               </div>
             </div>
             {booking.meetingLink && (
@@ -499,9 +509,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition active:scale-[0.96] disabled:active:scale-100 text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
-                  </button>
-                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition active:scale-[0.96] text-sm sm:text-base">
-                    {t('bookingDetails.template')}
                   </button>
                 </div>
               </div>
@@ -865,11 +872,16 @@ const SpecialistBookings: React.FC = () => {
         serviceName.toLowerCase().includes(filters.searchTerm.toLowerCase());
       
       const bookingDate = booking.scheduledAt ? new Date(booking.scheduledAt) : (booking.date ? new Date(booking.date) : null);
+      const now = new Date();
       const matchesDateRange = filters.dateRange === 'all' || (
-        bookingDate && filters.dateRange === 'today' && bookingDate.toDateString() === new Date().toDateString()
+        bookingDate && filters.dateRange === 'today' && bookingDate.toDateString() === now.toDateString()
       ) || (
-        bookingDate && filters.dateRange === 'week' && 
+        bookingDate && filters.dateRange === 'week' &&
         bookingDate >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      ) || (
+        bookingDate && filters.dateRange === 'month' &&
+        bookingDate.getFullYear() === now.getFullYear() &&
+        bookingDate.getMonth() === now.getMonth()
       );
       
       return matchesStatus && matchesSearch && matchesDateRange;
@@ -1337,10 +1349,18 @@ const SpecialistBookings: React.FC = () => {
               }
             }}
             onStatusChange={(bookingId, newStatus) => {
-              dispatch(updateBookingStatus({
-                bookingId,
-                status: newStatus as BookingStatus
-              }));
+              // Route through handleStatusChange so COMPLETED opens the payment
+              // confirmation modal (mirrors the List view behaviour) and errors
+              // are surfaced via toast.
+              handleStatusChange(bookingId, newStatus as keyof typeof statusColors);
+            }}
+            onQuickAction={(bookingId, action) => {
+              const booking = bookings.find(b => b.id === bookingId);
+              if (!booking) return;
+              if (action === 'menu') {
+                setSelectedBooking(booking);
+                setShowDetailModal(true);
+              }
             }}
             userRole={activeTab === 'provider' ? 'specialist' : 'customer'}
           />
@@ -1558,7 +1578,7 @@ const SpecialistBookings: React.FC = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => openBookingDetails(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                           title={t('bookings.view')}
                         >
                           <EyeIcon className="w-4 h-4 mr-1" />
@@ -1589,7 +1609,7 @@ const SpecialistBookings: React.FC = () => {
                                   (records fee + forfeits deposit; no card charged). */}
                               <button
                                 onClick={() => handleMarkNoShow(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-200"
                                 title={t('deposit.markNoShow') || 'Mark no-show'}
                               >
                                 {t('deposit.markNoShow') || 'Mark no-show'}
@@ -1703,12 +1723,12 @@ const SpecialistBookings: React.FC = () => {
 
             {/* No Results */}
             {filteredAndSortedBookings.length === 0 && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
             <svg className="mx-auto h-12 w-12 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">{t('bookings.noBookingsFound')}</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">{t('bookings.noBookingsFound')}</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {t('bookings.noBookingsDescription')}
             </p>
           </div>

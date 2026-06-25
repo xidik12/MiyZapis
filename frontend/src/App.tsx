@@ -48,6 +48,7 @@ const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
   const CustomerMessages = React.lazy(() => import('./pages/customer/Messages'));
   const CustomerReferrals = React.lazy(() => import('./pages/customer/Referrals'));
 const CustomerWallet = React.lazy(() => import('./pages/customer/Wallet'));
+const CustomerBadges = React.lazy(() => import('./pages/customer/Badges'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -774,6 +775,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/customer/badges"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerBadges />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Legacy customer routes - redirect to /customer/ prefixed versions */}
           <Route path="/dashboard" element={<Navigate to="/customer/dashboard" replace />} />
@@ -967,13 +980,11 @@ function App() {
           <Route
             path="/booking/:serviceId"
             element={
-              <ProtectedRoute>
-                <ConditionalLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <BookingRouter />
-                  </Suspense>
-                </ConditionalLayout>
-              </ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <BookingRouter />
+                </Suspense>
+              </ConditionalLayout>
             }
           />
           <Route path="/payment/:bookingId" element={

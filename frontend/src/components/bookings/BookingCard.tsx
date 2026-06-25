@@ -169,7 +169,8 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
           </span>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border leading-none ${statusColor}`}>
-          {(booking.status || 'PENDING').replace('_', ' ')}
+          {t(`dashboard.booking.status.${booking.status || 'PENDING'}` as Parameters<typeof t>[0]) ||
+            (booking.status || 'PENDING').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
         </span>
       </div>
     </motion.div>
