@@ -4704,6 +4704,23 @@ const uk: Record<string, string> = {
   'crm.preview.matchedPlural': 'відповідних клієнтів',
   'crm.preview.setFilters': 'Налаштуйте фільтри для перегляду',
   'crm.preview.andMore': '…і ще {n}',
+  'admin.tabs.moderation': 'Модерація',
+  'admin.tabs.moderationDesc': 'Перегляд скарг та запитів на верифікацію',
+  'admin.moderation.title': 'Черга модерації',
+  'admin.moderation.verifications': 'Запити на верифікацію',
+  'admin.moderation.reviewReports': 'Скарги на відгуки',
+  'admin.moderation.postReports': 'Скарги на пости',
+  'admin.moderation.noPending': 'Немає очікуваних елементів',
+  'admin.moderation.approve': 'Затвердити',
+  'admin.moderation.reject': 'Відхилити',
+  'admin.moderation.resolve': 'Вирішити та приховати',
+  'admin.moderation.dismiss': 'Відхилити',
+  'admin.moderation.note': "Примітка (необов'язково)",
+  'admin.moderation.requestedAt': 'Запитано',
+  'admin.moderation.reportedAt': 'Повідомлено',
+  'admin.moderation.reporter': 'Скаржник',
+  'admin.moderation.reason': 'Причина',
+  'admin.moderation.loading': 'Завантаження...',
 };
 
 export default uk;

@@ -28,7 +28,7 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   // Second check: Must be an admin user
-  if (user?.userType !== 'admin') {
+  if (user?.userType?.toUpperCase() !== 'ADMIN') {
     // Don't reveal admin route existence to non-admin users
     // Redirect to their appropriate dashboard or 404
     const redirectTo = user?.userType === 'specialist' 

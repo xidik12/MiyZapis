@@ -3,6 +3,10 @@ import { body } from 'express-validator';
 import { SpecialistController } from '@/controllers/specialists';
 import { AvailabilityController } from '@/controllers/specialists/availability';
 import { authenticateToken, optionalAuth, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
+import { SpecialistService } from '@/services/specialist';
+import { createSuccessResponse, createErrorResponse } from '@/utils/response';
+import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { logger } from '@/utils/logger';
 import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
@@ -158,6 +162,37 @@ router.post('/availability/generate', authenticateToken, AvailabilityController.
 router.post('/profile', authenticateToken, SpecialistController.createProfile);
 router.put('/profile', authenticateToken, requireSpecialist, SpecialistController.updateProfile);
 router.post('/onboarding/complete', authenticateToken, requireSpecialist, SpecialistController.completeOnboarding);
+
+// Specialist verification self-service routes (must come before parameterized routes)
+router.post('/verification/request', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const result = await SpecialistService.requestVerification(req.user!.id, req.body);
+    res.json(createSuccessResponse({ specialist: result }));
+  } catch (error) {
+    logger.error('Request verification error:', error);
+    const msg = error instanceof Error ? error.message : 'Failed to request verification';
+    if (msg === 'SPECIALIST_NOT_FOUND') {
+      res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist profile not found', req.headers['x-request-id'] as string));
+      return;
+    }
+    res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, msg, req.headers['x-request-id'] as string));
+  }
+});
+
+router.get('/verification/status', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const result = await SpecialistService.getVerificationStatus(req.user!.id);
+    res.json(createSuccessResponse({ verification: result }));
+  } catch (error) {
+    logger.error('Get verification status error:', error);
+    const msg = error instanceof Error ? error.message : 'Failed to get verification status';
+    if (msg === 'SPECIALIST_NOT_FOUND') {
+      res.status(404).json(createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Specialist profile not found', req.headers['x-request-id'] as string));
+      return;
+    }
+    res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, msg, req.headers['x-request-id'] as string));
+  }
+});
 
 // Admin routes (must come before parameterized routes)
 router.put('/:specialistId/verification', authenticateToken, requireAdmin, SpecialistController.toggleVerification);

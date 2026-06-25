@@ -1507,10 +1507,14 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
+      const becomingVerified = !specialist.isVerified;
+
       const updatedSpecialist = await prisma.specialist.update({
         where: { id: specialistId },
         data: {
-          isVerified: !specialist.isVerified,
+          isVerified: becomingVerified,
+          verifiedDate: becomingVerified ? new Date() : null,
+          verificationStatus: becomingVerified ? 'VERIFIED' : 'NONE',
           updatedAt: new Date(),
         },
         include: {
@@ -1543,14 +1547,130 @@ export class SpecialistService {
         },
       });
 
-      logger.info('Specialist verification toggled', { 
-        specialistId, 
-        isVerified: updatedSpecialist.isVerified 
+      logger.info('Specialist verification toggled', {
+        specialistId,
+        isVerified: updatedSpecialist.isVerified
       });
 
       return updatedSpecialist as SpecialistWithUser;
     } catch (error) {
       logger.error('Error toggling specialist verification:', error);
+      throw error;
+    }
+  }
+
+  // Request verification (called by authenticated specialist user)
+  static async requestVerification(userId: string, data: { notes?: string; documents?: unknown }): Promise<any> {
+    try {
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      if (specialist.verificationStatus === 'PENDING' || specialist.verificationStatus === 'VERIFIED') {
+        return specialist;
+      }
+
+      const updated = await prisma.specialist.update({
+        where: { userId },
+        data: {
+          verificationStatus: 'PENDING',
+          verificationRequestedAt: new Date(),
+          verificationNote: data.notes ?? null,
+          documentsSubmitted: data.documents ? JSON.stringify(data.documents) : specialist.documentsSubmitted,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info('Specialist verification requested', { userId, specialistId: specialist.id });
+      return updated;
+    } catch (error) {
+      logger.error('Error requesting specialist verification:', error);
+      throw error;
+    }
+  }
+
+  // Get verification status (called by authenticated specialist user)
+  static async getVerificationStatus(userId: string): Promise<any> {
+    try {
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId },
+        select: {
+          verificationStatus: true,
+          verificationRequestedAt: true,
+          verificationNote: true,
+          isVerified: true,
+          verifiedDate: true,
+        },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      return specialist;
+    } catch (error) {
+      logger.error('Error getting verification status:', error);
+      throw error;
+    }
+  }
+
+  // List all PENDING verification requests (admin)
+  static async listPendingVerifications(): Promise<any[]> {
+    try {
+      const specialists = await prisma.specialist.findMany({
+        where: { verificationStatus: 'PENDING' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { verificationRequestedAt: 'asc' },
+      });
+
+      return specialists;
+    } catch (error) {
+      logger.error('Error listing pending verifications:', error);
+      throw error;
+    }
+  }
+
+  // Approve or reject a verification request (admin)
+  static async resolveVerification(specialistId: string, action: 'approve' | 'reject', note?: string): Promise<any> {
+    try {
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      const isApprove = action === 'approve';
+
+      const updated = await prisma.specialist.update({
+        where: { id: specialistId },
+        data: {
+          isVerified: isApprove,
+          verifiedDate: isApprove ? new Date() : null,
+          verificationStatus: isApprove ? 'VERIFIED' : 'REJECTED',
+          verificationNote: note ?? null,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info('Specialist verification resolved', { specialistId, action });
+      return updated;
+    } catch (error) {
+      logger.error('Error resolving specialist verification:', error);
       throw error;
     }
   }

@@ -4,7 +4,7 @@ import { InventoryService } from '@/services/inventory/inventory.service';
 import { NotificationService } from '@/services/notification';
 import { logger } from '@/utils/logger';
 import { num, sumBy } from '@/utils/money';
-import { SalesServiceError } from '@/services/sales/sales.service';
+import { SalesService, SalesServiceError } from '@/services/sales/sales.service';
 
 const prisma = new PrismaClient();
 
@@ -324,20 +324,26 @@ export class StoreService {
   // In-person point-of-sale: an instant counter sale. Creates a FULFILLED order
   // and deducts stock immediately, recording the payment method. Payment is
   // taken in person (cash/card) — the platform does not process it.
-  // `discount` is an optional fixed-amount reduction off the subtotal (clamped
-  // to [0, subtotal]); total = subtotal − discount. Uses num() from money utils
-  // to avoid Prisma Decimal string-concatenation bugs.
-  // `giftCardCode` is an optional gift-card code to apply. The card must belong
-  // to this owner, be ACTIVE, have balance > 0, and share the order's currency.
-  // The applied amount is min(card.balance, amountDue after discount). Redemption
-  // is performed atomically inside the same Prisma transaction as order creation.
+  //
+  // Discount composition order (all amounts are ≥ 0, clamped):
+  //   1. manualDiscount  — fixed amount off subtotal (input.discount)
+  //   2. membershipDiscount — percent of (subtotal − manualDiscount), applied
+  //      only when input.customerUserId is set and that customer holds an ACTIVE
+  //      membership whose currentPeriodEnd is in the future and whose plan has
+  //      discountPercent > 0. Takes the highest discount across multiple plans.
+  //   3. Combined discount stored in the order's `discount` column.
+  //   4. giftCard — applied against (subtotal − combinedDiscount).
+  //   5. total = subtotal − combinedDiscount − giftCardAmount.
+  //
+  // Uses num() from money utils to avoid Prisma Decimal string-concatenation bugs.
   static async posSale(ownerId: string, input: {
     items: { productId: string; quantity: number }[];
-    paymentMethod?: string; // CASH | CARD | OTHER
+    paymentMethod?: string;   // CASH | CARD | OTHER
+    customerUserId?: string;  // optional — enables membership discount lookup
     customerName?: string;
     note?: string;
-    discount?: number; // fixed amount off subtotal
-    giftCardCode?: string; // optional gift-card code
+    discount?: number;        // fixed amount off subtotal
+    giftCardCode?: string;    // optional gift-card code
   }) {
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw new StoreServiceError('EMPTY_ORDER', 'Sale must contain at least one item');
@@ -375,11 +381,35 @@ export class StoreService {
       lineItems.push({ productId, name: product.name, quantity, unitPrice });
     }
 
-    // Clamp discount to [0, subtotal].
-    const discountRaw = num(input.discount);
-    const discount = Math.max(0, Math.min(discountRaw, subtotal));
+    // Step 1: manual discount — clamp to [0, subtotal].
+    const manualDiscount = Math.max(0, Math.min(num(input.discount), subtotal));
+    const afterManualDiscount = subtotal - manualDiscount;
+
+    // Step 2: membership discount — only when a customerUserId is supplied and
+    // the customer has an ACTIVE membership with a non-zero discountPercent.
+    // getActiveDiscountForCustomer skips lapsed periods (currentPeriodEnd < now)
+    // even if status is ACTIVE, so it is always safe to call. Returns 0 when no
+    // qualifying membership exists.
+    let membershipDiscountPct = 0;
+    const customerUserId = input.customerUserId?.trim() || null;
+    if (customerUserId) {
+      try {
+        membershipDiscountPct = await SalesService.getActiveDiscountForCustomer(ownerId, customerUserId);
+      } catch {
+        // Non-fatal: if the lookup fails, proceed without membership discount.
+        logger.warn('Membership discount lookup failed at POS — proceeding without it', { ownerId, customerUserId });
+      }
+    }
+    // Membership percent applied to the amount remaining after manual discount.
+    const membershipDiscountAmount = membershipDiscountPct > 0
+      ? Math.max(0, Math.min(afterManualDiscount * membershipDiscountPct / 100, afterManualDiscount))
+      : 0;
+
+    // Combined discount stored in the order's `discount` column.
+    const discount = manualDiscount + membershipDiscountAmount;
     const amountAfterDiscount = subtotal - discount;
 
+    // Step 3: gift card — applied against amount remaining after all discounts.
     // Resolve gift card (if provided). Owner-scoped; ACTIVE; same currency.
     let giftCard: { id: string; balance: number; currency: string } | null = null;
     if (input.giftCardCode?.trim()) {
@@ -418,6 +448,7 @@ export class StoreService {
         data: {
           ownerId,
           businessId,
+          customerUserId: customerUserId || null,
           customerName: input.customerName?.trim() || 'Walk-in',
           orderNumber: generateOrderNumber(),
           status: 'FULFILLED',

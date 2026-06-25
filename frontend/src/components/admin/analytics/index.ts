@@ -2,6 +2,7 @@ export { OverviewSection } from './OverviewSection';
 export { SystemHealthSection } from './SystemHealthSection';
 export { UserManagementSection } from './UserManagementSection';
 export { DetailedAnalyticsSection } from './DetailedAnalyticsSection';
+export { ModerationSection } from './ModerationSection';
 
 export type { OverviewSectionProps } from './OverviewSection';
 export type { SystemHealthSectionProps } from './SystemHealthSection';

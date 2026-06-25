@@ -4704,6 +4704,23 @@ const ru: Record<string, string> = {
   'crm.preview.matchedPlural': 'подходящих клиентов',
   'crm.preview.setFilters': 'Настройте фильтры для предпросмотра',
   'crm.preview.andMore': '…и ещё {n}',
+  'admin.tabs.moderation': 'Модерация',
+  'admin.tabs.moderationDesc': 'Жалобы и запросы верификации',
+  'admin.moderation.title': 'Очередь модерации',
+  'admin.moderation.verifications': 'Запросы верификации',
+  'admin.moderation.reviewReports': 'Жалобы на отзывы',
+  'admin.moderation.postReports': 'Жалобы на посты',
+  'admin.moderation.noPending': 'Нет ожидающих элементов',
+  'admin.moderation.approve': 'Одобрить',
+  'admin.moderation.reject': 'Отклонить',
+  'admin.moderation.resolve': 'Решить и скрыть',
+  'admin.moderation.dismiss': 'Отклонить',
+  'admin.moderation.note': 'Примечание (необязательно)',
+  'admin.moderation.requestedAt': 'Запрошено',
+  'admin.moderation.reportedAt': 'Сообщено',
+  'admin.moderation.reporter': 'Жалобщик',
+  'admin.moderation.reason': 'Причина',
+  'admin.moderation.loading': 'Загрузка...',
 };
 
 export default ru;

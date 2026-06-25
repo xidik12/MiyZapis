@@ -9,6 +9,7 @@ export class SubscriptionWorker {
   private planChangeJob: cron.ScheduledTask | null = null;
   private trialExpirationJob: cron.ScheduledTask | null = null;
   private prepaidExpirationJob: cron.ScheduledTask | null = null;
+  private membershipExpirationJob: cron.ScheduledTask | null = null;
 
   start(): void {
     logger.info('Starting subscription worker...');
@@ -74,6 +75,40 @@ export class SubscriptionWorker {
         });
       } catch (error) {
         logger.error('Trial expiration checks failed', {
+          error: error instanceof Error ? error.message : error,
+        });
+      }
+    }, {
+      scheduled: true,
+      timezone: 'UTC',
+    });
+
+    // Membership expiration — runs daily at 03:00 UTC.
+    // Finds CustomerMembership rows with status='ACTIVE' and currentPeriodEnd in
+    // the past, then flips them to EXPIRED. Idempotent: the WHERE clause ensures
+    // only still-ACTIVE rows are touched, so re-running is always safe.
+    // This is the companion to getActiveDiscountForCustomer's in-query period
+    // guard; expiring rows here makes the status column authoritative so queries
+    // that filter on status='ACTIVE' alone (e.g. summary counts) are correct.
+    this.membershipExpirationJob = cron.schedule('0 3 * * *', async () => {
+      logger.info('Running membership expiration check...');
+
+      try {
+        const now = new Date();
+
+        const result = await prisma.customerMembership.updateMany({
+          where: {
+            status: 'ACTIVE',
+            currentPeriodEnd: { lt: now },
+          },
+          data: { status: 'EXPIRED' },
+        });
+
+        logger.info('Membership expiration check completed', {
+          expired: result.count,
+        });
+      } catch (error) {
+        logger.error('Membership expiration check failed', {
           error: error instanceof Error ? error.message : error,
         });
       }
@@ -174,6 +209,7 @@ export class SubscriptionWorker {
       planChanges: '0 10 * * * (daily at 10:00 AM UTC)',
       trialExpiration: '0 2 * * * (daily at 02:00 AM UTC)',
       prepaidExpiration: '30 2 * * * (daily at 02:30 AM UTC)',
+      membershipExpiration: '0 3 * * * (daily at 03:00 AM UTC)',
     });
   }
 
@@ -198,6 +234,11 @@ export class SubscriptionWorker {
     if (this.prepaidExpirationJob) {
       this.prepaidExpirationJob.stop();
       this.prepaidExpirationJob = null;
+    }
+
+    if (this.membershipExpirationJob) {
+      this.membershipExpirationJob.stop();
+      this.membershipExpirationJob = null;
     }
 
     logger.info('Subscription worker stopped');
@@ -302,25 +343,46 @@ export class SubscriptionWorker {
     return result;
   }
 
+  async triggerMembershipExpiration(): Promise<{ expired: number }> {
+    logger.info('Manually triggering membership expiration check...');
+
+    const now = new Date();
+    const result = await prisma.customerMembership.updateMany({
+      where: {
+        status: 'ACTIVE',
+        currentPeriodEnd: { lt: now },
+      },
+      data: { status: 'EXPIRED' },
+    });
+
+    const outcome = { expired: result.count };
+    logger.info('Manual membership expiration completed', outcome);
+    return outcome;
+  }
+
   getStatus(): {
     monthlyBillingActive: boolean;
     planChangeActive: boolean;
     trialExpirationActive: boolean;
     prepaidExpirationActive: boolean;
+    membershipExpirationActive: boolean;
     nextMonthlyBilling: string | null;
     nextPlanChange: string | null;
     nextTrialExpiration: string | null;
     nextPrepaidExpiration: string | null;
+    nextMembershipExpiration: string | null;
   } {
     return {
       monthlyBillingActive: this.monthlyBillingJob !== null,
       planChangeActive: this.planChangeJob !== null,
       trialExpirationActive: this.trialExpirationJob !== null,
       prepaidExpirationActive: this.prepaidExpirationJob !== null,
+      membershipExpirationActive: this.membershipExpirationJob !== null,
       nextMonthlyBilling: this.monthlyBillingJob ? 'Next 1st of month at 9:00 AM UTC' : null,
       nextPlanChange: this.planChangeJob ? 'Next day at 10:00 AM UTC' : null,
       nextTrialExpiration: this.trialExpirationJob ? 'Next day at 2:00 AM UTC' : null,
       nextPrepaidExpiration: this.prepaidExpirationJob ? 'Next day at 2:30 AM UTC' : null,
+      nextMembershipExpiration: this.membershipExpirationJob ? 'Next day at 3:00 AM UTC' : null,
     };
   }
 }

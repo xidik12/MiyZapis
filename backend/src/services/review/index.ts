@@ -449,6 +449,90 @@ export class ReviewService {
   }
 
   /**
+   * List all PENDING review reports (admin)
+   */
+  static async listPendingReviewReports(): Promise<any[]> {
+    try {
+      const reports = await prisma.reviewReport.findMany({
+        where: { status: 'PENDING' },
+        include: {
+          review: {
+            select: {
+              id: true,
+              comment: true,
+              rating: true,
+              specialistId: true,
+            },
+          },
+          reporter: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      return reports;
+    } catch (error) {
+      logger.error('Error listing pending review reports:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resolve or dismiss a review report (admin)
+   */
+  static async resolveReviewReport(
+    reportId: string,
+    action: 'resolve' | 'dismiss',
+    resolutionNotes?: string,
+    adminId?: string
+  ): Promise<any> {
+    try {
+      const report = await prisma.reviewReport.findUnique({
+        where: { id: reportId },
+      });
+
+      if (!report) {
+        throw new Error('REVIEW_REPORT_NOT_FOUND');
+      }
+
+      const newStatus = action === 'resolve' ? 'RESOLVED' : 'DISMISSED';
+
+      const [updatedReport] = await prisma.$transaction(async (tx) => {
+        const updated = await tx.reviewReport.update({
+          where: { id: reportId },
+          data: {
+            status: newStatus,
+            resolvedAt: new Date(),
+            reviewedByAdmin: adminId ?? null,
+            resolutionNotes: resolutionNotes ?? null,
+          },
+        });
+
+        // If resolving (action taken), hide the review
+        if (action === 'resolve') {
+          await tx.review.update({
+            where: { id: report.reviewId },
+            data: { isPublic: false },
+          });
+        }
+
+        return [updated];
+      });
+
+      logger.info('Review report resolved', { reportId, action });
+      return updatedReport;
+    } catch (error) {
+      logger.error('Error resolving review report:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Update specialist rating based on reviews
    */
   private static async updateSpecialistRating(specialistId: string): Promise<void> {

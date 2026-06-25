@@ -4711,6 +4711,23 @@ const en: Record<string, string> = {
   'crm.preview.matchedPlural': 'matched clients',
   'crm.preview.setFilters': 'Set filters to preview',
   'crm.preview.andMore': '…and {n} more',
+  'admin.tabs.moderation': 'Moderation',
+  'admin.tabs.moderationDesc': 'Review reports and verification requests',
+  'admin.moderation.title': 'Moderation Queue',
+  'admin.moderation.verifications': 'Verification Requests',
+  'admin.moderation.reviewReports': 'Review Reports',
+  'admin.moderation.postReports': 'Post Reports',
+  'admin.moderation.noPending': 'No pending items',
+  'admin.moderation.approve': 'Approve',
+  'admin.moderation.reject': 'Reject',
+  'admin.moderation.resolve': 'Resolve & Hide',
+  'admin.moderation.dismiss': 'Dismiss',
+  'admin.moderation.note': 'Note (optional)',
+  'admin.moderation.requestedAt': 'Requested',
+  'admin.moderation.reportedAt': 'Reported',
+  'admin.moderation.reporter': 'Reporter',
+  'admin.moderation.reason': 'Reason',
+  'admin.moderation.loading': 'Loading...',
 };
 
 export default en;

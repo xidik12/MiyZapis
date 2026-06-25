@@ -216,8 +216,11 @@ model Specialist {
   onboardingCompleted Boolean @default(false)
 
   // Verification details
-  verifiedDate       DateTime? // Date when verified
-  documentsSubmitted String? // JSON string of submitted documents
+  verifiedDate              DateTime? // Date when verified
+  documentsSubmitted        String?   // JSON string of submitted documents
+  verificationStatus        String    @default("NONE") // NONE, PENDING, VERIFIED, REJECTED
+  verificationRequestedAt   DateTime?
+  verificationNote          String?
 
   // Business metrics
   rating            Float @default(0.0)
@@ -2160,8 +2163,12 @@ model PostReport {
   userId    String
   reason    String
   details   String?  @db.Text
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
+  status             String    @default("PENDING")
+  updatedAt          DateTime  @updatedAt
+  resolvedAt         DateTime?
+  reviewedByAdmin    String?
+  resolutionNotes    String?
+  createdAt          DateTime  @default(now())
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   user User @relation("UserPostReports", fields: [userId], references: [id], onDelete: Cascade)

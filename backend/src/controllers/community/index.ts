@@ -1368,6 +1368,82 @@ export class CommunityController {
   }
 
   /**
+   * List all PENDING post reports (admin)
+   */
+  static async listPendingPostReports(): Promise<any[]> {
+    const reports = await prisma.postReport.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        post: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return reports;
+  }
+
+  /**
+   * Resolve or dismiss a post report (admin)
+   */
+  static async resolvePostReport(
+    reportId: string,
+    action: 'resolve' | 'dismiss',
+    resolutionNotes?: string,
+    adminId?: string
+  ): Promise<any> {
+    const report = await prisma.postReport.findUnique({
+      where: { id: reportId },
+    });
+
+    if (!report) {
+      throw new Error('POST_REPORT_NOT_FOUND');
+    }
+
+    const newStatus = action === 'resolve' ? 'RESOLVED' : 'DISMISSED';
+
+    const [updatedReport] = await prisma.$transaction(async (tx) => {
+      const updated = await tx.postReport.update({
+        where: { id: reportId },
+        data: {
+          status: newStatus,
+          resolvedAt: new Date(),
+          reviewedByAdmin: adminId ?? null,
+          resolutionNotes: resolutionNotes ?? null,
+        },
+      });
+
+      // If resolving (action taken), soft-delete the post
+      if (action === 'resolve') {
+        await tx.post.update({
+          where: { id: report.postId },
+          data: {
+            isDeleted: true,
+            deletedAt: new Date(),
+          },
+        });
+      }
+
+      return [updated];
+    });
+
+    logger.info('Post report resolved', { reportId, action });
+    return updatedReport;
+  }
+
+  /**
    * Report a post
    * POST /community/posts/:id/report
    */

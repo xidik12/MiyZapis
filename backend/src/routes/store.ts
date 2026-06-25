@@ -170,8 +170,11 @@ ownerRouter.get('/pos/giftcard/:code', async (req: Request, res: Response): Prom
 });
 
 // POS — instant in-person counter sale. Body: { items: [{productId, quantity}],
-// paymentMethod?, customerName?, note?, discount?, giftCardCode? }.
+// paymentMethod?, customerUserId?, customerName?, note?, discount?, giftCardCode? }.
 // Creates a FULFILLED order + deducts stock. Gift card is redeemed atomically.
+// When customerUserId is provided and the customer holds an ACTIVE membership
+// with a non-zero discountPercent, that membership discount is applied after any
+// manual discount and before the gift-card offset (see posSale for order details).
 ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void> => {
   try {
     const ownerId = ownerIdOf(req);
@@ -180,6 +183,7 @@ ownerRouter.post('/pos/sale', async (req: Request, res: Response): Promise<void>
       order = await StoreService.posSale(ownerId, {
         items: req.body?.items,
         paymentMethod: req.body?.paymentMethod,
+        customerUserId: typeof req.body?.customerUserId === 'string' ? req.body.customerUserId.trim() : undefined,
         customerName: req.body?.customerName,
         note: req.body?.note,
         discount: req.body?.discount !== undefined ? Number(req.body.discount) : undefined,

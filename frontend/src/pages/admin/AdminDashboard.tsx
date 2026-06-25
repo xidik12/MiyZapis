@@ -3,20 +3,22 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import {
   ChartBarIcon,
   UsersIcon,
-  CogIcon} from '@/components/icons';
+  CogIcon,
+  ShieldCheckIcon} from '@/components/icons';
 import { PageLoader } from '@/components/ui';
 import { PeriodSelector } from '@/components/admin/ui';
 import {
   OverviewSection,
   SystemHealthSection,
   UserManagementSection,
-  DetailedAnalyticsSection
+  DetailedAnalyticsSection,
+  ModerationSection
 } from '@/components/admin/analytics';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
 
 const AdminDashboard: React.FC = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'system' | 'moderation'>('overview');
 
   // Fetch all dashboard data using custom hook
   // Use the hook's setPeriod to ensure period changes trigger refetch
@@ -62,6 +64,12 @@ const AdminDashboard: React.FC = () => {
       name: t('admin.tabs.system'),
       icon: CogIcon,
       description: t('admin.tabs.systemDesc')
+    },
+    {
+      id: 'moderation' as const,
+      name: t('admin.tabs.moderation'),
+      icon: ShieldCheckIcon,
+      description: t('admin.tabs.moderationDesc')
     }
   ];
 
@@ -198,6 +206,11 @@ const AdminDashboard: React.FC = () => {
               autoRefresh={true}
               refreshInterval={30}
             />
+          )}
+
+          {/* Moderation Tab */}
+          {activeTab === 'moderation' && (
+            <ModerationSection />
           )}
         </div>
 
