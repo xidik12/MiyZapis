@@ -520,7 +520,9 @@ export async function handleBookingAction(ctx: BotContext, action: string, booki
         break;
 
       case 'noshow':
-        await BookingService.updateBooking(bookingId, { status: 'NO_SHOW' } as any);
+        // Route through markNoShow so the no-show fee and deposit forfeiture are
+        // computed and recorded consistently with the /resolve route.
+        await BookingService.markNoShow(bookingId, ctx.session.user.id as string);
         await ctx.reply('\ud83d\udeab Marked as no-show.');
         break;
 

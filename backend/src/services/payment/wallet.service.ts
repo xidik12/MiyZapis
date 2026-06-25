@@ -310,16 +310,35 @@ export class WalletService {
         };
       }
 
-      // Deduct from wallet
-      const { transaction, newBalance } = await this.deductFunds({
-        userId,
-        bookingId,
-        amount: appliedAmount,
-        type: 'DEBIT',
-        reason: 'BOOKING_PAYMENT',
-        description: `Applied wallet balance to booking deposit`,
-        referenceId: bookingId,
-        referenceType: 'BOOKING',
+      // Deduct from wallet and update the booking atomically using the SAME tx
+      // client. Calling this.deductFunds() here would open a second
+      // prisma.$transaction, which Prisma runs on a separate connection — the
+      // inner debit would commit even if the booking.update below fails,
+      // silently destroying the customer's balance.
+      const balanceBefore = num(user.walletBalance);
+      const newBalance = balanceBefore - appliedAmount;
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          userId,
+          bookingId,
+          type: 'DEBIT',
+          amount: appliedAmount,
+          currency: user.walletCurrency,
+          balanceBefore,
+          balanceAfter: newBalance,
+          reason: 'BOOKING_PAYMENT',
+          description: 'Applied wallet balance to booking deposit',
+          referenceId: bookingId,
+          referenceType: 'BOOKING',
+          status: 'COMPLETED',
+          processedAt: new Date(),
+        },
+      });
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { walletBalance: newBalance },
       });
 
       // Update booking with wallet amount used

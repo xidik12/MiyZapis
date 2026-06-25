@@ -465,8 +465,11 @@ export class StoreService {
     return order;
   }
 
-  // Refund a POS/order sale: flip status to REFUNDED and restock each line.
-  // Ownership-scoped. Idempotent — throws if already REFUNDED.
+  // Refund a POS/order sale: flip status to REFUNDED, restock each line, and
+  // restore any gift-card balance that was spent — all atomically.
+  // Ownership-scoped. Idempotent — throws if already REFUNDED (double-credit
+  // guard: the status check above the transaction is the guard; re-entrant calls
+  // throw ALREADY_REFUNDED before touching money or stock).
   // Only PAID and FULFILLED orders can be refunded (not PENDING/CANCELLED).
   static async refundOrder(ownerId: string, orderId: string) {
     const order = await prisma.productOrder.findFirst({
@@ -485,22 +488,67 @@ export class StoreService {
       );
     }
 
-    // Restock each item (delta = +quantity, reason RETURN).
-    for (const item of order.items) {
-      await InventoryService.adjustStock(
-        ownerId,
-        item.productId,
-        num(item.quantity),  // positive delta — add back to stock
-        'RETURN',
-        ownerId,
-        order.id
-      );
-    }
+    // Everything below runs in ONE transaction: status flip + stock return +
+    // gift-card credit. We inline the stock movement rather than calling
+    // InventoryService.adjustStock() because that opens its own prisma.$transaction
+    // internally and Prisma interactive transactions don't nest — calling it here
+    // would run each restock on a separate connection, not atomic with the rest.
+    return prisma.$transaction(async (tx) => {
+      // 1. Flip order status to REFUNDED.
+      const updated = await tx.productOrder.update({
+        where: { id: order.id },
+        data: { status: 'REFUNDED' },
+        include: { items: true },
+      });
 
-    return prisma.productOrder.update({
-      where: { id: order.id },
-      data: { status: 'REFUNDED' },
-      include: { items: true },
+      // 2. Restock each line (inline equivalent of InventoryService.adjustStock RETURN).
+      for (const item of order.items) {
+        const qty = num(item.quantity);
+        // Verify the product still belongs to this owner before touching stock.
+        const product = await tx.product.findFirst({ where: { id: item.productId, ownerId } });
+        if (!product) continue; // product deleted — skip silently, same as adjustStock
+
+        await tx.stockMovement.create({
+          data: {
+            productId: item.productId,
+            delta: qty,
+            reason: 'RETURN',
+            reference: order.id,
+            createdById: ownerId,
+          },
+        });
+
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stockQty: { increment: qty } },
+        });
+      }
+
+      // 3. Restore gift-card balance if the order was (partially) paid with one.
+      const giftCardAmount = num(order.giftCardAmount);
+      if (order.giftCardId && giftCardAmount > 0) {
+        const card = await tx.giftCard.findUnique({ where: { id: order.giftCardId } });
+        if (card) {
+          const restoredBalance = num(card.balance) + giftCardAmount;
+          await tx.giftCard.update({
+            where: { id: order.giftCardId },
+            data: {
+              balance: restoredBalance,
+              // Re-activate a fully-depleted card that is now getting value back.
+              status: card.status === 'REDEEMED' ? 'ACTIVE' : card.status,
+            },
+          });
+          await tx.giftCardTransaction.create({
+            data: {
+              giftCardId: order.giftCardId,
+              amount: giftCardAmount, // positive = credit/restore
+              reason: 'REFUND',
+            },
+          });
+        }
+      }
+
+      return updated;
     });
   }
 

@@ -54,6 +54,14 @@ export interface UpsertListingInput {
   submit?: boolean;
 }
 
+export type BoostDays = 7 | 30 | 90;
+
+export interface BoostPricing {
+  7: number;
+  30: number;
+  90: number;
+}
+
 export interface ShowcaseService {
   id: string;
   name: string;
@@ -88,16 +96,31 @@ export class PromoteService {
     return response.data.status;
   }
 
-  // Self-serve toggle today; becomes a paid boost once live billing lands.
-  async setFeatured(enabled: boolean, days?: number): Promise<FeaturedStatus> {
-    const response = await apiClient.post<{ status: FeaturedStatus }>('/promote/featured', {
-      enabled,
-      ...(days != null ? { days } : {}),
-    });
+  // Disable the boost (free). Enabling requires createBoostInvoice → Stars payment.
+  async setFeatured(enabled: false): Promise<FeaturedStatus> {
+    const response = await apiClient.post<{ status: FeaturedStatus }>('/promote/featured', { enabled });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update featured status');
     }
     return response.data.status;
+  }
+
+  // Create a Telegram Stars invoice link for a boost (7/30/90 days).
+  async createBoostInvoice(days: BoostDays): Promise<string> {
+    const response = await apiClient.post<{ invoiceLink: string }>('/promote/featured/checkout', { days });
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create boost invoice');
+    }
+    return response.data.invoiceLink;
+  }
+
+  // Fetch the Stars prices for each boost tier.
+  async getBoostPricing(): Promise<BoostPricing> {
+    const response = await apiClient.get<{ pricing: BoostPricing }>('/promote/featured/pricing');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to load boost pricing');
+    }
+    return response.data.pricing;
   }
 
   async getStats(from?: string, to?: string): Promise<AcquisitionStats> {

@@ -387,21 +387,17 @@ export class ReviewService {
         throw new Error('NOT_AUTHORIZED_TO_RESPOND');
       }
 
-      // For now, we'll store the response in the comment field with a prefix
-      // In a full implementation, you might want to add a separate response field
-      const updatedComment = review.comment
-        ? `${review.comment}\n\n--- Specialist Response ---\n${response}`
-        : `--- Specialist Response ---\n${response}`;
-
-      const updatedReview = await prisma.review.update({
-        where: { id: reviewId },
-        data: {
-          comment: updatedComment,
-        },
+      // Upsert into ReviewResponse (keyed on unique reviewId) so the response
+      // surfaces via the `response` relation included in GET /reviews/specialist/:id
+      // and is reactable via POST /:reviewId/response/react.
+      await prisma.reviewResponse.upsert({
+        where: { reviewId },
+        update: { responseText: response },
+        create: { reviewId, responseText: response },
       });
 
-      logger.info(`Specialist response added to review: ${reviewId}`);
-      return updatedReview;
+      logger.info(`Specialist response upserted for review: ${reviewId}`);
+      return review;
     } catch (error) {
       logger.error('Error adding specialist response:', error);
       throw error;

@@ -19,6 +19,9 @@ import { NotificationService } from '@/services/notification';
 import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 import { ConsumablesService } from '@/services/inventory/consumables.service';
 import { ReputationService } from '@/services/reputation/reputation.service';
+import LoyaltyService from '@/services/loyalty';
+import { ReferralProcessingService } from '@/services/referral/processing.service';
+import { computeNoShowFee } from '@/services/booking/policy';
 
 const notifier = new NotificationService(prisma);
 
@@ -97,6 +100,20 @@ export class BookingLifecycleService {
         error: (err as Error).message,
       });
     });
+    // Fire-and-forget: loyalty points + referral completion (idempotent — both
+    // services guard against double-award internally, never throws into booking flow).
+    LoyaltyService.processBookingCompletion(bookingId).catch((err) => {
+      logger.error('Failed to process loyalty for completed booking', {
+        bookingId,
+        error: (err as Error).message,
+      });
+    });
+    ReferralProcessingService.processBookingCompletion(bookingId).catch((err) => {
+      logger.error('Failed to process referral for completed booking', {
+        bookingId,
+        error: (err as Error).message,
+      });
+    });
     return updated;
   }
 
@@ -108,7 +125,12 @@ export class BookingLifecycleService {
     noShowParty: 'CUSTOMER' | 'SPECIALIST',
     notes?: string,
   ) {
-    const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        service: { select: { noShowFeeType: true, noShowFeeValue: true } },
+      },
+    });
     if (!booking) throw new Error('BOOKING_NOT_FOUND');
     if (!ACTIVE_STATUSES.includes(booking.status as (typeof ACTIVE_STATUSES)[number])) {
       throw new Error('BOOKING_ALREADY_RESOLVED');
@@ -120,16 +142,28 @@ export class BookingLifecycleService {
     if (party === 'CUSTOMER' && noShowParty === 'CUSTOMER') throw new Error('INVALID_NO_SHOW_REPORT');
     if (party === 'SPECIALIST' && noShowParty === 'SPECIALIST') throw new Error('INVALID_NO_SHOW_REPORT');
 
+    // Compute no-show fee and deposit forfeiture (record-keeping only — no card
+    // is charged here; mirrors BookingService.markNoShow so all entry-points are
+    // consistent regardless of whether the no-show came from the /resolve route,
+    // Telegram, or the cron auto-finaliser).
+    const noShowFeeAmount = booking.service
+      ? computeNoShowFee(booking.service, Number(booking.totalAmount))
+      : 0;
+    const hadDeposit = ['REQUIRED', 'PAID'].includes(booking.depositStatus ?? '');
+
     const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: 'NO_SHOW',
         cancelledAt: new Date(),
         cancelledBy: noShowParty === 'CUSTOMER' ? booking.customerId : booking.specialistId,
+        noShowFeeAmount,
+        noShowFeeStatus: noShowFeeAmount > 0 ? 'CHARGED' : 'NONE',
+        ...(hadDeposit ? { depositStatus: 'FORFEITED' } : {}),
         completionNotes: this.combineNotes(
           booking.completionNotes,
           notes,
-          `no-show: ${noShowParty.toLowerCase()} did not attend; reported by ${party.toLowerCase()}`,
+          `no-show: ${noShowParty.toLowerCase()} did not attend; reported by ${party.toLowerCase()}; fee=${noShowFeeAmount}, depositForfeited=${hadDeposit}`,
         ),
       },
     });
@@ -207,13 +241,29 @@ export class BookingLifecycleService {
       },
     });
     logger.info('Auto-finalised stale bookings', { count: result.count, graceDays });
-    // Fire-and-forget: write off consumables for each auto-finalised booking
-    // (idempotent, never throws). Sequential to avoid a connection-pool stampede.
+    // Fire-and-forget: write off consumables, request reviews, award loyalty points
+    // and process referrals for each auto-finalised booking. All helpers are
+    // idempotent and never throw into the caller. Sequential to avoid a
+    // connection-pool stampede.
     void (async () => {
       for (const id of ids) {
         await ConsumablesService.deductForBooking(id);
-        // Also send the post-visit review request (idempotent, never throws).
+        // Post-visit review request (idempotent, never throws).
         await ReputationService.requestReviewForBooking(id);
+        // Loyalty points (idempotent — LoyaltyService guards against double-award).
+        await LoyaltyService.processBookingCompletion(id).catch((err) => {
+          logger.error('Failed to process loyalty for auto-finalised booking', {
+            bookingId: id,
+            error: (err as Error).message,
+          });
+        });
+        // Referral completion (idempotent — ReferralService checks status !== PENDING).
+        await ReferralProcessingService.processBookingCompletion(id).catch((err) => {
+          logger.error('Failed to process referral for auto-finalised booking', {
+            bookingId: id,
+            error: (err as Error).message,
+          });
+        });
       }
     })().catch((err) => {
       logger.error('Failed to deduct consumables / request reviews for auto-finalised bookings', {

@@ -4,6 +4,7 @@ import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { specialistSubscriptionService } from './subscription.service';
+import { PromoteService } from '@/services/promote/promote.service';
 
 // ---------------------------------------------------------------------------
 // Telegram Stars — recurring specialist subscription billing.
@@ -25,6 +26,9 @@ import { specialistSubscriptionService } from './subscription.service';
 const PAYLOAD_MONTHLY = 'sub:'; // recurring monthly → `sub:<specialist User.id>`
 const PAYLOAD_SIXMONTH = 'sub6:'; // one-time 6-month → `sub6:<specialist User.id>`
 const PAYLOAD_ANNUAL = 'subyr:'; // one-time annual → `subyr:<specialist User.id>`
+const PAYLOAD_BOOST = 'boost:'; // one-time boost → `boost:<days>:<specialist User.id>`
+const BOOST_VALID_DAYS = [7, 30, 90] as const;
+type BoostDays = (typeof BOOST_VALID_DAYS)[number];
 const SUBSCRIPTION_PERIOD_SECONDS = 2592000; // 30 days — the only value Telegram allows
 // Prepaid bundles grant bonus months on top of what you pay for:
 //   6 months paid → 7 months access (+1 free)
@@ -56,6 +60,24 @@ export function starsPricing() {
     annual: annualStars(),
     sixMonthAccessMonths: SIXMONTH_ACCESS_MONTHS,
     annualAccessMonths: ANNUAL_ACCESS_MONTHS,
+  };
+}
+
+function boostStars(days: number): number {
+  if (!BOOST_VALID_DAYS.includes(days as BoostDays)) {
+    throw new Error(`Invalid boost days: ${days}. Must be one of ${BOOST_VALID_DAYS.join(', ')}.`);
+  }
+  const envKey = days === 7 ? 'TELEGRAM_STARS_BOOST_7' : days === 30 ? 'TELEGRAM_STARS_BOOST_30' : 'TELEGRAM_STARS_BOOST_90';
+  const defaults: Record<number, number> = { 7: 100, 30: 350, 90: 900 };
+  const n = Number(process.env[envKey]);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : defaults[days];
+}
+
+export function boostPricing() {
+  return {
+    7: boostStars(7),
+    30: boostStars(30),
+    90: boostStars(90),
   };
 }
 
@@ -125,6 +147,23 @@ export class TelegramStarsService {
     return link;
   }
 
+  /** One-time boost invoice — activates isFeatured + Promotion ACTIVE for `days` days. */
+  async createBoostInvoiceLink(specialistUserId: string, days: number): Promise<string> {
+    const stars = boostStars(days); // validates days
+    const link = await this.tg.createInvoiceLink({
+      title: `MiyZapis — Boost ${days} days`,
+      description: `Featured placement in search + discovery showcase for ${days} days. One-time, no auto-renew.`,
+      payload: `${PAYLOAD_BOOST}${days}:${specialistUserId}`,
+      provider_token: '',
+      currency: 'XTR',
+      prices: [{ label: `Boost ${days} days`, amount: stars }],
+      // NO subscription_period — this is a one-time payment
+    } as unknown as Parameters<Telegraf['telegram']['createInvoiceLink']>[0]);
+
+    logger.info('Telegram Stars boost invoice link created', { specialistUserId, days, stars });
+    return link;
+  }
+
   /** Cancel auto-renewal (stays active until period end). */
   async cancelSubscription(specialistUserId: string): Promise<void> {
     const sub = await prisma.specialistSubscription.findFirst({
@@ -151,11 +190,23 @@ export class TelegramStarsService {
    */
   registerHandlers(bot: Telegraf<any>): void {
     // 1) pre_checkout_query — must be answered within 10s, else payment fails.
-    const parsePayload = (payload: string): { kind: 'monthly' | 'sixmonth' | 'annual'; userId: string } | null => {
+    const parsePayload = (
+      payload: string,
+    ): { kind: 'monthly' | 'sixmonth' | 'annual'; userId: string } | { kind: 'boost'; days: number; userId: string } | null => {
       // Check the longer 6-month prefix before the monthly prefix (both start with "sub").
       if (payload.startsWith(PAYLOAD_SIXMONTH)) return { kind: 'sixmonth', userId: payload.slice(PAYLOAD_SIXMONTH.length) };
       if (payload.startsWith(PAYLOAD_ANNUAL)) return { kind: 'annual', userId: payload.slice(PAYLOAD_ANNUAL.length) };
       if (payload.startsWith(PAYLOAD_MONTHLY)) return { kind: 'monthly', userId: payload.slice(PAYLOAD_MONTHLY.length) };
+      if (payload.startsWith(PAYLOAD_BOOST)) {
+        // format: boost:<days>:<userId>
+        const rest = payload.slice(PAYLOAD_BOOST.length);
+        const colonIdx = rest.indexOf(':');
+        if (colonIdx < 1) return null;
+        const days = Number(rest.slice(0, colonIdx));
+        const userId = rest.slice(colonIdx + 1);
+        if (!BOOST_VALID_DAYS.includes(days as BoostDays) || !userId) return null;
+        return { kind: 'boost', days, userId };
+      }
       return null;
     };
 
@@ -191,7 +242,19 @@ export class TelegramStarsService {
         const { kind, userId: specialistUserId } = parsed;
         const payerId = ctx.from?.id ? String(ctx.from.id) : undefined;
 
-        if (kind === 'annual' || kind === 'sixmonth') {
+        if (kind === 'boost') {
+          const days = (parsed as { kind: 'boost'; days: number; userId: string }).days;
+          try {
+            await PromoteService.activatePaidBoost(specialistUserId, days);
+            await ctx.reply(
+              `⭐ Boost active for ${days} days! Your listing is now Featured in search and shown in the discovery showcase.`,
+            );
+          } catch (boostErr) {
+            logger.error('activatePaidBoost failed after successful_payment', { specialistUserId, days, boostErr });
+            // Payment already charged — don't rethrow; best-effort notification.
+            await ctx.reply('⭐ Payment received. Your boost will be activated shortly.');
+          }
+        } else if (kind === 'annual' || kind === 'sixmonth') {
           const months = kind === 'annual' ? ANNUAL_ACCESS_MONTHS : SIXMONTH_ACCESS_MONTHS;
           await specialistSubscriptionService.activateFixedTermFromTelegram(specialistUserId, {
             months,

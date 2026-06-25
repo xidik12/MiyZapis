@@ -5,6 +5,8 @@ import {
   FeaturedStatus,
   AcquisitionStats,
   BookingSourceKey,
+  BoostDays,
+  BoostPricing,
   BOOKING_SOURCES,
 } from '../../services/promote.service';
 import { PageLoader } from '@/components/ui';
@@ -18,6 +20,7 @@ import {
   GlobeIcon as GlobeAltIcon,
   LinkIcon,
   CalendarDaysIcon,
+  StarIcon,
 } from '@/components/icons';
 import { CodeBracketIcon } from '@heroicons/react/24/outline';
 
@@ -28,54 +31,60 @@ import { CodeBracketIcon } from '@heroicons/react/24/outline';
 const PROMOTE_HELP = {
   en: {
     overview:
-      'Promote\n\nBoosting your profile places it at the top of MiyZapis search and discovery results, so new clients find you first.\n\n' +
-      'How boosting works:\n' +
-      '• Enable "Featured" and choose a duration: 7, 30, or 90 days\n' +
-      '• Your listing appears highlighted above non-boosted specialists\n' +
-      '• The boost expires automatically at the end of the period\n' +
-      '• Currently free during launch; paid boosts are coming\n\n' +
-      'Acquisition metrics (below the boost toggle):\n' +
+      'Promote\n\nBuy a boost with Telegram Stars (⭐) to activate Featured placement in MiyZapis search and put your listing in the discovery showcase — so new clients find you first.\n\n' +
+      'How a boost works:\n' +
+      '• Choose a duration: 7, 30, or 90 days\n' +
+      '• Pay with Telegram Stars — opens Telegram with a pre-filled invoice\n' +
+      '• On payment: you are sorted first in search results + your listing card appears in the discovery showcase for the full period\n' +
+      '• Both expire together at the end of the paid period\n' +
+      '• Cancel early for free anytime — listing leaves the showcase immediately\n\n' +
+      'Listing card (editor below the boost control):\n' +
+      '• Prepare your ad creative (headline, offer, cover photo) and save as a draft\n' +
+      '• The card goes live in the showcase automatically when you buy a boost\n\n' +
+      'Acquisition metrics:\n' +
       '• Total bookings — all bookings received across all sources\n' +
-      '• New clients — first-time clients (never booked you before)\n\n' +
-      'By-source breakdown:\n' +
+      '• New clients — first-time clients (never booked you before)\n' +
       '• Discovery — clients who found you via MiyZapis search / category pages\n' +
       '• Embed — bookings from your embedded booking widget on your own website\n' +
-      '• Direct — clients who opened your booking link directly (e.g. from your Instagram bio)\n' +
-      '• Marketplace — bookings from other marketplace integrations',
+      '• Direct — clients who opened your booking link directly (e.g. from your Instagram bio)',
   },
   uk: {
     overview:
-      'Просування\n\nПідвищення рейтингу розміщує ваш профіль у топі пошуку MiyZapis, щоб нові клієнти знаходили вас першими.\n\n' +
-      'Як працює підвищення:\n' +
-      '• Увімкніть "Рекомендований" та оберіть тривалість: 7, 30 або 90 днів\n' +
-      '• Ваше оголошення відображається над нерекламованими спеціалістами\n' +
-      '• Підвищення автоматично завершується після закінчення терміну\n' +
-      '• Наразі безкоштовно під час запуску; платне просування незабаром\n\n' +
-      'Показники залучення (під перемикачем):\n' +
-      '• Всього записів — всі записи з усіх джерел\n' +
-      '• Нові клієнти — ті, хто записувався до вас вперше\n\n' +
-      'Розбивка за джерелами:\n' +
-      '• Discovery — клієнти, які знайшли вас через пошук MiyZapis / сторінки категорій\n' +
-      '• Embed — записи через вбудований віджет бронювання на вашому сайті\n' +
-      '• Direct — клієнти, які відкрили ваше посилання напряму (напр., з Instagram bio)\n' +
-      '• Marketplace — записи з інших маркетплейс-інтеграцій',
+      'Просування\n\nКупіть буст за зірки Telegram (⭐), щоб активувати рекомендоване місце у пошуку MiyZapis і показати вашу картку у вітрині — нові клієнти знайдуть вас першими.\n\n' +
+      'Як працює буст:\n' +
+      '• Оберіть тривалість: 7, 30 або 90 днів\n' +
+      '• Оплата зірками Telegram — відкриє Telegram із готовим рахунком\n' +
+      '• Після оплати: ви з’являєтесь першим у пошуку + ваша картка у вітрині на весь оплачений строк\n' +
+      '• Обидва завершуються одночасно після закінчення строку\n' +
+      '• Скасування — безкоштовно в будь-який момент, картка прибирається одразу\n\n' +
+      'Картка оголошення (редактор нижче):\n' +
+      '• Підготуйте рекламну картку (заголовок, пропозиція, фото) і збережіть як чернетку\n' +
+      '• Картка з’являється у вітрині автоматично при купівлі бусту\n\n' +
+      'Показники залучення:\n' +
+      '• Всього записів — усі записи з усіх джерел\n' +
+      '• Нові клієнти — ті, хто записувався вперше\n' +
+      '• Discovery — через пошук / сторінки категорій\n' +
+      '• Embed — через вбудований віджет на вашому сайті\n' +
+      '• Direct — ті, хто відкрив ваше посилання напряму',
   },
   ru: {
     overview:
-      'Продвижение\n\nПовышение рейтинга размещает ваш профиль в топе поиска MiyZapis, чтобы новые клиенты находили вас первыми.\n\n' +
-      'Как работает повышение:\n' +
-      '• Включите "Рекомендованный" и выберите длительность: 7, 30 или 90 дней\n' +
-      '• Ваше объявление отображается над нерекламируемыми специалистами\n' +
-      '• Повышение автоматически завершается по истечении срока\n' +
-      '• Сейчас бесплатно во время запуска; платное продвижение скоро\n\n' +
-      'Показатели привлечения (под переключателем):\n' +
+      'Продвижение\n\nКупите буст за звёзды Telegram (⭐), чтобы активировать рекомендованное место в поиске MiyZapis и показать вашу карточку в витрине — новые клиенты найдут вас первыми.\n\n' +
+      'Как работает буст:\n' +
+      '• Выберите длительность: 7, 30 или 90 дней\n' +
+      '• Оплата звёздами Telegram — откроет Telegram с готовым счётом\n' +
+      '• После оплаты: вы первые в поиске + ваша карточка в витрине на весь оплаченный период\n' +
+      '• Оба завершаются одновременно по истечении срока\n' +
+      '• Отмена — бесплатно в любой момент, карточка убирается сразу\n\n' +
+      'Карточка объявления (редактор ниже):\n' +
+      '• Подготовьте рекламную карточку (заголовок, предложение, фото) и сохраните как черновик\n' +
+      '• Карточка появляется в витрине автоматически при покупке буста\n\n' +
+      'Показатели привлечения:\n' +
       '• Всего записей — все записи из всех источников\n' +
-      '• Новые клиенты — те, кто записывался к вам впервые\n\n' +
-      'Разбивка по источникам:\n' +
-      '• Discovery — клиенты, нашедшие вас через поиск MiyZapis / страницы категорий\n' +
-      '• Embed — записи через встроенный виджет бронирования на вашем сайте\n' +
-      '• Direct — клиенты, открывшие вашу ссылку напрямую (напр., из Instagram bio)\n' +
-      '• Marketplace — записи из других маркетплейс-интеграций',
+      '• Новые клиенты — те, кто записывался впервые\n' +
+      '• Discovery — через поиск / страницы категорий\n' +
+      '• Embed — через встроенный виджет на вашем сайте\n' +
+      '• Direct — те, кто открыл вашу ссылку напрямую',
   },
 };
 
@@ -122,19 +131,23 @@ const Promote: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [buyingBoost, setBuyingBoost] = useState(false);
   const [status, setStatus] = useState<FeaturedStatus | null>(null);
   const [stats, setStats] = useState<AcquisitionStats | null>(null);
-  const [selectedDays, setSelectedDays] = useState(30);
+  const [pricing, setPricing] = useState<BoostPricing | null>(null);
+  const [selectedDays, setSelectedDays] = useState<BoostDays>(30);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, st] = await Promise.all([
+      const [s, st, p] = await Promise.all([
         promoteService.getStatus(),
         promoteService.getStats(),
+        promoteService.getBoostPricing(),
       ]);
       setStatus(s);
       setStats(st);
+      setPricing(p);
     } catch (err) {
       toast.error((err as Error).message || t('promote.loadError') || 'Failed to load');
     } finally {
@@ -146,16 +159,52 @@ const Promote: React.FC = () => {
     load();
   }, [load]);
 
-  const handleToggle = async (enabled: boolean) => {
+  // Re-fetch when the tab regains focus — payment happens in Telegram.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') {
+        promoteService.getStatus().then(setStatus).catch(() => undefined);
+      }
+    };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
+
+  // Buy a boost: create invoice → open in Telegram (mirrors Billing.tsx).
+  const handleBoost = async () => {
+    setBuyingBoost(true);
+    try {
+      const link = await promoteService.createBoostInvoice(selectedDays);
+      toast.info(t('promote.openingTelegram') || 'Opening Telegram…');
+      const tg = (window as unknown as { Telegram?: { WebApp?: { openInvoice?: (url: string, cb?: (status: string) => void) => void } } }).Telegram?.WebApp;
+      if (tg?.openInvoice) {
+        tg.openInvoice(link, (invoiceStatus) => {
+          if (invoiceStatus === 'paid') {
+            // Re-fetch after a short delay to let the bot handler complete.
+            setTimeout(() => load(), 2000);
+          }
+        });
+      } else {
+        window.open(link, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      toast.error((err as Error).message || t('promote.saveError') || 'Failed to start payment');
+    } finally {
+      setBuyingBoost(false);
+    }
+  };
+
+  // Disable: free + immediate.
+  const handleDisable = async () => {
     setSaving(true);
     try {
-      const next = await promoteService.setFeatured(enabled, enabled ? selectedDays : undefined);
+      const next = await promoteService.setFeatured(false);
       setStatus(next);
-      toast.success(
-        enabled
-          ? t('promote.boostEnabled') || 'Boost enabled'
-          : t('promote.boostDisabled') || 'Boost disabled',
-      );
+      toast.success(t('promote.boostDisabled') || 'Boost disabled');
     } catch (err) {
       toast.error((err as Error).message || t('promote.saveError') || 'Failed to update');
     } finally {
@@ -241,7 +290,7 @@ const Promote: React.FC = () => {
               <button
                 type="button"
                 disabled={saving}
-                onClick={() => handleToggle(false)}
+                onClick={handleDisable}
                 className="inline-flex items-center justify-center h-11 px-5 rounded-xl font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50"
               >
                 {t('promote.disableBoost') || 'Disable boost'}
@@ -249,18 +298,22 @@ const Promote: React.FC = () => {
             ) : (
               <button
                 type="button"
-                disabled={saving}
-                onClick={() => handleToggle(true)}
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-amber-500 hover:bg-amber-600 transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50"
+                disabled={buyingBoost || !pricing}
+                onClick={handleBoost}
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-amber-950 bg-amber-400 hover:bg-amber-500 transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50"
               >
-                <RocketLaunchIcon className="w-5 h-5" />
-                {t('promote.enableBoost') || 'Enable boost'}
+                <StarIcon className="w-5 h-5" active />
+                {buyingBoost
+                  ? (t('promote.openingTelegram') || 'Opening…')
+                  : pricing
+                    ? `${t('promote.boostFor') || 'Boost for'} ${pricing[selectedDays].toLocaleString()} ⭐`
+                    : (t('promote.enableBoost') || 'Buy boost')}
               </button>
             )}
           </div>
         </div>
 
-        {/* Boost-length picker (only relevant before enabling) */}
+        {/* Boost-length picker (only relevant before purchasing) */}
         {!isActive && (
           <div className="mt-5">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
@@ -271,7 +324,7 @@ const Promote: React.FC = () => {
                 <button
                   key={d}
                   type="button"
-                  onClick={() => setSelectedDays(d)}
+                  onClick={() => setSelectedDays(d as BoostDays)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition active:scale-[0.96] ${
                     selectedDays === d
                       ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-500/50'
@@ -279,13 +332,16 @@ const Promote: React.FC = () => {
                   }`}
                 >
                   {d} {t('promote.days') || 'days'}
+                  {pricing && (
+                    <span className="ml-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold tabular-nums">
+                      {pricing[d as BoostDays].toLocaleString()} ⭐
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
-            {/* BILLING NOTE: self-serve toggle for now. Once live payments land,
-                enabling a boost becomes a paid action (charge-gated). */}
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              {t('promote.billingNote') || 'Free during launch. Paid boosts will be introduced later.'}
+              {t('promote.starsNote') || 'Paid with Telegram Stars. Activates Featured search placement + discovery showcase for the chosen period.'}
             </p>
           </div>
         )}

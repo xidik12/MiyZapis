@@ -126,11 +126,7 @@ const PromotedListingEditor: React.FC = () => {
         submit,
       });
       setStatus(next.status);
-      toast.success(
-        submit
-          ? t('promote.listingSubmitted') || 'Submitted for review'
-          : t('promote.listingSaved') || 'Saved',
-      );
+      toast.success(t('promote.listingSaved') || 'Saved');
     } catch (err) {
       toast.error((err as Error).message || t('promote.saveError') || 'Failed to save');
     } finally {
@@ -186,7 +182,7 @@ const PromotedListingEditor: React.FC = () => {
         />
       </div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        {t('promote.listingHelp') || ''}
+        {t('promote.listingHelpPaid') || 'Design your ad card here. Save it as a draft — it goes live in search and the discovery showcase automatically when you buy a boost.'}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -326,20 +322,15 @@ const PromotedListingEditor: React.FC = () => {
               type="button"
               disabled={saving || uploading !== null}
               onClick={() => save(false)}
-              className="inline-flex items-center justify-center h-11 px-5 rounded-xl font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
-            >
-              {t('promote.saveDraft') || 'Save draft'}
-            </button>
-            <button
-              type="button"
-              disabled={saving || uploading !== null}
-              onClick={() => save(true)}
               className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               <RocketLaunchIcon className="w-5 h-5" />
-              {t('promote.submitReview') || 'Submit for review'}
+              {t('promote.saveListing') || 'Save listing'}
             </button>
           </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+            {t('promote.listingDraftNote') || 'Save your card here. It goes live in the discovery showcase automatically when you buy a boost above.'}
+          </p>
         </div>
 
         {/* Live preview */}

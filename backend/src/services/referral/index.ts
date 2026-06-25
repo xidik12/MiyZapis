@@ -353,7 +353,7 @@ export class ReferralService {
           await tx.loyaltyTransaction.create({
             data: {
               userId: referral.referrerId,
-              type: 'EARN',
+              type: 'EARNED',
               points: referral.referrerPoints,
               description: `Referral reward: ${referral.referralType}`,
               reason: 'REFERRAL_COMPLETED',
@@ -405,7 +405,7 @@ export class ReferralService {
           await tx.loyaltyTransaction.create({
             data: {
               userId: data.referredUserId,
-              type: 'EARN',
+              type: 'EARNED',
               points: referral.referredPoints,
               description: `Welcome bonus: ${referral.referralType}`,
               reason: 'REFERRAL_JOINED',

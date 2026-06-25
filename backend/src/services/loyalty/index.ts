@@ -50,7 +50,7 @@ export interface EarnPointsOptions {
 // Export types for controller usage
 export interface CreateLoyaltyTransactionData {
   userId: string;
-  type: 'EARN' | 'REDEEM';
+  type: 'EARNED' | 'BONUS' | 'REDEEMED';
   points: number;
   description: string;
   reason?: string;
@@ -62,7 +62,7 @@ export interface CreateLoyaltyTransactionData {
 
 export interface LoyaltyFilters {
   userId?: string;
-  type?: 'EARN' | 'REDEEM' | string;
+  type?: 'EARNED' | 'BONUS' | 'REDEEMED' | string;
   startDate?: Date;
   endDate?: Date;
   bookingId?: string;
@@ -937,7 +937,7 @@ export class LoyaltyService {
         // Sum earned points
         prisma.loyaltyTransaction.aggregate({
           _sum: { points: true },
-          where: { userId, type: 'EARN' }
+          where: { userId, type: 'EARNED' }
         }),
         // Sum redeemed points (convert to positive)
         prisma.loyaltyTransaction.aggregate({

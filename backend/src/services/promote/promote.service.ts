@@ -351,6 +351,83 @@ export class PromoteService {
     return PromoteService.toListing(promotion);
   }
 
+  // Called by TelegramStarsService after a successful boost payment.
+  // Sets isFeatured=true + featuredUntil=now+days AND flips the Promotion row
+  // to ACTIVE with the same expiry window. Both happen in one transaction.
+  // If no Promotion row exists yet, only the featured fields are set (listing
+  // stays unset — the specialist can add the creative later; it will go live
+  // on the next paid boost that creates the row or after upsert).
+  static async activatePaidBoost(ownerUserId: string, days: number): Promise<void> {
+    const specialist = await PromoteService.getOwnerSpecialist(ownerUserId);
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Always set isFeatured on the specialist row.
+      await tx.specialist.update({
+        where: { id: specialist.id },
+        data: { isFeatured: true, featuredUntil: endsAt, updatedAt: now },
+      });
+
+      // 2. Flip the Promotion row to ACTIVE if it exists; upsert if not.
+      const existing = await tx.promotion.findUnique({
+        where: { specialistId: specialist.id },
+        select: { id: true },
+      });
+
+      if (existing) {
+        await tx.promotion.update({
+          where: { specialistId: specialist.id },
+          data: { status: 'ACTIVE', startsAt: now, endsAt },
+        });
+      } else {
+        // No listing creative yet — create a bare ACTIVE row so the showcase
+        // slot is reserved. The specialist can fill in creative details later.
+        logger.info('activatePaidBoost: no Promotion row found; creating bare ACTIVE row', {
+          ownerUserId,
+          specialistId: specialist.id,
+        });
+        await tx.promotion.create({
+          data: {
+            specialistId: specialist.id,
+            status: 'ACTIVE',
+            startsAt: now,
+            endsAt,
+            accentColor: '#5b6b3a',
+          },
+        });
+      }
+    });
+
+    logger.info('activatePaidBoost: boost activated', {
+      ownerUserId,
+      specialistId: specialist.id,
+      days,
+      endsAt,
+    });
+  }
+
+  // Called when a specialist manually disables their boost (POST /promote/featured
+  // with enabled:false). Flips any ACTIVE Promotion row to PAUSED so it leaves
+  // the discovery showcase immediately.
+  static async deactivateListingOnBoostEnd(ownerId: string): Promise<void> {
+    const specialist = await PromoteService.getOwnerSpecialist(ownerId);
+    const existing = await prisma.promotion.findUnique({
+      where: { specialistId: specialist.id },
+      select: { id: true, status: true },
+    });
+    if (existing && existing.status === 'ACTIVE') {
+      await prisma.promotion.update({
+        where: { specialistId: specialist.id },
+        data: { status: 'PAUSED' },
+      });
+      logger.info('deactivateListingOnBoostEnd: listing paused', {
+        ownerId,
+        specialistId: specialist.id,
+      });
+    }
+  }
+
   // Admin/curation — set the live status of a promotion by specialist id.
   // Not wired to a public route; called from a curation tool/script by the platform.
   static async setStatus(specialistId: string, status: PromotionStatus): Promise<PromotionListing> {

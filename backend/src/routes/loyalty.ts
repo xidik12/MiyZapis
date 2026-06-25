@@ -163,7 +163,7 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
         where: {
           userId,
           createdAt: { gte: monthStart },
-          type: 'EARN' // Only count earning transactions for monthly
+          type: 'EARNED' // Only count earning transactions for monthly
         }
       }),
       prisma.loyaltyTransaction.aggregate({
@@ -171,7 +171,7 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
         where: {
           userId,
           createdAt: { gte: yearStart },
-          type: 'EARN' // Only count earning transactions for yearly
+          type: 'EARNED' // Only count earning transactions for yearly
         }
       }),
       prisma.loyaltyTransaction.aggregate({
