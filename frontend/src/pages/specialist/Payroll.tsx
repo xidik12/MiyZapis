@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -85,6 +86,16 @@ const monthStartISO = () => {
 // Self-contained trilingual help strings for this page.
 const PAYROLL_HELP = {
   en: {
+    howTitle: 'How payroll works',
+    howSteps: [
+      'Add your team — create your business, then invite staff (Specialist or Manager).',
+      'Set commission — give each person a flat % or a tiered rate on their completed-service revenue.',
+      'Preview a period — we total each person’s completed bookings and calculate their commission.',
+      'Create a pay run — adjust base salary, bonus, deductions and tax, then save it as a draft.',
+      'Approve, then mark paid — track what you owe and settle it.',
+    ],
+    howNet: 'Net pay = base salary + commission + bonus − deductions − tax. As the owner you keep the full service revenue, so no commission applies to you. Payroll records and approves what you owe — it does not move money to staff bank accounts.',
+    howAddTeam: 'Add team members',
     pageTitle: 'Payroll',
     pageBody:
       'Manage staff commissions and issue pay runs.\n\n' +
@@ -164,6 +175,16 @@ const PAYROLL_HELP = {
       'Thresholds are in the pay run currency — set them in UAH if you pay in UAH.',
   },
   uk: {
+    howTitle: 'Як працює зарплата',
+    howSteps: [
+      'Додайте команду — створіть бізнес і запросіть працівників (Спеціаліст або Менеджер).',
+      'Налаштуйте комісію — встановіть кожному фіксований % або градуйовану ставку від доходу за виконані послуги.',
+      'Перегляд періоду — ми підсумовуємо виконані записи кожного і розраховуємо комісію.',
+      'Створіть нарахування — додайте оклад, премію, утримання й податок, потім збережіть як чернетку.',
+      'Затвердьте, далі позначте «Виплачено» — відстежуйте борг і закривайте його.',
+    ],
+    howNet: 'Чиста виплата = оклад + комісія + премія − утримання − податок. Як власник ви отримуєте повний дохід від послуг, тож комісія до вас не застосовується. Зарплата фіксує і затверджує те, що ви винні — вона не переказує гроші на банківські рахунки працівників.',
+    howAddTeam: 'Додати працівників',
     pageTitle: 'Зарплата',
     pageBody:
       'Керуйте комісіями співробітників та видавайте платіжні відомості.\n\n' +
@@ -243,6 +264,16 @@ const PAYROLL_HELP = {
       'Пороги задаються у валюті платіжної відомості — вказуйте в гривнях, якщо виплачуєте в гривнях.',
   },
   ru: {
+    howTitle: 'Как работает зарплата',
+    howSteps: [
+      'Добавьте команду — создайте бизнес и пригласите сотрудников (Специалист или Менеджер).',
+      'Настройте комиссию — задайте каждому фиксированный % или градуированную ставку от дохода за выполненные услуги.',
+      'Просмотр периода — мы суммируем выполненные записи каждого и рассчитываем комиссию.',
+      'Создайте начисление — добавьте оклад, премию, удержания и налог, затем сохраните как черновик.',
+      'Утвердите, затем отметьте «Выплачено» — отслеживайте долг и закрывайте его.',
+    ],
+    howNet: 'Чистая выплата = оклад + комиссия + премия − удержания − налог. Как владелец вы получаете полный доход от услуг, поэтому комиссия к вам не применяется. Зарплата фиксирует и утверждает то, что вы должны — она не переводит деньги на банковские счета сотрудников.',
+    howAddTeam: 'Добавить сотрудников',
     pageTitle: 'Зарплата',
     pageBody:
       'Управляйте комиссиями сотрудников и выдавайте платёжные ведомости.\n\n' +
@@ -695,6 +726,32 @@ const SpecialistPayroll: React.FC = () => {
           </div>
         </div>
 
+        {/* How payroll works — explainer + path to add staff */}
+        <div className="mb-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <UsersIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+              {ph.howTitle}
+            </h2>
+            <Link
+              to="/specialist/businesses"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 text-sm font-medium transition active:scale-[0.96]"
+            >
+              <UsersIcon className="h-4 w-4" />
+              {ph.howAddTeam} →
+            </Link>
+          </div>
+          <ol className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3 text-sm text-gray-600 dark:text-gray-300">
+            {(ph.howSteps as string[]).map((step, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="flex-shrink-0 font-semibold text-primary-600 dark:text-primary-400">{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">{ph.howNet}</p>
+        </div>
+
         {/* Summary Cards */}
         {summary && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -783,13 +840,22 @@ const SpecialistPayroll: React.FC = () => {
         {/* ===================== STAFF TAB ===================== */}
         {tab === 'staff' && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t('payroll.staff') || 'Staff'}
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('payroll.commissionHint') || "Set each professional's commission as a % of completed service prices."}
-              </p>
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {t('payroll.staff') || 'Staff'}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {t('payroll.commissionHint') || "Set each professional's commission as a % of completed service prices."}
+                </p>
+              </div>
+              <Link
+                to="/specialist/businesses"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-primary-600 dark:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 px-3 py-2 text-sm font-medium transition active:scale-[0.96] flex-shrink-0"
+              >
+                <UsersIcon className="h-4 w-4" />
+                {ph.howAddTeam} →
+              </Link>
             </div>
 
             {staff.length === 0 ? (
