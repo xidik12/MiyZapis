@@ -56,6 +56,7 @@ import promotedRoutes from './promoted';
 import discoveryRoutes from './discovery';
 import crmRoutes from './crm';
 import trackRoutes from './track';
+import guestRoutes from './guest';
 
 const router = Router();
 
@@ -122,6 +123,9 @@ router.use('/track', trackRoutes);
 
 // Public AI/search discoverability surfaces (no auth): JSON booking feed + sitemap.
 router.use('/discovery', discoveryRoutes);
+
+// Guest checkout (public — no auth): email OTP request + verify → shell User + JWT.
+router.use('/guest', guestRoutes);
 
 // Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);

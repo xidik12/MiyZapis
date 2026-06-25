@@ -27,6 +27,7 @@ import type { BookingStep } from './types';
 import BookingProgress from './components/BookingProgress';
 import NavigationButtons from './components/NavigationButtons';
 import WaitlistModal from './components/WaitlistModal';
+import GuestCheckout from './components/GuestCheckout';
 import ServiceSelect from './steps/ServiceSelect';
 import DateTimePicker from './steps/DateTimePicker';
 import BookingDetails from './steps/BookingDetails';
@@ -57,6 +58,9 @@ const BookingFlow: React.FC = () => {
 
   // Mobile summary panel: collapsible toggle state
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
+
+  // Guest checkout: show the inline OTP flow in place of the sign-in banner
+  const [showGuestCheckout, setShowGuestCheckout] = useState(false);
 
   const { bookingState: state, dispatch } = useBookingState();
 
@@ -1165,23 +1169,52 @@ const BookingFlow: React.FC = () => {
           <div className="min-w-0">
             <BookingProgress steps={steps} currentStep={state.currentStep} />
 
-            {/* ── FIX 1: Auth gate — shown only to unauthenticated users ── */}
+            {/* ── Auth gate — shown only to unauthenticated users ── */}
             {!isAuthenticated && (
-              <div className="mb-4 rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-semibold text-primary-900 dark:text-primary-100 leading-snug">
-                    {t('booking.signInToBook') || 'Sign in to book this appointment'}
-                  </p>
-                  <p className="text-sm text-primary-700 dark:text-primary-300 mt-0.5">
-                    {t('booking.signInToBookDesc') || 'You need an account to complete your booking.'}
-                  </p>
-                </div>
-                <a
-                  href={`/auth/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`}
-                  className="shrink-0 inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition active:scale-[0.96]"
-                >
-                  {t('auth.signIn') || 'Sign in'}
-                </a>
+              <div className="mb-4">
+                {showGuestCheckout ? (
+                  /* ── Guest OTP flow ── */
+                  <GuestCheckout
+                    onSuccess={() => {
+                      setShowGuestCheckout(false);
+                      // Redux + localStorage tokens are now set; isAuthenticated becomes true.
+                      // The component will re-render authenticated and the booking can proceed.
+                    }}
+                    onSignIn={() => {
+                      setShowGuestCheckout(false);
+                      window.location.href = `/auth/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
+                    }}
+                  />
+                ) : (
+                  /* ── Sign-in banner with "Continue as guest" option ── */
+                  <div className="rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-primary-900 dark:text-primary-100 leading-snug">
+                          {t('booking.signInToBook') || 'Sign in to book this appointment'}
+                        </p>
+                        <p className="text-sm text-primary-700 dark:text-primary-300 mt-0.5">
+                          {t('booking.signInToBookDesc') || 'You need an account to complete your booking.'}
+                        </p>
+                      </div>
+                      <a
+                        href={`/auth/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`}
+                        className="shrink-0 inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition active:scale-[0.96]"
+                      >
+                        {t('auth.signIn') || 'Sign in'}
+                      </a>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-primary-200 dark:border-primary-700">
+                      <button
+                        type="button"
+                        onClick={() => setShowGuestCheckout(true)}
+                        className="w-full text-center text-sm text-primary-700 dark:text-primary-300 hover:text-primary-900 dark:hover:text-primary-100 font-medium transition"
+                      >
+                        {t('guest.continueAsGuest') || 'Or continue as guest with email verification →'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

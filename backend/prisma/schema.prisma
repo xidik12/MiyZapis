@@ -26,6 +26,7 @@ model User {
   lastName            String
   avatar              String?
   userType            String    @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "ADMIN"
+  isGuest             Boolean   @default(false) // true for shell accounts created via guest checkout OTP
 
   // Contact information
   phoneNumber String?
@@ -2844,4 +2845,22 @@ model StaffShift {
   @@index([businessId])
   @@index([staffUserId, startTime])
   @@map("staff_shifts")
+}
+
+// Guest checkout OTP — stores hashed 6-digit codes for email-verified guest booking.
+// Codes expire after 10 minutes and are locked after 5 failed attempts.
+// The plaintext code is NEVER stored; only a sha256 hex digest.
+model GuestOtp {
+  id          String    @id @default(cuid())
+  email       String
+  phone       String?
+  name        String?
+  codeHash    String    // sha256(code) hex digest
+  expiresAt   DateTime
+  attempts    Int       @default(0)
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
+  @@map("guest_otps")
 }
