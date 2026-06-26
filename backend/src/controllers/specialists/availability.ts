@@ -821,26 +821,59 @@ export class AvailabilityController {
         slots.push(timeString);
       }
 
-      // Get existing bookings for this date
+      // Check approved leave for this date (single query, no N+1)
       const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(targetDate);
-      endOfDay.setDate(endOfDay.getDate() + 1);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const onApprovedLeave = await prisma.leaveRequest.findFirst({
+        where: {
+          staffUserId: specialist.userId,
+          status: 'APPROVED',
+          startDate: { lte: endOfDay },
+          endDate: { gte: startOfDay },
+        },
+        select: { id: true },
+      });
+
+      if (onApprovedLeave) {
+        logger.info('Specialist on approved leave — no slots available', {
+          specialistId: id,
+          date,
+        });
+
+        res.json(
+          createSuccessResponse({
+            availableSlots: [],
+            date,
+            specialistId: id,
+            isOnLeave: true,
+            reason: 'Specialist is on approved leave',
+          })
+        );
+        return;
+      }
+
+      // Get existing bookings for this date
+      const endOfDayExcl = new Date(targetDate);
+      endOfDayExcl.setDate(endOfDayExcl.getDate() + 1);
 
       const existingBookings = await prisma.booking.findMany({
         where: {
           specialistId: specialist.userId,
           scheduledAt: {
             gte: startOfDay,
-            lt: endOfDay
+            lt: endOfDayExcl,
           },
           status: {
-            in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'PENDING_PAYMENT']
-          }
+            in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'PENDING_PAYMENT'],
+          },
         },
         select: {
           scheduledAt: true,
-          duration: true
-        }
+          duration: true,
+        },
       });
 
       // Filter out booked time slots
@@ -1014,6 +1047,18 @@ export class AvailabilityController {
         }
       }
 
+      // Fetch approved leaves covering the entire requested range in one query (no N+1).
+      // staffUserId on LeaveRequest == specialist.userId (the specialist's User id).
+      const approvedLeaves = await prisma.leaveRequest.findMany({
+        where: {
+          staffUserId: specialist.userId,
+          status: 'APPROVED',
+          startDate: { lte: toDate },
+          endDate: { gte: fromDate },
+        },
+        select: { startDate: true, endDate: true },
+      });
+
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const availableDates = [];
       const today = new Date();
@@ -1023,6 +1068,16 @@ export class AvailabilityController {
       for (let date = new Date(fromDate); date <= toDate; date.setDate(date.getDate() + 1)) {
         // Skip past dates
         if (date < today) continue;
+
+        // Skip dates where the specialist is on approved leave
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+        const isOnLeave = approvedLeaves.some(
+          (l) => new Date(l.startDate) <= dayEnd && new Date(l.endDate) >= dayStart
+        );
+        if (isOnLeave) continue;
 
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
