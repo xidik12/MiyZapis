@@ -173,7 +173,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            {t('reviews.filters.withPhotos')}
+            {t('reviews.filters.withComment') || 'With comments'}
           </button>
         </div>
       </div>

@@ -209,7 +209,7 @@ export async function buildClientList(
   });
   const consentMap = new Map(consents.map((c) => [c.customerId, c]));
 
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000; // "active" = visited in the last 90 days (matches help text)
   const now = Date.now();
 
   const clients: CrmClient[] = [];
@@ -223,7 +223,7 @@ export async function buildClientList(
 
     const totalSpent = bookSpend + gcSpend + memSpend + storeSpend;
     const lastVisitDate = bInfo?.lastVisit ?? null;
-    const isActive = lastVisitDate ? (now - lastVisitDate.getTime()) <= THIRTY_DAYS_MS : false;
+    const isActive = lastVisitDate ? (now - lastVisitDate.getTime()) <= NINETY_DAYS_MS : false;
 
     const tags = (tagsByCustomer.get(cid) ?? []).map((ta) => ({
       id: ta.tag.id,

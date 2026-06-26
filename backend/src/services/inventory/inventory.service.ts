@@ -208,6 +208,10 @@ export class InventoryService {
   ) {
     const product = await prisma.product.findFirst({ where: { id: productId, ownerId } });
     if (!product) return null;
+    // Never allow a manual adjustment to drive stock negative.
+    if (toNumber(product.stockQty) + delta < 0) {
+      throw new Error('Adjustment would make stock negative');
+    }
 
     return prisma.$transaction(async (tx) => {
       const movement = await tx.stockMovement.create({

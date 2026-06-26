@@ -198,9 +198,9 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                               {referralService.getReferralTypeDisplayName(type)}
                             </h4>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              You earn: {referralService.getRewardDisplayText(rewards.referrerRewardType, rewards.referrerRewardValue)}
+                              {t('referral.create.youEarn') || 'You earn:'} {referralService.getRewardDisplayText(rewards.referrerRewardType, rewards.referrerRewardValue)}
                               {' • '}
-                              They get: {referralService.getRewardDisplayText(rewards.referredRewardType, rewards.referredRewardValue)}
+                              {t('referral.create.theyGet') || 'They get:'} {referralService.getRewardDisplayText(rewards.referredRewardType, rewards.referredRewardValue)}
                             </div>
                           </div>
                         </div>

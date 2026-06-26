@@ -49,7 +49,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats }) => {
     {
       icon: <CheckBadgeIcon className="w-8 h-8 text-green-600 dark:text-green-400" />,
       label: t('reviews.stats.recommended'),
-      value: `${verifiedPercentage}%`,
+      value: `${Math.round(stats.recommendationRate || 0)}%`,
       unit: '',
       color: 'from-green-500/10 to-green-600/5'
     }
