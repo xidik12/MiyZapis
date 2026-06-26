@@ -20,6 +20,18 @@ const parseDate = (value: unknown): Date | undefined => {
   return Number.isNaN(d.getTime()) ? undefined : d;
 };
 
+// Combine a day with an "HH:MM" time-of-day into a Date. A bare "HH:MM" is not
+// parseable by new Date(), so manual clock-in/out times were being dropped to null.
+const combineDateTime = (day: Date | undefined, value: unknown): Date | null => {
+  if (typeof value === 'string' && /^\d{1,2}:\d{2}$/.test(value.trim()) && day) {
+    const [h, m] = value.trim().split(':').map(Number);
+    const d = new Date(day);
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+  return parseDate(value) ?? null; // accept a full datetime too
+};
+
 const fail = (req: Request, res: Response, error: unknown, code = 'HR_ERROR', status = 400) => {
   const err = error instanceof Error ? error : new Error(String(error));
   logger.error(`HR error (${code}):`, error);
@@ -82,8 +94,8 @@ router.post('/attendance/manual', async (req, res) => {
     const record = await HrService.setAttendance(actorIdOf(req), {
       staffUserId: req.body.staffUserId,
       date,
-      clockIn: parseDate(req.body?.clockIn) ?? null,
-      clockOut: parseDate(req.body?.clockOut) ?? null,
+      clockIn: combineDateTime(date, req.body?.clockIn),
+      clockOut: combineDateTime(date, req.body?.clockOut),
       status: (req.body?.status as AttendanceStatus) || 'PRESENT',
       note: req.body?.note ?? null,
     });

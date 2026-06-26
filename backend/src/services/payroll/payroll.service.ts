@@ -279,7 +279,13 @@ export class PayrollService {
       where: {
         specialistId: staffUserId,
         status: 'COMPLETED',
-        scheduledAt: { gte: periodStart, lte: periodEnd },
+        // Attribute revenue to the period the booking was COMPLETED, not scheduled
+        // (scheduled in April but completed in May belongs to May). Fall back to
+        // scheduledAt only for legacy rows with no completedAt.
+        OR: [
+          { completedAt: { gte: periodStart, lte: periodEnd } },
+          { completedAt: null, scheduledAt: { gte: periodStart, lte: periodEnd } },
+        ],
       },
       _sum: { totalAmount: true },
     });

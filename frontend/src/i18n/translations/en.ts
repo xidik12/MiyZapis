@@ -2361,6 +2361,7 @@ const en: Record<string, string> = {
   'actions.viewProfile': 'View Profile',
   'actions.book': 'Book',
   'actions.preview': 'Preview',
+  'actions.hide': 'Hide items',
   'profile.memberSince': 'Member since',
   'profile.customer': 'Customer',
   'profile.complete': 'complete',
