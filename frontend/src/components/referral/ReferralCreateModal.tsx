@@ -105,24 +105,23 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
   const availableChannels: InviteChannel[] = ['LINK', 'EMAIL', 'SOCIAL', 'DIRECT'];
 
   return createPortal(
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={onClose}
-        />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+      {/* Background overlay (sits behind the panel) */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="absolute inset-0 bg-black/50 dark:bg-black/70"
+        onClick={onClose}
+      />
 
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-          className="inline-block transform overflow-hidden rounded-xl bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-          <form onSubmit={handleSubmit}>
+      {/* Modal panel (explicitly above the overlay) */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+        className="relative z-10 w-full sm:max-w-lg bg-white dark:bg-gray-900 text-left rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -292,9 +291,8 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                 {loading ? t('referral.create.sending') : t('referral.create.send')}
               </Button>
             </div>
-          </form>
-        </motion.div>
-      </div>
+        </form>
+      </motion.div>
     </div>,
     document.body
   );
