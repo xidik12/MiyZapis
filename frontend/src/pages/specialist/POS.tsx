@@ -582,7 +582,7 @@ const POS: React.FC = () => {
             initial={{ opacity: 0, scale: 0.97, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-            className="w-full max-w-xs bg-white dark:bg-gray-800 rounded-2xl p-5 print:shadow-none" id="pos-receipt">
+            className="print-area w-full max-w-xs bg-white dark:bg-gray-800 rounded-2xl p-5 print:shadow-none print:max-w-none" id="pos-receipt">
             <div className="text-center mb-3">
               <div className="text-lg font-bold text-gray-900 dark:text-white">MiyZapis</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">{t('pos.receipt') || 'Receipt'} · {receipt.orderNumber}</div>

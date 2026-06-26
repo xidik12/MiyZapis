@@ -4736,6 +4736,7 @@ const en: Record<string, string> = {
   'payroll.editRecord': 'Edit Draft Record',
   'payroll.recordUpdated': 'Record updated',
   'pos.discount': 'Discount',
+  'pos.linkClient': 'Link a client (optional) — search by name',
   'pos.discountApplied': 'Discount applied',
   'pos.gross': 'Gross total',
   'pos.net': 'Net',

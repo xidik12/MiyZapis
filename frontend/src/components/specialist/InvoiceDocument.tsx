@@ -26,7 +26,7 @@ const InvoiceDocument: React.FC<{ invoice: Invoice; onClose: () => void }> = ({ 
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 bg-black/50 print:bg-white print:p-0 print:block overflow-y-auto">
-      <div className="print-area w-full sm:max-w-2xl bg-white text-gray-900 rounded-none sm:rounded-xl shadow-xl my-0 sm:my-8 print:shadow-none print:my-0" id="invoice-document">
+      <div className="print-area w-full sm:max-w-2xl bg-white text-gray-900 rounded-none sm:rounded-xl shadow-xl my-0 sm:my-8 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:max-w-none print:shadow-none print:my-0" id="invoice-document">
         {/* Action bar (hidden in print) */}
         <div className="flex items-center justify-between gap-2 px-5 py-3 border-b border-gray-200 print:hidden">
           <span className="text-sm font-medium text-gray-500">{t('invoice.preview') || 'Invoice preview'}</span>

@@ -4729,6 +4729,7 @@ const ru: Record<string, string> = {
   'payroll.editRecord': 'Редактировать черновую запись',
   'payroll.recordUpdated': 'Запись обновлена',
   'pos.discount': 'Скидка',
+  'pos.linkClient': 'Добавить клиента (необязательно) — поиск по имени',
   'pos.discountApplied': 'Скидка применена',
   'pos.gross': 'Сумма брутто',
   'pos.net': 'Нетто',

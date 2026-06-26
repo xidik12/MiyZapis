@@ -4729,6 +4729,7 @@ const uk: Record<string, string> = {
   'payroll.editRecord': 'Редагувати чорновий запис',
   'payroll.recordUpdated': 'Запис оновлено',
   'pos.discount': 'Знижка',
+  'pos.linkClient': 'Додати клієнта (за бажанням) — пошук за іменем',
   'pos.discountApplied': 'Знижку застосовано',
   'pos.gross': 'Сума брутто',
   'pos.net': 'Нетто',
