@@ -15,6 +15,8 @@ import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
 import { BookingService } from '@/services/booking';
+import LoyaltyService from '@/services/loyalty';
+import { ReferralProcessingService } from '@/services/referral/processing.service';
 
 const INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 const BATCH = 200;
@@ -331,6 +333,15 @@ async function blockD_AntiOrphanAutoComplete(): Promise<void> {
         specialistId: b.specialistId,
         scheduledAt: b.scheduledAt,
       });
+
+      // Auto-complete is a real completion → must award loyalty + process
+      // referrals like the manual and /resolve paths, else the most common
+      // completion path silently awards nothing. Idempotent (the services guard
+      // against double-award); fire-and-forget so a failure doesn't block others.
+      LoyaltyService.processBookingCompletion(b.id).catch((e) =>
+        logger.warn('[lifecycle:D] loyalty award failed', { bookingId: b.id, error: (e as Error)?.message }));
+      ReferralProcessingService.processBookingCompletion(b.id).catch((e) =>
+        logger.warn('[lifecycle:D] referral processing failed', { bookingId: b.id, error: (e as Error)?.message }));
     } catch (err) {
       logger.error('[lifecycle:D] Failed for booking', {
         bookingId: b.id,
