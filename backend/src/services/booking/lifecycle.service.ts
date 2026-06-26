@@ -21,7 +21,6 @@ import { ConsumablesService } from '@/services/inventory/consumables.service';
 import { ReputationService } from '@/services/reputation/reputation.service';
 import LoyaltyService from '@/services/loyalty';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
-import { computeNoShowFee } from '@/services/booking/policy';
 
 const notifier = new NotificationService(prisma);
 
@@ -127,9 +126,6 @@ export class BookingLifecycleService {
   ) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: {
-        service: { select: { noShowFeeType: true, noShowFeeValue: true } },
-      },
     });
     if (!booking) throw new Error('BOOKING_NOT_FOUND');
     if (!ACTIVE_STATUSES.includes(booking.status as (typeof ACTIVE_STATUSES)[number])) {
@@ -142,28 +138,18 @@ export class BookingLifecycleService {
     if (party === 'CUSTOMER' && noShowParty === 'CUSTOMER') throw new Error('INVALID_NO_SHOW_REPORT');
     if (party === 'SPECIALIST' && noShowParty === 'SPECIALIST') throw new Error('INVALID_NO_SHOW_REPORT');
 
-    // Compute no-show fee and deposit forfeiture (record-keeping only — no card
-    // is charged here; mirrors BookingService.markNoShow so all entry-points are
-    // consistent regardless of whether the no-show came from the /resolve route,
-    // Telegram, or the cron auto-finaliser).
-    const noShowFeeAmount = booking.service
-      ? computeNoShowFee(booking.service, Number(booking.totalAmount))
-      : 0;
-    const hadDeposit = ['REQUIRED', 'PAID'].includes(booking.depositStatus ?? '');
-
     const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: 'NO_SHOW',
         cancelledAt: new Date(),
         cancelledBy: noShowParty === 'CUSTOMER' ? booking.customerId : booking.specialistId,
-        noShowFeeAmount,
-        noShowFeeStatus: noShowFeeAmount > 0 ? 'CHARGED' : 'NONE',
-        ...(hadDeposit ? { depositStatus: 'FORFEITED' } : {}),
+        noShowFeeAmount: 0,
+        noShowFeeStatus: 'NONE',
         completionNotes: this.combineNotes(
           booking.completionNotes,
           notes,
-          `no-show: ${noShowParty.toLowerCase()} did not attend; reported by ${party.toLowerCase()}; fee=${noShowFeeAmount}, depositForfeited=${hadDeposit}`,
+          `no-show: ${noShowParty.toLowerCase()} did not attend; reported by ${party.toLowerCase()}`,
         ),
       },
     });

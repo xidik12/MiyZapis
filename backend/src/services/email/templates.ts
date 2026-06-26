@@ -479,8 +479,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         <div style="${STYLES.warnBox}">
           <h3 style="${STYLES.h3}">What happens next</h3>
           {{#if isCustomer}}
-            <p style="${STYLES.detailRow}">• A small deposit (typically 10–20%) will be required at booking</p>
-            <p style="${STYLES.detailRow}">• All other features stay fully available</p>
+            <p style="${STYLES.detailRow}">• All features stay fully available</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">• Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)</p>
@@ -490,7 +489,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         ${cta('{{trialInfoUrl}}', 'See pricing')}
         <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `Your free trial ends in {{daysRemaining}} days\n\nHi {{firstName}},\n\nYour 2-month trial ends on {{trialEndDate}}.\n\nWhat happens next:\n{{#if isCustomer}}  - A small deposit (10–20%) will be required at booking\n  - All other features stay fully available\n{{/if}}{{#if isSpecialist}}  - Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)\n  - Keep every platform feature\n{{/if}}\nPricing: {{trialInfoUrl}}\nSupport: {{helpUrl}}`,
+      text: `Your free trial ends in {{daysRemaining}} days\n\nHi {{firstName}},\n\nYour 2-month trial ends on {{trialEndDate}}.\n\nWhat happens next:\n{{#if isCustomer}}  - All features stay fully available\n{{/if}}{{#if isSpecialist}}  - Pick a plan: pay-per-use (20₴/booking) or monthly ($10/month)\n  - Keep every platform feature\n{{/if}}\nPricing: {{trialInfoUrl}}\nSupport: {{helpUrl}}`,
     },
     uk: {
       subject: 'Пробний період закінчується через {{daysRemaining}} днів',
@@ -501,8 +500,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         <div style="${STYLES.warnBox}">
           <h3 style="${STYLES.h3}">Що буде далі</h3>
           {{#if isCustomer}}
-            <p style="${STYLES.detailRow}">• Невеликий депозит (зазвичай 10–20%) при бронюванні</p>
-            <p style="${STYLES.detailRow}">• Усі інші функції залишаються доступними</p>
+            <p style="${STYLES.detailRow}">• Усі функції залишаються доступними</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">• Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)</p>
@@ -512,7 +510,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         ${cta('{{trialInfoUrl}}', 'Переглянути тарифи')}
         <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `Пробний період закінчується через {{daysRemaining}} днів\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершується {{trialEndDate}}.\n\nЩо буде далі:\n{{#if isCustomer}}  - Невеликий депозит (10–20%) при бронюванні\n  - Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  - Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)\n  - Усі функції платформи зберігаються\n{{/if}}\nТарифи: {{trialInfoUrl}}\nПідтримка: {{helpUrl}}`,
+      text: `Пробний період закінчується через {{daysRemaining}} днів\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершується {{trialEndDate}}.\n\nЩо буде далі:\n{{#if isCustomer}}  - Усі функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  - Оберіть план: оплата за бронювання (20₴) або місячна ($10/міс)\n  - Усі функції платформи зберігаються\n{{/if}}\nТарифи: {{trialInfoUrl}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
       subject: 'Пробный период заканчивается через {{daysRemaining}} дней',
@@ -523,8 +521,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         <div style="${STYLES.warnBox}">
           <h3 style="${STYLES.h3}">Что будет дальше</h3>
           {{#if isCustomer}}
-            <p style="${STYLES.detailRow}">• Небольшой депозит (обычно 10–20%) при бронировании</p>
-            <p style="${STYLES.detailRow}">• Все остальные функции остаются доступными</p>
+            <p style="${STYLES.detailRow}">• Все функции остаются доступными</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">• Выберите план: за бронирование (20₴) или месячный ($10/мес)</p>
@@ -534,7 +531,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         ${cta('{{trialInfoUrl}}', 'Посмотреть тарифы')}
         <p style="${STYLES.faint}">Есть вопросы? <a href="{{helpUrl}}" style="${STYLES.link}">Обратитесь в поддержку</a>.</p>
       `,
-      text: `Пробный период заканчивается через {{daysRemaining}} дней\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершается {{trialEndDate}}.\n\nЧто будет дальше:\n{{#if isCustomer}}  - Небольшой депозит (10–20%) при бронировании\n  - Все остальные функции остаются доступными\n{{/if}}{{#if isSpecialist}}  - Выберите план: за бронирование (20₴) или месячный ($10/мес)\n  - Все функции платформы сохраняются\n{{/if}}\nТарифы: {{trialInfoUrl}}\nПоддержка: {{helpUrl}}`,
+      text: `Пробный период заканчивается через {{daysRemaining}} дней\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершается {{trialEndDate}}.\n\nЧто будет дальше:\n{{#if isCustomer}}  - Все функции остаются доступными\n{{/if}}{{#if isSpecialist}}  - Выберите план: за бронирование (20₴) или месячный ($10/мес)\n  - Все функции платформы сохраняются\n{{/if}}\nТарифы: {{trialInfoUrl}}\nПоддержка: {{helpUrl}}`,
     },
   },
 
@@ -550,8 +547,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
           <h3 style="${STYLES.h3}">What’s next</h3>
           {{#if isCustomer}}
             <p style="${STYLES.detailRow}">✓ Keep browsing and booking services</p>
-            <p style="${STYLES.detailRow}">✓ Small deposits (10–20%) now apply at booking</p>
-            <p style="${STYLES.detailRow}">✓ Every other feature stays fully accessible</p>
+            <p style="${STYLES.detailRow}">✓ Every feature stays fully accessible</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">✓ Keep serving customers and growing your business</p>
@@ -563,7 +559,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">See pricing plans</a></div>{{/if}}
         <p style="${STYLES.faint}">Questions? <a href="{{helpUrl}}" style="${STYLES.link}">Contact support</a>.</p>
       `,
-      text: `Thanks for trying MiyZapis!\n\nHi {{firstName}},\n\nYour 2-month free trial ended on {{trialEndDate}}.\n\nWhat’s next:\n{{#if isCustomer}}  ✓ Keep browsing and booking services\n  ✓ Small deposits (10–20%) now apply at booking\n  ✓ Every other feature stays fully accessible\n{{/if}}{{#if isSpecialist}}  ✓ Keep serving customers and growing your business\n  ✓ Pick the pricing plan that fits\n  ✓ Every platform feature remains available\n{{/if}}\nDashboard: {{dashboardUrl}}\n{{#if isSpecialist}}Pricing: {{pricingUrl}}{{/if}}\nSupport: {{helpUrl}}`,
+      text: `Thanks for trying MiyZapis!\n\nHi {{firstName}},\n\nYour 2-month free trial ended on {{trialEndDate}}.\n\nWhat’s next:\n{{#if isCustomer}}  ✓ Keep browsing and booking services\n  ✓ Every feature stays fully accessible\n{{/if}}{{#if isSpecialist}}  ✓ Keep serving customers and growing your business\n  ✓ Pick the pricing plan that fits\n  ✓ Every platform feature remains available\n{{/if}}\nDashboard: {{dashboardUrl}}\n{{#if isSpecialist}}Pricing: {{pricingUrl}}{{/if}}\nSupport: {{helpUrl}}`,
     },
     uk: {
       subject: 'Ваш пробний завершився — дякуємо за використання МійЗапис',
@@ -575,8 +571,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
           <h3 style="${STYLES.h3}">Що далі</h3>
           {{#if isCustomer}}
             <p style="${STYLES.detailRow}">✓ Продовжуйте переглядати та бронювати послуги</p>
-            <p style="${STYLES.detailRow}">✓ Тепер потрібен невеликий депозит (10–20%) при бронюванні</p>
-            <p style="${STYLES.detailRow}">✓ Усі інші функції залишаються доступними</p>
+            <p style="${STYLES.detailRow}">✓ Усі функції залишаються доступними</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">✓ Продовжуйте обслуговувати клієнтів та розвиватись</p>
@@ -588,7 +583,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">Тарифні плани</a></div>{{/if}}
         <p style="${STYLES.faint}">Є питання? <a href="{{helpUrl}}" style="${STYLES.link}">Зверніться до підтримки</a>.</p>
       `,
-      text: `Дякуємо, що випробували МійЗапис!\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершився {{trialEndDate}}.\n\nЩо далі:\n{{#if isCustomer}}  ✓ Продовжуйте переглядати та бронювати\n  ✓ Невеликий депозит (10–20%) при бронюванні\n  ✓ Усі інші функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  ✓ Продовжуйте обслуговувати клієнтів\n  ✓ Оберіть зручний тарифний план\n  ✓ Усі функції платформи зберігаються\n{{/if}}\nКабінет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифи: {{pricingUrl}}{{/if}}\nПідтримка: {{helpUrl}}`,
+      text: `Дякуємо, що випробували МійЗапис!\n\nПривіт, {{firstName}},\n\nВаш 2-місячний пробний завершився {{trialEndDate}}.\n\nЩо далі:\n{{#if isCustomer}}  ✓ Продовжуйте переглядати та бронювати\n  ✓ Усі функції залишаються доступними\n{{/if}}{{#if isSpecialist}}  ✓ Продовжуйте обслуговувати клієнтів\n  ✓ Оберіть зручний тарифний план\n  ✓ Усі функції платформи зберігаються\n{{/if}}\nКабінет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифи: {{pricingUrl}}{{/if}}\nПідтримка: {{helpUrl}}`,
     },
     ru: {
       subject: 'Ваш пробный завершился — спасибо за МойЗапись',
@@ -600,8 +595,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
           <h3 style="${STYLES.h3}">Что дальше</h3>
           {{#if isCustomer}}
             <p style="${STYLES.detailRow}">✓ Продолжайте просматривать и бронировать услуги</p>
-            <p style="${STYLES.detailRow}">✓ Теперь требуется небольшой депозит (10–20%) при бронировании</p>
-            <p style="${STYLES.detailRow}">✓ Все остальные функции остаются доступными</p>
+            <p style="${STYLES.detailRow}">✓ Все функции остаются доступными</p>
           {{/if}}
           {{#if isSpecialist}}
             <p style="${STYLES.detailRow}">✓ Продолжайте обслуживать клиентов и развиваться</p>
@@ -613,7 +607,7 @@ const emailTemplatesRaw: Record<string, TemplateBundle> = {
         {{#if isSpecialist}}<div style="${STYLES.buttonRow}"><a href="{{pricingUrl}}" style="${STYLES.secondaryButton}">Тарифные планы</a></div>{{/if}}
         <p style="${STYLES.faint}">Есть вопросы? <a href="{{helpUrl}}" style="${STYLES.link}">Обратитесь в поддержку</a>.</p>
       `,
-      text: `Спасибо, что попробовали МойЗапись!\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершился {{trialEndDate}}.\n\nЧто дальше:\n{{#if isCustomer}}  ✓ Продолжайте просматривать и бронировать\n  ✓ Небольшой депозит (10–20%) при бронировании\n  ✓ Все остальные функции остаются доступными\n{{/if}}{{#if isSpecialist}}  ✓ Продолжайте обслуживать клиентов\n  ✓ Выберите удобный тарифный план\n  ✓ Все функции платформы сохраняются\n{{/if}}\nКабинет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифы: {{pricingUrl}}{{/if}}\nПоддержка: {{helpUrl}}`,
+      text: `Спасибо, что попробовали МойЗапись!\n\nПривет, {{firstName}},\n\nВаш 3-месячный пробный завершился {{trialEndDate}}.\n\nЧто дальше:\n{{#if isCustomer}}  ✓ Продолжайте просматривать и бронировать\n  ✓ Все функции остаются доступными\n{{/if}}{{#if isSpecialist}}  ✓ Продолжайте обслуживать клиентов\n  ✓ Выберите удобный тарифный план\n  ✓ Все функции платформы сохраняются\n{{/if}}\nКабинет: {{dashboardUrl}}\n{{#if isSpecialist}}Тарифы: {{pricingUrl}}{{/if}}\nПоддержка: {{helpUrl}}`,
     },
   },
 };

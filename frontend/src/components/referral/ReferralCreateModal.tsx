@@ -101,7 +101,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
 
   if (!isOpen) return null;
 
-  const availableChannels: InviteChannel[] = ['LINK', 'EMAIL', 'SMS', 'SOCIAL', 'DIRECT'];
+  const availableChannels: InviteChannel[] = ['LINK', 'EMAIL', 'SOCIAL', 'DIRECT'];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

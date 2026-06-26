@@ -84,7 +84,6 @@ const CustomerSettings: React.FC = () => {
     pushBookingConfirmation: true,
     pushReminders: true,
     pushPromotions: false,
-    smsReminders: true,
   });
 
   // Privacy settings — no backend fields exist for these; section shows an info note instead.

@@ -30,7 +30,6 @@ import {
   NoSymbolIcon,
   CheckCircleIcon,
   EnvelopeIcon,
-  PhoneIcon,
   BellIcon,
   FunnelIcon,
 } from '@/components/icons';
@@ -273,7 +272,6 @@ const ConsentPanel: React.FC<{
 
   const consentRows: { field: keyof MarketingConsent; label: string; icon: React.FC<{ className?: string }> }[] = [
     { field: 'email', label: t('crm.consent.email') || 'Email marketing', icon: EnvelopeIcon },
-    { field: 'sms', label: t('crm.consent.sms') || 'SMS marketing', icon: PhoneIcon },
     { field: 'push', label: t('crm.consent.push') || 'Push notifications', icon: BellIcon },
   ];
 
@@ -1041,7 +1039,7 @@ const CLIENTS_HELP = {
       'Expand a card (▼) to:\n' +
       '• Assign colour-coded tags (VIP, Allergy, etc.)\n' +
       '• Add private notes: general · allergy · preference · formula\n' +
-      '• Toggle marketing consent per channel (email, SMS, push)',
+      '• Toggle marketing consent per channel (email, push)',
   },
   uk: {
     overview:
@@ -1056,7 +1054,7 @@ const CLIENTS_HELP = {
       'Розгорніть картку (▼), щоб:\n' +
       '• Призначити кольорові теги (VIP, Алергія тощо)\n' +
       '• Додати приватні нотатки: загальні · алергія · побажання · формула\n' +
-      '• Керувати дозволами на маркетинг (email, SMS, push)',
+      '• Керувати дозволами на маркетинг (email, push)',
   },
   ru: {
     overview:
@@ -1071,7 +1069,7 @@ const CLIENTS_HELP = {
       'Разверните карточку (▼), чтобы:\n' +
       '• Назначить цветные теги (VIP, Аллергия и т.д.)\n' +
       '• Добавить личные заметки: общие · аллергия · пожелания · формула\n' +
-      '• Управлять согласием на маркетинг (email, SMS, push)',
+      '• Управлять согласием на маркетинг (email, push)',
   },
 };
 

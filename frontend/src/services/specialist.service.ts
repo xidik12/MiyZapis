@@ -586,8 +586,6 @@ export class SpecialistService {
   // Update pricing
   async updatePricing(data: {
     baseRate?: number;
-    depositAmount?: number;
-    depositPercentage?: number;
     currency?: string;
   }): Promise<{ message: string }> {
     const response = await apiClient.put<{ message: string }>('/specialists/pricing', data);

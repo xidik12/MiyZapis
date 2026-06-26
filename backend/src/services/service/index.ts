@@ -168,13 +168,8 @@ export class ServiceService {
           discountValidFrom: data.discountValidFrom ? new Date(data.discountValidFrom) : null,
           discountValidUntil: data.discountValidUntil ? new Date(data.discountValidUntil) : null,
           discountDescription: data.discountDescription || null,
-          // No-show protection policy (recorded only — no payment is taken yet)
-          requireDeposit: data.requireDeposit || false,
-          depositType: data.requireDeposit ? (data.depositType || null) : null,
-          depositValue: data.requireDeposit ? (data.depositValue ?? 0) : 0,
+          // Deposit and no-show fee config not persisted — feature removed.
           cancellationWindowHours: data.cancellationWindowHours ?? 0,
-          noShowFeeType: data.noShowFeeType || null,
-          noShowFeeValue: data.noShowFeeValue ?? 0,
         },
         include: {
           specialist: {
@@ -279,20 +274,8 @@ export class ServiceService {
       if (data.discountValidFrom !== undefined) updateData.discountValidFrom = data.discountValidFrom ? new Date(data.discountValidFrom) : null;
       if (data.discountValidUntil !== undefined) updateData.discountValidUntil = data.discountValidUntil ? new Date(data.discountValidUntil) : null;
       if (data.discountDescription !== undefined) updateData.discountDescription = data.discountDescription;
-      // No-show protection policy (recorded only — no payment is taken yet).
-      // When deposit is turned off, clear the type/value so stale policy doesn't linger.
-      if (data.requireDeposit !== undefined) {
-        updateData.requireDeposit = data.requireDeposit;
-        if (!data.requireDeposit) {
-          updateData.depositType = null;
-          updateData.depositValue = 0;
-        }
-      }
-      if (data.depositType !== undefined) updateData.depositType = data.depositType;
-      if (data.depositValue !== undefined) updateData.depositValue = data.depositValue;
+      // Deposit and no-show fee config not persisted — feature removed.
       if (data.cancellationWindowHours !== undefined) updateData.cancellationWindowHours = data.cancellationWindowHours;
-      if (data.noShowFeeType !== undefined) updateData.noShowFeeType = data.noShowFeeType;
-      if (data.noShowFeeValue !== undefined) updateData.noShowFeeValue = data.noShowFeeValue;
 
       const service = await prisma.service.update({
         where: { id: serviceId },

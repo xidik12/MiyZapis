@@ -465,18 +465,6 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           </label>
         </div>
 
-        {/* Payment Information */}
-        {paymentOptions && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
-            <div className="text-sm">
-              <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
-              <div className="space-y-1 text-blue-800 dark:text-blue-200">
-                <div>Deposit Amount: {formatPrice(paymentOptions.depositConfiguration.amountUSD, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Pay at Venue - Direct booking without payment */}
         {paymentMethod === 'pay_at_venue' ? (
           <div className="space-y-4">

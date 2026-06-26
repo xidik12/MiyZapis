@@ -214,7 +214,6 @@ const SpecialistSettings: React.FC = () => {
     // Notification Settings
     notifications: {
       emailNotifications: true,
-      smsNotifications: false,
       pushNotifications: true,
       newBookingAlert: true,
       bookingReminders: true,
@@ -236,8 +235,6 @@ const SpecialistSettings: React.FC = () => {
     // Business Settings
     business: {
       acceptOnlinePayments: true,
-      requireDeposit: false,
-      depositPercentage: 20,
       cancellationWindow: 24,
       rescheduleLimit: 2,
       autoReviewReminder: true,

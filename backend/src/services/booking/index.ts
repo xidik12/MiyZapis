@@ -14,7 +14,7 @@ import { stripPrivateSpecialistFields } from '@/services/specialist';
 import { BookingCalendarSync } from '@/services/calendar/booking-sync';
 import { ConsumablesService } from '@/services/inventory/consumables.service';
 import { ReputationService } from '@/services/reputation/reputation.service';
-import { computeDeposit, computeNoShowFee } from '@/services/booking/policy';
+
 
 // Marketplace acquisition: where this booking originated. Used for new-client
 // attribution + the Promote acquisition dashboard.
@@ -462,13 +462,10 @@ export class BookingService {
         }
 
         const totalAmount = subtotalAfterPoints;
-        // No-show protection (POLICY/TRACKING layer only — no card is charged).
-        // If the service requires a deposit, compute and record the amount and
-        // flag the booking depositStatus = 'REQUIRED'. A future payments module
-        // will collect it; for now it's informational + enforcement bookkeeping.
-        const depositAmount = computeDeposit(service, totalAmount);
-        const depositStatus = service.requireDeposit && depositAmount > 0 ? 'REQUIRED' : 'NONE';
-        const remainingAmount = Math.max(0, totalAmount - depositAmount);
+        // Deposit logic removed — no deposit is required or charged.
+        const depositAmount = 0;
+        const depositStatus = 'NONE';
+        const remainingAmount = totalAmount;
 
         // Check if customer has enough loyalty points
         if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
@@ -1186,48 +1183,6 @@ export class BookingService {
       }
       // If customer cancels, they lose the $1 deposit (no refund)
 
-      // ── No-show protection: deposit disposition on cancellation ──────────
-      // POLICY/TRACKING layer only — we never move money here; we just record
-      // what SHOULD happen to a deposit so a future payments module can act.
-      //
-      // Rules (per the service's own cancellationWindowHours policy):
-      //   • Customer cancels INSIDE the window (now > scheduledAt - window) and a
-      //     deposit was REQUIRED/PAID  → depositStatus = 'FORFEITED'.
-      //   • Cancelled in time (or specialist cancels) and deposit was PAID
-      //     → 'REFUNDED'; if it was only REQUIRED (never collected) → 'NONE'.
-      // depositDisposition stays undefined when there was no deposit, leaving
-      // the existing status untouched.
-      let depositDisposition: string | undefined;
-      if (['REQUIRED', 'PAID'].includes(booking.depositStatus)) {
-        const policyService = await prisma.service.findUnique({
-          where: { id: booking.serviceId },
-          select: { cancellationWindowHours: true },
-        });
-        const serviceWindowHours = policyService?.cancellationWindowHours ?? 0;
-        const scheduledTime = new Date(booking.scheduledAt).getTime();
-        const forfeitCutoff = scheduledTime - serviceWindowHours * 60 * 60 * 1000;
-        const lateCustomerCancel =
-          !isSpecialistCancellation && serviceWindowHours > 0 && Date.now() > forfeitCutoff;
-
-        if (lateCustomerCancel) {
-          // Inside the no-free-cancel window → deposit is forfeited.
-          depositDisposition = 'FORFEITED';
-        } else if (booking.depositStatus === 'PAID') {
-          // Cancelled in time (or by specialist) and money was actually held → refund it.
-          depositDisposition = 'REFUNDED';
-        } else {
-          // Deposit was only REQUIRED (never collected) and cancelled in time → clear it.
-          depositDisposition = 'NONE';
-        }
-        logger.info('Deposit disposition on cancellation', {
-          bookingId,
-          previousDepositStatus: booking.depositStatus,
-          depositDisposition,
-          serviceWindowHours,
-          isSpecialistCancellation,
-        });
-      }
-
       // Use transaction to ensure atomic operation
       const updatedBooking = await prisma.$transaction(async (tx) => {
         // Update booking status
@@ -1239,9 +1194,6 @@ export class BookingService {
             cancelledBy,
             cancellationReason: reason,
             refundAmount,
-            // No-show protection: record deposit disposition (no money moved here).
-            ...(depositDisposition ? { depositStatus: depositDisposition } : {}),
-            ...(depositDisposition === 'REFUNDED' ? { depositRefundedAt: new Date() } : {}),
             updatedAt: new Date(),
           },
           include: {
@@ -1451,13 +1403,8 @@ export class BookingService {
 
   // Mark a booking as no-show (specialist action).
   //
-  // No-show protection — POLICY/TRACKING/ENFORCEMENT layer only. We COMPUTE and
-  // RECORD the no-show fee and forfeit any required deposit, but we NEVER charge
-  // a card here (the platform has no live payments yet). A future payments
-  // module will collect the recorded noShowFeeAmount.
-  //
-  // Authorization mirrors the other specialist booking actions: only the
-  // booking's specialist (or an ADMIN, via the caller) may mark a no-show.
+  // Sets booking.status = 'NO_SHOW'. No fee is computed or charged.
+  // Authorization: only the booking's specialist (or an ADMIN) may call this.
   static async markNoShow(
     bookingId: string,
     callerId: string,
@@ -1485,25 +1432,18 @@ export class BookingService {
         throw new Error('BOOKING_NOT_CONFIRMED');
       }
 
-      // Compute the no-show fee from the service policy over the booking total.
-      const noShowFeeAmount = computeNoShowFee(booking.service, Number(booking.totalAmount));
-      const hadDeposit = ['REQUIRED', 'PAID'].includes(booking.depositStatus);
-
       const updated = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: 'NO_SHOW',
           cancelledAt: new Date(),
           cancelledBy: booking.specialistId,
-          // Fee is recorded as CHARGED for bookkeeping; no money is taken yet.
-          noShowFeeAmount,
-          noShowFeeStatus: noShowFeeAmount > 0 ? 'CHARGED' : 'NONE',
-          // A required/paid deposit is forfeited when the customer no-shows.
-          ...(hadDeposit ? { depositStatus: 'FORFEITED' } : {}),
+          noShowFeeAmount: 0,
+          noShowFeeStatus: 'NONE',
           completionNotes: BookingService.appendNote(
             booking.completionNotes,
             opts.notes,
-            `no-show recorded by specialist; fee=${noShowFeeAmount}, depositForfeited=${hadDeposit}`,
+            'no-show recorded by specialist',
           ),
           updatedAt: new Date(),
         },
@@ -1517,8 +1457,6 @@ export class BookingService {
       logger.info('Booking marked as no-show', {
         bookingId,
         callerId,
-        noShowFeeAmount,
-        depositForfeited: hadDeposit,
       });
 
       // Remove the (past) event from both parties' connected calendars.

@@ -795,7 +795,7 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
       city: spec.location.city
     } : undefined,
     totalPrice: Number(booking.totalAmount) || 0,
-    paymentStatus: booking.depositPaid ? 'paid' : 'pending'
+    paymentStatus: booking.paymentStatus === 'PAID' ? 'paid' : 'pending'
   };
 };
 

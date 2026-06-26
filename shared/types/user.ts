@@ -114,6 +114,8 @@ export interface RegisterRequest {
   referralCode?: string;
   /** When set, registers the user as a business/salon OWNER and creates the Business. */
   businessName?: string;
+  /** Invite token from a /invite/:token link — consumed during registration. */
+  inviteToken?: string;
 }
 
 export interface TelegramAuthRequest {

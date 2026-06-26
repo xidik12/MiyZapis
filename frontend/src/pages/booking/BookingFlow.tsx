@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socketService, subscribeToPaymentUpdates } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
@@ -99,30 +99,6 @@ const BookingFlow: React.FC = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((state.service?.price ?? state.service?.basePrice ?? 0) - discount));
   const { formatPrice } = useCurrency();
-
-  // No-show protection — compute the (informational) deposit + no-show-fee
-  // display for the summary. Mirrors backend computeDeposit/computeNoShowFee.
-  // POLICY/DISPLAY only: no payment is taken here; the booking is created with
-  // depositStatus = REQUIRED for a future payments module to collect.
-  const depositInfo = useMemo(() => {
-    const svc = state.service;
-    const ccy = (svc?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
-    const total = finalPrice;
-    let amount = 0;
-    if (svc?.requireDeposit) {
-      const v = Number(svc.depositValue || 0);
-      amount = svc.depositType === 'FIXED' ? v : (total * v) / 100;
-      amount = Math.min(Math.max(0, Math.round(amount * 100) / 100), total);
-    }
-    let noShowFeeLabel = '';
-    if (svc?.noShowFeeType && Number(svc.noShowFeeValue) > 0) {
-      const fv = Number(svc.noShowFeeValue);
-      noShowFeeLabel = svc.noShowFeeType === 'FIXED'
-        ? formatPrice(Math.min(fv, total), ccy)
-        : `${fv}%`;
-    }
-    return { amount, noShowFeeLabel };
-  }, [state.service, finalPrice, formatPrice]);
 
   // Streamlined 3-step flow when service is pre-selected and not a group session
   // Full flow for complex bookings (no service pre-selected, or group sessions)
@@ -711,8 +687,6 @@ const BookingFlow: React.FC = () => {
         return;
       }
 
-      const depositAmount = 100;
-
       const paymentData = {
         serviceId: state.service.id,
         specialistId: currentSpecialistId,
@@ -721,7 +695,7 @@ const BookingFlow: React.FC = () => {
         customerNotes: state.bookingNotes || undefined,
         loyaltyPointsUsed: 0,
         useWalletFirst: state.useWalletFirst,
-        amount: depositAmount,
+        amount: finalPrice,
         currency: state.service.currency || 'USD',
         serviceName: state.service.name,
         specialistName: state.specialist.user?.firstName && state.specialist.user?.lastName
@@ -736,7 +710,7 @@ const BookingFlow: React.FC = () => {
 
         const paypalOrderData = {
           bookingId: `booking-${Date.now()}`,
-          amount: depositAmount,
+          amount: finalPrice,
           currency: 'USD',
           description: `${state.service.name} - ${paymentData.specialistName}`,
           bookingData: {
@@ -778,9 +752,9 @@ const BookingFlow: React.FC = () => {
             type: 'SET_PAYMENT_RESULT',
             payload: {
               paymentUrl: paypalResult.approvalUrl,
-              finalAmount: depositAmount,
+              finalAmount: finalPrice,
               status: 'pending',
-              remainingAmount: depositAmount,
+              remainingAmount: finalPrice,
               paymentMethod: 'PAYPAL',
               message: 'Payment processing. You will receive an email confirmation once payment is verified.'
             }
@@ -1330,11 +1304,6 @@ const BookingFlow: React.FC = () => {
                   <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {state.service?.name || '—'}
                   </span>
-                  {depositInfo.amount > 0 && (
-                    <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
-                      {t('deposit.depositRequired') || 'Deposit required'}
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-2">
                   <span className="tabular-nums text-sm font-bold text-gray-900 dark:text-white">
@@ -1352,31 +1321,15 @@ const BookingFlow: React.FC = () => {
               {/* Expandable details */}
               {mobileSummaryOpen && (
                 <div className="border-t border-gray-100 dark:border-gray-800 px-4 pb-4 pt-3 space-y-3">
-                  {/* Deposit notice */}
-                  {state.service?.requireDeposit && depositInfo.amount > 0 && (
-                    <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">{t('deposit.depositRequired') || 'Deposit required'}</span>
-                        <span className="tabular-nums text-sm font-bold text-amber-800 dark:text-amber-300">
-                          {formatPrice(depositInfo.amount, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">{t('deposit.depositNote') || 'Deposit is required to secure your booking.'}</p>
-                    </div>
-                  )}
-
-                  {/* Cancellation / no-show policy */}
-                  {(state.service?.cancellationWindowHours || depositInfo.noShowFeeLabel) && (
+                  {/* Cancellation policy */}
+                  {state.service?.cancellationWindowHours && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                      {state.service?.cancellationWindowHours
-                        ? (t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))
-                        : ''}
-                      {depositInfo.noShowFeeLabel ? ` ${(t('policy.noShowFeeNote') || 'No-show fee: {{fee}}.').replace('{{fee}}', depositInfo.noShowFeeLabel)}` : ''}
+                      {(t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))}
                     </p>
                   )}
 
                   {/* Not charged yet */}
-                  <p className="text-center text-xs text-gray-400 dark:text-gray-500">{t('booking.notChargedYet') || 'You won\'t be charged yet'}</p>
+                  <p className="text-center text-xs text-gray-400 dark:text-gray-500">{t('booking.notChargedYet') || 'You won’t be charged yet'}</p>
                 </div>
               )}
             </div>
@@ -1461,26 +1414,10 @@ const BookingFlow: React.FC = () => {
                 </span>
               </div>
 
-              {/* No-show protection: deposit + cancellation policy notice.
-                  Informational only — no payment step. The booking is created
-                  with depositStatus = REQUIRED; a future payments module collects. */}
-              {state.service?.requireDeposit && depositInfo.amount > 0 && (
-                <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-3 mb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">{t('deposit.depositRequired')}</span>
-                    <span className="text-sm font-bold text-amber-800 dark:text-amber-300">
-                      {formatPrice(depositInfo.amount, (state.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">{t('deposit.depositNote')}</p>
-                </div>
-              )}
-              {(state.service?.cancellationWindowHours || depositInfo.noShowFeeLabel) && (
+              {/* Cancellation policy notice */}
+              {state.service?.cancellationWindowHours && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
-                  {state.service?.cancellationWindowHours
-                    ? (t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))
-                    : ''}
-                  {depositInfo.noShowFeeLabel ? ` ${(t('policy.noShowFeeNote') || 'No-show fee: {{fee}}.').replace('{{fee}}', depositInfo.noShowFeeLabel)}` : ''}
+                  {(t('policy.freeCancellation') || 'Free cancellation up to {{hours}}h before.').replace('{{hours}}', String(state.service.cancellationWindowHours))}
                 </p>
               )}
 
