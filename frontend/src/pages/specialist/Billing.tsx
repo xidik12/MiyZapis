@@ -85,7 +85,13 @@ const Billing: React.FC = () => {
     try {
       const link = await subscriptionService.createInvoice(plan);
       toast.info(t('billing.openingTelegram') || 'Opening Telegram…');
-      window.open(link, '_blank', 'noopener,noreferrer');
+      // Inside the Telegram mini-app a t.me invoice link must be opened via
+      // openTelegramLink; window.open is the plain-browser fallback.
+      const tg = (window as unknown as {
+        Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void } };
+      }).Telegram?.WebApp;
+      if (tg?.openTelegramLink) tg.openTelegramLink(link);
+      else window.open(link, '_blank', 'noopener,noreferrer');
     } catch (err) {
       toast.error((err as Error).message || t('billing.invoiceError') || 'Could not start payment');
     } finally {

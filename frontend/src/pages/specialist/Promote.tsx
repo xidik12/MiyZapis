@@ -180,16 +180,51 @@ const Promote: React.FC = () => {
     try {
       const link = await promoteService.createBoostInvoice(selectedDays);
       toast.info(t('promote.openingTelegram') || 'Opening Telegram…');
-      const tg = (window as unknown as { Telegram?: { WebApp?: { openInvoice?: (url: string, cb?: (status: string) => void) => void } } }).Telegram?.WebApp;
-      if (tg?.openInvoice) {
-        tg.openInvoice(link, (invoiceStatus) => {
-          if (invoiceStatus === 'paid') {
-            // Re-fetch after a short delay to let the bot handler complete.
-            setTimeout(() => load(), 2000);
+      const tg = (window as unknown as {
+        Telegram?: {
+          WebApp?: {
+            initData?: string;
+            openInvoice?: (url: string, cb?: (status: string) => void) => void;
+            openTelegramLink?: (url: string) => void;
+            isVersionAtLeast?: (v: string) => boolean;
+          };
+        };
+      }).Telegram?.WebApp;
+
+      // Fallback for clients where openInvoice is missing/unsupported (Telegram
+      // Desktop/Web, older versions, or a plain browser): open the invoice link
+      // directly so the user can still pay via the normal Telegram invoice UI.
+      // openTelegramLink itself can throw WebAppMethodUnsupported on old clients,
+      // so guard it and fall back to a plain browser tab (always works for t.me).
+      const openLink = () => {
+        try {
+          if (tg?.openTelegramLink && tg?.initData) {
+            tg.openTelegramLink(link);
+            setTimeout(() => load(), 4000);
+            return;
           }
-        });
-      } else {
+        } catch { /* fall through to window.open */ }
         window.open(link, '_blank', 'noopener,noreferrer');
+        // We can't observe payment status this way — refresh shortly after.
+        setTimeout(() => load(), 4000);
+      };
+
+      // openInvoice requires Bot API 6.1+; on older clients calling it throws
+      // WebAppMethodUnsupported, so version-gate AND guard with try/catch.
+      const canInvoice = !!tg?.openInvoice && (tg?.isVersionAtLeast ? tg.isVersionAtLeast('6.1') : false);
+      if (canInvoice) {
+        try {
+          tg!.openInvoice!(link, (invoiceStatus) => {
+            if (invoiceStatus === 'paid') {
+              // Re-fetch after a short delay to let the bot handler complete.
+              setTimeout(() => load(), 2000);
+            }
+          });
+        } catch {
+          openLink();
+        }
+      } else {
+        openLink();
       }
     } catch (err) {
       toast.error((err as Error).message || t('promote.saveError') || 'Failed to start payment');
