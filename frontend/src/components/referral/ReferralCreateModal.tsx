@@ -155,7 +155,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Referral Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('referral.create.name')}
+                  {t('referral.create.type')}
                 </label>
                 <div className="grid grid-cols-1 gap-3">
                   {config.availableTypes.map((type) => {
@@ -212,7 +212,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Invite Channel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('referral.create.orShare')}
+                  {t('referral.create.shareVia')}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availableChannels.map((channel) => (
@@ -255,7 +255,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
               {/* Expiry Days */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('referral.create.terms')}
+                  {t('referral.create.expiry')}
                 </label>
                 <select
                   value={formData.expiresInDays}
