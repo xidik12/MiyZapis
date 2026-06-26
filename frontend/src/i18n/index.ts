@@ -1,9 +1,22 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { setDefaultOptions } from 'date-fns';
+import { enUS, uk as ukDateLocale, ru as ruDateLocale } from 'date-fns/locale';
 import en from './translations/en';
 import uk from './translations/uk';
 import ru from './translations/ru';
 import type { Language, LanguageContextType } from './types';
+
+// Map the app language → date-fns locale so all format()/formatDistance() calls
+// render month names, weekdays and AM/PM in the user's language (not English).
+const dateFnsLocales = { en: enUS, uk: ukDateLocale, ru: ruDateLocale } as const;
+// Set it immediately at module load (from the stored language) so the very first
+// render is already localized, before the provider's effect runs.
+try {
+  const stored = (typeof localStorage !== 'undefined' && localStorage.getItem('booking-language')) || 'uk';
+  const lang = (stored === 'en' || stored === 'ru') ? stored : 'uk';
+  setDefaultOptions({ locale: dateFnsLocales[lang as Language] });
+} catch { /* SSR / no localStorage — default locale applies */ }
 
 export type { Language, LanguageContextType } from './types';
 export type { TFunction } from './types';
@@ -17,6 +30,11 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const stored = localStorage.getItem('booking-language');
     return (stored === 'uk' || stored === 'en' || stored === 'ru') ? stored : 'uk';
   });
+
+  // Keep date-fns formatting in sync with the selected language.
+  useEffect(() => {
+    setDefaultOptions({ locale: dateFnsLocales[language] });
+  }, [language]);
 
   const t = useCallback((key: string): string => {
     const value = translationsByLang[language]?.[key];
