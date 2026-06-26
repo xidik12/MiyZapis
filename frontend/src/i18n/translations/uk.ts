@@ -4722,6 +4722,14 @@ const uk: Record<string, string> = {
   'admin.moderation.reporter': 'Скаржник',
   'admin.moderation.reason': 'Причина',
   'admin.moderation.loading': 'Завантаження...',
+  'invite.errorTitle': 'Помилка запрошення',
+  'invite.alreadyUsed': 'Це посилання на запрошення вже було використано.',
+  'invite.expired': 'Термін дії цього запрошення закінчився. Попросіть нове.',
+  'invite.error': 'Не вдалося прийняти запрошення. Спробуйте ще раз або зверніться до власника.',
+  'invite.goHome': 'На головну',
+  'invite.register.banner': 'Вас запрошено приєднатися до',
+  'invite.register.bannerSuffix': 'Завершіть реєстрацію нижче, щоб прийняти запрошення.',
+  'invite.register.invalidToken': 'Це посилання на запрошення недійсне або застаріле.',
 };
 
 export default uk;

@@ -133,19 +133,31 @@ export class AvailabilityService {
       const startOfToday = new Date(startDate);
       startOfToday.setUTCHours(0, 0, 0, 0);
 
-      const existingBlocks = await prisma.availabilityBlock.findMany({
-        where: {
-          specialistId,
-          startDateTime: {
-            gte: startOfToday,
-            lte: endDate
+      const [existingBlocks, approvedLeaves] = await Promise.all([
+        prisma.availabilityBlock.findMany({
+          where: {
+            specialistId,
+            startDateTime: {
+              gte: startOfToday,
+              lte: endDate
+            }
+          },
+          select: {
+            startDateTime: true,
+            endDateTime: true
           }
-        },
-        select: {
-          startDateTime: true,
-          endDateTime: true
-        }
-      });
+        }),
+        // Fetch approved leaves so slot generation skips on-leave days.
+        prisma.leaveRequest.findMany({
+          where: {
+            staffUserId: specialist.userId,
+            status: 'APPROVED',
+            startDate: { lte: endDate },
+            endDate: { gte: startOfToday },
+          },
+          select: { startDate: true, endDate: true },
+        }),
+      ]);
 
       const newBlocks = [];
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -155,6 +167,16 @@ export class AvailabilityService {
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
+
+        // Skip days the specialist is on approved leave — no slots should be generated.
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+        const isOnLeave = approvedLeaves.some(
+          (l) => new Date(l.startDate) <= dayEnd && new Date(l.endDate) >= dayStart
+        );
+        if (isOnLeave) continue;
 
         if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
@@ -322,6 +344,18 @@ export class AvailabilityService {
         },
       });
 
+      // Fetch approved leave periods for this specialist so calendar slots on
+      // leave days are marked unavailable (single query covers entire date range).
+      const approvedLeaves = await prisma.leaveRequest.findMany({
+        where: {
+          staffUserId: specialist.userId,
+          status: 'APPROVED',
+          startDate: { lte: endDate },
+          endDate: { gte: startDate },
+        },
+        select: { startDate: true, endDate: true },
+      });
+
       // Parse working hours
       let workingHours: Record<string, unknown> = {};
       try {
@@ -337,7 +371,8 @@ export class AvailabilityService {
         endDate,
         availabilityBlocks,
         bookings,
-        workingHours
+        workingHours,
+        approvedLeaves
       );
 
       return {
@@ -644,7 +679,22 @@ export class AvailabilityService {
         },
       });
 
-      return conflictingBlocks.length === 0;
+      if (conflictingBlocks.length > 0) {
+        return false;
+      }
+
+      // Reject if the requested slot overlaps an approved leave period for this specialist.
+      const onLeave = await prisma.leaveRequest.findFirst({
+        where: {
+          staffUserId: specialist.userId,
+          status: 'APPROVED',
+          startDate: { lte: endDateTime },
+          endDate: { gte: startDateTime },
+        },
+        select: { id: true },
+      });
+
+      return onLeave === null;
     } catch (error) {
       logger.error('Error checking time slot availability:', error);
       return false;
@@ -659,7 +709,8 @@ export class AvailabilityService {
     endDate: Date,
     availabilityBlocks: AvailabilityBlock[],
     bookings: Record<string, unknown>[],
-    workingHours: Record<string, unknown>
+    workingHours: Record<string, unknown>,
+    approvedLeaves: { startDate: Date; endDate: Date }[] = []
   ) {
     const calendar = [];
     const currentDate = new Date(startDate);
@@ -673,17 +724,28 @@ export class AvailabilityService {
         .toLowerCase();
       const dayWorkingHours = workingHours[dayOfWeek];
 
+      // Check if the specialist is on approved leave for this calendar day.
+      // A day is considered on leave if it falls within any approved leave range.
+      const dayStart = new Date(currentDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(currentDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      const isOnLeave = approvedLeaves.some(
+        (l) => new Date(l.startDate) <= dayEnd && new Date(l.endDate) >= dayStart
+      );
+
       const dayData = {
         date: new Date(currentDate),
         dayOfWeek,
-        isWorkingDay: !!dayWorkingHours,
+        isWorkingDay: !!dayWorkingHours && !isOnLeave,
+        isOnLeave,
         workingHours: dayWorkingHours,
         timeSlots: [] as TimeSlot[],
         hasAvailableSlots: false,
         totalBookings: 0,
       };
 
-      if (dayWorkingHours) {
+      if (dayWorkingHours && !isOnLeave) {
         // Generate time slots for the working day
         const slots = this.generateTimeSlotsForDay(
           currentDate,
@@ -691,7 +753,7 @@ export class AvailabilityService {
           availabilityBlocks,
           bookings
         );
-        
+
         dayData.timeSlots = slots;
         dayData.hasAvailableSlots = slots.some(slot => slot.isAvailable);
         dayData.totalBookings = slots.filter(slot => slot.bookingId).length;

@@ -4722,6 +4722,14 @@ const ru: Record<string, string> = {
   'admin.moderation.reporter': 'Жалобщик',
   'admin.moderation.reason': 'Причина',
   'admin.moderation.loading': 'Загрузка...',
+  'invite.errorTitle': 'Ошибка приглашения',
+  'invite.alreadyUsed': 'Эта ссылка приглашения уже была использована.',
+  'invite.expired': 'Срок действия приглашения истёк. Запросите новое.',
+  'invite.error': 'Не удалось принять приглашение. Попробуйте ещё раз или свяжитесь с владельцем.',
+  'invite.goHome': 'На главную',
+  'invite.register.banner': 'Вас пригласили присоединиться к',
+  'invite.register.bannerSuffix': 'Завершите регистрацию ниже, чтобы принять приглашение.',
+  'invite.register.invalidToken': 'Эта ссылка приглашения недействительна или устарела.',
 };
 
 export default ru;

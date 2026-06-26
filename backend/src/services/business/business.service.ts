@@ -196,7 +196,9 @@ export class BusinessService {
     try {
       const business = await prisma.business.findUnique({ where: { id: businessId }, select: { name: true } });
       const frontendUrl = config.frontend.url || 'https://miyzapis.com';
-      const inviteUrl = `${frontendUrl}/auth/register?invite=${token}`;
+      // /invite/:token handles both cases: logged-in users accept immediately;
+      // logged-out users are redirected to /auth/register?invite=token.
+      const inviteUrl = `${frontendUrl}/invite/${encodeURIComponent(token)}`;
       await emailService.sendTemplateEmail({
         to: email,
         templateKey: 'businessInvite',
@@ -224,6 +226,34 @@ export class BusinessService {
     if (!invite || invite.businessId !== businessId) throw new Error('INVITE_NOT_FOUND');
     await prisma.businessInvite.delete({ where: { id: inviteId } });
     return { revoked: true };
+  }
+
+  static async acceptInvite(token: string, userId: string) {
+    const invite = await prisma.businessInvite.findUnique({ where: { token } });
+    if (!invite) throw new Error('INVITE_NOT_FOUND');
+    if (invite.acceptedAt) throw new Error('INVITE_ALREADY_USED');
+    if (invite.expiresAt < new Date()) throw new Error('INVITE_EXPIRED');
+
+    const existing = await prisma.businessMember.findUnique({
+      where: { businessId_userId: { businessId: invite.businessId, userId } },
+    });
+    if (existing) throw new Error('ALREADY_MEMBER');
+
+    const now = new Date();
+    await prisma.businessMember.create({
+      data: {
+        businessId: invite.businessId,
+        userId,
+        role: invite.role,
+        invitedBy: invite.invitedBy,
+        joinedAt: now,
+      },
+    });
+    if (invite.role === 'SPECIALIST') {
+      await prisma.specialist.updateMany({ where: { userId }, data: { businessId: invite.businessId } });
+    }
+    await prisma.businessInvite.update({ where: { id: invite.id }, data: { acceptedAt: now } });
+    return { joined: true, businessId: invite.businessId };
   }
 
   static async setRole(businessId: string, callerId: string, targetUserId: string, role: BusinessRole) {

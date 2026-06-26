@@ -116,12 +116,12 @@ export class EmailService {
       const { to, subject, html, text, attachments } = options;
 
       if (!this.isConfigured || !this.transporter) {
-        logger.warn('Email not configured - logging email instead:', {
+        logger.warn('Email not configured - skipping send (no SMTP credentials):', {
           to,
           subject,
           textPreview: text?.substring(0, 100),
         });
-        return true; // Return true for development
+        return false; // Not configured: report honestly so callers don't count as sent
       }
 
       const recipients = Array.isArray(to) ? to : [to];

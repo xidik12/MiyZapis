@@ -88,7 +88,7 @@ router.get('/suggest', cacheMiddleware(60, 'search-suggest'), async (req: Reques
           id: s.id,
           label: name,
           sublabel: s.rating ? `★ ${s.rating.toFixed(1)}` : undefined,
-          href: s.slug ? `/specialist/${s.slug}` : `/specialists/${s.id}`,
+          href: s.slug ? `/s/${s.slug}` : `/specialist/${s.id}`,
         };
       }),
       ...categories.map((c) => ({

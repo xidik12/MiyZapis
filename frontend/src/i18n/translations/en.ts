@@ -4729,6 +4729,14 @@ const en: Record<string, string> = {
   'admin.moderation.reporter': 'Reporter',
   'admin.moderation.reason': 'Reason',
   'admin.moderation.loading': 'Loading...',
+  'invite.errorTitle': 'Invitation error',
+  'invite.alreadyUsed': 'This invitation link has already been used.',
+  'invite.expired': 'This invitation link has expired. Please ask for a new one.',
+  'invite.error': 'Unable to accept the invitation. Please try again or contact the business owner.',
+  'invite.goHome': 'Go home',
+  'invite.register.banner': 'You’ve been invited to join',
+  'invite.register.bannerSuffix': 'Complete registration below to accept.',
+  'invite.register.invalidToken': 'This invitation link is invalid or expired.',
 };
 
 export default en;

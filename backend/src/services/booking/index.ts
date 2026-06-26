@@ -343,6 +343,22 @@ export class BookingService {
           }
         }
 
+        // ── Leave guard: reject bookings that fall within an approved leave period ──
+        // Checked after the booking-conflict guard so the error is specific.
+        // staffUserId on LeaveRequest == service.specialist.userId (the specialist's User id).
+        const onApprovedLeave = await tx.leaveRequest.findFirst({
+          where: {
+            staffUserId: service.specialist.userId,
+            status: 'APPROVED',
+            startDate: { lte: bookingEndTime },
+            endDate: { gte: bookingStartTime },
+          },
+          select: { id: true },
+        });
+        if (onApprovedLeave) {
+          throw new Error('SPECIALIST_ON_APPROVED_LEAVE');
+        }
+
         // Calculate pricing (multiply by participant count for group sessions)
         const baseAmount = service.basePrice * participantCount;
         const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;

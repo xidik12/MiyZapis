@@ -2,6 +2,7 @@
 //   POST   /businesses                     create
 //   GET    /businesses/mine                businesses I belong to
 //   GET    /businesses/by-slug/:slug       public business page (no auth)
+//   GET    /businesses/invites/:token/meta  invite metadata (no auth — business name + email for register banner)
 //   GET    /businesses/:id                 business detail (member-only)
 //   PATCH  /businesses/:id                 update (OWNER or MANAGER)
 //   DELETE /businesses/:id                 deactivate (OWNER)
@@ -18,6 +19,7 @@ import { StaffService } from '@/services/business/staff.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
+import { prisma } from '@/config/database';
 
 const router = Router();
 
@@ -34,6 +36,8 @@ function handleErr(req: Request, res: Response, err: unknown) {
     CANT_REMOVE_LAST_OWNER: 400,
     USER_NOT_FOUND: 404,
     INVITE_NOT_FOUND: 404,
+    INVITE_ALREADY_USED: 409,
+    INVITE_EXPIRED: 410,
     NOT_A_MEMBER: 403,
     INSUFFICIENT_ROLE: 403,
     NOT_AUTHORIZED: 403,
@@ -50,6 +54,26 @@ router.get('/by-slug/:slug', async (req: Request, res: Response) => {
   const biz = await BusinessService.getBySlug(req.params.slug);
   if (!biz) return res.status(404).json(createErrorResponse('NOT_FOUND', 'Business not found', req.id));
   return res.json(createSuccessResponse({ business: biz }));
+});
+
+// Public invite metadata — let unauthenticated users see what business they're
+// joining before they create an account.  Returns only non-sensitive fields.
+router.get('/invites/:token/meta', async (req: Request, res: Response) => {
+  try {
+    const invite = await prisma.businessInvite.findUnique({
+      where: { token: req.params.token },
+      select: { email: true, role: true, expiresAt: true, acceptedAt: true, businessId: true },
+    });
+    if (!invite) return res.status(404).json(createErrorResponse('INVITE_NOT_FOUND', 'Invite not found', req.id));
+    if (invite.acceptedAt) return res.status(409).json(createErrorResponse('INVITE_ALREADY_USED', 'Invite already used', req.id));
+    if (invite.expiresAt < new Date()) return res.status(410).json(createErrorResponse('INVITE_EXPIRED', 'Invite expired', req.id));
+    const business = await prisma.business.findUnique({ where: { id: invite.businessId }, select: { name: true } });
+    return res.json(createSuccessResponse({
+      businessName: business?.name ?? '',
+      email: invite.email,
+      role: invite.role,
+    }));
+  } catch (err) { return handleErr(req, res, err); }
 });
 
 // Authenticated routes from here down -------------------------------------
@@ -201,6 +225,14 @@ router.put('/:id/staff/:staffUserId/schedule', async (req: Request, res: Respons
 router.put('/:id/staff/:staffUserId/services', async (req: Request, res: Response) => {
   try {
     const result = await StaffService.setServices(req.params.id, userId(req), req.params.staffUserId, req.body?.services ?? []);
+    return res.json(createSuccessResponse(result));
+  } catch (err) { return handleErr(req, res, err); }
+});
+
+// Accept a pending invite by token (logged-in user clicks the invite link)
+router.post('/invites/:token/accept', async (req: Request, res: Response) => {
+  try {
+    const result = await BusinessService.acceptInvite(req.params.token, userId(req));
     return res.json(createSuccessResponse(result));
   } catch (err) { return handleErr(req, res, err); }
 });

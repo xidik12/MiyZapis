@@ -240,6 +240,42 @@ export class AuthService {
         });
       }
 
+      // Also consume by token if the invitee signed up via an invite link
+      // (regardless of which email they used).
+      if (data.inviteToken) {
+        try {
+          const invite = await prisma.businessInvite.findUnique({ where: { token: data.inviteToken } });
+          if (invite && !invite.acceptedAt && invite.expiresAt > new Date()) {
+            const alreadyMember = await prisma.businessMember.findUnique({
+              where: { businessId_userId: { businessId: invite.businessId, userId: user.id } },
+            });
+            if (!alreadyMember) {
+              const now = new Date();
+              await prisma.businessMember.create({
+                data: {
+                  businessId: invite.businessId,
+                  userId: user.id,
+                  role: invite.role,
+                  invitedBy: invite.invitedBy,
+                  joinedAt: now,
+                },
+              });
+              if (invite.role === 'SPECIALIST') {
+                await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+              }
+              await prisma.businessInvite.update({ where: { id: invite.id }, data: { acceptedAt: now } });
+              logger.info('Consumed business invite by token during registration', {
+                userId: user.id, businessId: invite.businessId, token: data.inviteToken,
+              });
+            }
+          }
+        } catch (tokenInviteError) {
+          logger.error('Failed to consume business invite by token', {
+            userId: user.id, error: tokenInviteError instanceof Error ? tokenInviteError.message : tokenInviteError,
+          });
+        }
+      }
+
       // Generate verification token
       const verificationToken = this.generateVerificationToken();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours

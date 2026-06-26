@@ -84,7 +84,7 @@ const BusinessPublicPage: React.FC = () => {
             {members.map((m: any) => {
               const u = m.user;
               const spec = u?.specialist;
-              const profileLink = spec?.slug ? `/specialist/${spec.slug}` : `/specialists/${u?.id}`;
+              const profileLink = spec?.slug ? `/s/${spec.slug}` : `/specialist/${spec?.id}`;
               return (
                 <Link
                   key={m.id}

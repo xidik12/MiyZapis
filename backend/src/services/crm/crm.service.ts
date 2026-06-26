@@ -774,10 +774,53 @@ export class CrmService {
     const specialistId = await getSpecialistId(ownerId);
     const existing = await prisma.lead.findFirst({ where: { id: leadId, specialistId } });
     if (!existing) throw new CrmServiceError('LEAD_NOT_FOUND', 'Lead not found');
-    // Mark won (idempotent if already won)
+
+    // Idempotent: if already converted, return as-is.
+    if (existing.stage === 'won' && existing.customerId) {
+      return leadShape(existing);
+    }
+
+    // Resolve (or create) a customer record for this lead.
+    let customerId: string | null = existing.customerId ?? null;
+
+    if (!customerId) {
+      if (existing.email) {
+        // Try to link an existing platform User by email.
+        const user = await prisma.user.findUnique({
+          where: { email: existing.email },
+          select: { id: true },
+        });
+        if (user) {
+          customerId = user.id;
+        }
+      }
+
+      // No existing User found — create a CrmClient record (placeholder User)
+      // so the lead has a real customerId and appears in the client list.
+      if (!customerId) {
+        const nameParts = existing.name.trim().split(/\s+/);
+        const firstName = nameParts[0] ?? existing.name;
+        const lastName = nameParts.slice(1).join(' ') || '';
+        // Generate a unique throwaway email if none supplied, so the unique
+        // constraint on User.email doesn't block us.
+        const placeholderEmail = existing.email ?? `lead+${existing.id}@miyzapis.internal`;
+        const newUser = await prisma.user.create({
+          data: {
+            firstName,
+            lastName,
+            email: placeholderEmail,
+            phoneNumber: existing.phone ?? null,
+            isActive: true,
+          },
+          select: { id: true },
+        });
+        customerId = newUser.id;
+      }
+    }
+
     const updated = await prisma.lead.update({
       where: { id: leadId },
-      data: { stage: 'won' },
+      data: { stage: 'won', customerId },
     });
     return leadShape(updated);
   }

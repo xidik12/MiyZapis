@@ -18,6 +18,7 @@
 import crypto from 'crypto';
 import { prisma } from '@/config/database';
 import { BusinessService } from '@/services/business/business.service';
+import { SpecialistService } from '@/services/specialist';
 
 // Default all-days-off working-hours template (mirrors the register flow).
 const DEFAULT_WORKING_HOURS = {
@@ -132,7 +133,7 @@ export class StaffService {
     await BusinessService.requireRole(businessId, callerId, ['OWNER', 'MANAGER']);
     if (!data.firstName?.trim() || !data.lastName?.trim()) throw new Error('VALIDATION_ERROR');
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const email = syntheticEmail();
       const user = await tx.user.create({
         data: {
@@ -176,6 +177,9 @@ export class StaffService {
 
       return { userId: user.id, specialistId: specialist.id };
     });
+    // Give managed staff a slug so they appear in discovery/sitemap.
+    void SpecialistService.ensureSlug(result.specialistId).catch(() => {/* non-blocking */});
+    return result;
   }
 
   // ---- Clone -------------------------------------------------------------
@@ -195,7 +199,7 @@ export class StaffService {
     });
     if (!source) throw new Error('NOT_FOUND');
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
           email: syntheticEmail(),
@@ -257,6 +261,8 @@ export class StaffService {
 
       return { userId: user.id, specialistId: specialist.id };
     });
+    void SpecialistService.ensureSlug(result.specialistId).catch(() => {/* non-blocking */});
+    return result;
   }
 
   // ---- Update ------------------------------------------------------------

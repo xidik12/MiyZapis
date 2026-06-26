@@ -58,6 +58,12 @@ interface CustomerLite {
   dateOfBirth: Date | null;
 }
 
+interface ConsentSnapshot {
+  optOutAll: boolean;
+  email: boolean;
+  telegramNotifications: boolean; // mirrors emailNotifications / telegramNotifications convention
+}
+
 // Default localized message templates per type. {{firstName}} / {{businessName}}.
 const DEFAULT_TEMPLATES: Record<MarketingType, Record<string, string>> = {
   WINBACK: {
@@ -238,20 +244,26 @@ export class MarketingService {
     return out;
   }
 
-  /** Send a single marketing message respecting the automation channel and the
-   *  customer's own notification prefs. Returns the channels actually sent on. */
+  /** Send a single marketing message respecting the automation channel, the
+   *  customer's own notification prefs, AND MarketingConsent (optOutAll +
+   *  per-channel). Returns the channels actually sent on. */
   private static async send(
     customer: CustomerLite,
     channel: MarketingChannel,
     title: string,
-    message: string
+    message: string,
+    consent: ConsentSnapshot | null = null
   ): Promise<string[]> {
+    // Respect MarketingConsent: skip entirely if opted out of all marketing.
+    if (consent && consent.optOutAll) return [];
+
     const sent: string[] = [];
     const wantTelegram = channel === 'TELEGRAM' || channel === 'BOTH';
     const wantEmail = channel === 'EMAIL' || channel === 'BOTH';
 
-    // Telegram
-    if (wantTelegram && customer.telegramNotifications && customer.telegramId && config.telegram.botToken) {
+    // Telegram — also skip if consent row explicitly opts out of Telegram.
+    const telegramConsentOk = !consent || consent.telegramNotifications !== false;
+    if (wantTelegram && telegramConsentOk && customer.telegramNotifications && customer.telegramId && config.telegram.botToken) {
       try {
         await axios.post(`https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`, {
           chat_id: customer.telegramId,
@@ -267,8 +279,9 @@ export class MarketingService {
       }
     }
 
-    // Email
-    if (wantEmail && customer.emailNotifications && customer.email) {
+    // Email — also skip if consent row explicitly opts out of email.
+    const emailConsentOk = !consent || consent.email !== false;
+    if (wantEmail && emailConsentOk && customer.emailNotifications && customer.email) {
       try {
         const ok = await templatedEmailService.sendTemplateEmail({
           to: customer.email,
@@ -338,6 +351,33 @@ export class MarketingService {
         stat.eligible = candidates.length;
         if (candidates.length === 0) continue;
 
+        // Fetch MarketingConsent for all candidates across all relevant specialists.
+        // Take the most restrictive answer: if any specialist row opts them out, we skip.
+        const candidateIds = candidates.map((c) => c.id);
+        const consentRows = await this.db.marketingConsent.findMany({
+          where: {
+            specialistId: { in: specialistIds },
+            customerId: { in: candidateIds },
+          },
+          select: { customerId: true, optOutAll: true, email: true },
+        });
+        // Merge per customerId: optOutAll true if any row says so; email false if any row says so.
+        const consentMap = new Map<string, ConsentSnapshot>();
+        for (const row of consentRows) {
+          const existing = consentMap.get(row.customerId);
+          if (!existing) {
+            consentMap.set(row.customerId, {
+              optOutAll: row.optOutAll,
+              email: row.email,
+              telegramNotifications: true, // MarketingConsent has no telegram column; channel handled by user pref
+            });
+          } else {
+            // Most-restrictive merge.
+            existing.optOutAll = existing.optOutAll || row.optOutAll;
+            existing.email = existing.email && row.email;
+          }
+        }
+
         // Idempotency window per type. BIRTHDAY dedupes once per calendar year
         // (from Jan 1 of the current year); the others use a rolling window.
         const dedupeSince =
@@ -377,7 +417,8 @@ export class MarketingService {
             customer,
             automation.channel as MarketingChannel,
             title,
-            message
+            message,
+            consentMap.get(customer.id) ?? null
           );
 
           if (channels.length > 0) {

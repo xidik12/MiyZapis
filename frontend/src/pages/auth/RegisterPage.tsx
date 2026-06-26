@@ -8,6 +8,7 @@ import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator
 import { EyeIcon, EyeSlashIcon } from '@/components/icons';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { businessService } from '@/services/business.service';
 import { useTheme } from '@/contexts/ThemeContext';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
@@ -26,6 +27,7 @@ interface RegisterFormData {
   businessName?: string;
   agreeToTerms: boolean;
   referralCode?: string;
+  inviteToken?: string;
 }
 
 const RegisterPage: React.FC = () => {
@@ -63,12 +65,14 @@ const RegisterPage: React.FC = () => {
 
   const defaultUserType = (searchParams.get('type') as UserType) || 'customer';
   const referralCode = searchParams.get('ref') || searchParams.get('referralCode') || undefined;
+  const inviteToken = searchParams.get('invite') || undefined;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<RegisterFormData>({
     defaultValues: {
       firstName: '',
@@ -80,11 +84,31 @@ const RegisterPage: React.FC = () => {
       userType: defaultUserType,
       agreeToTerms: false,
       referralCode: referralCode,
+      inviteToken: inviteToken,
     },
   });
 
   const watchPassword = watch('password');
   const watchUserType = watch('userType');
+
+  // Invite meta — fetched when an invite token is present so we can show a
+  // banner and prefill the invited email. null = not fetched yet, false = invalid.
+  const [inviteMeta, setInviteMeta] = useState<{ businessName: string; email: string } | null | false>(null);
+
+  useEffect(() => {
+    if (!inviteToken) return;
+    businessService.getInviteMeta(inviteToken)
+      .then((meta) => {
+        setInviteMeta(meta);
+        // Prefill the email the invite was sent to so the invitee sees which
+        // address the business owner used. They're free to change it — the
+        // token-based consumption in the backend accepts any email.
+        if (meta.email) {
+          setValue('email', meta.email, { shouldValidate: false });
+        }
+      })
+      .catch(() => setInviteMeta(false));
+  }, [inviteToken, setValue]);
 
   // Clear error when component unmounts
   useEffect(() => {
@@ -116,6 +140,7 @@ const RegisterPage: React.FC = () => {
         userType: isBusiness ? 'specialist' : (data.userType as UserType),
         ...(isBusiness && data.businessName && { businessName: data.businessName.trim() }),
         ...(data.referralCode && { referralCode: data.referralCode }),
+        ...(data.inviteToken && { inviteToken: data.inviteToken }),
       };
 
       const result = await dispatch(registerUser(registerData)).unwrap();
@@ -218,6 +243,30 @@ const RegisterPage: React.FC = () => {
         {error && (
           <div className="bg-red-50/80 dark:bg-red-900/30 border border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl font-medium">
             {getTranslatedError(error)}
+          </div>
+        )}
+
+        {/* Business Invite Notice */}
+        {inviteToken && inviteMeta && (
+          <div className="bg-blue-50/80 dark:bg-blue-900/30 border border-blue-200/50 dark:border-blue-800/50 rounded-xl px-4 py-3">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                  {t('invite.register.banner')} <strong>{inviteMeta.businessName}</strong>
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                  {t('invite.register.bannerSuffix')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        {inviteToken && inviteMeta === false && (
+          <div className="bg-red-50/80 dark:bg-red-900/30 border border-red-200/50 dark:border-red-800/50 rounded-xl px-4 py-3">
+            <p className="text-sm text-red-700 dark:text-red-400">{t('invite.register.invalidToken')}</p>
           </div>
         )}
 

@@ -223,6 +223,14 @@ class BusinessService {
   async setServices(businessId: string, staffUserId: string, services: StaffServiceInput[]): Promise<void> {
     await apiClient.put(`/businesses/${businessId}/staff/${staffUserId}/services`, { services });
   }
+
+  /** Public — no auth. Returns invite metadata for the register banner. */
+  async getInviteMeta(token: string): Promise<{ businessName: string; email: string; role: BusinessRole }> {
+    const res = await apiClient.get<{ businessName: string; email: string; role: BusinessRole }>(
+      `/businesses/invites/${encodeURIComponent(token)}/meta`,
+    );
+    return res.data as { businessName: string; email: string; role: BusinessRole };
+  }
 }
 
 export const businessService = new BusinessService();
