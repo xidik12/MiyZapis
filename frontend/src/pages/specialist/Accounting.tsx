@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
+import InvoiceDocument from '@/components/specialist/InvoiceDocument';
 import { toast } from 'react-toastify';
 import {
   accountingService,
@@ -670,6 +671,7 @@ const InvoicesPanel: React.FC = () => {
 
 const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({ invoice, onChanged }) => {
   const { t } = useLanguage();
+  const [showDoc, setShowDoc] = useState(false);
   const mark = async (status: InvoiceStatus) => {
     try {
       await accountingService.updateInvoiceStatus(invoice.id, status);
@@ -685,6 +687,8 @@ const InvoiceActions: React.FC<{ invoice: Invoice; onChanged: () => void }> = ({
   };
   return (
     <div className="flex gap-1 text-xs">
+      <button onClick={() => setShowDoc(true)} className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded hover:bg-primary-200 dark:hover:bg-primary-900/50 transition active:scale-[0.96]">{t('invoice.viewPrint') || 'View / Print'}</button>
+      {showDoc && <InvoiceDocument invoice={invoice} onClose={() => setShowDoc(false)} />}
       {invoice.status === 'DRAFT' && <button onClick={() => mark('SENT')} className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition active:scale-[0.96]">{t('accounting.invoices.markSent')}</button>}
       {(['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) && <button onClick={() => mark('PAID')} className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition active:scale-[0.96]">{t('accounting.invoices.markPaid')}</button>}
       {invoice.status === 'DRAFT' && <button onClick={del} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition active:scale-[0.96]">{t('accounting.invoices.delete')}</button>}

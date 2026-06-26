@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
 import { useTheme } from '@/contexts/ThemeContext';
 import { setAuthTokens } from '@/services';
+import { getCurrentUser } from '@/store/slices/authSlice';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PageLoader } from '@/components/ui';
@@ -53,6 +54,14 @@ const AuthCallbackPage: React.FC = () => {
             accessToken: token,
             refreshToken: refreshToken || token,
           });
+
+          // Populate the Redux auth state so the app reflects the signed-in user
+          // immediately — without this it stayed "logged out" in memory until a reload.
+          try {
+            await dispatch(getCurrentUser()).unwrap();
+          } catch {
+            // Tokens are stored; getCurrentUser will retry on the next app load.
+          }
 
           toast.success(t('auth.signedIn') || 'Successfully signed in!');
 
