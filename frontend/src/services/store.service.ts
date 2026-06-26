@@ -136,6 +136,7 @@ export class StoreService {
   async posSale(data: {
     items: { productId: string; quantity: number }[];
     paymentMethod?: 'CASH' | 'CARD' | 'OTHER';
+    customerUserId?: string;
     customerName?: string;
     note?: string;
     discount?: number;

@@ -14,6 +14,8 @@ import { MonthView } from '@/components/calendar/MonthView';
 import { fetchBookings, cancelBooking } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
+import RescheduleBookingModal from '../../components/modals/RescheduleBookingModal';
+import { bookingService } from '../../services/booking.service';
 import { ContextMenu } from '../../components/ui/ContextMenu';
 import { Booking } from '../../types';
 import { findBookingConflicts } from '../../utils/bookingConflicts';
@@ -321,6 +323,23 @@ const SpecialistSchedule: React.FC = () => {
   const [viewMode, setViewMode] = useState<'card' | 'month'>('card');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetailModal, setShowBookingDetailModal] = useState(false);
+  const [rescheduleTarget, setRescheduleTarget] = useState<Booking | null>(null);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+
+  const handleConfirmRescheduleOnSchedule = async (newScheduledAt: string, reason?: string) => {
+    if (!rescheduleTarget) return;
+    setRescheduleLoading(true);
+    try {
+      await bookingService.rescheduleBooking(rescheduleTarget.id, { newScheduledAt, reason });
+      setRescheduleTarget(null);
+      toast.success(t('bookings.rescheduledSuccessfully') || 'Booking rescheduled successfully');
+      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+    } catch (err) {
+      throw new Error((err as Error)?.message || t('bookings.rescheduleFailed') || 'Failed to reschedule booking');
+    } finally {
+      setRescheduleLoading(false);
+    }
+  };
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
     pending: true,
     confirmed: true,
@@ -1343,6 +1362,7 @@ const SpecialistSchedule: React.FC = () => {
             setSelectedBooking(null);
           }}
           onReschedule={(_bookingId) => {
+            setRescheduleTarget(selectedBooking);
             setShowBookingDetailModal(false);
           }}
           onCancel={(bookingId) => {
@@ -1356,6 +1376,17 @@ const SpecialistSchedule: React.FC = () => {
           }}
           getTranslatedServiceName={(name) => name}
           getTranslatedDuration={(duration) => `${duration} ${t('common.minutes') || 'min'}`}
+        />
+      )}
+
+      {rescheduleTarget && (
+        <RescheduleBookingModal
+          isOpen={!!rescheduleTarget}
+          onClose={() => setRescheduleTarget(null)}
+          onConfirm={handleConfirmRescheduleOnSchedule}
+          serviceName={rescheduleTarget.service?.name || rescheduleTarget.serviceName || 'Service'}
+          currentScheduledAt={rescheduleTarget.scheduledAt || new Date().toISOString()}
+          isLoading={rescheduleLoading}
         />
       )}
 

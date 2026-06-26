@@ -7,6 +7,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { HelpTip } from '@/components/common/HelpTip';
 import { inventoryService, Product } from '@/services/inventory.service';
 import { storeService, TodaySummary, GiftCardLookup, ProductOrder } from '@/services/store.service';
+import { crmService, CrmClient } from '@/services/crm.service';
 import BarcodeScanner from '@/components/common/BarcodeScanner';
 
 type PayMethod = 'CASH' | 'CARD' | 'OTHER';
@@ -58,6 +59,22 @@ const POS: React.FC = () => {
   const [todayOpen, setTodayOpen] = useState(false);
   const [todaySummary, setTodaySummary] = useState<TodaySummary | null>(null);
   const [todayLoading, setTodayLoading] = useState(false);
+  // Customer link (optional) — enables the member's plan discount to apply at POS.
+  const [selectedCustomer, setSelectedCustomer] = useState<CrmClient | null>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerResults, setCustomerResults] = useState<CrmClient[]>([]);
+
+  useEffect(() => {
+    const q = customerSearch.trim();
+    if (q.length < 2) { setCustomerResults([]); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await crmService.getClients({ search: q });
+        setCustomerResults((res || []).slice(0, 8));
+      } catch { setCustomerResults([]); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [customerSearch]);
 
   const load = async () => {
     try {
@@ -163,6 +180,8 @@ const POS: React.FC = () => {
       const order = await storeService.posSale({
         items: cart.map((l) => ({ productId: l.product.id, quantity: l.qty })),
         paymentMethod: payMethod,
+        customerUserId: selectedCustomer?.customerId,
+        customerName: selectedCustomer?.name,
         discount: discountAmt > 0 ? discountAmt : undefined,
         giftCardCode: appliedGiftCard ? appliedGiftCard.code : undefined,
       });
@@ -171,6 +190,9 @@ const POS: React.FC = () => {
       setDiscountInput('');
       setGcInput('');
       setAppliedGiftCard(null);
+      setSelectedCustomer(null);
+      setCustomerSearch('');
+      setCustomerResults([]);
       setCheckoutOpen(false);
       await load(); // refresh stock
     } catch (err) {
@@ -354,6 +376,35 @@ const POS: React.FC = () => {
                   <div className="w-20 text-right text-sm font-semibold text-gray-900 dark:text-white tabular-nums">{formatPrice(priceOf(l.product) * l.qty, l.product.currency as any)}</div>
                 </div>
               ))}
+            </div>
+            {/* Customer (optional) — links the sale to a client so their membership discount applies */}
+            <div className="px-4 pt-1 pb-1">
+              {selectedCustomer ? (
+                <div className="flex items-center justify-between gap-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 px-3 py-2">
+                  <span className="text-sm font-medium text-primary-700 dark:text-primary-300 truncate">👤 {selectedCustomer.name}</span>
+                  <button type="button" onClick={() => setSelectedCustomer(null)} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 active:scale-[0.96]">{t('common.clear') || 'Clear'}</button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    placeholder={t('pos.linkClient') || 'Link a client (optional) — search by name'}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                  {customerResults.length > 0 && (
+                    <div className="absolute z-10 left-0 right-0 mt-1 max-h-44 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                      {customerResults.map((c) => (
+                        <button type="button" key={c.customerId} onClick={() => { setSelectedCustomer(c); setCustomerSearch(''); setCustomerResults([]); }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white">
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="px-4 pb-2 border-t border-gray-100 dark:border-gray-700 pt-3 space-y-1.5">
               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
