@@ -323,6 +323,7 @@ export class ServiceController {
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
               completedBookings: service.specialist.completedBookings,
+              isFeatured: (service.specialist as any).isFeatured ?? false, // active-featured boost badge
               responseTime: service.specialist.responseTime,
               isVerified: service.specialist.isVerified,
               user: service.specialist.user,
@@ -522,6 +523,7 @@ export class ServiceController {
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
               completedBookings: service.specialist.completedBookings, // expose completed jobs count
+              isFeatured: (service.specialist as any).isFeatured ?? false, // active-featured boost badge
               isVerified: service.specialist.isVerified,
               autoBooking: service.specialist.autoBooking, // for "Instant Booking" badge
               user: {
@@ -641,6 +643,7 @@ export class ServiceController {
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
               completedBookings: service.specialist.completedBookings,
+              isFeatured: (service.specialist as any).isFeatured ?? false, // active-featured boost badge
               isVerified: service.specialist.isVerified,
               distance: service.distance, // Add distance from search location
               user: {
