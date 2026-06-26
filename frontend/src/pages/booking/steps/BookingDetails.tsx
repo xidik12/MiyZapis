@@ -158,19 +158,19 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-900 dark:text-primary-300">
-                  {recurrenceData.frequency === 'daily' && 'Every day'}
+                  {recurrenceData.frequency === 'daily' && (t('booking.recurrence.daily') || 'Every day')}
                   {recurrenceData.frequency === 'weekly' && (
                     recurrenceData.daysOfWeek && recurrenceData.daysOfWeek.length > 0
-                      ? `Every week on ${recurrenceData.daysOfWeek.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}`
-                      : 'Every week'
+                      ? (t('booking.recurrence.weeklyOn') || 'Every week on {days}').replace('{days}', recurrenceData.daysOfWeek.map(d => [t('weekday.sunday'), t('weekday.monday'), t('weekday.tuesday'), t('weekday.wednesday'), t('weekday.thursday'), t('weekday.friday'), t('weekday.saturday')][d]).join(', '))
+                      : (t('booking.recurrence.weekly') || 'Every week')
                   )}
-                  {recurrenceData.frequency === 'biweekly' && 'Every 2 weeks'}
-                  {recurrenceData.frequency === 'monthly' && 'Every month'}
+                  {recurrenceData.frequency === 'biweekly' && (t('booking.recurrence.biweekly') || 'Every 2 weeks')}
+                  {recurrenceData.frequency === 'monthly' && (t('booking.recurrence.monthly') || 'Every month')}
                 </p>
                 <p className="text-xs text-primary-700 dark:text-primary-400 mt-0.5">
-                  {recurrenceData.endType === 'never' && 'Repeats indefinitely (up to 52 times)'}
-                  {recurrenceData.endType === 'after' && `${recurrenceData.occurrences || 10} occurrences`}
-                  {recurrenceData.endType === 'on' && recurrenceData.endDate && `Until ${recurrenceData.endDate}`}
+                  {recurrenceData.endType === 'never' && (t('booking.recurrence.indefinitely') || 'Repeats indefinitely (up to 52 times)')}
+                  {recurrenceData.endType === 'after' && (t('booking.recurrence.occurrences') || '{n} occurrences').replace('{n}', String(recurrenceData.occurrences || 10))}
+                  {recurrenceData.endType === 'on' && recurrenceData.endDate && `${t('booking.recurrence.until') || 'Until'} ${recurrenceData.endDate}`}
                 </p>
               </div>
               <button

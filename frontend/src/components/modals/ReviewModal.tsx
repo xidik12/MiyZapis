@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { XIcon as XMarkIcon, StarIcon } from '@/components/icons';
 ;
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getTranslatedReviewTags } from '../../constants/reviewTags';
 import { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 // Note: Use active prop for filled icons: <Icon active />
@@ -48,31 +49,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [hoverRating, setHoverRating] = useState(0);
 
-  const availableTags = [
-    'professional',
-    'punctual', 
-    'friendly',
-    'skilled',
-    'clean',
-    'affordable',
-    'quick',
-    'thorough',
-    'communicative',
-    'reliable'
-  ];
-
-  const displayTags = [
-    'Professional',
-    'Punctual',
-    'Friendly',
-    'Skilled',
-    'Clean',
-    'Affordable',
-    'Quick',
-    'Thorough',
-    'Communicative',
-    'Reliable'
-  ];
+  // All 15 canonical review tags, translated (was a hardcoded English list of 10).
+  const reviewTags = getTranslatedReviewTags(t);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,11 +234,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 {t('reviews.tags')}
               </label>
               <div className="flex flex-wrap gap-1 sm:gap-2">
-                {availableTags.map((tag, index) => (
+                {reviewTags.map(({ tag, label }) => (
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => toggleTag(tag, displayTags[index])}
+                    onClick={() => toggleTag(tag, label)}
                     disabled={actualLoading}
                     className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                       selectedTags.includes(tag)
@@ -270,7 +248,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                           : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
                     }`}
                   >
-                    {displayTags[index]}
+                    {label}
                   </button>
                 ))}
               </div>
