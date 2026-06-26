@@ -30,7 +30,9 @@ interface RawBodyRequest extends Request {
 // otherwise we accept and log (acceptable while testing).
 function verifyResendSignature(req: RawBodyRequest): boolean {
   const secret = process.env.RESEND_WEBHOOK_SECRET;
-  if (!secret) return true; // signing not configured — accept
+  // Fail closed: without a configured signing secret we cannot trust the
+  // payload, so reject. Set RESEND_WEBHOOK_SECRET to enable email-event tracking.
+  if (!secret) return false;
 
   const svixId = req.headers['svix-id'] as string | undefined;
   const svixTimestamp = req.headers['svix-timestamp'] as string | undefined;

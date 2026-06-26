@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '@/middleware/auth/jwt';
+import { authenticateToken, requireAdmin } from '@/middleware/auth/jwt';
 import { body } from 'express-validator';
 import { AvailabilityController } from '@/controllers/specialists/availability';
 import { cacheMiddleware } from '@/middleware/cache';
@@ -127,7 +127,7 @@ router.delete('/specialists/blocks/:id', authenticateToken, AvailabilityControll
 // Generate availability blocks from working hours (specialist only)
 router.post('/specialists/generate', authenticateToken, AvailabilityController.generateFromWorkingHours);
 
-// Fix all specialists with empty working hours (admin/debug endpoint - temporarily no auth)
-router.post('/specialists/fix-all', AvailabilityController.fixAllSpecialists);
+// Fix all specialists with empty working hours (admin/debug endpoint — admin only)
+router.post('/specialists/fix-all', authenticateToken, requireAdmin, AvailabilityController.fixAllSpecialists);
 
 export default router;

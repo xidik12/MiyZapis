@@ -230,9 +230,9 @@ router.post(
       // preserves the hook so wiring Twilio/MessageBird later requires only that
       // one method to be implemented — no route changes needed.
       if (phone) {
-        logger.info('SMS hook (stub — no provider yet):', {
-          to: phone,
-          body: `Your MiyZapis verification code is: ${code}`,
+        // Never log the OTP code or the full phone number (PII / OTP leak).
+        logger.info('SMS hook (stub — no provider yet)', {
+          to: `***${String(phone).slice(-4)}`,
         });
       }
 

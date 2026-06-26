@@ -13,6 +13,9 @@ interface CreateAdminOptions {
 
 async function createRailwayAdmin(options: CreateAdminOptions) {
   console.log('🚂 Creating Railway Admin User...');
+  if (!options.password) {
+    throw new Error('ADMIN_PASSWORD env var is required — refusing to create an admin with a default password.');
+  }
   console.log('Environment:', process.env.NODE_ENV || 'development');
   console.log('Database URL available:', !!process.env.DATABASE_URL);
   
@@ -110,7 +113,7 @@ const RAILWAY_ADMIN_CONFIG = {
   email: process.env.ADMIN_EMAIL || 'admin@miyzapis.com',
   firstName: process.env.ADMIN_FIRST_NAME || 'System',
   lastName: process.env.ADMIN_LAST_NAME || 'Administrator',
-  password: process.env.ADMIN_PASSWORD || 'Admin123!@#Railway'
+  password: process.env.ADMIN_PASSWORD || ''
 };
 
 console.log('\n🚂 RAILWAY ADMIN SETUP SCRIPT');

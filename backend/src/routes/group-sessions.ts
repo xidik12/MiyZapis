@@ -4,6 +4,7 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { getAvailableSpots, getGroupSessionBookings, generateGroupSessionId } from '@/utils/groupSessions';
 import { cacheMiddleware } from '@/middleware/cache';
+import { authenticateToken } from '@/middleware/auth/jwt';
 
 const router = Router();
 
@@ -106,7 +107,7 @@ router.get('/availability/:serviceId', cacheMiddleware(60, 'group-availability')
  * GET /group-sessions/participants/:serviceId
  * Get list of participants for a group session
  */
-router.get('/participants/:serviceId', cacheMiddleware(60, 'group-participants'), async (req: Request, res: Response) => {
+router.get('/participants/:serviceId', authenticateToken, cacheMiddleware(60, 'group-participants'), async (req: Request, res: Response) => {
   try {
     const { serviceId } = req.params;
     const { scheduledAt } = req.query;

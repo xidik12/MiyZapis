@@ -12,13 +12,16 @@ const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || '';
 // Webhook endpoint for Enhanced Telegram Bot — with secret token verification
 router.post('/webhook/telegram-enhanced', async (req, res) => {
   try {
-    // Verify Telegram webhook secret token
-    if (WEBHOOK_SECRET) {
-      const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
-      if (secretHeader !== WEBHOOK_SECRET) {
-        logger.warn('Telegram webhook: invalid secret token');
-        return res.status(403).send('Forbidden');
-      }
+    // Verify Telegram webhook secret token. Fail closed: if no secret is
+    // configured, reject rather than accept arbitrary unsigned updates.
+    if (!WEBHOOK_SECRET) {
+      logger.error('Telegram webhook: TELEGRAM_WEBHOOK_SECRET not configured — rejecting update');
+      return res.status(503).send('Webhook not configured');
+    }
+    const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
+    if (secretHeader !== WEBHOOK_SECRET) {
+      logger.warn('Telegram webhook: invalid secret token');
+      return res.status(403).send('Forbidden');
     }
 
     const update = req.body;

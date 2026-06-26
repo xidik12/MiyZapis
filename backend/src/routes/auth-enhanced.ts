@@ -8,6 +8,7 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { ValidatorError } from '@/types';
+import { authRateLimit } from '@/middleware/security';
 
 const router = express.Router();
 
@@ -87,7 +88,7 @@ const validateTelegramAuth = [
 ];
 
 // Register with email verification
-router.post('/register', validateRegistration, async (req, res) => {
+router.post('/register', authRateLimit, validateRegistration, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -127,7 +128,7 @@ router.post('/register', validateRegistration, async (req, res) => {
 });
 
 // Login with email verification check
-router.post('/login', validateLogin, async (req, res) => {
+router.post('/login', authRateLimit, validateLogin, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -247,7 +248,7 @@ router.post('/resend-verification', async (req, res) => {
 });
 
 // Google OAuth authentication
-router.post('/google', validateGoogleAuth, async (req, res) => {
+router.post('/google', authRateLimit, validateGoogleAuth, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -311,7 +312,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
 });
 
 // Telegram authentication
-router.post('/telegram', validateTelegramAuth, async (req, res) => {
+router.post('/telegram', authRateLimit, validateTelegramAuth, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -354,7 +355,7 @@ router.post('/telegram', validateTelegramAuth, async (req, res) => {
 });
 
 // Telegram WebApp authentication (mini-app sends raw initData string)
-router.post('/telegram/webapp', async (req, res): Promise<void> => {
+router.post('/telegram/webapp', authRateLimit, async (req, res): Promise<void> => {
   try {
     const { initData } = req.body;
 

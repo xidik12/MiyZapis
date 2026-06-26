@@ -20,7 +20,7 @@ const router = Router();
 
 
 // Proxy old registration to enhanced route to avoid hanging middleware
-router.post('/register', async (req, res) => {
+router.post('/register', authRateLimit, async (req, res) => {
   try {
     // Import enhanced auth service to handle registration
     const { AuthService } = await import('@/services/auth');
@@ -62,9 +62,9 @@ router.post('/register', async (req, res) => {
     return res.status(400).json(createErrorResponse(errorCode, errorMessage, req.id));
   }
 });
-router.post('/login', validateLogin, AuthController.login);
-router.post('/google', AuthController.googleAuth);
-router.post('/telegram', validateTelegramAuth, AuthController.telegramAuth);
+router.post('/login', authRateLimit, validateLogin, AuthController.login);
+router.post('/google', authRateLimit, AuthController.googleAuth);
+router.post('/telegram', authRateLimit, validateTelegramAuth, AuthController.telegramAuth);
 router.post('/refresh', validateRefreshToken, AuthController.refreshToken);
 router.post('/logout', AuthController.logout);
 
