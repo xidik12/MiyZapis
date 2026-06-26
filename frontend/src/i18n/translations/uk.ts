@@ -2043,6 +2043,7 @@ const uk: Record<string, string> = {
   'schedule.noScheduleDescription': 'Почніть з додавання доступних часових слотів, щоб клієнти могли записатися на прийом.',
   'schedule.addFirstSlot': 'Додати перший часовий слот',
   'schedule.recurring': 'Повторювані',
+  'schedule.clickToAdd': 'Натисніть, щоб додати',
   'schedule.repeats': 'Повторюється',
   'schedule.addTimeSlot': 'Додати часовий слот',
   'schedule.editTimeSlot': 'Редагувати часовий слот',

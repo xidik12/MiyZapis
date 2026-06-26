@@ -290,7 +290,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ filter }) => {
             </li>
           ))}
           {count !== null && count > 5 && (
-            <li className="text-xs text-gray-400 dark:text-gray-500">{t('crm.preview.andMore', { n: count - 5 }) || `…and ${count - 5} more`}</li>
+            <li className="text-xs text-gray-400 dark:text-gray-500">{(t('crm.preview.andMore') || '…and {n} more').replace('{n}', String(count - 5))}</li>
           )}
         </ul>
       )}

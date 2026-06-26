@@ -2040,6 +2040,7 @@ const en: Record<string, string> = {
   'schedule.noScheduleDescription': 'Start by adding your available time slots to let customers book appointments.',
   'schedule.addFirstSlot': 'Add Your First Time Slot',
   'schedule.recurring': 'Recurring',
+  'schedule.clickToAdd': 'Click to add',
   'schedule.repeats': 'Repeats',
   'schedule.addTimeSlot': 'Add Time Slot',
   'schedule.editTimeSlot': 'Edit Time Slot',

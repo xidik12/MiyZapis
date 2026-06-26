@@ -13,6 +13,7 @@ import {
   parseISO
 } from 'date-fns';
 import { Booking } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface CalendarBlock {
   id: string;
@@ -39,12 +40,16 @@ export const MonthView: React.FC<MonthViewProps> = ({
   onDateClick,
   onBookingClick
 }) => {
+  const { t } = useLanguage();
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekDays = [
+    t('weekday.monday'), t('weekday.tuesday'), t('weekday.wednesday'),
+    t('weekday.thursday'), t('weekday.friday'), t('weekday.saturday'), t('weekday.sunday'),
+  ];
   const days: Date[] = [];
   let day = startDate;
 
@@ -197,7 +202,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                   {isCurrentMonth && (
                     <div className="absolute inset-0 bg-primary-50/0 dark:bg-primary-900/0 group-hover:bg-primary-50/30 dark:group-hover:bg-primary-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
                       <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
-                        Click to add
+                        {t('schedule.clickToAdd') || 'Click to add'}
                       </span>
                     </div>
                   )}

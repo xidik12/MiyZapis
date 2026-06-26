@@ -1,6 +1,7 @@
 import React from 'react';
 import { format, startOfWeek, addDays, isSameDay, isToday, isPast, parseISO } from 'date-fns';
 import { Booking } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface TimeBlock {
   id: string;
@@ -30,6 +31,11 @@ export const WeekView: React.FC<WeekViewProps> = ({
   onTimeSlotClick,
   onBookingClick,
 }) => {
+  const { t } = useLanguage();
+  const weekdayShort = (d: Date) => [
+    t('weekday.sunday'), t('weekday.monday'), t('weekday.tuesday'), t('weekday.wednesday'),
+    t('weekday.thursday'), t('weekday.friday'), t('weekday.saturday'),
+  ][d.getDay()];
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -98,7 +104,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
               }`}
             >
               <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {format(day, 'EEE')}
+                {weekdayShort(day)}
               </div>
               <div
                 className={`text-lg font-bold tabular-nums ${
@@ -130,7 +136,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       </div>
                       {block.isRecurring && (
                         <div className="text-[9px] text-emerald-500/70 dark:text-emerald-400/60 ml-3 mt-0.5">
-                          Recurring
+                          {t('schedule.recurring') || 'Recurring'}
                         </div>
                       )}
                     </button>

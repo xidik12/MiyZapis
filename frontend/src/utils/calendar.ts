@@ -80,8 +80,10 @@ export function downloadICS(event: CalendarEvent): void {
 }
 
 export function getGoogleCalendarUrl(event: CalendarEvent): string {
-  const startStr = formatDate(event.startDate).replace('Z', '');
-  const endStr = formatDate(event.endDate).replace('Z', '');
+  // Keep the trailing Z (UTC) — stripping it makes Google treat the time as the
+  // viewer's local time, showing the event at the wrong hour for non-UTC users.
+  const startStr = formatDate(event.startDate);
+  const endStr = formatDate(event.endDate);
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',

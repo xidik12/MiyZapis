@@ -2043,6 +2043,7 @@ const ru: Record<string, string> = {
   'schedule.noScheduleDescription': 'Начните с добавления доступных временных слотов, чтобы клиенты могли записаться на прием.',
   'schedule.addFirstSlot': 'Добавить первый временной слот',
   'schedule.recurring': 'Повторяющиеся',
+  'schedule.clickToAdd': 'Нажмите, чтобы добавить',
   'schedule.repeats': 'Повторяется',
   'schedule.addTimeSlot': 'Добавить временной слот',
   'schedule.editTimeSlot': 'Редактировать временной слот',
