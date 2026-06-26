@@ -11,6 +11,9 @@ export interface FavoritesState {
   isLoading: boolean;
   error: string | null;
   favoriteStatusCache: Record<string, boolean>; // Cache for favorite status by ID
+  // Rollback buffers: hold optimistically-removed items until API confirms
+  _removedSpecialists: Record<string, FavoriteSpecialist>;
+  _removedServices: Record<string, FavoriteService>;
 }
 
 const initialState: FavoritesState = {
@@ -22,6 +25,8 @@ const initialState: FavoritesState = {
   isLoading: false,
   error: null,
   favoriteStatusCache: {},
+  _removedSpecialists: {},
+  _removedServices: {},
 };
 
 // Async thunks
@@ -115,6 +120,8 @@ const favoritesSlice = createSlice({
       state.servicesPagination = null;
       state.favoritesCount = { specialists: 0, services: 0 };
       state.favoriteStatusCache = {};
+      state._removedSpecialists = {};
+      state._removedServices = {};
     },
     // Optimistic updates for better UX
     optimisticAddSpecialist: (state, action: PayloadAction<string>) => {
@@ -124,7 +131,9 @@ const favoritesSlice = createSlice({
     optimisticRemoveSpecialist: (state, action: PayloadAction<string>) => {
       state.favoriteStatusCache[`specialist_${action.payload}`] = false;
       state.favoritesCount.specialists = Math.max(0, state.favoritesCount.specialists - 1);
-      // Remove from specialists list if present
+      // Snapshot the item before removing so we can restore it on API failure
+      const removed = state.specialists.find(fav => fav.specialist.id === action.payload);
+      if (removed) state._removedSpecialists[action.payload] = removed;
       state.specialists = state.specialists.filter(
         fav => fav.specialist.id !== action.payload
       );
@@ -136,7 +145,9 @@ const favoritesSlice = createSlice({
     optimisticRemoveService: (state, action: PayloadAction<string>) => {
       state.favoriteStatusCache[`service_${action.payload}`] = false;
       state.favoritesCount.services = Math.max(0, state.favoritesCount.services - 1);
-      // Remove from services list if present
+      // Snapshot the item before removing so we can restore it on API failure
+      const removed = state.services.find(fav => fav.service.id === action.payload);
+      if (removed) state._removedServices[action.payload] = removed;
       state.services = state.services.filter(
         fav => fav.service.id !== action.payload
       );
@@ -205,6 +216,8 @@ const favoritesSlice = createSlice({
         state.specialists = state.specialists.filter(
           fav => fav.specialist.id !== action.payload.specialistId
         );
+        // Clear rollback buffer entry on confirmed removal
+        delete state._removedSpecialists[action.payload.specialistId];
         state.error = null;
       })
       .addCase(removeSpecialistFromFavorites.rejected, (state, action) => {
@@ -212,6 +225,12 @@ const favoritesSlice = createSlice({
         const specialistId = action.meta.arg;
         state.favoriteStatusCache[`specialist_${specialistId}`] = true;
         state.favoritesCount.specialists += 1;
+        // Re-insert the item that was optimistically removed
+        const snapshot = state._removedSpecialists[specialistId];
+        if (snapshot && !state.specialists.some(fav => fav.specialist.id === specialistId)) {
+          state.specialists = [snapshot, ...state.specialists];
+        }
+        delete state._removedSpecialists[specialistId];
         state.error = action.error.message || 'Failed to remove specialist from favorites';
       })
       
@@ -236,6 +255,8 @@ const favoritesSlice = createSlice({
         state.services = state.services.filter(
           fav => fav.service.id !== action.payload.serviceId
         );
+        // Clear rollback buffer entry on confirmed removal
+        delete state._removedServices[action.payload.serviceId];
         state.error = null;
       })
       .addCase(removeServiceFromFavorites.rejected, (state, action) => {
@@ -243,6 +264,12 @@ const favoritesSlice = createSlice({
         const serviceId = action.meta.arg;
         state.favoriteStatusCache[`service_${serviceId}`] = true;
         state.favoritesCount.services += 1;
+        // Re-insert the item that was optimistically removed
+        const snapshot = state._removedServices[serviceId];
+        if (snapshot && !state.services.some(fav => fav.service.id === serviceId)) {
+          state.services = [snapshot, ...state.services];
+        }
+        delete state._removedServices[serviceId];
         state.error = action.error.message || 'Failed to remove service from favorites';
       })
       
@@ -267,6 +294,8 @@ const favoritesSlice = createSlice({
         state.services = [];
         state.favoritesCount = { specialists: 0, services: 0 };
         state.favoriteStatusCache = {};
+        state._removedSpecialists = {};
+        state._removedServices = {};
         state.error = null;
       })
       .addCase(clearAllFavorites.rejected, (state, action) => {

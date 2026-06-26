@@ -101,6 +101,12 @@ router.post(
   paymentController.applyWalletToBooking.bind(paymentController)
 );
 
+router.post(
+  '/gift-card/apply/:bookingId',
+  authenticateToken,
+  paymentController.applyGiftCardToBooking.bind(paymentController)
+);
+
 // Subscription Routes (for specialists)
 router.get(
   '/specialists/:specialistId/plan',

@@ -18,7 +18,7 @@ const CUST_LOYALTY_HELP = {
 
     currentTier: 'Current Tier',
     currentTierBody:
-      'Your membership level, determined by lifetime points:\n• Bronze: 0 – 499 pts\n• Silver: 500 – 999 pts (priority support, early booking access)\n• Gold: 1 000 – 1 999 pts (5 % member discount, priority support)\n• Platinum: 2 000 + pts (10 % member discount, VIP support, exclusive services)\n\nThe discount percentage shown on each tier card is a member perk applied to eligible services. See the Tiers tab for the full benefits list.',
+      'Your membership level, determined by lifetime points:\n• Bronze: 0 – 499 pts\n• Silver: 500 – 999 pts (priority support, early booking access)\n• Gold: 1 000 – 1 999 pts (+5 % bonus points on earning, priority support)\n• Platinum: 2 000 + pts (+10 % bonus points on earning, VIP support, exclusive services)\n\nHigher tiers earn points faster — see the Tiers tab for the full benefits list.',
 
     pointsSpent: 'Points Spent',
     pointsSpentBody:
@@ -55,7 +55,7 @@ const CUST_LOYALTY_HELP = {
 
     currentTier: 'Поточний рівень',
     currentTierBody:
-      'Ваш рівень членства, що визначається балами за весь час:\n• Bronze: 0 – 499 балів\n• Silver: 500 – 999 балів (пріоритетна підтримка, ранній доступ до бронювання)\n• Gold: 1 000 – 1 999 балів (знижка 5 % для учасників, пріоритетна підтримка)\n• Platinum: 2 000 + балів (знижка 10 % для учасників, VIP-підтримка, ексклюзивні послуги)\n\nВідсоток знижки на картці рівня — це привілей учасника, що застосовується до відповідних послуг. Повний список переваг дивіться на вкладці "Рівні".',
+      'Ваш рівень членства, що визначається балами за весь час:\n• Bronze: 0 – 499 балів\n• Silver: 500 – 999 балів (пріоритетна підтримка, ранній доступ до бронювання)\n• Gold: 1 000 – 1 999 балів (+5 % бонусних балів при нарахуванні, пріоритетна підтримка)\n• Platinum: 2 000 + балів (+10 % бонусних балів при нарахуванні, VIP-підтримка, ексклюзивні послуги)\n\nВищі рівні нараховують бали швидше — повний список переваг дивіться на вкладці "Рівні".',
 
     pointsSpent: 'Витрачені бали',
     pointsSpentBody:
@@ -92,7 +92,7 @@ const CUST_LOYALTY_HELP = {
 
     currentTier: 'Текущий уровень',
     currentTierBody:
-      'Ваш уровень членства, определяемый баллами за всё время:\n• Bronze: 0 – 499 баллов\n• Silver: 500 – 999 баллов (приоритетная поддержка, ранний доступ к бронированию)\n• Gold: 1 000 – 1 999 баллов (скидка 5 % для участников, приоритетная поддержка)\n• Platinum: 2 000 + баллов (скидка 10 % для участников, VIP-поддержка, эксклюзивные услуги)\n\nПроцент скидки на карточке уровня — это привилегия участника, применяемая к соответствующим услугам. Полный список преимуществ смотрите на вкладке "Уровни".',
+      'Ваш уровень членства, определяемый баллами за всё время:\n• Bronze: 0 – 499 баллов\n• Silver: 500 – 999 баллов (приоритетная поддержка, ранний доступ к бронированию)\n• Gold: 1 000 – 1 999 баллов (+5 % бонусных баллов при начислении, приоритетная поддержка)\n• Platinum: 2 000 + баллов (+10 % бонусных баллов при начислении, VIP-поддержка, эксклюзивные услуги)\n\nБолее высокие уровни начисляют баллы быстрее — полный список преимуществ смотрите на вкладке "Уровни".',
 
     pointsSpent: 'Потраченные баллы',
     pointsSpentBody:
@@ -984,14 +984,6 @@ const CustomerLoyalty: React.FC = () => {
                             </div>
                           </div>
 
-                          {tier.discountPercentage && (
-                            <div className="text-center sm:text-right mt-4 sm:mt-0">
-                              <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                                {tier.discountPercentage}%
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('loyalty.discount') || 'Discount'}</p>
-                            </div>
-                          )}
                         </div>
                       </div>
                     );

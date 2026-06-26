@@ -98,7 +98,7 @@ const CONTENT: Record<Lang, {
       { title: 'Leave a review & earn points', desc: 'Rate your experience, help others decide, and earn loyalty points with every completed booking. Points unlock perks and discounts.' },
     ],
     loyaltyTitle: 'Loyalty tiers & points',
-    loyaltyDesc: 'Every review you leave after a booking earns loyalty points. Accumulate enough and you move up tiers — Bronze, Silver, Gold, Platinum. Higher tiers unlock exclusive discounts with participating specialists and priority booking.',
+    loyaltyDesc: 'Every review you leave after a booking earns loyalty points. Accumulate enough and you move up tiers — Bronze, Silver, Gold, Platinum. Higher tiers earn points faster and unlock priority booking access.',
     walletTitle: 'Your wallet',
     walletDesc: 'Loyalty points and any cashback sit in your in-app wallet. You can spend them on future bookings with specialists who accept loyalty rewards.',
     freeNote: 'MiyZapis is completely free for customers — always.',

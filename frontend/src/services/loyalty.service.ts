@@ -341,7 +341,7 @@ export class LoyaltyService {
             minPoints: f.min,
             maxPoints: f.max,
             benefits: f.defaults,
-            discountPercentage: idx === 2 ? 5 : idx === 3 ? 10 : 0,
+            discountPercentage: 0,
             prioritySupport: idx >= 1,
             exclusiveOffers: idx >= 3,
             createdAt: new Date(0).toISOString(),
@@ -351,7 +351,7 @@ export class LoyaltyService {
       base.minPoints = f.min;
       base.maxPoints = f.max;
       if (!base.benefits || base.benefits.length === 0) base.benefits = f.defaults;
-      if (base.discountPercentage == null) base.discountPercentage = idx === 2 ? 5 : idx === 3 ? 10 : 0;
+      if (base.discountPercentage == null) base.discountPercentage = 0;
       base.prioritySupport = idx >= 1;
       base.exclusiveOffers = idx >= 3;
       return base;
@@ -396,7 +396,7 @@ export class LoyaltyService {
         minPoints: 1000,
         maxPoints: 1999,
         benefits: ['5% bonus points', 'Priority support', 'Early access'],
-        discountPercentage: 5,
+        discountPercentage: 0,
         prioritySupport: true,
         exclusiveOffers: false,
         createdAt: new Date().toISOString(),
@@ -408,7 +408,7 @@ export class LoyaltyService {
         minPoints: 2000,
         maxPoints: undefined,
         benefits: ['10% bonus points', 'VIP support', 'Exclusive services'],
-        discountPercentage: 10,
+        discountPercentage: 0,
         prioritySupport: true,
         exclusiveOffers: true,
         createdAt: new Date().toISOString(),

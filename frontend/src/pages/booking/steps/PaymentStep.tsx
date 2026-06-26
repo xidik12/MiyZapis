@@ -18,6 +18,16 @@ interface PaymentStepProps {
   onPaymentMethodChange: (method: 'crypto' | 'paypal' | 'pay_at_venue') => void;
   useWalletFirst: boolean;
   onUseWalletFirstChange: (value: boolean) => void;
+  // Gift card
+  giftCardCode: string;
+  onGiftCardCodeChange: (code: string) => void;
+  giftCardLoading: boolean;
+  giftCardApplied: boolean;
+  giftCardAppliedAmount: number;
+  giftCardRemainingBalance: number;
+  giftCardError: string;
+  onApplyGiftCard: () => void;
+  onRemoveGiftCard: () => void;
   paymentLoading: boolean;
   paymentResult: any;
   paymentOptions: any;
@@ -62,6 +72,15 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   onPaymentMethodChange,
   useWalletFirst,
   onUseWalletFirstChange,
+  giftCardCode,
+  onGiftCardCodeChange,
+  giftCardLoading,
+  giftCardApplied,
+  giftCardAppliedAmount,
+  giftCardRemainingBalance,
+  giftCardError,
+  onApplyGiftCard,
+  onRemoveGiftCard,
   paymentLoading,
   paymentResult,
   paymentOptions,
@@ -376,6 +395,59 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               </label>
             )}
           </div>
+        </div>
+
+        {/* Gift Card */}
+        <div className="mb-6">
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+            <GiftIcon className="w-5 h-5 mr-2 text-emerald-600" />
+            {t('booking.giftCard')}
+          </h4>
+
+          {giftCardApplied ? (
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                    {t('booking.giftCardApplied')}
+                  </p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                    {t('booking.giftCardDiscount')}: {formatPrice(giftCardAppliedAmount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onRemoveGiftCard}
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 font-medium"
+                >
+                  {t('booking.giftCardRemove')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={giftCardCode}
+                onChange={(e) => onGiftCardCodeChange(e.target.value.toUpperCase())}
+                placeholder={t('booking.giftCardPlaceholder')}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white text-sm"
+                disabled={giftCardLoading}
+              />
+              <button
+                type="button"
+                onClick={onApplyGiftCard}
+                disabled={giftCardLoading || !giftCardCode.trim()}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                {giftCardLoading ? '…' : t('booking.giftCardApply')}
+              </button>
+            </div>
+          )}
+
+          {giftCardError && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{giftCardError}</p>
+          )}
         </div>
 
         {/* Wallet First Option */}

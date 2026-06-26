@@ -14,6 +14,7 @@ import {
   BellIcon,
   Cog6ToothIcon,
   TrophyIcon,
+  BuildingStorefrontIcon,
 } from '@/components/icons';
 import { MobileTabBar, TabItem, TabSection } from './MobileTabBar';
 
@@ -26,6 +27,7 @@ const primary: TabItem[] = [
 
 const sections: TabSection[] = [
   { title: 'nav.section.activity', items: [
+    { nameKey: 'customer.nav.orders', fallback: 'My Orders', href: '/customer/orders', icon: BuildingStorefrontIcon },
     { nameKey: 'customer.nav.reviews', fallback: 'Reviews', href: '/customer/reviews', icon: StarIcon },
     { nameKey: 'customer.nav.messages', fallback: 'Messages', href: '/customer/messages', icon: ChatBubbleLeftEllipsisIcon },
     { nameKey: 'customer.nav.community', fallback: 'Community', href: '/community', icon: UsersIcon },

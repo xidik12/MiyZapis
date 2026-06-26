@@ -50,6 +50,7 @@ const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
   const CustomerReferrals = React.lazy(() => import('./pages/customer/Referrals'));
 const CustomerWallet = React.lazy(() => import('./pages/customer/Wallet'));
 const CustomerBadges = React.lazy(() => import('./pages/customer/Badges'));
+const CustomerOrders = React.lazy(() => import('./pages/customer/Orders'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -783,6 +784,18 @@ function App() {
                 <CustomerLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <CustomerBadges />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/orders"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerOrders />
                   </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>

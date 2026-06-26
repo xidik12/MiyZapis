@@ -959,14 +959,6 @@ const SpecialistLoyalty: React.FC = () => {
                             </div>
                           </div>
 
-                          {tier.discountPercentage && (
-                            <div className="text-center sm:text-right mt-4 sm:mt-0">
-                              <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                                {tier.discountPercentage}%
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('loyalty.commissionBonus') || 'Commission Bonus'}</p>
-                            </div>
-                          )}
                         </div>
                       </div>
                     );

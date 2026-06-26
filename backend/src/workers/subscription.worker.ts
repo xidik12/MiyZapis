@@ -10,6 +10,7 @@ export class SubscriptionWorker {
   private trialExpirationJob: cron.ScheduledTask | null = null;
   private prepaidExpirationJob: cron.ScheduledTask | null = null;
   private membershipExpirationJob: cron.ScheduledTask | null = null;
+  private packageExpirationJob: cron.ScheduledTask | null = null;
 
   start(): void {
     logger.info('Starting subscription worker...');
@@ -117,6 +118,38 @@ export class SubscriptionWorker {
       timezone: 'UTC',
     });
 
+    // Package expiration — runs daily at 03:30 UTC.
+    // Finds CustomerPackage rows with status='ACTIVE', a non-null expiresAt in
+    // the past, and flips them to EXPIRED. Idempotent: the WHERE clause ensures
+    // only still-ACTIVE rows with a set expiry are touched. Packages with no
+    // expiresAt are perpetual and are never touched.
+    this.packageExpirationJob = cron.schedule('30 3 * * *', async () => {
+      logger.info('Running package expiration check...');
+
+      try {
+        const now = new Date();
+
+        const result = await prisma.customerPackage.updateMany({
+          where: {
+            status: 'ACTIVE',
+            expiresAt: { lt: now, not: null },
+          },
+          data: { status: 'EXPIRED' },
+        });
+
+        logger.info('Package expiration check completed', {
+          expired: result.count,
+        });
+      } catch (error) {
+        logger.error('Package expiration check failed', {
+          error: error instanceof Error ? error.message : error,
+        });
+      }
+    }, {
+      scheduled: true,
+      timezone: 'UTC',
+    });
+
     // Expired prepaid Telegram Stars downgrade — runs daily at 02:30 UTC.
     // Finds MONTHLY_SUBSCRIPTION rows where nextBillingDate IS NULL (i.e. prepaid,
     // not auto-renewing) and currentPeriodEnd is in the past, then downgrades each
@@ -210,6 +243,7 @@ export class SubscriptionWorker {
       trialExpiration: '0 2 * * * (daily at 02:00 AM UTC)',
       prepaidExpiration: '30 2 * * * (daily at 02:30 AM UTC)',
       membershipExpiration: '0 3 * * * (daily at 03:00 AM UTC)',
+      packageExpiration: '30 3 * * * (daily at 03:30 AM UTC)',
     });
   }
 
@@ -239,6 +273,11 @@ export class SubscriptionWorker {
     if (this.membershipExpirationJob) {
       this.membershipExpirationJob.stop();
       this.membershipExpirationJob = null;
+    }
+
+    if (this.packageExpirationJob) {
+      this.packageExpirationJob.stop();
+      this.packageExpirationJob = null;
     }
 
     logger.info('Subscription worker stopped');
@@ -360,6 +399,23 @@ export class SubscriptionWorker {
     return outcome;
   }
 
+  async triggerPackageExpiration(): Promise<{ expired: number }> {
+    logger.info('Manually triggering package expiration check...');
+
+    const now = new Date();
+    const result = await prisma.customerPackage.updateMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: { lt: now, not: null },
+      },
+      data: { status: 'EXPIRED' },
+    });
+
+    const outcome = { expired: result.count };
+    logger.info('Manual package expiration completed', outcome);
+    return outcome;
+  }
+
   getStatus(): {
     monthlyBillingActive: boolean;
     planChangeActive: boolean;
@@ -371,6 +427,8 @@ export class SubscriptionWorker {
     nextTrialExpiration: string | null;
     nextPrepaidExpiration: string | null;
     nextMembershipExpiration: string | null;
+    packageExpirationActive: boolean;
+    nextPackageExpiration: string | null;
   } {
     return {
       monthlyBillingActive: this.monthlyBillingJob !== null,
@@ -383,6 +441,8 @@ export class SubscriptionWorker {
       nextTrialExpiration: this.trialExpirationJob ? 'Next day at 2:00 AM UTC' : null,
       nextPrepaidExpiration: this.prepaidExpirationJob ? 'Next day at 2:30 AM UTC' : null,
       nextMembershipExpiration: this.membershipExpirationJob ? 'Next day at 3:00 AM UTC' : null,
+      packageExpirationActive: this.packageExpirationJob !== null,
+      nextPackageExpiration: this.packageExpirationJob ? 'Next day at 3:30 AM UTC' : null,
     };
   }
 }

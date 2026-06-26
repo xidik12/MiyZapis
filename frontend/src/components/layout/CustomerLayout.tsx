@@ -9,7 +9,7 @@ import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { Logo } from '@/components/ui/Logo';
 import { MobileBottomNav } from './MobileBottomNav';
-import { HouseIcon as HomeIcon, CalendarIcon, Cog6ToothIcon, StarIcon, HeartIcon, GiftIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon, TrophyIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, Cog6ToothIcon, StarIcon, HeartIcon, GiftIcon, ListIcon as Bars3Icon, SunIcon, MoonIcon, ChevronDownIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon, TrophyIcon, BuildingStorefrontIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -44,6 +44,12 @@ const navigation: SidebarNavItem[] = [
     nameKey: 'customer.nav.bookings',
     href: '/customer/bookings',
     icon: CalendarIcon,
+  },
+  {
+    name: 'My Orders',
+    nameKey: 'customer.nav.orders',
+    href: '/customer/orders',
+    icon: BuildingStorefrontIcon,
   },
   {
     name: 'Favorites',

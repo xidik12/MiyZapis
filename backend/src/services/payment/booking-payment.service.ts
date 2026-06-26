@@ -354,6 +354,7 @@ export class BookingPaymentService {
     totalAmount: number;
     paidAmount: number;
     walletAmountUsed: number;
+    giftCardAmountUsed: unknown;
     remainingAmount: number;
     cryptoPayments: Record<string, unknown>[];
     walletTransactions: Record<string, unknown>[];
@@ -367,6 +368,7 @@ export class BookingPaymentService {
         depositStatus: true,
         depositAmount: true,
         walletAmountUsed: true,
+        giftCardAmountUsed: true,
         cryptoPayments: {
           where: { type: 'DEPOSIT' },
           select: {
@@ -402,7 +404,7 @@ export class BookingPaymentService {
       .filter(p => p.status === 'PAID')
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    const paidAmount = num(booking.walletAmountUsed) + paidCryptoAmount;
+    const paidAmount = num(booking.walletAmountUsed) + num(booking.giftCardAmountUsed) + paidCryptoAmount;
     const remainingAmount = Math.max(0, booking.depositAmount - paidAmount);
 
     return {
@@ -410,6 +412,7 @@ export class BookingPaymentService {
       totalAmount: booking.depositAmount,
       paidAmount,
       walletAmountUsed: booking.walletAmountUsed,
+      giftCardAmountUsed: booking.giftCardAmountUsed,
       remainingAmount,
       cryptoPayments: booking.cryptoPayments,
       walletTransactions: booking.walletTransactions,

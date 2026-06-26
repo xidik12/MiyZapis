@@ -181,6 +181,32 @@ export class NotificationService {
       uk: 'Ваш запис на "{{serviceName}}" перенесено на {{date}}.',
       ru: 'Ваша запись на "{{serviceName}}" перенесена на {{date}}.',
     },
+
+    // ── Inventory alerts ──────────────────────────────────────────────────────
+
+    // INVENTORY_LOW_STOCK — product crossed below its reorder threshold after a sale
+    'notifications.inventory.lowStock.title': {
+      en: 'Low stock alert',
+      uk: 'Залишок товару закінчується',
+      ru: 'Остаток товара заканчивается',
+    },
+    'notifications.inventory.lowStock.message': {
+      en: '"{{productName}}" is running low — only {{stockQty}} unit(s) left (threshold: {{reorderLevel}}).',
+      uk: '"{{productName}}" — залишилося лише {{stockQty}} од. (поріг: {{reorderLevel}}).',
+      ru: '"{{productName}}" — осталось только {{stockQty}} ед. (порог: {{reorderLevel}}).',
+    },
+
+    // INVENTORY_OUT_OF_STOCK — product reached zero units after a sale
+    'notifications.inventory.outOfStock.title': {
+      en: 'Out of stock',
+      uk: 'Товар закінчився',
+      ru: 'Товар закончился',
+    },
+    'notifications.inventory.outOfStock.message': {
+      en: '"{{productName}}" is now out of stock. Restock soon to avoid missed sales.',
+      uk: '"{{productName}}" повністю розпродано. Поповніть запас, щоб не втратити продажі.',
+      ru: '"{{productName}}" полностью распродан. Пополните запас, чтобы не упустить продажи.',
+    },
   };
 
   /**

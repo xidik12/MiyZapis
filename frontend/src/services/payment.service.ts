@@ -731,6 +731,22 @@ export class PaymentService {
     return response.data;
   }
 
+  // Apply a gift card to a booking deposit
+  async applyGiftCardToBooking(bookingId: string, code: string): Promise<{
+    appliedAmount: number;
+    remainingCardBalance: number;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: { appliedAmount: number; remainingCardBalance: number };
+    }>(`/crypto-payments/gift-card/apply/${bookingId}`, { code });
+
+    if (!response.success || !response.data) {
+      throw new Error((response as any).error?.message || 'Failed to apply gift card');
+    }
+    return response.data.data;
+  }
+
   // Specialist-specific earnings methods
   async getSpecialistEarnings(filters: {
     startDate?: string;

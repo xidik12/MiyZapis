@@ -493,6 +493,62 @@ export class StoreService {
       await InventoryService.adjustStock(ownerId, li.productId, -li.quantity, 'SALE', ownerId, order.id);
     }
 
+    // Best-effort low-stock / out-of-stock alerts.
+    // Fire ONLY when a sale causes a product to CROSS its reorder threshold
+    // (i.e. stock was above-threshold before this sale and is at/below after),
+    // preventing repeated alerts on every sale of an already-low product.
+    try {
+      const notificationService = new NotificationService(prisma);
+      await Promise.allSettled(
+        lineItems.map(async (li) => {
+          const product = productById.get(li.productId);
+          if (!product) return;
+
+          const reorderLevel = num(product.reorderLevel);
+          const stockBefore   = num(product.stockQty); // snapshot captured before transaction
+          const stockAfter    = stockBefore - li.quantity;
+
+          // Was above threshold before, at/below after → crossed the line.
+          const crossedThreshold =
+            reorderLevel > 0 && stockBefore > reorderLevel && stockAfter <= reorderLevel;
+          const justHitZero = stockBefore > 0 && stockAfter <= 0;
+
+          if (justHitZero) {
+            await notificationService.sendNotification(ownerId, {
+              type: 'INVENTORY_OUT_OF_STOCK',
+              title: 'notifications.inventory.outOfStock.title',
+              message: 'notifications.inventory.outOfStock.message',
+              priority: 'HIGH',
+              data: {
+                productId: li.productId,
+                productName: li.name,
+                stockQty: 0,
+                reorderLevel,
+                _interpolate: { productName: li.name, stockQty: 0, reorderLevel },
+              },
+            });
+          } else if (crossedThreshold) {
+            await notificationService.sendNotification(ownerId, {
+              type: 'INVENTORY_LOW_STOCK',
+              title: 'notifications.inventory.lowStock.title',
+              message: 'notifications.inventory.lowStock.message',
+              priority: 'NORMAL',
+              data: {
+                productId: li.productId,
+                productName: li.name,
+                stockQty: stockAfter,
+                reorderLevel,
+                _interpolate: { productName: li.name, stockQty: stockAfter, reorderLevel },
+              },
+            });
+          }
+        })
+      );
+    } catch (error) {
+      // Never break the sale over a notification failure.
+      logger.warn('Low-stock notification error (non-fatal)', { ownerId, orderId: order.id, error });
+    }
+
     return order;
   }
 
@@ -640,6 +696,73 @@ export class StoreService {
     const currency = currencies.size === 1 ? Array.from(currencies)[0] : 'UAH';
 
     return { pendingOrders, monthSalesTotal, currency };
+  }
+
+  // =========================================================================
+  // CUSTOMER-SCOPED — list & get orders placed by a logged-in customer.
+  // Scoped by customerUserId so a customer never sees another customer's data.
+  // =========================================================================
+
+  // List all orders placed by this customer (newest first).
+  // Includes items + a nested seller name (first+lastName from User) so the
+  // Orders page can display who fulfilled/sold the order without a second call.
+  static async listMyOrders(customerUserId: string, filters: { status?: OrderStatus } = {}) {
+    const where: Prisma.ProductOrderWhereInput = { customerUserId };
+    if (filters.status && ORDER_STATUSES.includes(filters.status)) {
+      where.status = filters.status;
+    }
+
+    const orders = await prisma.productOrder.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: true,
+        _count: { select: { items: true } },
+      },
+    });
+
+    // Enrich with seller display name from the User table (best-effort; omit if
+    // the user record is gone).
+    const ownerIds = [...new Set(orders.map((o) => o.ownerId))];
+    const owners = ownerIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: ownerIds } },
+          select: { id: true, firstName: true, lastName: true },
+        })
+      : [];
+    const ownerById = new Map(owners.map((u) => [u.id, u]));
+
+    return orders.map((o) => {
+      const owner = ownerById.get(o.ownerId);
+      return {
+        ...o,
+        sellerName: owner
+          ? [owner.firstName, owner.lastName].filter(Boolean).join(' ') || null
+          : null,
+      };
+    });
+  }
+
+  // Get a single order by id, scoped to the customer. Returns null if not found
+  // or if the order belongs to a different customer (IDOR-safe).
+  static async getMyOrder(customerUserId: string, id: string) {
+    const order = await prisma.productOrder.findFirst({
+      where: { id, customerUserId },
+      include: { items: true },
+    });
+    if (!order) return null;
+
+    const owner = await prisma.user.findUnique({
+      where: { id: order.ownerId },
+      select: { id: true, firstName: true, lastName: true },
+    });
+
+    return {
+      ...order,
+      sellerName: owner
+        ? [owner.firstName, owner.lastName].filter(Boolean).join(' ') || null
+        : null,
+    };
   }
 
   // =========================================================================

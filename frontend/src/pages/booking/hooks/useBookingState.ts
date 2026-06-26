@@ -29,6 +29,12 @@ const initialState: BookingState = {
 
   // Payment
   useWalletFirst: true,
+  giftCardCode: '',
+  giftCardLoading: false,
+  giftCardApplied: false,
+  giftCardAppliedAmount: 0,
+  giftCardRemainingBalance: 0,
+  giftCardError: '',
   paymentMethod: 'crypto',
   paymentLoading: false,
   paymentResult: null,
@@ -90,6 +96,18 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return { ...state, showRecurringModal: action.payload };
     case 'SET_USE_WALLET_FIRST':
       return { ...state, useWalletFirst: action.payload };
+    case 'SET_GIFT_CARD_CODE':
+      return { ...state, giftCardCode: action.payload };
+    case 'SET_GIFT_CARD_LOADING':
+      return { ...state, giftCardLoading: action.payload };
+    case 'SET_GIFT_CARD_APPLIED':
+      return { ...state, giftCardApplied: action.payload };
+    case 'SET_GIFT_CARD_APPLIED_AMOUNT':
+      return { ...state, giftCardAppliedAmount: action.payload };
+    case 'SET_GIFT_CARD_REMAINING_BALANCE':
+      return { ...state, giftCardRemainingBalance: action.payload };
+    case 'SET_GIFT_CARD_ERROR':
+      return { ...state, giftCardError: action.payload };
     case 'SET_PAYMENT_METHOD':
       return { ...state, paymentMethod: action.payload };
     case 'SET_PAYMENT_LOADING':
@@ -130,6 +148,12 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         paymentResult: null,
         showQRCode: false,
         paymentTimeRemaining: 0,
+        giftCardCode: '',
+        giftCardLoading: false,
+        giftCardApplied: false,
+        giftCardAppliedAmount: 0,
+        giftCardRemainingBalance: 0,
+        giftCardError: '',
       };
     case 'UPDATE':
       return { ...state, ...action.payload };

@@ -486,6 +486,118 @@ export class WalletService {
     });
   }
 
+  async applyGiftCardToBooking(
+    userId: string,
+    bookingId: string,
+    code: string
+  ): Promise<{
+    appliedAmount: number;
+    remainingCardBalance: number;
+    transaction?: Record<string, unknown>;
+  }> {
+    return await prisma.$transaction(async (tx) => {
+      // Look up the booking (customer-scoped)
+      const booking = await tx.booking.findFirst({
+        where: { id: bookingId, customerId: userId },
+        select: { depositAmount: true, walletAmountUsed: true, giftCardAmountUsed: true, depositCurrency: true, depositStatus: true },
+      });
+
+      if (!booking) {
+        throw new Error('Booking not found');
+      }
+
+      // Guard: only apply when there is actually an amount due
+      const totalApplied = num(booking.walletAmountUsed) + num(booking.giftCardAmountUsed);
+      const amountDue = num(booking.depositAmount) - totalApplied;
+
+      if (amountDue <= 0) {
+        return { appliedAmount: 0, remainingCardBalance: 0 };
+      }
+
+      // Look up the gift card by code
+      const cardRaw = await tx.giftCard.findUnique({
+        where: { code: code.trim() },
+        select: { id: true, balance: true, status: true, currency: true, expiresAt: true, ownerId: true },
+      });
+
+      if (!cardRaw) {
+        throw new Error('Gift card not found');
+      }
+
+      if (cardRaw.status !== 'ACTIVE') {
+        throw new Error(`Gift card is ${cardRaw.status.toLowerCase()}`);
+      }
+
+      if (cardRaw.expiresAt && cardRaw.expiresAt < new Date()) {
+        await tx.giftCard.update({ where: { id: cardRaw.id }, data: { status: 'EXPIRED' } });
+        throw new Error('Gift card has expired');
+      }
+
+      // Idempotency guard — check if this card was already applied to this booking
+      const alreadyApplied = await tx.giftCardTransaction.findFirst({
+        where: { giftCardId: cardRaw.id, bookingId, reason: 'REDEEM' },
+      });
+
+      if (alreadyApplied) {
+        return {
+          appliedAmount: 0,
+          remainingCardBalance: num(cardRaw.balance),
+        };
+      }
+
+      const cardBalance = num(cardRaw.balance);
+      if (cardBalance <= 0) {
+        throw new Error('Gift card has no remaining balance');
+      }
+
+      // Apply min(balance, amountDue) — gift card first, then wallet covers the rest
+      const appliedAmount = Math.min(cardBalance, amountDue);
+      const newCardBalance = cardBalance - appliedAmount;
+
+      // Decrement card balance, flip to REDEEMED if zero
+      await tx.giftCard.update({
+        where: { id: cardRaw.id },
+        data: {
+          balance: { decrement: appliedAmount },
+          status: newCardBalance <= 0 ? 'REDEEMED' : 'ACTIVE',
+        },
+      });
+
+      // Write REDEEM gift card transaction (negative = redeemed, mirroring SalesService.redeemGiftCard)
+      const transaction = await tx.giftCardTransaction.create({
+        data: {
+          giftCardId: cardRaw.id,
+          amount: -appliedAmount,
+          reason: 'REDEEM',
+          bookingId,
+        },
+      });
+
+      // Record applied amount on the booking
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          giftCardAmountUsed: num(booking.giftCardAmountUsed) + appliedAmount,
+        },
+      });
+
+      logger.info('Gift card applied to booking', {
+        userId,
+        bookingId,
+        giftCardId: cardRaw.id,
+        code,
+        appliedAmount,
+        remainingCardBalance: newCardBalance,
+      });
+
+      return {
+        appliedAmount,
+        remainingCardBalance: newCardBalance,
+        transaction,
+      };
+    });
+  }
+
   async validateSufficientFunds(userId: string, amount: number): Promise<boolean> {
     const balance = await this.getBalance(userId);
     return balance.balance >= amount;

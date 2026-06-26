@@ -569,6 +569,38 @@ const BookingFlow: React.FC = () => {
     }
   };
 
+  const handleApplyGiftCard = async () => {
+    if (!state.giftCardCode.trim() || !state.bookingResult?.id) return;
+
+    dispatch({ type: 'SET_GIFT_CARD_LOADING', payload: true });
+    dispatch({ type: 'SET_GIFT_CARD_ERROR', payload: '' });
+
+    try {
+      const result = await paymentService.applyGiftCardToBooking(
+        state.bookingResult.id,
+        state.giftCardCode.trim()
+      );
+      dispatch({ type: 'SET_GIFT_CARD_APPLIED', payload: true });
+      dispatch({ type: 'SET_GIFT_CARD_APPLIED_AMOUNT', payload: result.appliedAmount });
+      dispatch({ type: 'SET_GIFT_CARD_REMAINING_BALANCE', payload: result.remainingCardBalance });
+    } catch (error) {
+      dispatch({
+        type: 'SET_GIFT_CARD_ERROR',
+        payload: error instanceof Error ? error.message : 'Failed to apply gift card',
+      });
+    } finally {
+      dispatch({ type: 'SET_GIFT_CARD_LOADING', payload: false });
+    }
+  };
+
+  const handleRemoveGiftCard = () => {
+    dispatch({ type: 'SET_GIFT_CARD_CODE', payload: '' });
+    dispatch({ type: 'SET_GIFT_CARD_APPLIED', payload: false });
+    dispatch({ type: 'SET_GIFT_CARD_APPLIED_AMOUNT', payload: 0 });
+    dispatch({ type: 'SET_GIFT_CARD_REMAINING_BALANCE', payload: 0 });
+    dispatch({ type: 'SET_GIFT_CARD_ERROR', payload: '' });
+  };
+
   const handleBookingSubmit = async () => {
     // Auth gate: handleBookingSubmit is called from PaymentStep when payments are enabled.
     // A guest who reaches this path without a session must verify first.
@@ -1142,6 +1174,15 @@ const BookingFlow: React.FC = () => {
             onPaymentMethodChange={(m) => dispatch({ type: 'SET_PAYMENT_METHOD', payload: m })}
             useWalletFirst={state.useWalletFirst}
             onUseWalletFirstChange={(v) => dispatch({ type: 'SET_USE_WALLET_FIRST', payload: v })}
+            giftCardCode={state.giftCardCode}
+            onGiftCardCodeChange={(code) => dispatch({ type: 'SET_GIFT_CARD_CODE', payload: code })}
+            giftCardLoading={state.giftCardLoading}
+            giftCardApplied={state.giftCardApplied}
+            giftCardAppliedAmount={state.giftCardAppliedAmount}
+            giftCardRemainingBalance={state.giftCardRemainingBalance}
+            giftCardError={state.giftCardError}
+            onApplyGiftCard={handleApplyGiftCard}
+            onRemoveGiftCard={handleRemoveGiftCard}
             paymentLoading={state.paymentLoading}
             paymentResult={state.paymentResult}
             paymentOptions={state.paymentOptions}

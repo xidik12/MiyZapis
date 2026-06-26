@@ -49,6 +49,12 @@ export interface BookingState {
 
   // Payment
   useWalletFirst: boolean;
+  giftCardCode: string;
+  giftCardLoading: boolean;
+  giftCardApplied: boolean;
+  giftCardAppliedAmount: number;
+  giftCardRemainingBalance: number;
+  giftCardError: string;
   paymentMethod: 'crypto' | 'paypal' | 'pay_at_venue';
   paymentLoading: boolean;
   paymentResult: any;
@@ -91,6 +97,12 @@ export type BookingAction =
   | { type: 'SET_RECURRENCE_DATA'; payload: RecurrenceData | null }
   | { type: 'SET_SHOW_RECURRING_MODAL'; payload: boolean }
   | { type: 'SET_USE_WALLET_FIRST'; payload: boolean }
+  | { type: 'SET_GIFT_CARD_CODE'; payload: string }
+  | { type: 'SET_GIFT_CARD_LOADING'; payload: boolean }
+  | { type: 'SET_GIFT_CARD_APPLIED'; payload: boolean }
+  | { type: 'SET_GIFT_CARD_APPLIED_AMOUNT'; payload: number }
+  | { type: 'SET_GIFT_CARD_REMAINING_BALANCE'; payload: number }
+  | { type: 'SET_GIFT_CARD_ERROR'; payload: string }
   | { type: 'SET_PAYMENT_METHOD'; payload: 'crypto' | 'paypal' | 'pay_at_venue' }
   | { type: 'SET_PAYMENT_LOADING'; payload: boolean }
   | { type: 'SET_PAYMENT_RESULT'; payload: unknown }

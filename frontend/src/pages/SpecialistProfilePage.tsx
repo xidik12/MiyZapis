@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { specialistService } from '../services';
@@ -35,6 +35,7 @@ const SpecialistProfilePage: React.FC = () => {
   const specialistId = resolvedSpecialistId;
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const isFavorite = useAppSelector(selectIsSpecialistFavorited(specialistId || ''));
@@ -115,12 +116,18 @@ const SpecialistProfilePage: React.FC = () => {
       setStoreName('');
       setStoreEmail('');
       setStoreNote('');
-      toast.success((t('store.orderPlaced') || 'Order placed') + `: ${order.orderNumber}`);
       // Refresh stock after the order.
       try {
         const refreshed = await storeService.getStorefront(sellerUserId);
         setStoreProducts(refreshed || []);
       } catch { /* non-critical */ }
+      // Redirect logged-in customers to their orders page; show order number to guests.
+      if (user) {
+        toast.success((t('store.orderPlaced') || 'Order placed') + `: ${order.orderNumber}`);
+        navigate('/customer/orders');
+      } else {
+        toast.success((t('store.orderPlaced') || 'Order placed') + `: ${order.orderNumber}`);
+      }
     } catch (error: unknown) {
       toast.error((error as Error).message || t('store.orderError') || 'Failed to place order');
     } finally {
@@ -1015,6 +1022,14 @@ const SpecialistProfilePage: React.FC = () => {
                 {orderPlaced && (
                   <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm">
                     {t('store.orderPlaced') || 'Order placed'}: <span className="font-mono font-medium">{orderPlaced}</span>
+                    {user && (
+                      <Link
+                        to="/customer/orders"
+                        className="ml-2 underline font-medium hover:text-green-900 dark:hover:text-green-100"
+                      >
+                        {t('customer.orders.viewOrders') || 'View my orders'}
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>

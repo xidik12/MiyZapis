@@ -33,6 +33,8 @@ export interface ProfitLossSummary {
     invoicesPaidRevenue: number;
     retailSales: number;                  // fulfilled retail/POS product orders
     retailSalesRevenue: number;
+    refundsCount: number;           // product-order refunds + booking refunds in period
+    refundsTotal: number;           // total refunded amount (negative impact on revenue)
   };
   expenses: {
     total: number;
@@ -45,6 +47,7 @@ export interface ProfitLossSummary {
     deductibleExpenses: number;
     grossProfit: number;       // gross income - all expenses
     netBeforeTax: number;      // gross income - deductible expenses
+    grossIncomeNet: number;   // grossIncome minus refunds (the honest top-line)
   };
 }
 
@@ -90,7 +93,7 @@ export class AccountingService {
     const ownerIds = userIds;
 
     // Income side: completed bookings + fulfilled retail/POS sales in the period.
-    const [completedAgg, pendingAgg, paidInvoiceAgg, retailAgg] = await Promise.all([
+    const [completedAgg, pendingAgg, paidInvoiceAgg, retailAgg, refundedOrdersAgg, refundedBookingsAgg] = await Promise.all([
       prisma.booking.aggregate({
         where: {
           specialistId: { in: userIds },
@@ -125,6 +128,26 @@ export class AccountingService {
           updatedAt: { gte: from, lte: to },
         },
         _sum: { total: true },
+        _count: true,
+      }),
+      // Refunded product orders in the period (by updatedAt, same as fulfilled).
+      prisma.productOrder.aggregate({
+        where: {
+          ownerId: { in: ownerIds },
+          status: 'REFUNDED',
+          updatedAt: { gte: from, lte: to },
+        },
+        _sum: { total: true },
+        _count: true,
+      }),
+      // Refunded bookings in the period (by updatedAt as proxy for refund date).
+      prisma.booking.aggregate({
+        where: {
+          specialistId: { in: userIds },
+          status: 'REFUNDED',
+          updatedAt: { gte: from, lte: to },
+        },
+        _sum: { totalAmount: true },
         _count: true,
       }),
     ]);
@@ -213,6 +236,8 @@ export class AccountingService {
     const pendingRevenue = Number(pendingAgg._sum.totalAmount ?? 0);
     const paidInvoiceRevenue = Number(paidInvoiceAgg._sum.total ?? 0);
     const retailRevenue = Number(retailAgg._sum.total ?? 0);
+    const refundsTotal = Number(refundedOrdersAgg._sum.total ?? 0) + Number(refundedBookingsAgg._sum.totalAmount ?? 0);
+    const refundsCount = refundedOrdersAgg._count + refundedBookingsAgg._count;
     const grossIncome = completedRevenue + paidInvoiceRevenue + retailRevenue;
 
     return {
@@ -226,6 +251,8 @@ export class AccountingService {
         invoicesPaidRevenue: paidInvoiceRevenue,
         retailSales: retailAgg._count,
         retailSalesRevenue: retailRevenue,
+        refundsCount,
+        refundsTotal,
       },
       expenses: {
         total: totalExpenses,
@@ -240,6 +267,7 @@ export class AccountingService {
         deductibleExpenses: totalDeductible,
         grossProfit: grossIncome - totalExpenses,
         netBeforeTax: grossIncome - totalDeductible,
+        grossIncomeNet: grossIncome - refundsTotal,
       },
     };
   }

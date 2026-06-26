@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
@@ -61,6 +61,7 @@ interface ServiceWithSpecialist {
 
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useAppDispatch();
@@ -83,7 +84,6 @@ const SearchPage: React.FC = () => {
   const [nearMeActive, setNearMeActive] = useState<boolean>(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [nearMeError, setNearMeError] = useState<string | null>(null);
-  const [availableNow, setAvailableNow] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [promoted, setPromoted] = useState<ShowcaseItem[]>([]);
@@ -146,9 +146,13 @@ const SearchPage: React.FC = () => {
   }, [showSuggestions]);
 
   const applySuggestion = (s: Suggestion) => {
-    setSearchQuery(s.label);
     setShowSuggestions(false);
     setSuggestions([]);
+    if (s.type === 'specialist' && s.href) {
+      navigate(s.href);
+      return;
+    }
+    setSearchQuery(s.label);
   };
 
   // ── Pagination ("Load more") ───────────────────────────────────────────
@@ -429,7 +433,7 @@ const SearchPage: React.FC = () => {
         setLoadingMore(false);
       }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow, availableWithin, nearMeActive, userCoords]);
+  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableWithin, nearMeActive, userCoords]);
 
   // Fetch on first mount and when deps change — always reset to page 1
   useEffect(() => {
@@ -466,7 +470,6 @@ const SearchPage: React.FC = () => {
         selectedDistance,
         showFavoritesOnly,
         sortBy,
-        availableNow,
         availableWithin,
       }
     };
@@ -488,7 +491,6 @@ const SearchPage: React.FC = () => {
     setSelectedDistance(d.selectedDistance ?? 0);
     setShowFavoritesOnly(!!d.showFavoritesOnly);
     setSortBy(d.sortBy ?? 'rating');
-    setAvailableNow(!!d.availableNow);
     setAvailableWithin(d.availableWithin ?? '');
   };
 
@@ -506,6 +508,7 @@ const SearchPage: React.FC = () => {
     setSelectedDistance(0);
     setSortBy('rating');
     setShowFavoritesOnly(false);
+    setAvailableWithin('');
     setNearMeActive(false);
     setUserCoords(null);
     setNearMeError(null);
@@ -567,11 +570,6 @@ const SearchPage: React.FC = () => {
       const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.specialist?.id).filter(Boolean);
       list = list.filter(service => favoriteSpecialistIds.includes(service.specialist?.id));
     }
-    if (availableNow) {
-      // Heuristic: treat responseTime <= 30 minutes as available now
-      list = list.filter(service => typeof (service as any).specialist?.responseTime === 'number' && (service as any).specialist.responseTime <= 30);
-    }
-
     // Quick filter tags
     if (activeQuickFilters.has('onSale')) {
       list = list.filter(service => ((service as any).discountPercentage || 0) > 0);
@@ -924,7 +922,6 @@ const SearchPage: React.FC = () => {
     services,
     activeQuickFilters,
     showFavoritesOnly,
-    availableNow,
     t,
   ]);
 
@@ -1073,6 +1070,27 @@ const SearchPage: React.FC = () => {
                   ))}
                 </div>
               </div>
+              {/* Availability */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('search.availability') || 'Availability'}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: '', label: t('search.allTimes') || 'Any time' },
+                    { value: 'now', label: t('search.availableNow') || 'Available now' },
+                    { value: 'today', label: t('search.today') || 'Today' },
+                    { value: 'thisWeek', label: t('search.thisWeek') || 'This week' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setAvailableWithin(availableWithin === opt.value ? '' : opt.value)}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm border transition-colors ${availableWithin === opt.value ? 'bg-primary-600 text-white border-primary-600' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-300'}`}
+                    >
+                      {opt.value === 'now' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />}
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <button onClick={clearFilters} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
                 <ArrowPathIcon className="w-4 h-4" />{t('search.resetFilters') || 'Clear all filters'}
               </button>
@@ -1115,7 +1133,7 @@ const SearchPage: React.FC = () => {
 
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="input w-auto text-sm">
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
-                  <option value="price">{t('search.sortBy.priceAsc') || 'Price: low to high'}</option>
+                  <option value="priceAsc">{t('search.sortBy.priceAsc') || 'Price: low to high'}</option>
                   <option value="priceDesc">{t('search.sortBy.priceDesc') || 'Price: high to low'}</option>
                   <option value="popular">{t('search.sortBy.popular') || 'Most popular'}</option>
                   <option value="newest">{t('search.sortBy.newest') || 'Newest'}</option>
@@ -1260,7 +1278,7 @@ const SearchPage: React.FC = () => {
                   className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
-                  <option value="price">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
+                  <option value="priceAsc">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
                   <option value="priceDesc">{t('search.sortBy.priceDesc') || 'Price: high → low'}</option>
                   <option value="popular">{t('search.sortBy.popular') || 'Most popular'}</option>
                   <option value="distance">{t('search.sortBy.distance') || 'Distance'}</option>
@@ -1680,7 +1698,7 @@ const SearchPage: React.FC = () => {
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     <option value="rating">{t('search.sortBy.rating')}</option>
-                    <option value="price">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
+                    <option value="priceAsc">{t('search.sortBy.priceAsc') || 'Price: low → high'}</option>
                     <option value="priceDesc">{t('search.sortBy.priceDesc') || 'Price: high → low'}</option>
                     <option value="popular">{t('search.sortBy.popular') || 'Most popular'}</option>
                     <option value="distance">{t('search.sortBy.distance')}</option>

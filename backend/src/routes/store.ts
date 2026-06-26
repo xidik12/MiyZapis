@@ -10,7 +10,7 @@ import {
 import { SalesServiceError } from '@/services/sales/sales.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { authenticateToken, optionalAuth, requireSpecialist } from '@/middleware/auth/jwt';
+import { authenticateToken, optionalAuth, requireSpecialist, requireCustomer } from '@/middleware/auth/jwt';
 import { AuthenticatedRequest } from '@/types';
 
 // Retail storefront + online ordering routes.
@@ -41,6 +41,52 @@ const statusForServiceError = (code: string): number => {
       return 400;
   }
 };
+
+// ===========================================================================
+// CUSTOMER ROUTES — orders placed by the logged-in customer.
+// Mounted as a separate sub-router so the specialist guard on ownerRouter
+// never touches these endpoints.
+// Path: GET /store/orders/mine            — list
+//       GET /store/orders/mine/:id        — single (by order id)
+//       GET /store/orders/mine/by-number/:orderNumber — single (by order number)
+// ===========================================================================
+
+const customerRouter = Router();
+customerRouter.use(authenticateToken as any, requireCustomer as any);
+
+customerRouter.get('/orders/mine', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const customerUserId = (req as unknown as AuthenticatedRequest).user!.id;
+    const { status } = req.query;
+    const orders = await StoreService.listMyOrders(customerUserId, {
+      status:
+        typeof status === 'string' && ORDER_STATUSES.includes(status as OrderStatus)
+          ? (status as OrderStatus)
+          : undefined,
+    });
+    res.json(createSuccessResponse({ orders }));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error listing customer orders:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
+
+customerRouter.get('/orders/mine/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const customerUserId = (req as unknown as AuthenticatedRequest).user!.id;
+    const order = await StoreService.getMyOrder(customerUserId, req.params.id);
+    if (!order) {
+      res.status(404).json(createErrorResponse('NOT_FOUND', 'Order not found', requestId(req)));
+      return;
+    }
+    res.json(createSuccessResponse(order));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error getting customer order:', error);
+    res.status(500).json(createErrorResponse('STORE_ERROR', err.message, requestId(req)));
+  }
+});
 
 // ===========================================================================
 // OWNER ROUTES (specialist-only). Mounted on a guarded sub-router declared
@@ -319,8 +365,10 @@ router.get('/:sellerUserId/products', async (req: Request, res: Response): Promi
   }
 });
 
-// Guarded owner routes mounted LAST so their auth middleware can't intercept
-// the public routes above.
+// Customer routes and owner routes mounted LAST so their auth middleware
+// can't intercept the public routes above. customerRouter before ownerRouter
+// so the specialist guard on ownerRouter never sees /orders/mine/* paths.
+router.use(customerRouter);
 router.use(ownerRouter);
 
 export default router;

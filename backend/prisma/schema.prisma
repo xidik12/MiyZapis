@@ -413,6 +413,7 @@ model Booking {
   depositRefundedAt DateTime?
   depositCurrency   String    @default("USD")
   walletAmountUsed  Decimal   @default(0.0)
+  giftCardAmountUsed Decimal  @default(0.0)
 
   // Additional information
   customerNotes    String?

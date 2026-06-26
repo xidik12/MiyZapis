@@ -203,6 +203,31 @@ export class StoreService {
     }
     return response.data;
   }
+
+  // ---- Customer-facing: orders the logged-in customer placed ----
+
+  async getMyOrders(filters: { status?: OrderStatus } = {}): Promise<(ProductOrder & { sellerName?: string | null })[]> {
+    const params = new URLSearchParams();
+    if (filters.status) params.append('status', filters.status);
+    const qs = params.toString();
+    const response = await apiClient.get<{ orders: (ProductOrder & { sellerName?: string | null })[] }>(
+      `/store/orders/mine${qs ? `?${qs}` : ''}`
+    );
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get your orders');
+    }
+    return response.data.orders;
+  }
+
+  async getMyOrder(id: string): Promise<ProductOrder & { sellerName?: string | null }> {
+    const response = await apiClient.get<ProductOrder & { sellerName?: string | null }>(
+      `/store/orders/mine/${encodeURIComponent(id)}`
+    );
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Order not found');
+    }
+    return response.data;
+  }
 }
 
 export const storeService = new StoreService();

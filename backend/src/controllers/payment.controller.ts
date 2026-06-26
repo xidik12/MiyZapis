@@ -707,6 +707,50 @@ export class PaymentController {
     }
   }
 
+  async applyGiftCardToBooking(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { bookingId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const { code } = req.body;
+
+      if (!code || typeof code !== 'string' || !code.trim()) {
+        res.status(400).json({ error: 'Gift card code is required' });
+        return;
+      }
+
+      const result = await walletService.applyGiftCardToBooking(
+        userId,
+        bookingId,
+        code.trim()
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to apply gift card';
+      const status = message === 'Booking not found' ? 404
+        : message === 'Gift card not found' ? 404
+        : message.includes('expired') || message.includes('REDEEMED') || message.includes('CANCELLED') || message.includes('no remaining balance') ? 400
+        : 500;
+
+      logger.error('Failed to apply gift card to booking', {
+        error: message,
+        userId: req.user?.id,
+        bookingId: req.params.bookingId,
+      });
+
+      res.status(status).json({ error: message });
+    }
+  }
+
   // Subscription Endpoints
 
   async getSubscription(req: Request, res: Response): Promise<void> {
