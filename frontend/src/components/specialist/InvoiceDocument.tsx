@@ -18,7 +18,7 @@ const InvoiceDocument: React.FC<{ invoice: Invoice; onClose: () => void }> = ({ 
     [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'MiyZapis';
 
   let lineItems: InvoiceLineItem[] = [];
-  try { lineItems = JSON.parse(invoice.lineItems || '[]'); } catch { lineItems = []; }
+  try { const parsed = JSON.parse(invoice.lineItems || '[]'); lineItems = Array.isArray(parsed) ? parsed : []; } catch { lineItems = []; }
 
   const money = (n: number) =>
     `${invoice.currency} ${Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

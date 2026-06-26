@@ -49,6 +49,7 @@ export interface ProductOrder {
   currency: string;
   subtotal: number | string;
   discount: number | string;
+  giftCardAmount?: number | string | null;
   total: number | string;
   paymentMethod?: string | null;
   note?: string | null;

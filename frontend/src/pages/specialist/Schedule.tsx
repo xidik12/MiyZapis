@@ -735,20 +735,20 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare the block's LOCAL date with the week column's local date — the rest
-      // of the calendar renders in local time, so UTC here put bookings on the wrong
-      // day/hour for non-UTC specialists.
+      // Availability blocks are stored NAIVE-UTC (Date.UTC of the entered local time,
+      // see toUtcIsoString), so they must be read back with UTC methods. (Bookings, by
+      // contrast, are real UTC moments and use local methods — see getBookingsForCell.)
       if (
-        blockStart.getFullYear() !== date.getFullYear() ||
-        blockStart.getMonth() !== date.getMonth() ||
-        blockStart.getDate() !== date.getDate()
+        blockStart.getUTCFullYear() !== date.getFullYear() ||
+        blockStart.getUTCMonth() !== date.getMonth() ||
+        blockStart.getUTCDate() !== date.getDate()
       ) {
         return false;
       }
 
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
+      const blockHour = blockStart.getUTCHours();
+      const blockEndHour = blockEnd.getUTCHours();
+      const blockEndMinute = blockEnd.getUTCMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -766,10 +766,10 @@ const SpecialistSchedule: React.FC = () => {
       const bookingStart = new Date(booking.scheduledAt);
       if (Number.isNaN(bookingStart.getTime())) return false;
       return (
-        bookingStart.getUTCFullYear() === date.getFullYear() &&
-        bookingStart.getUTCMonth() === date.getMonth() &&
-        bookingStart.getUTCDate() === date.getDate() &&
-        bookingStart.getUTCHours() === hour
+        bookingStart.getFullYear() === date.getFullYear() &&
+        bookingStart.getMonth() === date.getMonth() &&
+        bookingStart.getDate() === date.getDate() &&
+        bookingStart.getHours() === hour
       );
     });
   };
@@ -1195,7 +1195,7 @@ const SpecialistSchedule: React.FC = () => {
                                     {booking.service?.name || 'Booking'}
                                   </div>
                                   <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                    {(() => { if (!booking.scheduledAt) return '—'; const d = new Date(booking.scheduledAt); return isNaN(d.getTime()) ? '—' : `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
+                                    {(() => { if (!booking.scheduledAt) return '—'; const d = new Date(booking.scheduledAt); return isNaN(d.getTime()) ? '—' : `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`; })()} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
                                   </div>
                                 </motion.div>
                               ))}

@@ -1236,6 +1236,11 @@
 /* Print: isolate a .print-area (barcode labels, POS receipt) — hide everything else. */
 @media print {
   body * { visibility: hidden !important; }
-  .print-area, .print-area * { visibility: visible !important; }
-  .print-area { position: absolute !important; left: 0; top: 0; width: 100%; }
+  /* Force readable black-on-white even when the app is in dark mode. */
+  .print-area, .print-area * { visibility: visible !important; color: #000 !important; }
+  .print-area {
+    position: absolute !important; left: 0; top: 0; width: 100%;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
 }
