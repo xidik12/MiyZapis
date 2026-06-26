@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
@@ -103,7 +104,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
 
   const availableChannels: InviteChannel[] = ['LINK', 'EMAIL', 'SOCIAL', 'DIRECT'];
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
@@ -294,7 +295,8 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
           </form>
         </motion.div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

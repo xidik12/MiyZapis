@@ -13,6 +13,7 @@ import { FloatingElements, UkrainianOrnament } from '../../components/ui/Ukraini
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getCategoryName } from '@/data/serviceCategories';
+import { createPortal } from 'react-dom';
 import { ServiceCategory } from '../../types';
 import { reviewsService } from '../../services/reviews.service';
 import { inventoryService, Product, ServiceConsumable } from '../../services/inventory.service';
@@ -988,7 +989,7 @@ const SpecialistServices: React.FC = () => {
             {service.basePrice && !isNaN(Number(service.basePrice)) ? formatPrice(Number(service.basePrice), getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate max-w-[120px]">
-            {getLocalizedText(service, 'category')}
+            {service.category ? getCategoryName(service.category, language) : ''}
           </div>
         </div>
       </div>
@@ -1302,8 +1303,9 @@ const SpecialistServices: React.FC = () => {
         </div>
       </div>
 
-      {/* Add/Edit Service Modal */}
-      {showAddModal && (
+      {/* Add/Edit Service Modal — portaled to <body> so position:fixed escapes any
+          transformed ancestor (otherwise it drifts down as the list grows). */}
+      {showAddModal && createPortal(
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
           <motion.div initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', duration: 0.3, bounce: 0 }} className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
@@ -1578,7 +1580,7 @@ const SpecialistServices: React.FC = () => {
                       type="number"
                       min="0"
                       max="120"
-                      value={formData.prepTime || 0}
+                      value={formData.prepTime || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, prepTime: parseInt(e.target.value) || 0 }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                       placeholder="0"
@@ -1593,7 +1595,7 @@ const SpecialistServices: React.FC = () => {
                       type="number"
                       min="0"
                       max="120"
-                      value={formData.cleanupTime || 0}
+                      value={formData.cleanupTime || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, cleanupTime: parseInt(e.target.value) || 0 }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                       placeholder="0"
@@ -1932,7 +1934,8 @@ const SpecialistServices: React.FC = () => {
               </div>
             </form>
           </motion.div>
-        </motion.div>
+        </motion.div>,
+        document.body
       )}
       </div>
     </div>
