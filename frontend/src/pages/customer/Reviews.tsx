@@ -73,11 +73,8 @@ const CustomerReviews: React.FC = () => {
             }
           });
 
-          const loadedCount = response.reviews.length;
-          const totalForAverage = response.reviews.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0);
-          // TODO: average is computed from the current page only (not all reviews).
-          // Backend should return averageRating in the stats payload to fix this properly.
-          const avgRating = loadedCount > 0 ? totalForAverage / loadedCount : 0;
+          // True average over ALL reviews, from the backend aggregate (not just this page).
+          const avgRating = Number((response as any).averageRating) || 0;
           const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
           const recommendationRate = loadedCount > 0
             ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / loadedCount

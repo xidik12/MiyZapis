@@ -85,13 +85,43 @@ const Billing: React.FC = () => {
     try {
       const link = await subscriptionService.createInvoice(plan);
       toast.info(t('billing.openingTelegram') || 'Opening Telegram…');
-      // Inside the Telegram mini-app a t.me invoice link must be opened via
-      // openTelegramLink; window.open is the plain-browser fallback.
       const tg = (window as unknown as {
-        Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void } };
+        Telegram?: {
+          WebApp?: {
+            initData?: string;
+            openInvoice?: (url: string, cb?: (status: string) => void) => void;
+            openTelegramLink?: (url: string) => void;
+            isVersionAtLeast?: (v: string) => boolean;
+          };
+        };
       }).Telegram?.WebApp;
-      if (tg?.openTelegramLink) tg.openTelegramLink(link);
-      else window.open(link, '_blank', 'noopener,noreferrer');
+
+      // Link-based payment gives no in-app callback, so poll the subscription
+      // status a few times so the active plan appears without a manual reload.
+      const refreshStatus = () => { if (user?.id) subscriptionService.getStatus(user.id).then(setStatus).catch(() => undefined); };
+      const pollStatus = () => [3000, 7000, 13000, 22000, 35000].forEach((ms) => setTimeout(refreshStatus, ms));
+
+      // openTelegramLink can itself throw WebAppMethodUnsupported on old clients —
+      // guard it and fall back to a plain browser tab.
+      const openLink = () => {
+        try {
+          if (tg?.openTelegramLink && tg?.initData) { tg.openTelegramLink(link); pollStatus(); return; }
+        } catch { /* fall through */ }
+        window.open(link, '_blank', 'noopener,noreferrer');
+        pollStatus();
+      };
+
+      // openInvoice (native overlay + callback) when supported; else open the link.
+      const canInvoice = !!tg?.openInvoice && (tg?.isVersionAtLeast ? tg.isVersionAtLeast('6.1') : false);
+      if (canInvoice) {
+        try {
+          tg!.openInvoice!(link, (invoiceStatus) => { if (invoiceStatus === 'paid') pollStatus(); });
+        } catch {
+          openLink();
+        }
+      } else {
+        openLink();
+      }
     } catch (err) {
       toast.error((err as Error).message || t('billing.invoiceError') || 'Could not start payment');
     } finally {

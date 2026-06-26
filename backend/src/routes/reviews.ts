@@ -62,6 +62,13 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
       where: { customerId: userId }
     });
 
+    // True average over ALL the user's reviews (not just the current page).
+    const ratingAgg = await prisma.review.aggregate({
+      where: { customerId: userId },
+      _avg: { rating: true },
+    });
+    const averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0;
+
     // Get user's reviews with engagement data
     const reviews = await prisma.review.findMany({
       where: { customerId: userId },
@@ -174,7 +181,9 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
 
     return res.json(createSuccessResponse({
       reviews: formattedReviews,
-      pagination: paginationMeta
+      pagination: paginationMeta,
+      averageRating,
+      totalReviews: totalCount
     }));
   } catch (error) {
     logger.error('Get my reviews error:', error);

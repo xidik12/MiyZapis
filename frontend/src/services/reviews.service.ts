@@ -209,6 +209,8 @@ export class ReviewsService {
   ): Promise<{
     reviews: Review[];
     pagination: Pagination;
+    averageRating?: number;
+    totalReviews?: number;
   }> {
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -221,6 +223,8 @@ export class ReviewsService {
       const response = await apiClient.get<{
         reviews: Review[];
         pagination: Pagination;
+        averageRating?: number;
+        totalReviews?: number;
       }>(`/reviews/my-reviews?${params.toString()}`);
 
       if (!response.success || !response.data) {
