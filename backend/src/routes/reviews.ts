@@ -686,24 +686,36 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
       }
     });
 
-    // Deduct loyalty points that were earned for this review
-    await prisma.user.update({
-      where: { id: review.customerId },
-      data: {
-        loyaltyPoints: { decrement: 5 }
-      }
+    // Reverse ONLY the loyalty points actually awarded for this review (the
+    // monthly cap means some reviews earn 0), and never drive the balance below 0.
+    const reviewReward = await prisma.reviewReward.findFirst({
+      where: { reviewId: id },
+      orderBy: { createdAt: 'desc' },
     });
-
-    await prisma.loyaltyTransaction.create({
-      data: {
-        userId: review.customerId,
-        type: 'REDEEMED',
-        points: -5,
-        reason: 'Review deletion',
-        description: 'Deducted 5 points for deleted review',
-        referenceId: id
+    const awardedPoints = reviewReward?.pointsEarned ?? 0;
+    if (awardedPoints > 0) {
+      const customer = await prisma.user.findUnique({
+        where: { id: review.customerId },
+        select: { loyaltyPoints: true },
+      });
+      const deduct = Math.min(awardedPoints, customer?.loyaltyPoints ?? 0);
+      if (deduct > 0) {
+        await prisma.user.update({
+          where: { id: review.customerId },
+          data: { loyaltyPoints: { decrement: deduct } },
+        });
+        await prisma.loyaltyTransaction.create({
+          data: {
+            userId: review.customerId,
+            type: 'REDEEMED',
+            points: -deduct,
+            reason: 'Review deletion',
+            description: `Reversed ${deduct} points for deleted review`,
+            referenceId: id,
+          },
+        });
       }
-    });
+    }
 
     return res.json(createSuccessResponse({ message: 'Review deleted successfully' }));
   } catch (error) {

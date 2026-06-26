@@ -1290,7 +1290,7 @@ const SpecialistBookings: React.FC = () => {
                 <option value="COMPLETED">{t('bookings.completed')}</option>
                 <option value="CANCELLED">{t('dashboard.booking.status.CANCELLED')}</option>
                 <option value="IN_PROGRESS">{t('dashboard.booking.status.IN_PROGRESS')}</option>
-                <option value="noShow">{t('dashboard.booking.status.noShow')}</option>
+                <option value="NO_SHOW">{t('dashboard.booking.status.NO_SHOW')}</option>
               </select>
             </div>
             

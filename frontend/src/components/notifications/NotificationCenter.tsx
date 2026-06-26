@@ -43,9 +43,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [win, setWin] = useState<{ start: number; end: number }>({ start: 0, end: 20 });
 
   // Load notifications
-  const loadNotifications = async () => {
+  const loadNotifications = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       // Always fetch all, apply category filtering client-side
       const result = await notificationService.getNotifications();
       setAllNotifications(result.notifications);
@@ -122,8 +122,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         } catch {}
       }
       await notificationService.markAsRead(notificationId);
-      // Refresh in background to ensure consistency
-      loadNotifications();
+      // Refresh in background (silent — no skeleton flash) to ensure consistency
+      loadNotifications(true);
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -141,7 +141,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       try {
         window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));
       } catch {}
-      await loadNotifications();
+      await loadNotifications(true);
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
@@ -182,7 +182,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       }
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       await notificationService.deleteNotification(notificationId);
-      loadNotifications();
+      loadNotifications(true);
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -205,7 +205,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       try {
         window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));
       } catch {}
-      await loadNotifications();
+      await loadNotifications(true);
     } catch (error) {
       console.error('Error deleting all notifications:', error);
     }
@@ -346,6 +346,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         return {
           title: t('notifications.booking.request.specialist.title') || 'New Booking Request',
           message: interp(t('notifications.booking.request.specialist.message') || 'New booking request for {service} on {date} - requires your confirmation.', { service, date })
+        };
+      case 'inventory_low_stock':
+        return {
+          title: t('notifications.inventory.lowStock.title') || 'Low stock',
+          message: interp(t('notifications.inventory.lowStock.message') || '{productName} is low on stock ({stockQty} left).', { productName: n.data?.productName || '', stockQty: n.data?.stockQty ?? '' })
+        };
+      case 'inventory_out_of_stock':
+        return {
+          title: t('notifications.inventory.outOfStock.title') || 'Out of stock',
+          message: interp(t('notifications.inventory.outOfStock.message') || '{productName} is now out of stock.', { productName: n.data?.productName || '' })
         };
       case 'system_announcement':
       default:
