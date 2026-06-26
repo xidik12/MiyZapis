@@ -243,7 +243,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                       {t('booking.rewardApplied') || 'Reward Applied!'}
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-300">
-                      {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                      {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                     </p>
                   </div>
                 </div>
@@ -309,13 +309,13 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                    {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-green-600 dark:text-green-400">{t('booking.discount') || 'Reward Discount'}</span>
                   <span className="text-sm text-green-600 dark:text-green-400">
-                    -{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
+                    -{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                   </span>
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-800 pt-2 mb-2"></div>

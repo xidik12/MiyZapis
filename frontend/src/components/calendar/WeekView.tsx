@@ -131,7 +131,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                         <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
-                          {format(new Date(block.startDateTime), 'h:mm a')} – {format(new Date(block.endDateTime), 'h:mm a')}
+                          {format(new Date(block.startDateTime), 'p')} – {format(new Date(block.endDateTime), 'p')}
                         </span>
                       </div>
                       {block.isRecurring && (
@@ -156,7 +156,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                         <span className="text-[11px] font-medium text-red-600 dark:text-red-400">
-                          {format(new Date(block.startDateTime), 'h:mm a')} – {format(new Date(block.endDateTime), 'h:mm a')}
+                          {format(new Date(block.startDateTime), 'p')} – {format(new Date(block.endDateTime), 'p')}
                         </span>
                       </div>
                       {block.reason && (
@@ -189,7 +189,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         {booking.service?.name || 'Booking'}
                       </div>
                       <div className="text-[10px] opacity-80">
-                        {format(parseISO(booking.scheduledAt || ''), 'h:mm a')} · {booking.duration}min
+                        {format(parseISO(booking.scheduledAt || ''), 'p')} · {booking.duration}min
                       </div>
                       {booking.customer?.firstName && (
                         <div className="text-[10px] opacity-70 truncate">

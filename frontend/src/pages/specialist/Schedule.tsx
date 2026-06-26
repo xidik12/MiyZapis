@@ -735,18 +735,20 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare UTC date of block with local date of the week column
+      // Compare the block's LOCAL date with the week column's local date — the rest
+      // of the calendar renders in local time, so UTC here put bookings on the wrong
+      // day/hour for non-UTC specialists.
       if (
-        blockStart.getUTCFullYear() !== date.getFullYear() ||
-        blockStart.getUTCMonth() !== date.getMonth() ||
-        blockStart.getUTCDate() !== date.getDate()
+        blockStart.getFullYear() !== date.getFullYear() ||
+        blockStart.getMonth() !== date.getMonth() ||
+        blockStart.getDate() !== date.getDate()
       ) {
         return false;
       }
 
-      const blockHour = blockStart.getUTCHours();
-      const blockEndHour = blockEnd.getUTCHours();
-      const blockEndMinute = blockEnd.getUTCMinutes();
+      const blockHour = blockStart.getHours();
+      const blockEndHour = blockEnd.getHours();
+      const blockEndMinute = blockEnd.getMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
