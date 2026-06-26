@@ -45,8 +45,8 @@ const TAG_TRANSLATION_KEYS: Record<string, string> = {
   creative: 'reviewTags.creative',
   patient: 'reviewTags.patient',
   knowledgeable: 'reviewTags.knowledgeable',
-  accommodating: 'reviewTags.experienced',
-  efficient: 'reviewTags.recommended',
+  accommodating: 'reviewTags.accommodating',
+  efficient: 'reviewTags.efficient',
 };
 
 /**

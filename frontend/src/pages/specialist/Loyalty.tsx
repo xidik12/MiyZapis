@@ -319,6 +319,17 @@ const SpecialistLoyalty: React.FC = () => {
   };
 
   const handleRedeem = async (rewardId: string) => {
+    const reward = rewards.find(r => r.id === rewardId);
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: t('loyalty.confirmRedeem.title') || 'Redeem this reward?',
+      message: (reward
+        ? `${reward.title || ''} — ${t('loyalty.confirmRedeem.message') || 'points will be deducted from your balance.'}`
+        : (t('loyalty.confirmRedeem.message') || 'Points will be deducted from your balance.')),
+      confirmText: t('loyalty.redeem') || 'Redeem',
+      cancelText: t('actions.cancel') || 'Cancel',
+    });
+    if (!ok) return;
     try {
       setRedeemingId(rewardId);
       await RewardsService.redeemReward(rewardId);
