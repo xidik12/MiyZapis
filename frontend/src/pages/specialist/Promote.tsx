@@ -191,6 +191,11 @@ const Promote: React.FC = () => {
         };
       }).Telegram?.WebApp;
 
+      // Link-based payment gives no in-app callback, so we can't know exactly
+      // when the bot finishes activating the boost. Poll the status a handful of
+      // times so the active state appears automatically without a manual reload.
+      const pollStatus = () => [3000, 7000, 13000, 22000, 35000].forEach((ms) => setTimeout(() => load(), ms));
+
       // Fallback for clients where openInvoice is missing/unsupported (Telegram
       // Desktop/Web, older versions, or a plain browser): open the invoice link
       // directly so the user can still pay via the normal Telegram invoice UI.
@@ -200,13 +205,12 @@ const Promote: React.FC = () => {
         try {
           if (tg?.openTelegramLink && tg?.initData) {
             tg.openTelegramLink(link);
-            setTimeout(() => load(), 4000);
+            pollStatus();
             return;
           }
         } catch { /* fall through to window.open */ }
         window.open(link, '_blank', 'noopener,noreferrer');
-        // We can't observe payment status this way — refresh shortly after.
-        setTimeout(() => load(), 4000);
+        pollStatus();
       };
 
       // openInvoice requires Bot API 6.1+; on older clients calling it throws
@@ -216,8 +220,8 @@ const Promote: React.FC = () => {
         try {
           tg!.openInvoice!(link, (invoiceStatus) => {
             if (invoiceStatus === 'paid') {
-              // Re-fetch after a short delay to let the bot handler complete.
-              setTimeout(() => load(), 2000);
+              // Poll after the bot handler completes activation.
+              pollStatus();
             }
           });
         } catch {
