@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -284,7 +285,7 @@ const POS: React.FC = () => {
                 className="text-left rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 hover:border-primary-400 hover:shadow-md transition active:scale-[0.96] disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {p.imageUrl ? (
-                  <img src={p.imageUrl} alt="" className="w-full h-20 object-cover rounded-xl mb-2 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                  <img src={getAbsoluteImageUrl(p.imageUrl)} alt="" className="w-full h-20 object-cover rounded-xl mb-2 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                 ) : (
                   <div className="w-full h-20 rounded-xl mb-2 bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs">{t('inventory.noPhoto') || 'No photo'}</div>
                 )}

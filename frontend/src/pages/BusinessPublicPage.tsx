@@ -2,6 +2,7 @@
 // Renders the business profile + its specialists, no auth required.
 
 import React, { useEffect, useState } from 'react';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { useParams, Link } from 'react-router-dom';
 import { businessService, type Business } from '../services/business.service';
 import { PageLoader } from '@/components/ui';
@@ -93,7 +94,7 @@ const BusinessPublicPage: React.FC = () => {
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {u?.avatar ? (
-                      <img src={u.avatar} alt="" className="w-12 h-12 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10 flex-shrink-0" />
+                      <img src={getAbsoluteImageUrl(u.avatar)} alt="" className="w-12 h-12 rounded-full object-cover ring-1 ring-inset ring-black/10 dark:ring-white/10 flex-shrink-0" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium flex-shrink-0">
                         {(u?.firstName?.[0] ?? '?') + (u?.lastName?.[0] ?? '')}

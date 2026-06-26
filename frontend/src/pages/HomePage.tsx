@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
@@ -440,7 +441,7 @@ const HomePage: React.FC = () => {
                     // Contained inside the photo (bottom band) — never clipped.
                     <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
                       {sp.avatar ? (
-                        <img src={sp.avatar as string} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                        <img src={getAbsoluteImageUrl(sp.avatar as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                       ) : (
                         <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
                           {name?.charAt(0) || 'M'}

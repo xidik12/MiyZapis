@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { useDebounce } from '../../hooks/useDebounce';
 import { motion } from 'framer-motion';
 import { confirm } from '@/components/ui/Confirm';
@@ -970,7 +971,7 @@ const SpecialistInventory: React.FC = () => {
                   </label>
                   <div className="flex items-center gap-3">
                     {formData.imageUrl ? (
-                      <img src={formData.imageUrl} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                      <img src={getAbsoluteImageUrl(formData.imageUrl)} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                     ) : (
                       <div className="w-16 h-16 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
                         {t('inventory.noPhoto') || 'No photo'}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socketService, subscribeToPaymentUpdates } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
@@ -1369,7 +1370,7 @@ const BookingFlow: React.FC = () => {
               {/* Specialist */}
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
                 {state.specialist.user?.avatar ? (
-                  <img src={state.specialist.user.avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
+                  <img src={getAbsoluteImageUrl(state.specialist.user.avatar)} alt="" className="w-11 h-11 rounded-full object-cover" />
                 ) : (
                   <span className="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center font-semibold">
                     {(state.specialist.user?.firstName || 'M').charAt(0)}
