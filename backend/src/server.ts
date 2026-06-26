@@ -184,6 +184,13 @@ app.use('/uploads', (req, res, next) => {
       }
       // Add Cache-Control header for better caching
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      // Security: block MIME-sniffing, and force any uploaded svg/html/xml to
+      // download instead of rendering inline (stored-XSS defense).
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (/\.(svgz?|html?|xml)$/i.test(path)) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', 'attachment');
+      }
     }
   })(req, res, (err) => {
     if (err) {
@@ -209,6 +216,11 @@ app.use('/uploads', (req, res, next) => {
                   res.setHeader('Content-Type', 'image/avif');
                 }
                 res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                res.setHeader('X-Content-Type-Options', 'nosniff');
+                if (/\.(svgz?|html?|xml)$/i.test(path)) {
+                  res.setHeader('Content-Type', 'application/octet-stream');
+                  res.setHeader('Content-Disposition', 'attachment');
+                }
               }
             })(req, res, next);
             foundFile = true;

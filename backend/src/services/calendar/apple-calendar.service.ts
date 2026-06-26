@@ -11,6 +11,7 @@
 
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { encryptField, decryptField } from '@/utils/encryption';
 
 const ICLOUD_SERVER_URL = 'https://caldav.icloud.com';
 
@@ -51,7 +52,7 @@ export class AppleCalendarService {
         userId,
         provider: 'APPLE',
         providerAccountId: appleId,
-        accessToken: appPassword,
+        accessToken: encryptField(appPassword),
         refreshToken: null,
         scope: null,
         calendarId: primary.url, // CalDAV uses the calendar URL as the identifier
@@ -59,7 +60,7 @@ export class AppleCalendarService {
       },
       update: {
         providerAccountId: appleId,
-        accessToken: appPassword,
+        accessToken: encryptField(appPassword),
         calendarId: primary.url,
         calendarName: (primary.displayName as string) ?? 'iCloud Calendar',
         syncEnabled: true,
@@ -92,7 +93,7 @@ export class AppleCalendarService {
     try {
       const client = await tsdav.createDAVClient({
         serverUrl: ICLOUD_SERVER_URL,
-        credentials: { username: conn.providerAccountId, password: conn.accessToken },
+        credentials: { username: conn.providerAccountId, password: decryptField(conn.accessToken) },
         authMethod: 'Basic',
         defaultAccountType: 'caldav',
       });

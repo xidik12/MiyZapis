@@ -106,6 +106,13 @@ export function stripPrivateSpecialistFields(specialist: any) {
   delete obj.locationNotes;
   delete obj.parkingInfo;
   delete obj.accessInstructions;
+  // Never expose the owner's account email/phone on public specialist views —
+  // keep only display fields on the nested user object.
+  if (obj.user && typeof obj.user === 'object') {
+    obj.user = { ...obj.user };
+    delete obj.user.email;
+    delete obj.user.phoneNumber;
+  }
   return obj;
 }
 

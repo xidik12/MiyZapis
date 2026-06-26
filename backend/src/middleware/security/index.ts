@@ -86,13 +86,11 @@ class RateLimitStore {
     if (redis) {
       // Use Redis when available, with timeout to prevent hanging
       try {
-        const current = await this.withTimeout(redis.get(storeKey));
-        const totalHits = current ? parseInt(current, 10) + 1 : 1;
-
+        // Atomic increment so concurrent requests can't both read a stale count
+        // and slip past the limit. INCR returns the new value; set TTL on first hit.
+        const totalHits = await this.withTimeout(redis.incr(storeKey));
         if (totalHits === 1) {
-          await this.withTimeout(redis.setex(storeKey, this.resetTime, '1'));
-        } else {
-          await this.withTimeout(redis.set(storeKey, totalHits.toString()));
+          await this.withTimeout(redis.expire(storeKey, this.resetTime));
         }
 
         const ttl = await this.withTimeout(redis.ttl(storeKey));

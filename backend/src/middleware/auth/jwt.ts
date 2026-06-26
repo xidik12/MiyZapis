@@ -83,7 +83,7 @@ export const authenticateToken = async (
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+    const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] }) as JwtPayload;
 
     // Fetch user (cached for 30s)
     const user = await getCachedUser(decoded.userId);
@@ -198,7 +198,7 @@ export const optionalAuth = async (
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+    const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] }) as JwtPayload;
 
     // Fetch user (cached for 30s)
     const user = await getCachedUser(decoded.userId);
@@ -374,7 +374,7 @@ export const authenticateTokenOptional = async (
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+    const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] }) as JwtPayload;
     
     // Fetch user (cached for 30s)
     const user = await getCachedUser(decoded.userId);

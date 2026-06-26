@@ -5,6 +5,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
+import { encryptField, decryptField } from '@/utils/encryption';
 
 // Lazy-load googleapis so this module doesn't load (and the dep doesn't trip
 // up the build) until something actually calls it.
@@ -61,16 +62,16 @@ export class GoogleCalendarService {
       create: {
         userId,
         provider: 'GOOGLE',
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? null,
+        accessToken: encryptField(tokens.access_token),
+        refreshToken: tokens.refresh_token ? encryptField(tokens.refresh_token) : null,
         tokenExpiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
         scope: tokens.scope ?? SCOPE,
         calendarId: 'primary',
       },
       update: {
-        accessToken: tokens.access_token,
+        accessToken: encryptField(tokens.access_token),
         // Google only returns refresh_token on first consent; keep the old one if absent.
-        ...(tokens.refresh_token ? { refreshToken: tokens.refresh_token } : {}),
+        ...(tokens.refresh_token ? { refreshToken: encryptField(tokens.refresh_token) } : {}),
         tokenExpiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
         scope: tokens.scope ?? SCOPE,
         syncEnabled: true,
@@ -103,8 +104,8 @@ export class GoogleCalendarService {
     const { google } = await getGoogleApis();
     const client = new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, this.redirectUri);
     client.setCredentials({
-      access_token: conn.accessToken,
-      refresh_token: conn.refreshToken ?? undefined,
+      access_token: conn.accessToken ? decryptField(conn.accessToken) : undefined,
+      refresh_token: conn.refreshToken ? decryptField(conn.refreshToken) : undefined,
       expiry_date: conn.tokenExpiresAt?.getTime(),
     });
     // googleapis auto-refreshes when the access token is stale. Listen for new
@@ -113,8 +114,9 @@ export class GoogleCalendarService {
       prisma.calendarConnection.update({
         where: { userId_provider: { userId, provider: 'GOOGLE' } },
         data: {
-          accessToken: newTokens.access_token ?? conn.accessToken,
-          ...(newTokens.refresh_token ? { refreshToken: newTokens.refresh_token } : {}),
+          // newTokens.* are plaintext from Google; conn.accessToken is already encrypted.
+          accessToken: newTokens.access_token ? encryptField(newTokens.access_token) : conn.accessToken,
+          ...(newTokens.refresh_token ? { refreshToken: encryptField(newTokens.refresh_token) } : {}),
           tokenExpiresAt: newTokens.expiry_date ? new Date(newTokens.expiry_date) : null,
         },
       }).catch((err) => logger.warn('Failed to persist refreshed Google tokens', { userId, error: err.message }));

@@ -635,8 +635,10 @@ export class AuthController {
         return;
       }
 
-      // Generate reset token
+      // Generate reset token. Store only its sha256 hash so a DB read can't be
+      // turned into account takeover; the plaintext token goes only in the email.
       const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
       // Remove existing password reset tokens for this user
@@ -647,11 +649,11 @@ export class AuthController {
         }
       });
 
-      // Create new reset token
+      // Create new reset token (store the hash, not the plaintext)
       await prisma.emailVerificationToken.create({
         data: {
           userId: user.id,
-          token,
+          token: tokenHash,
           type: 'PASSWORD_RESET',
           expiresAt
         }
@@ -737,10 +739,13 @@ export class AuthController {
 
       const { token, password } = req.body;
 
+      // Reset tokens are stored hashed — hash the incoming token to look it up.
+      const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+
       // Find the reset token
       const resetToken = await prisma.emailVerificationToken.findFirst({
         where: {
-          token,
+          token: tokenHash,
           type: 'PASSWORD_RESET',
           isUsed: false,
           expiresAt: {
