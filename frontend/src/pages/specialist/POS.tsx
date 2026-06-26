@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
@@ -323,7 +324,7 @@ const POS: React.FC = () => {
       )}
 
       {/* Sticky cart bar */}
-      {itemCount > 0 && (
+      {itemCount > 0 && createPortal(
         <motion.div
           initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -341,10 +342,10 @@ const POS: React.FC = () => {
             </button>
           </div>
         </motion.div>
-      )}
+      , document.body)}
 
       {/* Checkout modal */}
-      {checkoutOpen && (
+      {checkoutOpen && createPortal(
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -500,10 +501,10 @@ const POS: React.FC = () => {
             </div>
           </motion.div>
         </motion.div>
-      )}
+      , document.body)}
 
       {/* Today's sales summary modal */}
-      {todayOpen && (
+      {todayOpen && createPortal(
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -568,10 +569,10 @@ const POS: React.FC = () => {
             ) : null}
           </motion.div>
         </motion.div>
-      )}
+      , document.body)}
 
       {/* Receipt */}
-      {receipt && (
+      {receipt && createPortal(
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -635,7 +636,7 @@ const POS: React.FC = () => {
             )}
           </motion.div>
         </motion.div>
-      )}
+      , document.body)}
     </div>
   );
 };
