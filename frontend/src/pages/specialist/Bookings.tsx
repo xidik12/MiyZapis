@@ -12,6 +12,8 @@ import { Booking, BookingStatus } from '../../types';
 import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XIcon as XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
+import { accountingService, type Invoice } from '../../services/accounting.service';
+import InvoiceDocument from '../../components/specialist/InvoiceDocument';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { InlineLoader } from '@/components/ui';
@@ -70,6 +72,7 @@ interface BookingDetailModalProps {
   onBookAgain: (booking: Booking) => void;
   getTranslatedServiceName: (serviceName: string) => string;
   activeTab: 'provider' | 'customer';
+  onInvoice?: (booking: Booking) => void;
 }
 
 interface PaymentConfirmationModalProps {
@@ -88,7 +91,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onLeaveReview,
   onBookAgain,
   getTranslatedServiceName,
-  activeTab
+  activeTab,
+  onInvoice
 }) => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -491,7 +495,17 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   {t('bookingDetails.updateStatus')}
                 </button>
               </div>
-              
+
+              {/* Invoice this booking (completed only) */}
+              {booking?.status === 'COMPLETED' && onInvoice && (
+                <button
+                  onClick={() => { onInvoice(booking); onClose(); }}
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl transition active:scale-[0.96]"
+                >
+                  {t('invoice.invoiceBooking') || 'Invoice this booking'}
+                </button>
+              )}
+
               {/* Quick Message */}
               <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
@@ -854,6 +868,29 @@ const SpecialistBookings: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [invoiceDoc, setInvoiceDoc] = useState<Invoice | null>(null);
+
+  // One-click: create an invoice pre-filled from a completed booking, then open it.
+  const handleInvoiceBooking = async (booking: Booking) => {
+    try {
+      const clientName = booking.customer
+        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || booking.customerName || 'Client'
+        : booking.customerName || 'Client';
+      const serviceName = booking.service?.name || booking.serviceName || 'Service';
+      const inv = await accountingService.createInvoice({
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        clientName,
+        clientEmail: booking.customer?.email || (booking as any).customerEmail || undefined,
+        currency: getBookingCurrency(booking),
+        lineItems: [{ description: serviceName, quantity: 1, unitPrice: Number(booking.totalAmount) || 0 }],
+      });
+      setInvoiceDoc(inv);
+      toast.success(t('invoice.created') || 'Invoice created');
+    } catch (err) {
+      toast.error((err as Error)?.message || t('invoice.createFailed') || 'Failed to create invoice');
+    }
+  };
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -1746,7 +1783,10 @@ const SpecialistBookings: React.FC = () => {
         onBookAgain={handleBookAgain}
         getTranslatedServiceName={getTranslatedServiceName}
         activeTab={activeTab}
+        onInvoice={handleInvoiceBooking}
       />
+
+      {invoiceDoc && <InvoiceDocument invoice={invoiceDoc} onClose={() => setInvoiceDoc(null)} />}
 
       {/* Payment Confirmation Modal */}
       <PaymentConfirmationModal
