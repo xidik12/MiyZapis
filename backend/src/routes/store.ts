@@ -52,9 +52,12 @@ const statusForServiceError = (code: string): number => {
 // ===========================================================================
 
 const customerRouter = Router();
-customerRouter.use(authenticateToken as any, requireCustomer as any);
+// IMPORTANT: requireCustomer is applied PER-ROUTE, NOT via customerRouter.use().
+// This router is mounted at /store before ownerRouter, so a router-level guard
+// would 403 every /store/* request (including the specialist POS routes) before
+// it could fall through to ownerRouter. Per-route guards only run on a match.
 
-customerRouter.get('/orders/mine', async (req: Request, res: Response): Promise<void> => {
+customerRouter.get('/orders/mine', authenticateToken as any, requireCustomer as any, async (req: Request, res: Response): Promise<void> => {
   try {
     const customerUserId = (req as unknown as AuthenticatedRequest).user!.id;
     const { status } = req.query;
@@ -72,7 +75,7 @@ customerRouter.get('/orders/mine', async (req: Request, res: Response): Promise<
   }
 });
 
-customerRouter.get('/orders/mine/:id', async (req: Request, res: Response): Promise<void> => {
+customerRouter.get('/orders/mine/:id', authenticateToken as any, requireCustomer as any, async (req: Request, res: Response): Promise<void> => {
   try {
     const customerUserId = (req as unknown as AuthenticatedRequest).user!.id;
     const order = await StoreService.getMyOrder(customerUserId, req.params.id);
