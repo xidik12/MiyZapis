@@ -4,8 +4,10 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { notificationService } from '../../services/notification.service';
+import { markAsRead as markAsReadAction, markAllAsRead as markAllAsReadAction, removeNotification as removeNotificationAction, clearAll as clearAllAction } from '../../store/slices/notificationSlice';
 import { Notification, NotificationType } from '../../types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { BellIcon, CheckIcon, TrashIcon, WarningIcon as InformationCircleIcon, CreditCardIcon, CalendarIcon, StarIcon, XIcon as XMarkIcon } from '@/components/icons';
@@ -22,6 +24,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   className = '' 
 }) => {
   const { t, language } = useLanguage();
+  const dispatch = useDispatch();
   const panelRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -121,6 +124,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: Math.max(0, (unreadCount - 1)) } }));
         } catch {}
       }
+      dispatch(markAsReadAction(notificationId)); // keep the bell badge (Redux) in sync
       await notificationService.markAsRead(notificationId);
       // Refresh in background (silent — no skeleton flash) to ensure consistency
       loadNotifications(true);
@@ -134,6 +138,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     try {
       await notificationService.markAllAsRead();
       // Optimistically zero counts and notify listeners
+      dispatch(markAllAsReadAction()); // bell badge (Redux)
       setUnreadCount(0);
       // Optimistically mark all as read in UI
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -181,6 +186,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         } catch {}
       }
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      dispatch(removeNotificationAction(notificationId)); // bell badge (Redux)
       await notificationService.deleteNotification(notificationId);
       loadNotifications(true);
     } catch (error) {
@@ -201,6 +207,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     if (!ok) return;
     try {
       await notificationService.deleteAllNotifications();
+      // Clear the UI immediately — don't wait on a re-fetch.
+      dispatch(clearAllAction()); // bell badge (Redux)
+      setNotifications([]);
+      setAllNotifications([]);
       setUnreadCount(0);
       try {
         window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));

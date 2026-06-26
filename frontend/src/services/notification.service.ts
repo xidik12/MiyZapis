@@ -44,7 +44,7 @@ export class NotificationService {
           notifications: Notification[];
           unreadCount: number;
           pagination: Pagination;
-        }>(`/notifications?${params}`);
+        }>(`/notifications?${params}`, { skipCache: true } as any); // always fresh — deletes/new ones must show without a page refresh
         
         if (response.success && response.data) {
           console.log('✅ Backend notifications fetched successfully:', response.data.notifications.length, 'notifications');

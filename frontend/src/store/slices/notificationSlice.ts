@@ -95,6 +95,10 @@ const notificationSlice = createSlice({
         state.notifications.splice(index, 1);
       }
     },
+    clearAll: (state) => {
+      state.notifications = [];
+      state.unreadCount = 0;
+    },
     updateNotificationMessages: (_state, _action: PayloadAction<{ t: (key: string) => string }>) => {
       // No mock notifications to update - real notifications will come from backend
     },
@@ -144,7 +148,7 @@ const notificationSlice = createSlice({
   },
 });
 
-export const { addNotification, markAsRead, markAllAsRead, removeNotification, updateNotificationMessages } = notificationSlice.actions;
+export const { addNotification, markAsRead, markAllAsRead, removeNotification, clearAll, updateNotificationMessages } = notificationSlice.actions;
 
 // Selectors
 export const selectNotifications = (state: { notification: NotificationState }) => state.notification.notifications;
