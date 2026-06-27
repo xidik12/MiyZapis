@@ -168,20 +168,31 @@ export class TelegramStarsService {
   async cancelSubscription(specialistUserId: string): Promise<void> {
     const sub = await prisma.specialistSubscription.findFirst({
       where: { specialistId: specialistUserId },
-      select: { telegramChargeId: true, telegramPayerId: true },
+      select: { id: true, telegramChargeId: true, telegramPayerId: true },
     });
-    if (!sub?.telegramChargeId || !sub.telegramPayerId) {
-      throw new Error('No active Telegram Stars subscription to cancel');
+    if (!sub) {
+      throw new Error('No active subscription to cancel');
     }
-    // editUserStarSubscription is newer than Telegraf 4.16 typings → raw callApi.
-    await (this.tg as unknown as {
-      callApi: (m: string, p: Record<string, unknown>) => Promise<unknown>;
-    }).callApi('editUserStarSubscription', {
-      user_id: Number(sub.telegramPayerId),
-      telegram_payment_charge_id: sub.telegramChargeId,
-      is_canceled: true,
+    // A real Telegram Stars recurring subscription → ask Telegram to stop renewing.
+    // Legacy / Dodo / default-seeded subscriptions have no Telegram charge — there's
+    // no external recurring billing to cancel, so we just turn off local auto-renew.
+    if (sub.telegramChargeId && sub.telegramPayerId) {
+      // editUserStarSubscription is newer than Telegraf 4.16 typings → raw callApi.
+      await (this.tg as unknown as {
+        callApi: (m: string, p: Record<string, unknown>) => Promise<unknown>;
+      }).callApi('editUserStarSubscription', {
+        user_id: Number(sub.telegramPayerId),
+        telegram_payment_charge_id: sub.telegramChargeId,
+        is_canceled: true,
+      });
+    }
+    // Clearing nextBillingDate stops auto-renew and lets the lifecycle worker
+    // downgrade the plan once the current period ends.
+    await prisma.specialistSubscription.update({
+      where: { id: sub.id },
+      data: { nextBillingDate: null },
     });
-    logger.info('Telegram Stars subscription auto-renew cancelled', { specialistUserId });
+    logger.info('Subscription auto-renew cancelled', { specialistUserId, telegram: !!sub.telegramChargeId });
   }
 
   /**
