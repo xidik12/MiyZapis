@@ -82,26 +82,6 @@ export class WalletService {
     return response.data;
   }
 
-  async applyWalletToBooking(bookingId: string, maxAmount?: number): Promise<{
-    appliedAmount: number;
-    remainingBalance: number;
-    transaction?: WalletTransaction;
-  }> {
-    const response = await apiClient.post<{
-      appliedAmount: number;
-      remainingBalance: number;
-      transaction?: WalletTransaction;
-    }>(`/payments/bookings/${bookingId}/wallet`, {
-      maxAmount,
-    });
-
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to apply wallet to booking');
-    }
-
-    return response.data;
-  }
-
   async getWalletSummary(): Promise<WalletSummary> {
     // This endpoint might not exist yet, so we'll construct it from balance and transactions
     try {
@@ -146,36 +126,6 @@ export class WalletService {
     }
   }
 
-  async validateSufficientFunds(amount: number): Promise<boolean> {
-    try {
-      const balance = await this.getBalance();
-      return balance.balance >= amount;
-    } catch (error) {
-      console.error('Failed to validate sufficient funds:', error);
-      return false;
-    }
-  }
-
-  // Helper methods for formatting
-  formatAmount(amount: number, currency: string = 'USD'): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  }
-
-  formatTransactionType(type: WalletTransaction['type']): string {
-    const typeLabels = {
-      CREDIT: 'Credit',
-      DEBIT: 'Debit',
-      REFUND: 'Refund',
-      FORFEITURE_SPLIT: 'Forfeiture Share',
-    };
-    return typeLabels[type] || type;
-  }
-
   formatTransactionReason(reason: string): string {
     const reasonLabels: Record<string, string> = {
       DEPOSIT_REFUND: 'Deposit Refund',
@@ -187,25 +137,6 @@ export class WalletService {
     return reasonLabels[reason] || reason.replace(/_/g, ' ').toLowerCase();
   }
 
-  getTransactionIcon(type: WalletTransaction['type']): string {
-    const icons = {
-      CREDIT: '↗️',
-      DEBIT: '↙️',
-      REFUND: '🔄',
-      FORFEITURE_SPLIT: '💰',
-    };
-    return icons[type] || '💳';
-  }
-
-  getTransactionColor(type: WalletTransaction['type']): string {
-    const colors = {
-      CREDIT: 'text-green-600',
-      DEBIT: 'text-red-600',
-      REFUND: 'text-blue-600',
-      FORFEITURE_SPLIT: 'text-indigo-600',
-    };
-    return colors[type] || 'text-gray-600';
-  }
 }
 
 export const walletService = new WalletService();

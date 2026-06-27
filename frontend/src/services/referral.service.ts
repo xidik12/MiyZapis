@@ -3,7 +3,6 @@ import {
   Referral,
   ReferralConfigResponse,
   CreateReferralRequest,
-  ProcessReferralRequest,
   MyReferralsResponse,
   ReferralAnalytics,
   ReferralFilters
@@ -47,34 +46,11 @@ class ReferralService {
   }
 
   /**
-   * Get referral by code (public endpoint)
-   */
-  async getReferralByCode(referralCode: string): Promise<Referral> {
-    const response = await apiClient.get<{ referral: Referral }>(`${this.baseUrl}/code/${referralCode}`);
-    return response.data!.referral;
-  }
-
-  /**
-   * Process referral completion
-   */
-  async processReferral(data: ProcessReferralRequest): Promise<boolean> {
-    const response = await apiClient.post<{ success: boolean; message: string }>(`${this.baseUrl}/process`, data);
-    return response.data!.success;
-  }
-
-  /**
    * Get referral analytics
    */
   async getAnalytics(): Promise<ReferralAnalytics> {
     const response = await apiClient.get<{ analytics: ReferralAnalytics }>(`${this.baseUrl}/analytics`);
     return response.data!.analytics;
-  }
-
-  /**
-   * Track referral link click
-   */
-  async trackClick(referralCode: string): Promise<void> {
-    await apiClient.post(`${this.baseUrl}/track/${referralCode}/click`);
   }
 
   /**
@@ -214,52 +190,6 @@ class ReferralService {
   }
 
   /**
-   * Get share options for social platforms
-   */
-  getShareOptions(referral: Referral): Array<{
-    name: string;
-    url: string;
-    icon: string;
-    color: string;
-  }> {
-    const url = encodeURIComponent(referral.shareUrl);
-    const text = encodeURIComponent(referral.customMessage || `Join me on our platform! Use my referral code: ${referral.referralCode}`);
-
-    return [
-      {
-        name: 'Twitter',
-        url: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-        icon: 'twitter',
-        color: 'text-blue-500'
-      },
-      {
-        name: 'Facebook',
-        url: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-        icon: 'facebook',
-        color: 'text-blue-600'
-      },
-      {
-        name: 'WhatsApp',
-        url: `https://wa.me/?text=${text} ${url}`,
-        icon: 'whatsapp',
-        color: 'text-green-500'
-      },
-      {
-        name: 'Telegram',
-        url: `https://t.me/share/url?url=${url}&text=${text}`,
-        icon: 'telegram',
-        color: 'text-blue-400'
-      },
-      {
-        name: 'LinkedIn',
-        url: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-        icon: 'linkedin',
-        color: 'text-blue-700'
-      }
-    ];
-  }
-
-  /**
    * Validate referral form data
    */
   validateReferralForm(data: CreateReferralRequest): { isValid: boolean; errors: string[] } {
@@ -287,15 +217,6 @@ class ReferralService {
     };
   }
 
-  /**
-   * Get analytics summary text
-   */
-  getAnalyticsSummary(analytics: ReferralAnalytics): string {
-    const { overview } = analytics;
-    const rate = this.formatConversionRate(overview.conversionRate);
-
-    return `You've made ${overview.totalReferrals} referrals with a ${rate} conversion rate, earning ${overview.totalPointsEarned} points.`;
-  }
 }
 
 export const referralService = new ReferralService();

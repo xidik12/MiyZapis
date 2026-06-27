@@ -232,30 +232,6 @@ export class BookingService {
     return response.data;
   }
 
-  // Specialist confirms booking
-  async confirmBooking(bookingId: string, data: {
-    meetingLink?: string;
-    preparationNotes?: string;
-  }): Promise<{ booking: Booking; notificationsSent: string[] }> {
-    const response = await apiClient.post<{ booking: Booking; notificationsSent: string[] }>(`/bookings/${bookingId}/confirm`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to confirm booking');
-    }
-    return response.data;
-  }
-
-  // Mark booking as completed
-  async completeBooking(bookingId: string, data: {
-    completionNotes?: string;
-    deliverables?: string[];
-  }): Promise<Booking> {
-    const response = await apiClient.post<Booking>(`/bookings/${bookingId}/complete`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to complete booking');
-    }
-    return response.data;
-  }
-
   // Reschedule booking
   async rescheduleBooking(bookingId: string, data: {
     newScheduledAt: string;
@@ -264,91 +240,6 @@ export class BookingService {
     const response = await apiClient.post<{ booking: Booking; notificationsSent: string[] }>(`/bookings/${bookingId}/reschedule`, data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to reschedule booking');
-    }
-    return response.data;
-  }
-
-  // Start booking session (for in-progress status)
-  async startBooking(bookingId: string): Promise<Booking> {
-    const response = await apiClient.post<Booking>(`/bookings/${bookingId}/start`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to start booking');
-    }
-    return response.data;
-  }
-
-  // Get booking history for a customer or specialist
-  async getBookingHistory(filters: BookingFilters = {}): Promise<{ bookings: Booking[]; pagination: Pagination }> {
-    const params = new URLSearchParams();
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
-      }
-    });
-
-    const response = await apiClient.get<{ bookings: Booking[]; pagination: Pagination }>(`/bookings/history?${params}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get booking history');
-    }
-    return response.data;
-  }
-
-  // Get upcoming bookings
-  async getUpcomingBookings(limit: number = 10): Promise<Booking[]> {
-    const response = await apiClient.get<{ bookings: Booking[] }>(`/bookings/upcoming?limit=${limit}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get upcoming bookings');
-    }
-    return response.data.bookings || [];
-  }
-
-  // Get booking statistics
-  async getBookingStats(period: 'week' | 'month' | 'year' = 'month'): Promise<{
-    totalBookings: number;
-    completedBookings: number;
-    cancelledBookings: number;
-    totalRevenue: number;
-    averageRating: number;
-    completionRate: number;
-  }> {
-    const response = await apiClient.get<{
-      totalBookings: number;
-      completedBookings: number;
-      cancelledBookings: number;
-      totalRevenue: number;
-      averageRating: number;
-      completionRate: number;
-    }>(`/bookings/stats?period=${period}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get booking statistics');
-    }
-    return response.data;
-  }
-
-  // Send booking reminder
-  async sendBookingReminder(bookingId: string): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>(`/bookings/${bookingId}/reminder`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to send booking reminder');
-    }
-    return response.data;
-  }
-
-  // Check if booking can be cancelled
-  async canCancelBooking(bookingId: string): Promise<{ canCancel: boolean; reason?: string; deadline?: string }> {
-    const response = await apiClient.get<{ canCancel: boolean; reason?: string; deadline?: string }>(`/bookings/${bookingId}/can-cancel`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to check cancellation eligibility');
-    }
-    return response.data;
-  }
-
-  // Check if booking can be rescheduled
-  async canRescheduleBooking(bookingId: string): Promise<{ canReschedule: boolean; reason?: string; deadline?: string }> {
-    const response = await apiClient.get<{ canReschedule: boolean; reason?: string; deadline?: string }>(`/bookings/${bookingId}/can-reschedule`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to check reschedule eligibility');
     }
     return response.data;
   }
@@ -378,20 +269,6 @@ export class BookingService {
     return response.data;
   }
 
-  // Export bookings data
-  async exportBookings(filters: BookingFilters = {}, format: 'csv' | 'pdf' = 'csv'): Promise<void> {
-    const params = new URLSearchParams();
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
-      }
-    });
-
-    params.append('format', format);
-
-    await apiClient.download(`/bookings/export?${params}`, `bookings.${format}`);
-  }
 }
 
 export const bookingService = new BookingService();

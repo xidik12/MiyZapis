@@ -77,65 +77,6 @@ export interface UpdateReviewData {
 }
 
 export class ReviewsService {
-  // Get reviews for a service
-  async getServiceReviews(
-    serviceId: string,
-    page: number = 1,
-    limit: number = 20,
-    filters: {
-      rating?: number;
-      sortBy?: 'createdAt' | 'rating' | 'helpful';
-      sortOrder?: 'asc' | 'desc';
-      verified?: boolean;
-      withComment?: boolean;
-      tags?: string[];
-    } = {}
-  ): Promise<{
-    reviews: Review[];
-    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
-    stats: ReviewStats | null;
-  }> {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
-    
-    // Only add filter parameters if they have actual values (not undefined)
-    if (filters.rating !== undefined) params.append('rating', filters.rating.toString());
-    if (filters.sortBy !== undefined) params.append('sortBy', filters.sortBy);
-    if (filters.sortOrder !== undefined) params.append('sortOrder', filters.sortOrder);
-    if (filters.verified !== undefined) params.append('verified', filters.verified.toString());
-    if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
-    if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
-
-    const response = await apiClient.get<any>(`/reviews/service/${serviceId}?${params}`);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get service reviews');
-    }
-
-    const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
-    const meta: any = response.meta || {};
-    const p: any = meta.pagination || {};
-
-    const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
-      currentPage: p.currentPage ?? p.page ?? page,
-      totalPages: p.totalPages ?? 0,
-      totalItems: p.totalItems ?? meta.total ?? 0,
-      limit: p.itemsPerPage ?? limit,
-      hasNext: p.hasNext ?? p.hasNextPage ?? false,
-      hasPrev: p.hasPrev ?? p.hasPreviousPage ?? false,
-      // compatibility aliases used by some screens
-      hasNextPage: p.hasNext ?? p.hasNextPage ?? false,
-      hasPreviousPage: p.hasPrev ?? p.hasPreviousPage ?? false,
-      page: p.currentPage ?? p.page ?? page,
-      total: p.totalItems ?? meta.total ?? 0,
-    };
-
-    const stats: ReviewStats | null = meta.stats ?? response.data?.stats ?? null;
-
-    return { reviews: rawReviews, pagination, stats };
-  }
-
   // Get reviews for a specialist
   async getSpecialistReviews(
     specialistId: string,
@@ -257,97 +198,12 @@ export class ReviewsService {
     }
   }
 
-  // Get reviews received by current specialist
-  async getReceivedReviews(
-    page: number = 1,
-    limit: number = 20
-  ): Promise<{
-    reviews: Review[];
-    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
-    stats: ReviewStats | null;
-  }> {
-    try {
-      // Get current specialist profile first
-      const profileResponse = await apiClient.get<any>('/specialists/profile');
-      if (!profileResponse.success || !profileResponse.data) {
-        throw new Error('Failed to get specialist profile');
-      }
-      
-      const specialistId = profileResponse.data.id;
-      
-      // Now get reviews using the specialist ID
-      return await this.getSpecialistReviews(specialistId, page, limit);
-    } catch (error) {
-      console.error('Error getting received reviews:', error);
-      // Return empty data if there's an error
-      return {
-        reviews: [],
-        pagination: {
-          currentPage: page,
-          totalPages: 0,
-          totalItems: 0,
-          limit: limit,
-          hasNext: false,
-          hasPrev: false,
-          // compatibility aliases
-          hasNextPage: false,
-          hasPreviousPage: false,
-          page,
-          total: 0,
-        },
-        stats: {
-          totalReviews: 0,
-          averageRating: 0,
-          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-          verifiedReviewsCount: 0,
-          recommendationRate: 0,
-        }
-      };
-    }
-  }
-
   // Create a new review
   async createReview(data: CreateReviewData): Promise<Review> {
     const response = await apiClient.post<Review>('/reviews', data);
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create review');
-    }
-    
-    return response.data;
-  }
-
-  // Update a review
-  async updateReview(reviewId: string, data: UpdateReviewData): Promise<Review> {
-    const response = await apiClient.put<Review>(`/reviews/${reviewId}`, data);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to update review');
-    }
-    
-    return response.data;
-  }
-
-  // Delete a review
-  async deleteReview(reviewId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/reviews/${reviewId}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to delete review');
-    }
-    
-    return response.data;
-  }
-
-  // Mark review as helpful
-  async markReviewHelpful(reviewId: string, helpful: boolean): Promise<{ message: string; helpfulCount: number }> {
-    const response = await apiClient.post<{ message: string; helpfulCount: number }>(
-      `/reviews/${reviewId}/helpful`, 
-      { helpful }
-    );
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to mark review as helpful');
     }
     
     return response.data;
@@ -440,28 +296,6 @@ export class ReviewsService {
     };
 
     return normalized;
-  }
-
-  // Get available review tags
-  async getReviewTags(): Promise<{ tags: string[] }> {
-    const response = await apiClient.get<{ tags: string[] }>('/reviews/tags');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get review tags');
-    }
-    
-    return response.data;
-  }
-
-  // Check if user can review a booking
-  async canReviewBooking(bookingId: string): Promise<{ canReview: boolean; reason?: string }> {
-    const response = await apiClient.get<{ canReview: boolean; reason?: string }>(`/reviews/can-review/${bookingId}`);
-
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to check review eligibility');
-    }
-
-    return response.data;
   }
 
   // Get comments for a review

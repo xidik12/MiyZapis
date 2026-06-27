@@ -550,11 +550,6 @@ export class ReferralService {
     }
   }
 
-  // Generate referral link
-  static generateReferralLink(referralCode: string, baseUrl: string): string {
-    return `${baseUrl}/referral/${referralCode}`;
-  }
-
   // Validate referral for booking
   static async validateReferralForBooking(referralCode: string, userId: string) {
     try {

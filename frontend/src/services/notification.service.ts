@@ -291,12 +291,6 @@ export class NotificationService {
     };
   }
 
-  // Reset to try backend again
-  resetBackendConnection(): void {
-    console.log('🔄 Resetting backend connection, will retry on next request');
-    this.useLocalFallback = false;
-  }
-
   // Force switch to local mode
   forceLocalMode(): void {
     console.log('💾 Forcing local notification mode');

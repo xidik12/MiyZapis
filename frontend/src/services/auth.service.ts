@@ -33,14 +33,26 @@ export class AuthService {
       return userData;
     } catch (error: unknown) {
       const response = (error as any)?.response;
-      // Extract the most detailed error message available
-      const errorDetails = response?.data?.errors?.details ||
-                          response?.data?.error?.details ||
-                          response?.data?.errors?.message ||
-                          response?.data?.error?.message ||
-                          (error as any).message ||
-                          'Registration failed';
-      throw new Error(errorDetails);
+      const data = response?.data;
+      // Validation errors come back as an ARRAY of objects (express-validator).
+      // Stringifying that array directly yields "[object Object], [object Object]",
+      // so extract each field's human message and join them.
+      const rawDetails = data?.errors?.details || data?.error?.details;
+      let message = '';
+      if (Array.isArray(rawDetails)) {
+        message = rawDetails
+          .map((d: any) => (typeof d === 'string' ? d : d?.message || d?.msg || ''))
+          .filter(Boolean)
+          .join(', ');
+      } else if (typeof rawDetails === 'string') {
+        message = rawDetails;
+      }
+      message = message
+        || data?.errors?.message
+        || data?.error?.message
+        || (error as any)?.message
+        || 'Registration failed';
+      throw new Error(message);
     }
   }
 
