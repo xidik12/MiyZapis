@@ -150,6 +150,14 @@ export class StoreService {
     return response.data;
   }
 
+  // Highest active membership discount % for a linked customer (POS preview).
+  async getMemberDiscount(customerUserId: string): Promise<number> {
+    try {
+      const response = await apiClient.get<{ discountPercent: number }>(`/sales/membership-discount/${customerUserId}`);
+      return response.success && response.data ? Number(response.data.discountPercent) || 0 : 0;
+    } catch { return 0; }
+  }
+
   // ---- POS: refund an order (restocks items) ----
   async refundOrder(orderId: string): Promise<ProductOrder> {
     const response = await apiClient.post<ProductOrder>(`/store/pos/orders/${encodeURIComponent(orderId)}/refund`, {});

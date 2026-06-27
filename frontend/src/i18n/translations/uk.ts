@@ -4730,6 +4730,7 @@ const uk: Record<string, string> = {
   'payroll.recordUpdated': 'Запис оновлено',
   'pos.discount': 'Знижка',
   'pos.linkClient': 'Додати клієнта (за бажанням) — пошук за іменем',
+  'pos.memberDiscount': 'Знижка учасника',
   'pos.discountApplied': 'Знижку застосовано',
   'pos.gross': 'Сума брутто',
   'pos.net': 'Нетто',

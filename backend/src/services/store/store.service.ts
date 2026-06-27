@@ -485,13 +485,21 @@ export class StoreService {
         });
       }
 
+      // Deduct stock for each line INSIDE the transaction so the order, gift-card
+      // redemption and stock movements all commit or roll back together (was a
+      // post-transaction loop that could partially deduct if one item failed).
+      for (const li of lineItems) {
+        await tx.stockMovement.create({
+          data: { productId: li.productId, delta: -li.quantity, reason: 'SALE', reference: created.id, createdById: ownerId },
+        });
+        await tx.product.update({
+          where: { id: li.productId },
+          data: { stockQty: { decrement: li.quantity } },
+        });
+      }
+
       return created;
     });
-
-    // Deduct stock for each line (reason SALE), referencing this order.
-    for (const li of lineItems) {
-      await InventoryService.adjustStock(ownerId, li.productId, -li.quantity, 'SALE', ownerId, order.id);
-    }
 
     // Best-effort low-stock / out-of-stock alerts.
     // Fire ONLY when a sale causes a product to CROSS its reorder threshold

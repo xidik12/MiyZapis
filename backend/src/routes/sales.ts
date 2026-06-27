@@ -69,6 +69,19 @@ router.get('/summary', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// Highest active membership discount % for a customer — lets POS preview the
+// member discount before completing the sale.
+router.get('/membership-discount/:customerUserId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const ownerId = ownerIdOf(req);
+    const discountPercent = await SalesService.getActiveDiscountForCustomer(ownerId, req.params.customerUserId);
+    res.json(createSuccessResponse({ discountPercent }));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    res.status(500).json(createErrorResponse('SALES_ERROR', err.message, requestId(req)));
+  }
+});
+
 // ===========================================================================
 // GIFT CARDS
 // ===========================================================================

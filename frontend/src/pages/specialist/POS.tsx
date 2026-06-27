@@ -64,6 +64,7 @@ const POS: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<CrmClient | null>(null);
   const [customerSearch, setCustomerSearch] = useState('');
   const [customerResults, setCustomerResults] = useState<CrmClient[]>([]);
+  const [memberDiscountPct, setMemberDiscountPct] = useState(0);
 
   useEffect(() => {
     const q = customerSearch.trim();
@@ -103,10 +104,14 @@ const POS: React.FC = () => {
   const subtotal = round2(cart.reduce((s, l) => s + priceOf(l.product) * l.qty, 0));
   const discountAmt = round2(Math.max(0, Math.min(num(discountInput), subtotal)));
   const amountAfterDiscount = round2(subtotal - discountAmt);
+  // Membership discount: % of the amount after the manual discount (mirrors the
+  // server-side posSale math) — only when a member customer is linked.
+  const memberDiscountAmt = round2(Math.max(0, Math.min(amountAfterDiscount * memberDiscountPct / 100, amountAfterDiscount)));
+  const afterAllDiscounts = round2(amountAfterDiscount - memberDiscountAmt);
   const gcAppliedAmt = appliedGiftCard
-    ? round2(Math.max(0, Math.min(num(appliedGiftCard.balance), amountAfterDiscount)))
+    ? round2(Math.max(0, Math.min(num(appliedGiftCard.balance), afterAllDiscounts)))
     : 0;
-  const total = round2(amountAfterDiscount - gcAppliedAmt);
+  const total = round2(afterAllDiscounts - gcAppliedAmt);
   const itemCount = cart.reduce((s, l) => s + l.qty, 0);
 
   const addToCart = (product: Product, qty = 1) => {
@@ -194,6 +199,7 @@ const POS: React.FC = () => {
       setSelectedCustomer(null);
       setCustomerSearch('');
       setCustomerResults([]);
+      setMemberDiscountPct(0);
       setCheckoutOpen(false);
       await load(); // refresh stock
     } catch (err) {
@@ -383,7 +389,7 @@ const POS: React.FC = () => {
               {selectedCustomer ? (
                 <div className="flex items-center justify-between gap-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 px-3 py-2">
                   <span className="text-sm font-medium text-primary-700 dark:text-primary-300 truncate">👤 {selectedCustomer.name}</span>
-                  <button type="button" onClick={() => setSelectedCustomer(null)} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 active:scale-[0.96]">{t('common.clear') || 'Clear'}</button>
+                  <button type="button" onClick={() => { setSelectedCustomer(null); setMemberDiscountPct(0); }} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 active:scale-[0.96]">{t('common.clear') || 'Clear'}</button>
                 </div>
               ) : (
                 <div className="relative">
@@ -397,7 +403,7 @@ const POS: React.FC = () => {
                   {customerResults.length > 0 && (
                     <div className="absolute z-10 left-0 right-0 mt-1 max-h-44 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
                       {customerResults.map((c) => (
-                        <button type="button" key={c.customerId} onClick={() => { setSelectedCustomer(c); setCustomerSearch(''); setCustomerResults([]); }}
+                        <button type="button" key={c.customerId} onClick={() => { setSelectedCustomer(c); setCustomerSearch(''); setCustomerResults([]); storeService.getMemberDiscount(c.customerId).then(setMemberDiscountPct).catch(() => setMemberDiscountPct(0)); }}
                           className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white">
                           {c.name}
                         </button>
@@ -433,6 +439,12 @@ const POS: React.FC = () => {
                 <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
                   <span>{t('pos.discountApplied') || 'Discount applied'}</span>
                   <span className="tabular-nums">−{formatPrice(discountAmt, currency as any)}</span>
+                </div>
+              )}
+              {memberDiscountAmt > 0 && (
+                <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+                  <span>{t('pos.memberDiscount') || 'Member discount'} ({memberDiscountPct}%)</span>
+                  <span className="tabular-nums">−{formatPrice(memberDiscountAmt, currency as any)}</span>
                 </div>
               )}
               {/* Gift card row */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ShieldCheckIcon, FlagIcon, CheckCircleIcon } from '@/components/icons';
 import { apiClient } from '@/services/api';
+import { toast } from 'react-toastify';
 
 // ============================================================================
 // TYPES
@@ -148,6 +149,7 @@ const VerificationRequests: React.FC = () => {
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error('Verification action failed:', err);
+      toast.error('Action failed — please try again');
     } finally {
       setActing((prev) => ({ ...prev, [id]: false }));
     }
@@ -264,6 +266,7 @@ const ReviewReports: React.FC = () => {
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error('Review report action failed:', err);
+      toast.error('Action failed — please try again');
     } finally {
       setActing((prev) => ({ ...prev, [id]: false }));
     }
@@ -384,6 +387,7 @@ const PostReports: React.FC = () => {
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error('Post report action failed:', err);
+      toast.error('Action failed — please try again');
     } finally {
       setActing((prev) => ({ ...prev, [id]: false }));
     }
