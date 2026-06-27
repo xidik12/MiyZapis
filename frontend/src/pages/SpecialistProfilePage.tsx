@@ -562,7 +562,7 @@ const SpecialistProfilePage: React.FC = () => {
                   ) : isFavorite ? (
                     <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" active />
                   ) : (
-                    <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" active />
+                    <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
                   )}
                   <span className="hidden sm:inline">{isFavorite ? t('actions.unfavorite') : t('actions.favorite')}</span>
                   <span className="sm:hidden">{isFavorite ? '♥' : '♡'}</span>

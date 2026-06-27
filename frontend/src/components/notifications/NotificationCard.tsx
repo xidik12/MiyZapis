@@ -32,7 +32,7 @@ interface NotificationCardProps {
 }
 
 const getNotificationIcon = (type: string) => {
-  switch (type) {
+  switch ((type || '').toLowerCase()) {
     case 'booking_confirmed':
     case 'booking_updated':
     case 'new_booking':
@@ -50,7 +50,7 @@ const getNotificationIcon = (type: string) => {
 };
 
 const getNotificationColor = (type: string) => {
-  switch (type) {
+  switch ((type || '').toLowerCase()) {
     case 'booking_confirmed':
     case 'booking_updated':
     case 'new_booking':
@@ -93,7 +93,8 @@ const getNotificationColor = (type: string) => {
 };
 
 const getPriorityLevel = (type: string): 'urgent' | 'important' | 'normal' => {
-  if (type === 'booking_cancelled' || type === 'payment_failed') {
+  const k = (type || '').toLowerCase();
+  if (k === 'booking_cancelled' || k === 'payment_failed') {
     return 'urgent';
   }
   if (type === 'payment_received' || type === 'new_booking') {

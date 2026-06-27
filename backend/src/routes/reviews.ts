@@ -322,7 +322,7 @@ router.get('/service/:id', cacheMiddleware(60, 'service-reviews'), validateGetSe
       customer: {
         id: review.customer.id,
         firstName: review.customer.firstName,
-        lastName: review.customer.lastName.charAt(0) + '.', // Privacy protection
+        lastName: (review.customer.lastName || '').charAt(0) + '.', // Privacy protection
         avatar: review.customer.avatar
       },
       booking: {
@@ -872,7 +872,7 @@ router.get('/specialist/:id', cacheMiddleware(60, 'specialist-reviews'), validat
       customer: {
         id: review.customer.id,
         firstName: review.customer.firstName,
-        lastName: review.customer.lastName.charAt(0) + '.', // Privacy protection
+        lastName: (review.customer.lastName || '').charAt(0) + '.', // Privacy protection
         avatar: review.customer.avatar
       },
       service: review.booking.service,

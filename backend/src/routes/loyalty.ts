@@ -219,6 +219,7 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       totalTransactions: baseStats.totalTransactions,
       totalBadges: baseStats.badges?.length || 0,
       totalReferrals: baseStats.successfulReferrals || 0,
+      totalServices: baseStats.totalBookings || 0,
       currentTier,
       nextTier,
       pointsToNextTier,

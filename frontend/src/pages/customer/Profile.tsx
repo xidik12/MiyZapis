@@ -521,7 +521,7 @@ const CustomerProfile: React.FC = () => {
                 <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-all duration-500" 
-                    style={{ width: `${(loyalty.points / (loyalty.points + loyalty.nextTierPoints)) * 100}%` }}
+                    style={{ width: `${loyalty.points + loyalty.nextTierPoints > 0 ? (loyalty.points / (loyalty.points + loyalty.nextTierPoints)) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>

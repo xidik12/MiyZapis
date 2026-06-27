@@ -134,7 +134,8 @@ export class BookingService {
     }
     
     console.log('✅ BookingService: Booking updated successfully');
-    return response.data;
+    // Backend wraps the updated booking as { booking }; tolerate either shape.
+    return (response.data as { booking?: Booking }).booking ?? (response.data as Booking);
   }
 
   // Create booking after payment is confirmed (payment-first approach)
@@ -201,11 +202,12 @@ export class BookingService {
 
   // Get specific booking details
   async getBooking(bookingId: string): Promise<Booking> {
-    const response = await apiClient.get<Booking>(`/bookings/${bookingId}`);
+    const response = await apiClient.get<Booking | { booking: Booking }>(`/bookings/${bookingId}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get booking details');
     }
-    return response.data;
+    // Backend wraps single bookings as { booking }; tolerate either shape.
+    return (response.data as { booking?: Booking }).booking ?? (response.data as Booking);
   }
 
 

@@ -64,22 +64,34 @@ export class WalletService {
 
   async getTransactionHistory(filters: TransactionFilters = {}): Promise<WalletTransactionHistory> {
     const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
-      }
+    const { offset, limit: rawLimit, ...rest } = filters;
+    const limit = rawLimit ?? 50;
+    params.append('limit', String(limit));
+    // Backend paginates by `page`; translate the component's offset → page.
+    params.append('page', String(offset ? Math.floor(offset / limit) + 1 : 1));
+    Object.entries(rest).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) params.append(key, value.toString());
     });
 
-    const response = await apiClient.get<WalletTransactionHistory>(
-      `/payments/wallet/transactions?${params}`
-    );
+    // Backend returns { transactions, pagination, totalBalance } — map to the
+    // { transactions, total, balance } shape the UI expects (was reading the
+    // wrong fields → balance always showed 0 and "Load more" never appeared).
+    const response = await apiClient.get<{
+      transactions: WalletTransaction[];
+      pagination?: { totalItems?: number };
+      totalBalance?: number;
+    }>(`/payments/wallet/transactions?${params}`);
 
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get transaction history');
     }
 
-    return response.data;
+    const d = response.data;
+    return {
+      transactions: d.transactions ?? [],
+      total: d.pagination?.totalItems ?? (d.transactions?.length ?? 0),
+      balance: Number(d.totalBalance ?? 0),
+    };
   }
 
   async getWalletSummary(): Promise<WalletSummary> {
