@@ -69,7 +69,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {referralService.getReferralTypeDisplayName(referral.referralType)}
+                {t(referralService.getReferralTypeDisplayName(referral.referralType))}
               </h3>
               <div className="flex flex-wrap items-center mt-1 gap-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400 break-all">

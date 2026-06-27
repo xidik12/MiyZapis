@@ -87,6 +87,22 @@ export class NotificationService {
       uk: 'Бронювання послуги "{{serviceName}}" з {{customerName}} підтверджено.',
       ru: 'Бронирование услуги "{{serviceName}}" с {{customerName}} подтверждено.'
     },
+    'notifications.booking.awaitingReview.customer.title': {
+      en: 'How did your appointment go?', uk: 'Як пройшов ваш запис?', ru: 'Как прошла ваша запись?'
+    },
+    'notifications.booking.awaitingReview.customer.message': {
+      en: 'Please confirm whether your booking happened so we can update your booking history.',
+      uk: 'Підтвердіть, чи відбувся запис — ми оновимо історію ваших бронювань.',
+      ru: 'Подтвердите, состоялась ли запись — мы обновим историю ваших бронирований.'
+    },
+    'notifications.booking.awaitingReview.specialist.title': {
+      en: 'Confirm or close a past booking', uk: 'Підтвердіть або закрийте минулий запис', ru: 'Подтвердите или закройте прошлую запись'
+    },
+    'notifications.booking.awaitingReview.specialist.message': {
+      en: 'A past appointment is still open. Please mark it Completed or report a no-show.',
+      uk: 'Минулий запис ще відкритий. Позначте його як завершений або вкажіть неявку.',
+      ru: 'Прошлая запись ещё открыта. Отметьте её как завершённую или укажите неявку.'
+    },
     'notifications.booking.pending.customer.title': {
       en: 'Booking Request Sent', uk: 'Запит на бронювання відправлено', ru: 'Запрос на бронирование отправлен'
     },

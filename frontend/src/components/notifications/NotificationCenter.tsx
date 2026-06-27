@@ -357,6 +357,19 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           title: t('notifications.booking.request.specialist.title') || 'New Booking Request',
           message: interp(t('notifications.booking.request.specialist.message') || 'New booking request for {service} on {date} - requires your confirmation.', { service, date })
         };
+      case 'booking_awaiting_review': {
+        const role = String(n.data?.actorRole || '').toUpperCase();
+        if (role === 'SPECIALIST') {
+          return {
+            title: t('notifications.bookingAwaitingReview.specialist.title') || 'Confirm or close a past booking',
+            message: t('notifications.bookingAwaitingReview.specialist.message') || 'A past appointment is still open. Please mark it Completed or report a no-show.'
+          };
+        }
+        return {
+          title: t('notifications.bookingAwaitingReview.customer.title') || 'How did your appointment go?',
+          message: t('notifications.bookingAwaitingReview.customer.message') || 'Please confirm whether your booking happened so we can update your booking history.'
+        };
+      }
       case 'inventory_low_stock':
         return {
           title: t('notifications.inventory.lowStock.title') || 'Low stock',

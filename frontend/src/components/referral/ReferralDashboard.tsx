@@ -247,7 +247,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType: _userTy
                 className="border border-gray-200 dark:border-gray-700 rounded-xl p-4"
               >
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                  {referralService.getReferralTypeDisplayName(type)}
+                  {t(referralService.getReferralTypeDisplayName(type))}
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">

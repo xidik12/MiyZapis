@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
-import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
+import { XIcon as XMarkIcon, UserGroupIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Button } from '../ui/Button';
@@ -21,8 +21,16 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
   loading = false,
 }) => {
   const { t } = useLanguage();
+
+  // The referral TYPE is auto-derived from the referrer's role — the user no longer
+  // picks it (the old 3-option picker was confusing and showed two near-identical
+  // "Refer a Customer" choices). Specialists invite customers; customers invite customers.
+  const referrerIsSpecialist = (config.availableTypes || []).includes('SPECIALIST_TO_CUSTOMER');
+  const derivedType: ReferralType = referrerIsSpecialist ? 'SPECIALIST_TO_CUSTOMER' : 'CUSTOMER_TO_CUSTOMER';
+  const rewards = config.config.REWARDS[derivedType];
+
   const [formData, setFormData] = useState<ReferralFormData>({
-    referralType: 'CUSTOMER_TO_CUSTOMER',
+    referralType: derivedType,
     targetUserType: 'CUSTOMER',
     inviteChannel: 'LINK',
     customMessage: '',
@@ -35,7 +43,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
     if (isOpen) {
       // Reset form when modal opens
       setFormData({
-        referralType: 'CUSTOMER_TO_CUSTOMER',
+        referralType: derivedType,
         targetUserType: 'CUSTOMER',
         inviteChannel: 'LINK',
         customMessage: '',
@@ -58,14 +66,6 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
     await onSubmit(formData);
   };
 
-  const handleReferralTypeChange = (type: ReferralType) => {
-    setFormData(prev => ({
-      ...prev,
-      referralType: type,
-      targetUserType: type === 'CUSTOMER_TO_SPECIALIST' ? 'SPECIALIST' : 'CUSTOMER',
-    }));
-  };
-
   const getChannelIcon = (channel: InviteChannel) => {
     switch (channel) {
       case 'EMAIL':
@@ -86,17 +86,31 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
   const getChannelLabel = (channel: InviteChannel) => {
     switch (channel) {
       case 'EMAIL':
-        return 'Email';
+        return t('referral.channel.email') || 'Email';
       case 'SMS':
-        return 'SMS';
+        return t('referral.channel.sms') || 'SMS';
       case 'SOCIAL':
-        return 'Social Media';
+        return t('referral.channel.social') || 'Social Media';
       case 'DIRECT':
-        return 'Direct Message';
+        return t('referral.channel.direct') || 'Direct Message';
       case 'LINK':
-        return 'Share Link';
+        return t('referral.channel.link') || 'Share Link';
       default:
         return channel;
+    }
+  };
+
+  // Localized reward text (e.g. "100 points", "15% discount").
+  const rewardText = (type: string, value?: number) => {
+    switch (type) {
+      case 'POINTS':
+        return `${value} ${t('referral.reward.pointsUnit') || 'points'}`;
+      case 'CREDIT':
+        return `$${value} ${t('referral.reward.creditUnit') || 'credit'}`;
+      case 'DISCOUNT':
+        return `${value}${t('referral.reward.discountSuffix') || '% discount'}`;
+      default:
+        return `${value}`;
     }
   };
 
@@ -152,60 +166,21 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                 </div>
               )}
 
-              {/* Referral Type */}
+              {/* What you'll earn — referral type is auto-derived from your role */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('referral.create.type')}
+                  {t('referral.create.inviteHeading') || 'Invite & earn'}
                 </label>
-                <div className="grid grid-cols-1 gap-3">
-                  {config.availableTypes.map((type) => {
-                    const rewards = config.config.REWARDS[type];
-                    const isSelected = formData.referralType === type;
-
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => handleReferralTypeChange(type)}
-                        className={clsx(
-                          'text-left p-4 border-2 rounded-xl transition active:scale-[0.96]',
-                          isSelected
-                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                        )}
-                      >
-                        <div className="flex items-start">
-                          <div className={clsx(
-                            'p-2 rounded-xl mr-3',
-                            type === 'CUSTOMER_TO_SPECIALIST'
-                              ? 'bg-indigo-100 dark:bg-indigo-900/20'
-                              : 'bg-blue-100 dark:bg-blue-900/20'
-                          )}>
-                            {type === 'CUSTOMER_TO_SPECIALIST' ? (
-                              <BriefcaseIcon className={clsx(
-                                'h-5 w-5',
-                                type === 'CUSTOMER_TO_SPECIALIST'
-                                  ? 'text-indigo-600 dark:text-indigo-400'
-                                  : 'text-blue-600 dark:text-blue-400'
-                              )} />
-                            ) : (
-                              <UserGroupIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 dark:text-white">
-                              {referralService.getReferralTypeDisplayName(type)}
-                            </h4>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {t('referral.create.youEarn') || 'You earn:'} {referralService.getRewardDisplayText(rewards.referrerRewardType, rewards.referrerRewardValue)}
-                              {' • '}
-                              {t('referral.create.theyGet') || 'They get:'} {referralService.getRewardDisplayText(rewards.referredRewardType, rewards.referredRewardValue)}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="p-4 border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+                  <div className="flex items-start">
+                    <div className="p-2 rounded-xl mr-3 bg-blue-100 dark:bg-blue-900/20">
+                      <UserGroupIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      <div>{t('referral.create.youEarn') || 'You earn:'} {rewardText(rewards.referrerRewardType, rewards.referrerRewardValue)}</div>
+                      <div>{t('referral.create.theyGet') || 'They get:'} {rewardText(rewards.referredRewardType, rewards.referredRewardValue)}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -248,7 +223,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                 />
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {formData.customMessage.length}/500 characters
+                  {formData.customMessage.length}/500 {t('referral.create.characters') || 'characters'}
                 </div>
               </div>
 
@@ -262,13 +237,13 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, expiresInDays: parseInt(e.target.value) }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                 >
-                  <option value={7}>7 days</option>
-                  <option value={14}>14 days</option>
-                  <option value={30}>30 days (Default)</option>
-                  <option value={60}>60 days</option>
-                  <option value={90}>90 days</option>
-                  <option value={180}>180 days</option>
-                  <option value={365}>1 year</option>
+                  <option value={7}>7 {t('referral.create.days') || 'days'}</option>
+                  <option value={14}>14 {t('referral.create.days') || 'days'}</option>
+                  <option value={30}>30 {t('referral.create.days') || 'days'} ({t('referral.create.defaultSuffix') || 'Default'})</option>
+                  <option value={60}>60 {t('referral.create.days') || 'days'}</option>
+                  <option value={90}>90 {t('referral.create.days') || 'days'}</option>
+                  <option value={180}>180 {t('referral.create.days') || 'days'}</option>
+                  <option value={365}>{t('referral.create.year1') || '1 year'}</option>
                 </select>
               </div>
             </div>

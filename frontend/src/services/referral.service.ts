@@ -158,16 +158,17 @@ class ReferralService {
   /**
    * Get referral type display name
    */
+  // Returns an i18n KEY — callers wrap in t(). The two customer-referral variants
+  // collapse to a single label (both mean "referred a customer"), which removes the
+  // old "two near-identical options" confusion.
   getReferralTypeDisplayName(type: string): string {
     switch (type) {
-      case 'CUSTOMER_TO_CUSTOMER':
-        return 'Refer a Customer';
-      case 'SPECIALIST_TO_CUSTOMER':
-        return 'Refer a Customer (Specialist)';
       case 'CUSTOMER_TO_SPECIALIST':
-        return 'Refer a Specialist';
+        return 'referral.type.specialist';
+      case 'CUSTOMER_TO_CUSTOMER':
+      case 'SPECIALIST_TO_CUSTOMER':
       default:
-        return type;
+        return 'referral.type.customer';
     }
   }
 

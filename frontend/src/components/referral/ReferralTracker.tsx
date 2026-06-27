@@ -124,7 +124,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
             {analytics.topPerformingTypes.map((type) => (
               <div key={type.type} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {referralService.getReferralTypeDisplayName(type.type)}
+                  {t(referralService.getReferralTypeDisplayName(type.type))}
                 </span>
                 <div className="flex items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
@@ -211,7 +211,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
                   {getStatusIcon(activity.status)}
                   <div className="ml-3">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {referralService.getReferralTypeDisplayName(activity.referralType)}
+                      {t(referralService.getReferralTypeDisplayName(activity.referralType))}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {activity.referred

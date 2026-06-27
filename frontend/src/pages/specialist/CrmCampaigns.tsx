@@ -235,6 +235,7 @@ interface PreviewPanelProps {
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({ filter }) => {
+  const { t } = useLanguage();
   const [count, setCount] = useState<number | null>(null);
   const [sample, setSample] = useState<CrmClient[]>([]);
   const [loading, setLoading] = useState(false);

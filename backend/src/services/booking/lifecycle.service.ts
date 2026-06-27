@@ -186,16 +186,16 @@ export class BookingLifecycleService {
         notifier.sendNotification(b.customerId, {
           ...baseData,
           data: { ...baseData.data, actorRole: 'CUSTOMER' },
-          title: 'How did your appointment go?',
-          message: 'Please confirm whether your booking happened so we can update your booking history.',
+          title: 'notifications.booking.awaitingReview.customer.title',
+          message: 'notifications.booking.awaitingReview.customer.message',
         }),
         notifier.sendNotification(b.specialistId, {
           ...baseData,
           // Only the specialist gets the Completed/No-show quick buttons (those
           // actions are specialist-only); the customer's copy stays informational.
           data: { ...baseData.data, actorRole: 'SPECIALIST' },
-          title: 'Confirm or close a past booking',
-          message: 'A past appointment is still open. Please mark it Completed or report a no-show.',
+          title: 'notifications.booking.awaitingReview.specialist.title',
+          message: 'notifications.booking.awaitingReview.specialist.message',
         }),
       ]).catch((err) => {
         logger.warn('Failed to push stale-review notifications', { bookingId: b.bookingId, error: (err as Error).message });

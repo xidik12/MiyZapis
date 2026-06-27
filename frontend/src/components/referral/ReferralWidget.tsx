@@ -177,7 +177,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
             {analytics.recentActivity.slice(0, 3).map((activity: Record<string, unknown>, index: number) => (
               <div key={(activity.id as string) || index} className="flex items-center justify-between text-xs">
                 <span className="text-gray-600 dark:text-gray-400">
-                  {referralService.getReferralTypeDisplayName(activity.referralType as string)}
+                  {t(referralService.getReferralTypeDisplayName(activity.referralType as string))}
                 </span>
                 <span className={clsx(
                   'px-2 py-1 rounded-full',
