@@ -3,6 +3,16 @@ import { logger } from '@/utils/logger';
 import { num } from '@/utils/money';
 import { coinbaseCommerceService } from './coinbase.service';
 
+// Add N months to a date, clamping the day to the target month's last day.
+// Avoids JS's silent overflow where new Date(y, m+1, 31) rolls into the next month
+// (e.g. Jan 31 + 1 month → Mar 3, which over-grants subscription days).
+function addMonthsClamped(base: Date, months: number): Date {
+  const target = new Date(base.getFullYear(), base.getMonth() + months, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(base.getDate(), lastDay));
+  return target;
+}
+
 export interface SubscriptionPlan {
   type: 'PAY_PER_USE' | 'MONTHLY_SUBSCRIPTION';
   monthlyRate: number;
@@ -188,9 +198,9 @@ export class SpecialistSubscriptionService {
           pendingPlanType: null,
           planChangeEffectiveDate: null,
           currentPeriodStart: now,
-          currentPeriodEnd: new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()),
+          currentPeriodEnd: addMonthsClamped(now, 1),
           nextBillingDate: newPlanType === 'MONTHLY_SUBSCRIPTION'
-            ? new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+            ? addMonthsClamped(now, 1)
             : null,
           currentMonthTransactions: 0,
           currentMonthFees: 0,
@@ -204,7 +214,7 @@ export class SpecialistSubscriptionService {
           subscriptionStatus: newPlanType,
           subscriptionEffectiveDate: now,
           subscriptionValidUntil: newPlanType === 'MONTHLY_SUBSCRIPTION'
-            ? new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+            ? addMonthsClamped(now, 1)
             : null,
         },
       });
@@ -292,7 +302,7 @@ export class SpecialistSubscriptionService {
   ): Promise<void> {
     const now = new Date();
     const months = Number.isFinite(opts.months) && opts.months > 0 ? Math.floor(opts.months) : 12;
-    let periodEnd = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+    let periodEnd = addMonthsClamped(now, months);
 
     await this.getSubscription(specialistId); // ensure a row exists
 
@@ -314,7 +324,7 @@ export class SpecialistSubscriptionService {
       if (subscription.currentPeriodEnd && subscription.currentPeriodEnd.getTime() > base.getTime()) {
         base = subscription.currentPeriodEnd;
       }
-      periodEnd = new Date(base.getFullYear(), base.getMonth() + months, base.getDate());
+      periodEnd = addMonthsClamped(base, months);
 
       await tx.specialistSubscription.update({
         where: { id: subscription.id },

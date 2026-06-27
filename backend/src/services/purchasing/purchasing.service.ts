@@ -1,6 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { randomBytes } from 'crypto';
-import { InventoryService } from '@/services/inventory/inventory.service';
 
 const prisma = new PrismaClient();
 
@@ -342,8 +341,14 @@ export class PurchasingService {
       return { item, newReceived: clampedTarget, delta, ordered };
     });
 
-    // Persist line receivedQty changes in a transaction.
-    await prisma.$transaction(async (tx) => {
+    // Persist line receivedQty changes, increment stock, and flip PO status — all
+    // in ONE transaction so a mid-operation crash can't leave items "received"
+    // with stock unincremented or the PO status out of sync.
+    const anyReceived = updates.some((u) => u.newReceived > 0);
+    const allFull = updates.length > 0 && updates.every((u) => u.newReceived >= u.ordered);
+    const newStatus: POStatus = allFull ? 'RECEIVED' : anyReceived ? 'PARTIAL' : po.status as POStatus;
+
+    return prisma.$transaction(async (tx) => {
       for (const u of updates) {
         if (u.newReceived !== toNumber(u.item.receivedQty)) {
           await tx.purchaseOrderItem.update({
@@ -352,36 +357,28 @@ export class PurchasingService {
           });
         }
       }
-    });
-
-    // Increment inventory stock for each newly-received delta (>0) with a productId.
-    // Done outside the line-update transaction because adjustStock manages its own
-    // transaction (movement + product increment) and is ownership-scoped.
-    for (const u of updates) {
-      if (u.delta > 0 && u.item.productId) {
-        await InventoryService.adjustStock(
-          ownerId,
-          u.item.productId,
-          u.delta,
-          'PURCHASE',
-          userId || ownerId,
-          po.id
-        );
+      for (const u of updates) {
+        if (u.delta > 0 && u.item.productId) {
+          // Skip lines whose product was deleted (same as adjustStock).
+          const product = await tx.product.findFirst({ where: { id: u.item.productId, ownerId } });
+          if (!product) continue;
+          await tx.stockMovement.create({
+            data: { productId: u.item.productId, delta: u.delta, reason: 'PURCHASE', reference: po.id, createdById: userId || ownerId },
+          });
+          await tx.product.update({
+            where: { id: u.item.productId },
+            data: { stockQty: { increment: u.delta } },
+          });
+        }
       }
-    }
-
-    // Determine new PO status: RECEIVED if every line is fully received, else PARTIAL.
-    const anyReceived = updates.some((u) => u.newReceived > 0);
-    const allFull = updates.length > 0 && updates.every((u) => u.newReceived >= u.ordered);
-    const newStatus: POStatus = allFull ? 'RECEIVED' : anyReceived ? 'PARTIAL' : po.status as POStatus;
-
-    return prisma.purchaseOrder.update({
-      where: { id },
-      data: {
-        status: newStatus,
-        receivedAt: newStatus === 'RECEIVED' ? new Date() : po.receivedAt ?? (anyReceived ? new Date() : null),
-      },
-      include: { items: true, supplier: true },
+      return tx.purchaseOrder.update({
+        where: { id },
+        data: {
+          status: newStatus,
+          receivedAt: newStatus === 'RECEIVED' ? new Date() : po.receivedAt ?? (anyReceived ? new Date() : null),
+        },
+        include: { items: true, supplier: true },
+      });
     });
   }
 

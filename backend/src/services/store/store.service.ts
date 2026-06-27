@@ -273,26 +273,33 @@ export class StoreService {
     const wasFulfilled = order.status === 'FULFILLED';
     const becomingFulfilled = status === 'FULFILLED' && !wasFulfilled;
 
-    // Deduct stock on first fulfilment (before flipping status). adjustStock is
-    // itself transactional per product; if a line's product was deleted it
-    // returns null and we skip it.
-    if (becomingFulfilled) {
-      for (const item of order.items) {
-        await InventoryService.adjustStock(
-          ownerId,
-          item.productId,
-          -toNumber(item.quantity),
-          'SALE',
-          ownerId,
-          order.id
-        );
+    // Deduct stock AND flip status in ONE transaction so a mid-operation failure
+    // can't leave stock deducted while the order stays non-FULFILLED (which would
+    // double-deduct on retry). Mirrors the atomic posSale path.
+    return prisma.$transaction(async (tx) => {
+      if (becomingFulfilled) {
+        for (const item of order.items) {
+          // Skip lines whose product was deleted (same as adjustStock).
+          const product = await tx.product.findFirst({ where: { id: item.productId, ownerId } });
+          if (!product) continue;
+          const qty = toNumber(item.quantity);
+          if (toNumber(product.stockQty) - qty < 0) {
+            throw new Error('Insufficient stock to fulfil this order');
+          }
+          await tx.stockMovement.create({
+            data: { productId: item.productId, delta: -qty, reason: 'SALE', reference: order.id, createdById: ownerId },
+          });
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stockQty: { decrement: qty } },
+          });
+        }
       }
-    }
-
-    return prisma.productOrder.update({
-      where: { id: order.id },
-      data: { status },
-      include: { items: true },
+      return tx.productOrder.update({
+        where: { id: order.id },
+        data: { status },
+        include: { items: true },
+      });
     });
   }
 

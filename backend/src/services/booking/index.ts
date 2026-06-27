@@ -1179,7 +1179,7 @@ export class BookingService {
 
       if (isSpecialistCancellation) {
         // If specialist cancels, customer gets FULL refund ($1) to wallet
-        refundAmount = 100; // $1 in cents
+        refundAmount = 100; // ₴100 goodwill credit (wallet is stored in major units)
       }
       // If customer cancels, they lose the $1 deposit (no refund)
 
@@ -1334,8 +1334,10 @@ export class BookingService {
           // Add refund notice to cancellation reason if applicable
           let cancellationMessage = reason || '';
           if (refundAmount > 0) {
-            const refundInDollars = (refundAmount / 100).toFixed(2);
-            cancellationMessage += cancellationMessage ? ` A refund of $${refundInDollars} has been credited to your wallet.` : `A refund of $${refundInDollars} has been credited to your wallet.`;
+            // Wallet credit is in major units (goodwill), not cents — show it as-is.
+            const refundCurrency = (updatedBooking.customer as { currency?: string }).currency || 'UAH';
+            const refundText = `${refundAmount} ${refundCurrency}`;
+            cancellationMessage += cancellationMessage ? ` A refund of ${refundText} has been credited to your wallet.` : `A refund of ${refundText} has been credited to your wallet.`;
           }
 
           await templatedEmailService.sendTemplateEmail({

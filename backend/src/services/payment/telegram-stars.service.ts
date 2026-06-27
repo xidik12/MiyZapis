@@ -5,6 +5,7 @@ import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { specialistSubscriptionService } from './subscription.service';
 import { PromoteService } from '@/services/promote/promote.service';
+import { redis } from '@/config/redis';
 
 // ---------------------------------------------------------------------------
 // Telegram Stars — recurring specialist subscription billing.
@@ -252,6 +253,21 @@ export class TelegramStarsService {
         if (!parsed) return; // not ours
         const { kind, userId: specialistUserId } = parsed;
         const payerId = ctx.from?.id ? String(ctx.from.id) : undefined;
+
+        // Idempotency: Telegram can redeliver the same successful_payment. Dedup by
+        // charge id so a boost isn't double-extended / a sub double-activated.
+        const chargeId = sp.telegram_payment_charge_id;
+        if (chargeId && redis) {
+          try {
+            const fresh = await redis.set(`tg-charge:${chargeId}`, '1', 'EX', 7 * 24 * 3600, 'NX');
+            if (fresh !== 'OK') {
+              logger.info('Duplicate Telegram successful_payment ignored', { chargeId });
+              return;
+            }
+          } catch {
+            // Redis unavailable — fall through and process (better than dropping a real payment).
+          }
+        }
 
         if (kind === 'boost') {
           const days = (parsed as { kind: 'boost'; days: number; userId: string }).days;
