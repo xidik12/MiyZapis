@@ -142,7 +142,7 @@ const CustomerHelpSupport: React.FC = () => {
               onClick={() => window.location.reload()}
               className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline"
             >
-              Try again
+              {t('common.tryAgain')}
             </button>
           </div>
         )}

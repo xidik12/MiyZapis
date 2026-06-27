@@ -102,6 +102,7 @@ export async function buildClientList(
       customerId: true,
       totalAmount: true,
       scheduledAt: true,
+      completedAt: true,
     },
   });
 
@@ -110,14 +111,16 @@ export async function buildClientList(
   for (const b of bookingRows) {
     const cid = b.customerId;
     const amt = Number(b.totalAmount);
+    // Prefer the actual completion date; fall back to scheduled for older rows.
+    const visit = b.completedAt ?? b.scheduledAt;
     const prev = bookingMap.get(cid);
     if (!prev) {
-      bookingMap.set(cid, { count: 1, spend: amt, lastVisit: b.scheduledAt });
+      bookingMap.set(cid, { count: 1, spend: amt, lastVisit: visit });
     } else {
       bookingMap.set(cid, {
         count: prev.count + 1,
         spend: prev.spend + amt,
-        lastVisit: b.scheduledAt > prev.lastVisit ? b.scheduledAt : prev.lastVisit,
+        lastVisit: visit > prev.lastVisit ? visit : prev.lastVisit,
       });
     }
   }

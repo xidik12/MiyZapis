@@ -254,13 +254,13 @@ const CustomerFavorites: React.FC = () => {
                 onClick={() => fetchFavorites(currentPage)}
                 className="text-sm text-red-600 hover:text-red-800 underline"
               >
-                Try again
+                {t('common.tryAgain')}
               </button>
               <button
                 onClick={() => dispatch(clearError())}
                 className="text-sm text-red-600 hover:text-red-800 underline"
               >
-                Dismiss
+                {t('common.dismiss')}
               </button>
             </div>
           </div>
@@ -509,7 +509,7 @@ const CustomerFavorites: React.FC = () => {
                       onClick={() => navigate('/search')}
                       className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                     >
-                      Browse Services
+                      {t('favorites.browseServices') || 'Browse Services'}
                     </button>
                   </div>
                 ) : (

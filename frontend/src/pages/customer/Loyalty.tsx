@@ -1083,12 +1083,12 @@ const CustomerLoyalty: React.FC = () => {
                                       </span>
                                       {reward.usageLimit === 'ONCE_PER_USER' && (
                                         <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                                          One time only
+                                          {t('loyalty.oneTimeOnly') || 'One time only'}
                                         </span>
                                       )}
                                       {reward.validUntil && (
                                         <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
-                                          Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                          {t('loyalty.expiresLabel') || 'Expires'} {new Date(reward.validUntil).toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US')}
                                         </span>
                                       )}
                                     </div>
