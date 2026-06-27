@@ -880,13 +880,12 @@ router.delete('/account', authenticateToken, validateDeleteAccount, async (req: 
     const userId = req.userId;
     const { password, reason, feedback } = req.body;
 
-    // Verify password
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, password: true, email: true }
     });
 
-    if (!user || !user.password) {
+    if (!user) {
       return res.status(404).json(
         createErrorResponse(
           ErrorCodes.RESOURCE_NOT_FOUND,
@@ -896,15 +895,19 @@ router.delete('/account', authenticateToken, validateDeleteAccount, async (req: 
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json(
-        createErrorResponse(
-          ErrorCodes.INVALID_CREDENTIALS,
-          'Password is incorrect',
-          req.headers['x-request-id'] as string
-        )
-      );
+    // Accounts WITH a password must supply the correct one. Telegram/OAuth accounts
+    // have no password — identity is already proven by the auth token, so we skip it.
+    if (user.password) {
+      const isPasswordValid = password ? await bcrypt.compare(password, user.password) : false;
+      if (!isPasswordValid) {
+        return res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.INVALID_CREDENTIALS,
+            'Password is incorrect',
+            req.headers['x-request-id'] as string
+          )
+        );
+      }
     }
 
     // Check for active bookings
@@ -928,17 +931,28 @@ router.delete('/account', authenticateToken, validateDeleteAccount, async (req: 
       );
     }
 
-    // Soft delete - deactivate account instead of hard delete
+    // Soft delete — deactivate and SCRUB PII (GDPR). Related rows (bookings, reviews,
+    // payments) have Restrict FKs and are retained for the other party's records, but
+    // no personal data of this user is recoverable from the User row.
     await prisma.user.update({
       where: { id: userId },
       data: {
         isActive: false,
-        email: `deleted_${Date.now()}_${user.email}`, // Anonymize email
+        email: `deleted_${user.id}@deleted.local`, // id-based tombstone, no real email embedded
+        firstName: 'Deleted',
+        lastName: 'User',
+        dateOfBirth: null,
         password: null,
         telegramId: null,
         phoneNumber: null,
         avatar: null
       }
+    });
+
+    // If this is a specialist, remove their public profile from search too.
+    await prisma.specialist.updateMany({
+      where: { userId },
+      data: { listedInSearch: false }
     });
 
     // Revoke all refresh tokens

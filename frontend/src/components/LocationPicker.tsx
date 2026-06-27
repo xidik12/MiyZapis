@@ -41,29 +41,56 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   // Load Google Maps API
   useEffect(() => {
-    // Only try to load if we have a valid API key
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    
+
     if (!apiKey) {
       console.warn('Google Maps API key not found. Map functionality disabled.');
       setMapError(true);
       return;
     }
-    
-    if (!(window as any).google && !document.querySelector('script[src*="googleapis"]')) {
-      const script = document.createElement('script');
+
+    // Already loaded?
+    if ((window as any).google?.maps) {
+      setMapLoaded(true);
+      return;
+    }
+
+    // Surface Google auth failures (invalid key / API not enabled / referrer not allowed)
+    // as a visible error instead of an infinite spinner.
+    (window as any).gm_authFailure = () => {
+      console.error('Google Maps auth failure — check API key restrictions & enabled APIs');
+      setMapError(true);
+    };
+
+    const onReady = () => { clearTimeout(timeout); setMapLoaded(true); };
+    const onFail = () => { clearTimeout(timeout); setMapError(true); };
+
+    // Use a dedicated id so we don't false-match unrelated *.googleapis.com scripts/links.
+    let script = document.getElementById('gmaps-sdk') as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'gmaps-sdk';
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
-      script.onload = () => setMapLoaded(true);
-      script.onerror = () => {
-        console.error('Failed to load Google Maps API');
-        setMapLoaded(false);
-        setMapError(true);
-      };
+      script.addEventListener('load', onReady);
+      script.addEventListener('error', onFail);
       document.head.appendChild(script);
-    } else if ((window as any).google && (window as any).google.maps) {
-      setMapLoaded(true);
+    } else if ((window as any).google?.maps) {
+      onReady();
+    } else {
+      script.addEventListener('load', onReady);
+      script.addEventListener('error', onFail);
     }
+
+    // Hard timeout: if the SDK never initializes (blocked / silent auth failure), bail out.
+    const timeout = setTimeout(() => {
+      if (!(window as any).google?.maps) {
+        console.error('Google Maps load timed out');
+        setMapError(true);
+      }
+    }, 12000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   // Initialize map when modal opens and Google Maps is loaded

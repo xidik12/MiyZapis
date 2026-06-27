@@ -207,9 +207,13 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                   {getTransactionIcon(transaction.type)}
                   <div className={compact ? 'space-y-0' : 'space-y-1'}>
                     <div className="font-medium text-sm text-gray-900 dark:text-white">
-                      {formatTransactionReason(transaction.reason)}
+                      {transaction.reason && t(`wallet.transactions.reasons.${transaction.reason}`) !== `wallet.transactions.reasons.${transaction.reason}`
+                        ? t(`wallet.transactions.reasons.${transaction.reason}`)
+                        : formatTransactionReason(transaction.reason)}
                     </div>
-                    {!compact && transaction.description && (
+                    {/* Backend descriptions are English free-text; only show them for reasons we don't have a localized label for */}
+                    {!compact && transaction.description &&
+                      (!transaction.reason || t(`wallet.transactions.reasons.${transaction.reason}`) === `wallet.transactions.reasons.${transaction.reason}`) && (
                       <div className="text-xs text-muted-foreground">
                         {transaction.description}
                       </div>

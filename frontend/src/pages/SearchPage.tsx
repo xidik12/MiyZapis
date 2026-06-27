@@ -1104,7 +1104,7 @@ const SearchPage: React.FC = () => {
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                   {searchQuery ? `${t('search.resultsFor') || 'Results for'} "${searchQuery}"` : (t('search.results') || 'Results')}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">{getFilteredServices().length} {t('search.professionalsFound') || 'found'}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">{getFilteredServices().length} {t('search.servicesFound') || 'services found'}</p>
               </div>
               <div className="flex items-center gap-2">
                 {(() => {

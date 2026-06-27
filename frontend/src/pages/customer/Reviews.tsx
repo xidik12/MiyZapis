@@ -76,8 +76,8 @@ const CustomerReviews: React.FC = () => {
           // True average over ALL reviews, from the backend aggregate (not just this page).
           const avgRating = Number((response as any).averageRating) || 0;
           const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
-          const recommendationRate = loadedCount > 0
-            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / loadedCount
+          const recommendationRate = response.reviews.length > 0
+            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / response.reviews.length
             : 0;
 
           setReviewStats({

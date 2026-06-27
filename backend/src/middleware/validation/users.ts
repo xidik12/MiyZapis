@@ -190,10 +190,13 @@ export const validateUnlinkTelegram = [
 
 // Delete account validation
 export const validateDeleteAccount = [
+  // Password is required only for accounts that actually have one (email/password auth).
+  // Telegram/OAuth users have no password — the handler verifies the identity from the token.
   body('password')
+    .optional()
     .isLength({ min: 1 })
     .withMessage('Password is required to delete account'),
-  
+
   body('reason')
     .optional()
     .trim()

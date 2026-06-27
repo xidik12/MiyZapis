@@ -334,7 +334,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main content */}
-      <div className={`flex-1 min-w-0 flex flex-col min-h-screen ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
+      <div className={`flex-1 min-w-0 flex flex-col overflow-hidden ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           {/* Mobile brand (sidebar is hidden on mobile; bottom nav handles navigation) */}

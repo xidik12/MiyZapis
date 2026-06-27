@@ -51,7 +51,7 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: '/users/profile',
     UPLOAD_AVATAR: '/files/upload',
     PREFERENCES: '/users/preferences',
-    DELETE_ACCOUNT: '/users',
+    DELETE_ACCOUNT: '/users/account',
     TELEGRAM_LINK: '/users/telegram/link',
     TELEGRAM_UNLINK: '/users/telegram/unlink',
     TELEGRAM_GENERATE_LINK_CODE: '/users/telegram/generate-link-code',

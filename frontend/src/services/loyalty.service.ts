@@ -419,13 +419,13 @@ export class LoyaltyService {
   // Get user's badges
   async getUserBadges(): Promise<UserBadge[]> {
     try {
-      const response = await apiClient.get<{ badges: UserBadge[] }>('/loyalty/badges');
+      const response = await apiClient.get<{ earnedBadges: UserBadge[] }>('/loyalty/badges');
 
       if (!response.success || !response.data) {
         return [];
       }
 
-      return response.data.badges;
+      return response.data.earnedBadges || [];
     } catch (error: unknown) {
       console.warn('Failed to get user badges:', error);
       return [];
@@ -434,13 +434,13 @@ export class LoyaltyService {
 
   // Get available badges
   async getAvailableBadges(): Promise<LoyaltyBadge[]> {
-    const response = await apiClient.get<{ badges: LoyaltyBadge[] }>('/loyalty/badges/available');
-    
+    const response = await apiClient.get<{ availableBadges: LoyaltyBadge[] }>('/loyalty/badges');
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get available badges');
     }
-    
-    return response.data.badges;
+
+    return response.data.availableBadges || [];
   }
 
   // Get active campaigns

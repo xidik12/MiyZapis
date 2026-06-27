@@ -22,6 +22,7 @@ import { HelpTip } from '@/components/common/HelpTip';
 import PhoneVerifyButton from '@/components/common/PhoneVerifyButton';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import DeleteAccountModal from '@/components/modals/DeleteAccountModal';
 
 
 interface Address {
@@ -138,6 +139,7 @@ const CustomerSettings: React.FC = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isUnlinkingTelegram, setIsUnlinkingTelegram] = useState(false);
   const [showUnlinkTelegramModal, setShowUnlinkTelegramModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [_showAddPaymentModal, _setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
@@ -1340,6 +1342,30 @@ const CustomerSettings: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Danger Zone */}
+      <div className="max-w-3xl mx-auto mt-6 mb-4 px-1 sm:px-2">
+        <div className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-5">
+          <h3 className="text-base font-semibold text-red-700 dark:text-red-400">
+            {t('settings.danger.title') || 'Danger Zone'}
+          </h3>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {t('settings.deleteAccount.warning') || 'This permanently deactivates your account and anonymizes your personal data. This cannot be undone.'}
+          </p>
+          <button
+            onClick={() => setShowDeleteAccountModal(true)}
+            className="mt-3 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium"
+          >
+            {t('settings.deleteAccount.button') || 'Delete my account'}
+          </button>
+        </div>
+      </div>
+
+      <DeleteAccountModal
+        isOpen={showDeleteAccountModal}
+        onClose={() => setShowDeleteAccountModal(false)}
+        hasPassword={!!currentUser?.hasPassword}
+      />
 
       {/* Set Password Modal */}
       <SetPasswordModal

@@ -380,10 +380,13 @@ export class AuthService {
     }
   }
 
-  // Delete account
-  async deleteAccount(password: string): Promise<{ message: string }> {
+  // Delete account. Password is omitted for Telegram/OAuth accounts (no password).
+  async deleteAccount(password?: string, reason?: string): Promise<{ message: string }> {
+    const body: Record<string, unknown> = {};
+    if (password) body.password = password;
+    if (reason) body.reason = reason;
     const response = await apiClient.delete<{ message: string }>(API_ENDPOINTS.USERS.DELETE_ACCOUNT, {
-      data: { password }
+      data: body
     });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete account');
