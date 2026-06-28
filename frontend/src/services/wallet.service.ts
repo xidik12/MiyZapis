@@ -97,25 +97,21 @@ export class WalletService {
   async getWalletSummary(): Promise<WalletSummary> {
     // This endpoint might not exist yet, so we'll construct it from balance and transactions
     try {
-      const [balance, _transactions] = await Promise.all([
+      // One balance call (authoritative) + one history fetch for the credit/debit
+      // sums. (Previously also made a pointless extra limit:1 request.)
+      const [balance, history] = await Promise.all([
         this.getBalance(),
-        this.getTransactionHistory({ limit: 1 })
+        this.getTransactionHistory({ limit: 1000 }),
       ]);
 
-      // Calculate totals from transaction history
-      const allTransactions = await this.getTransactionHistory({ limit: 1000 });
-
-      const credits = allTransactions.transactions
+      const txns = history.transactions;
+      const credits = txns
         .filter(t => ['CREDIT', 'REFUND'].includes(t.type) && t.status === 'COMPLETED')
         .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      const debits = allTransactions.transactions
+      const debits = txns
         .filter(t => t.type === 'DEBIT' && t.status === 'COMPLETED')
         .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      const pending = allTransactions.transactions.filter(t => t.status === 'PENDING').length;
-
-      const lastTransaction = allTransactions.transactions[0];
+      const pending = txns.filter(t => t.status === 'PENDING').length;
 
       return {
         balance: balance.balance,
@@ -123,7 +119,7 @@ export class WalletService {
         totalCredits: credits,
         totalDebits: debits,
         pendingTransactions: pending,
-        lastTransactionAt: lastTransaction?.createdAt,
+        lastTransactionAt: txns[0]?.createdAt,
       };
     } catch (error) {
       console.warn('Failed to get comprehensive wallet summary, falling back to balance only:', error);

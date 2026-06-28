@@ -219,20 +219,25 @@ const Promote: React.FC = () => {
       if (canInvoice) {
         try {
           tg!.openInvoice!(link, (invoiceStatus) => {
+            setBuyingBoost(false);
             if (invoiceStatus === 'paid') {
-              // Poll after the bot handler completes activation.
+              toast.success(t('promote.paymentSuccess') || 'Payment received — activating boost…');
               pollStatus();
+            } else if (invoiceStatus === 'failed') {
+              toast.error(t('promote.paymentFailed') || 'Payment failed. Please try again.');
             }
+            // 'cancelled' → silent
           });
+          return; // keep the button busy until the invoice callback resolves
         } catch {
           openLink();
         }
       } else {
         openLink();
       }
+      setBuyingBoost(false); // link path: payment continues out-of-band
     } catch (err) {
       toast.error((err as Error).message || t('promote.saveError') || 'Failed to start payment');
-    } finally {
       setBuyingBoost(false);
     }
   };

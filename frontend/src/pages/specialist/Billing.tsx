@@ -115,16 +115,26 @@ const Billing: React.FC = () => {
       const canInvoice = !!tg?.openInvoice && (tg?.isVersionAtLeast ? tg.isVersionAtLeast('6.1') : false);
       if (canInvoice) {
         try {
-          tg!.openInvoice!(link, (invoiceStatus) => { if (invoiceStatus === 'paid') pollStatus(); });
+          tg!.openInvoice!(link, (invoiceStatus) => {
+            setBusy(null);
+            if (invoiceStatus === 'paid') {
+              toast.success(t('billing.paymentSuccess') || 'Payment received — activating…');
+              pollStatus();
+            } else if (invoiceStatus === 'failed') {
+              toast.error(t('billing.paymentFailed') || 'Payment failed. Please try again.');
+            }
+            // 'cancelled' → silent (user backed out)
+          });
+          return; // keep the button busy until the invoice callback resolves
         } catch {
           openLink();
         }
       } else {
         openLink();
       }
+      setBusy(null); // link path: payment continues out-of-band, re-enable the button
     } catch (err) {
       toast.error((err as Error).message || t('billing.invoiceError') || 'Could not start payment');
-    } finally {
       setBusy(null);
     }
   };
