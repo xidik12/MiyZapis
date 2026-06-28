@@ -36,6 +36,9 @@ const getNotificationIcon = (type: string) => {
     case 'booking_confirmed':
     case 'booking_updated':
     case 'new_booking':
+    case 'booking_request':
+    case 'booking_pending':
+    case 'booking_awaiting_review':
       return <CalendarIcon className="w-5 h-5" />;
     case 'payment_received':
     case 'payment_failed':
@@ -54,6 +57,9 @@ const getNotificationColor = (type: string) => {
     case 'booking_confirmed':
     case 'booking_updated':
     case 'new_booking':
+    case 'booking_request':
+    case 'booking_pending':
+    case 'booking_awaiting_review':
       return {
         icon: 'text-blue-600 dark:text-blue-400',
         bg: 'bg-blue-100 dark:bg-blue-900/30',
