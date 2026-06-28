@@ -175,3 +175,7 @@ docs/
 !.env.example
 *.pem
 *.key
+
+# Claude Code skill tooling (not project code)
+.agents/
+skills-lock.json
