@@ -766,6 +766,22 @@ const SpecialistSettings: React.FC = () => {
                       label={t('settings.showProfileInSearch')}
                       description={t('settings.showProfileInSearchDesc')}
                     />
+
+                    {/* Danger Zone — lives inside the Account panel */}
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h4 className="text-base font-semibold text-red-700 dark:text-red-400">
+                        {t('settings.danger.title') || 'Danger Zone'}
+                      </h4>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        {t('settings.deleteAccount.warningSpecialist') || 'This permanently deactivates your account, hides your profile and services, and anonymizes your personal data. This cannot be undone.'}
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteAccountModal(true)}
+                        className="mt-3 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium"
+                      >
+                        {t('settings.deleteAccount.button') || 'Delete my account'}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 )}
@@ -1242,25 +1258,6 @@ const SpecialistSettings: React.FC = () => {
             </div>
         </div>
 
-        {/* Danger Zone — only in the Account section */}
-        {activeTab === 'account' && (
-        <div className="mt-6 mb-4">
-          <div className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-5">
-            <h3 className="text-base font-semibold text-red-700 dark:text-red-400">
-              {t('settings.danger.title') || 'Danger Zone'}
-            </h3>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {t('settings.deleteAccount.warningSpecialist') || 'This permanently deactivates your account, hides your profile and services, and anonymizes your personal data. This cannot be undone.'}
-            </p>
-            <button
-              onClick={() => setShowDeleteAccountModal(true)}
-              className="mt-3 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium"
-            >
-              {t('settings.deleteAccount.button') || 'Delete my account'}
-            </button>
-          </div>
-        </div>
-        )}
 
         <DeleteAccountModal
           isOpen={showDeleteAccountModal}
