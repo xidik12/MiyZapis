@@ -116,6 +116,19 @@ export class BookingService {
         throw new Error('SCHEDULED_TIME_MUST_BE_FUTURE');
       }
 
+      // The customer must have real contact details before booking. Telegram-login
+      // users get a placeholder "telegram_<id>@temp.com" email and often no phone —
+      // the specialist needs a real way to reach them.
+      const customerContact = await prisma.user.findUnique({
+        where: { id: data.customerId },
+        select: { email: true, phoneNumber: true },
+      });
+      const hasRealEmail = !!customerContact?.email && !customerContact.email.endsWith('@temp.com');
+      const hasPhone = !!customerContact?.phoneNumber && customerContact.phoneNumber.trim().length > 0;
+      if (!hasRealEmail || !hasPhone) {
+        throw new Error('CUSTOMER_CONTACT_REQUIRED');
+      }
+
       // Check for duplicate bookings (same customer, service, and time)
       const existingBooking = await prisma.booking.findFirst({
         where: {

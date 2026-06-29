@@ -718,6 +718,25 @@ export class ServiceService {
           user: {
             isActive: true,
           },
+          // Only list specialists with a usable profile: a business name, at least
+          // one reachable contact (business phone or WhatsApp) and a location.
+          // Incomplete profiles stay hidden from search until they're filled in.
+          AND: [
+            { businessName: { not: null } },
+            { businessName: { not: '' } },
+            {
+              OR: [
+                { AND: [{ businessPhone: { not: null } }, { businessPhone: { not: '' } }] },
+                { AND: [{ whatsappNumber: { not: null } }, { whatsappNumber: { not: '' } }] },
+              ],
+            },
+            {
+              OR: [
+                { AND: [{ preciseAddress: { not: null } }, { preciseAddress: { not: '' } }] },
+                { AND: [{ address: { not: null } }, { address: { not: '' } }] },
+              ],
+            },
+          ],
         },
       };
 

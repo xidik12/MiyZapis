@@ -239,6 +239,17 @@ export class BookingController {
         return;
       }
 
+      if (err.message === 'CUSTOMER_CONTACT_REQUIRED') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Please add a valid email and phone number to your profile before booking.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
