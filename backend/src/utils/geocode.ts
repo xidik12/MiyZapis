@@ -5,7 +5,7 @@
  */
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
-const USER_AGENT = 'MiyZapis/1.0 (support@miyzapis.com)';
+const USER_AGENT = 'MiyZapis/1.0 (info@incognitogeneration.com)';
 const TIMEOUT_MS = 8_000;
 
 export interface Coords {

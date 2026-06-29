@@ -2879,7 +2879,7 @@ const en: Record<string, string> = {
   'contact.success': 'Your message has been sent successfully! We\'ll get back to you soon.',
   'contact.error': 'Failed to send message. Please try again later.',
   'contact.info.title': 'Other Ways to Reach Us',
-  'contact.info.email': 'support@miyzapis.com',
+  'contact.info.email': 'info@incognitogeneration.com',
   'contact.info.telegram': '@MiyZapis_Bot',
   'onboarding.professionRequired': 'Profession is required',
   'onboarding.bioRequired': 'Bio is required',

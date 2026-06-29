@@ -95,7 +95,7 @@ const CustomerHelpSupport: React.FC = () => {
         break;
       case 'chat':
         // No live chat widget yet — fall back to support email
-        window.location.href = 'mailto:support@miyzapis.com';
+        window.location.href = 'mailto:info@incognitogeneration.com';
         break;
     }
   };
@@ -240,7 +240,7 @@ const CustomerHelpSupport: React.FC = () => {
                     {
                       title: t('guides.paymentMethods'),
                       description: t('guides.paymentMethodsDesc'),
-                      link: 'mailto:support@miyzapis.com',
+                      link: 'mailto:info@incognitogeneration.com',
                     },
                     {
                       title: t('guides.accountSecurity'),

@@ -115,9 +115,9 @@ const faqs = [
     question: 'How can I contact customer support?',
     questionUk: 'Як я можу зв\'язатися з підтримкою клієнтів?',
     questionRu: 'Как я могу связаться с поддержкой клиентов?',
-    answer: 'You can contact our support team via email at support@miyzapis.com, phone, or through the live chat feature.',
-    answerUk: 'Ви можете зв\'язатися з нашою командою підтримки електронною поштою support@miyzapis.com, телефоном або через функцію онлайн-чату.',
-    answerRu: 'Вы можете связаться с нашей командой поддержки по электронной почте support@miyzapis.com, телефону или через функцию онлайн-чата.',
+    answer: 'You can contact our support team via email at info@incognitogeneration.com.',
+    answerUk: 'Ви можете зв\'язатися з нашою командою підтримки електронною поштою info@incognitogeneration.com.',
+    answerRu: 'Вы можете связаться с нашей командой поддержки по электронной почте info@incognitogeneration.com.',
     category: 'general',
     tags: '["support", "contact", "help"]',
     sortOrder: 2

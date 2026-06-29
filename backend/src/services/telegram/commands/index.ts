@@ -410,7 +410,7 @@ export async function showHelp(ctx: BotContext) {
 
   let helpText = `**Help & Support**\n\n` +
     `\ud83d\udcde Support: +380 123 456 789\n` +
-    `\ud83d\udce7 Email: support@miyzapis.com\n` +
+    `\ud83d\udce7 Email: info@incognitogeneration.com\n` +
     `\ud83c\udf10 Website: miyzapis.com\n\n` +
     `**Available Commands:**\n` +
     `/start - Main menu\n` +

@@ -145,7 +145,7 @@ const TermsPage: React.FC = () => {
           <p>{t('terms.contactInfo.text')}</p>
           <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mt-6">
             <p className="mb-2"><strong>{t('terms.contactInfo.email')}</strong> legal@miyzapis.com</p>
-            <p className="mb-2"><strong>{t('terms.contactInfo.support')}</strong> support@miyzapis.com</p>
+            <p className="mb-2"><strong>{t('terms.contactInfo.support')}</strong> info@incognitogeneration.com</p>
             <p className="mb-0"><strong>{t('terms.contactInfo.address')}</strong> Kyiv, Ukraine</p>
           </div>
 

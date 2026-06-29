@@ -67,7 +67,7 @@ const CONTENT = {
         paragraphs: [
           'You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account.',
           'You agree to provide accurate, current, and complete information when registering and to keep that information up to date. Providing false information is grounds for immediate termination.',
-          'Notify us immediately at support@miyzapis.com if you believe your account has been compromised.',
+          'Notify us immediately at info@incognitogeneration.com if you believe your account has been compromised.',
           'You may not share your account, sell it, or transfer it to another person.',
         ],
       },
@@ -142,7 +142,7 @@ const CONTENT = {
         id: '9',
         title: '9. Suspension & Termination',
         paragraphs: [
-          'You may close your account at any time by contacting support@miyzapis.com.',
+          'You may close your account at any time by contacting info@incognitogeneration.com.',
           'We may suspend or terminate your account immediately, without prior notice, if you breach this Agreement, engage in conduct harmful to other users or the platform, fail to pay applicable fees, or if required by law.',
           'Upon termination your right to access the platform ceases immediately. We may retain data as required by law or our Privacy Policy.',
           'Termination does not relieve you of obligations that accrued before termination (including any outstanding fees).',
@@ -246,7 +246,7 @@ const CONTENT = {
         paragraphs: [
           'Ви несете відповідальність за конфіденційність своїх облікових даних і за всі дії, що здійснюються під вашим акаунтом.',
           'Ви зобов’язуєтесь надавати точну, актуальну та повну інформацію під час реєстрації і підтримувати її в актуальному стані. Надання неправдивих відомостей є підставою для негайного видалення акаунта.',
-          'Негайно повідомте нас за адресою support@miyzapis.com, якщо вважаєте, що ваш акаунт скомпрометовано.',
+          'Негайно повідомте нас за адресою info@incognitogeneration.com, якщо вважаєте, що ваш акаунт скомпрометовано.',
           'Передача акаунта іншій особі, його продаж або спільне використання заборонені.',
         ],
       },
@@ -321,7 +321,7 @@ const CONTENT = {
         id: '9',
         title: '9. Призупинення та видалення акаунта',
         paragraphs: [
-          'Ви можете закрити акаунт будь-коли, звернувшись до support@miyzapis.com.',
+          'Ви можете закрити акаунт будь-коли, звернувшись до info@incognitogeneration.com.',
           'Ми можемо призупинити або видалити ваш акаунт негайно, без попереднього повідомлення, якщо ви порушуєте цю Угоду, здійснюєте дії, що шкодять іншим користувачам або платформі, не сплачуєте відповідні тарифи чи якщо цього вимагає закон.',
           'Після видалення акаунта ваш доступ до платформи припиняється негайно. Ми можемо зберігати дані відповідно до вимог законодавства або нашої Політики конфіденційності.',
           'Видалення акаунта не звільняє вас від зобов’язань, що виникли до його видалення (зокрема щодо заборгованості з оплати).',
@@ -425,7 +425,7 @@ const CONTENT = {
         paragraphs: [
           'Вы несёте ответственность за конфиденциальность своих учётных данных и за все действия, осуществляемые под вашим аккаунтом.',
           'Вы обязуетесь предоставлять точную, актуальную и полную информацию при регистрации и поддерживать её в актуальном состоянии. Предоставление ложных сведений является основанием для немедленного удаления аккаунта.',
-          'Немедленно уведомите нас по адресу support@miyzapis.com, если считаете, что ваш аккаунт скомпрометирован.',
+          'Немедленно уведомите нас по адресу info@incognitogeneration.com, если считаете, что ваш аккаунт скомпрометирован.',
           'Передача аккаунта другому лицу, его продажа или совместное использование запрещены.',
         ],
       },
@@ -500,7 +500,7 @@ const CONTENT = {
         id: '9',
         title: '9. Приостановление и удаление аккаунта',
         paragraphs: [
-          'Вы можете закрыть аккаунт в любое время, обратившись по адресу support@miyzapis.com.',
+          'Вы можете закрыть аккаунт в любое время, обратившись по адресу info@incognitogeneration.com.',
           'Мы можем приостановить или удалить ваш аккаунт немедленно, без предварительного уведомления, если вы нарушаете настоящее Соглашение, осуществляете действия, наносящие вред другим пользователям или платформе, не оплачиваете соответствующие тарифы или если этого требует закон.',
           'После удаления аккаунта ваш доступ к платформе прекращается немедленно. Мы можем хранить данные в соответствии с требованиями законодательства или нашей Политикой конфиденциальности.',
           'Удаление аккаунта не освобождает вас от обязательств, возникших до его удаления (включая задолженность по оплате).',
@@ -631,10 +631,10 @@ const UserAgreementPage: React.FC = () => {
                   <p className="mb-2">
                     <strong>Email:</strong>{' '}
                     <a
-                      href="mailto:support@miyzapis.com"
+                      href="mailto:info@incognitogeneration.com"
                       className="text-blue-600 dark:text-blue-400 underline transition active:scale-[0.96] inline-block"
                     >
-                      support@miyzapis.com
+                      info@incognitogeneration.com
                     </a>
                   </p>
                   <p className="mb-2">

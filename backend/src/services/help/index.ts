@@ -92,44 +92,12 @@ export class HelpService {
         description: 'Get help via email',
         descriptionUk: 'Отримайте допомогу електронною поштою',
         descriptionRu: 'Получите помощь по электронной почте',
-        value: 'support@miyzapis.com',
+        value: 'info@incognitogeneration.com',
         availability: '24/7',
         availabilityUk: '24/7',
         availabilityRu: '24/7',
         isActive: true,
         sortOrder: 1
-      },
-      {
-        id: '2',
-        type: 'phone',
-        title: 'Phone Support',
-        titleUk: 'Телефонна підтримка',
-        titleRu: 'Телефонная поддержка',
-        description: 'Call us for immediate assistance',
-        descriptionUk: 'Зателефонуйте нам для негайної допомоги',
-        descriptionRu: 'Позвоните нам для немедленной помощи',
-        value: '+380 44 123 4567',
-        availability: 'Mon-Fri 9:00-18:00',
-        availabilityUk: 'Пн-Пт 9:00-18:00',
-        availabilityRu: 'Пн-Пт 9:00-18:00',
-        isActive: true,
-        sortOrder: 2
-      },
-      {
-        id: '3',
-        type: 'chat',
-        title: 'Live Chat',
-        titleUk: 'Онлайн чат',
-        titleRu: 'Онлайн чат',
-        description: 'Chat with our support team',
-        descriptionUk: 'Спілкуйтеся з нашою командою підтримки',
-        descriptionRu: 'Общайтесь с нашей командой поддержки',
-        value: 'https://miyzapis.com/chat',
-        availability: 'Mon-Fri 9:00-18:00',
-        availabilityUk: 'Пн-Пт 9:00-18:00',
-        availabilityRu: 'Пн-Пт 9:00-18:00',
-        isActive: true,
-        sortOrder: 3
       }
     ];
 

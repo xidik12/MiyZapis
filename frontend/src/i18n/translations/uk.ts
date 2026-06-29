@@ -2880,7 +2880,7 @@ const uk: Record<string, string> = {
   'contact.success': 'Ваше повідомлення успішно надіслано! Ми зв\'яжемося з вами найближчим часом.',
   'contact.error': 'Не вдалося надіслати повідомлення. Спробуйте пізніше.',
   'contact.info.title': 'Інші способи зв\'язку',
-  'contact.info.email': 'support@miyzapis.com',
+  'contact.info.email': 'info@incognitogeneration.com',
   'contact.info.telegram': '@MiyZapis_Bot',
   'onboarding.professionRequired': 'Професія обов\'язкова',
   'onboarding.bioRequired': 'Біографія обов\'язкова',
