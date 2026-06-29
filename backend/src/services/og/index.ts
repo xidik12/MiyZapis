@@ -70,16 +70,16 @@ async function loadImageBuffer(img?: string): Promise<Buffer | null> {
   }
 }
 
-// Cached brand icon (the handshake+leaf mark, transparent) — no white background.
+// Cached brand lockup (full logo + "MiyZapis" name, transparent) — no white background.
 let _iconCache: { buffer: Buffer; width: number; height: number } | null = null;
-const ICON_H = 92;
+const ICON_H = 104;
 async function loadBrandIcon(): Promise<{ buffer: Buffer; width: number; height: number } | null> {
   if (_iconCache) return _iconCache;
   try {
     const base = (process.env.FRONTEND_URL || 'https://miyzapis.com').replace(/\/$/, '');
     const ctrl = new AbortController();
     const to = setTimeout(() => ctrl.abort(), 5000);
-    const res = await fetch(`${base}/miyzapis_logo.png`, { signal: ctrl.signal });
+    const res = await fetch(`${base}/miyzapis-logo-full.png`, { signal: ctrl.signal });
     clearTimeout(to);
     if (!res.ok) return null;
     const resized = await sharp(Buffer.from(await res.arrayBuffer())).resize({ height: ICON_H }).png().toBuffer();
@@ -146,12 +146,8 @@ export async function generateServiceOgCard(serviceId: string): Promise<Buffer> 
 
   // Brand icon (no chip) + avatar circle.
   const icon = await loadBrandIcon();
-  const iconW = icon?.width || ICON_H;
-  const iconH = icon?.height || ICON_H;
-  const iconLeft = 52;
-  const iconTop = 40;
-  const wordmarkX = iconLeft + iconW + 16;
-  const wordmarkY = iconTop + iconH / 2 + 16; // vertically centered with the icon
+  const iconLeft = 48;
+  const iconTop = 38;
 
   const avatarBuf = sp.user?.avatar ? await loadImageBuffer(sp.user.avatar) : null;
   const AV = 84;
@@ -181,8 +177,7 @@ export async function generateServiceOgCard(serviceId: string): Promise<Buffer> 
       </filter>
     </defs>
     <rect width="${W}" height="${H}" fill="url(#scrim)"/>
-    <!-- brand wordmark (icon composited separately) -->
-    <text x="${wordmarkX}" y="${wordmarkY}" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="46" font-weight="800" fill="#ffffff" filter="url(#ds)">MiyZapis</text>
+    <!-- brand lockup composited separately (top-left) -->
     ${priceLabel ? `
     <rect x="${W - 56 - (priceLabel.length * 23 + 52)}" y="42" rx="24" ry="24" width="${priceLabel.length * 23 + 52}" height="60" fill="${BRAND_YELLOW}"/>
     <text x="${W - 56 - 26}" y="83" text-anchor="end" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="34" font-weight="800" fill="#1e293b">${escapeXml(priceLabel)}</text>` : ''}
