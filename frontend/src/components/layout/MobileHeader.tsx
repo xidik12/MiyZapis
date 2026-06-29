@@ -18,7 +18,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
           to="/"
           className="flex items-center space-x-2 group flex-shrink-0"
         >
-          <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-8 w-auto" />
+          <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-10 w-auto" />
         </Link>
 
         {/* Right side: Language toggle + Menu button */}

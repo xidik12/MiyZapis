@@ -221,7 +221,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-9 w-auto group-hover:scale-110 transition-all duration-300" />
+            <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-12 w-auto group-hover:scale-110 transition-all duration-300" />
           </Link>
           
           <button
