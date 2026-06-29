@@ -132,7 +132,7 @@ const CONTENT: Record<Lang, {
     ctaSpecialistTitle: 'Ready to grow?',
     ctaSpecialistSub: 'Start your free 2-month trial. No card needed.',
     ctaSpecialistBtn: 'Offer your services',
-    contactNote: 'Questions? Reach us at support@miyzapis.com',
+    contactNote: 'Questions? Reach us at info@incognitogeneration.com',
   },
 
   uk: {
@@ -185,7 +185,7 @@ const CONTENT: Record<Lang, {
     ctaSpecialistTitle: 'Готові рости?',
     ctaSpecialistSub: 'Почніть 2-місячний безкоштовний пробний період. Картка не потрібна.',
     ctaSpecialistBtn: 'Пропонувати послуги',
-    contactNote: 'Маєте питання? Пишіть на support@miyzapis.com',
+    contactNote: 'Маєте питання? Пишіть на info@incognitogeneration.com',
   },
 
   ru: {
@@ -238,7 +238,7 @@ const CONTENT: Record<Lang, {
     ctaSpecialistTitle: 'Готовы к росту?',
     ctaSpecialistSub: 'Начните 2-месячный бесплатный пробный период. Карта не нужна.',
     ctaSpecialistBtn: 'Предложить услуги',
-    contactNote: 'Вопросы? Пишите на support@miyzapis.com',
+    contactNote: 'Вопросы? Пишите на info@incognitogeneration.com',
   },
 };
 
@@ -605,15 +605,15 @@ const HowItWorksPage: React.FC = () => {
           className={`hiw-reveal${ctaReveal.visible ? ' is-visible' : ''} mt-8 text-center`}
         >
           <p className="text-sm text-gray-500 dark:text-gray-500">
-            {c.contactNote.split('support@miyzapis.com').map((part, i, arr) =>
+            {c.contactNote.split('info@incognitogeneration.com').map((part, i, arr) =>
               i < arr.length - 1 ? (
                 <React.Fragment key={i}>
                   {part}
                   <a
-                    href="mailto:support@miyzapis.com"
+                    href="mailto:info@incognitogeneration.com"
                     className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
                   >
-                    support@miyzapis.com
+                    info@incognitogeneration.com
                   </a>
                 </React.Fragment>
               ) : (

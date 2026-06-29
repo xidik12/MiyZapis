@@ -136,7 +136,7 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'How do I contact support?',
-            a: 'Email us at support@miyzapis.com — we aim to respond within one business day. For urgent issues, use the in-app support chat (available after sign-in at /customer/support).',
+            a: 'Email us at info@incognitogeneration.com — we aim to respond within one business day. For urgent issues, use the in-app support chat (available after sign-in at /customer/support).',
           },
         ],
       },
@@ -254,7 +254,7 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'Як звернутися до підтримки?',
-            a: 'Пишіть нам на support@miyzapis.com — відповідаємо протягом одного робочого дня. Для термінових питань є чат підтримки в особистому кабінеті (після входу, розділ /customer/support).',
+            a: 'Пишіть нам на info@incognitogeneration.com — відповідаємо протягом одного робочого дня. Для термінових питань є чат підтримки в особистому кабінеті (після входу, розділ /customer/support).',
           },
         ],
       },
@@ -372,7 +372,7 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'Как обратиться в поддержку?',
-            a: 'Пишите нам на support@miyzapis.com — отвечаем в течение одного рабочего дня. Для срочных вопросов есть чат поддержки в личном кабинете (после входа, раздел /customer/support).',
+            a: 'Пишите нам на info@incognitogeneration.com — отвечаем в течение одного рабочего дня. Для срочных вопросов есть чат поддержки в личном кабинете (после входа, раздел /customer/support).',
           },
         ],
       },
