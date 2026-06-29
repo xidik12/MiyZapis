@@ -439,11 +439,13 @@ const HomePage: React.FC = () => {
             <div className="relative hidden lg:block">
               <div className="relative aspect-[4/5] max-h-[480px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
                 <img
-                  src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80"
+                  src={(topSpecialists[0]?.user?.avatar || topSpecialists[0]?.avatar)
+                    ? getAbsoluteImageUrl((topSpecialists[0].user?.avatar || topSpecialists[0].avatar) as string)
+                    : 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80'}
                   alt={t('hero.title1')}
                   loading="eager"
                   className="h-full w-full object-cover"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://picsum.photos/seed/miyzapis-professional/900/1120'; }}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80'; }}
                 />
 
                 {topSpecialists.length > 0 && (() => {
@@ -456,8 +458,8 @@ const HomePage: React.FC = () => {
                   return (
                     // Contained inside the photo (bottom band) — never clipped.
                     <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
-                      {sp.avatar ? (
-                        <img src={getAbsoluteImageUrl(sp.avatar as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                      {(sp.user?.avatar || sp.avatar) ? (
+                        <img src={getAbsoluteImageUrl((sp.user?.avatar || sp.avatar) as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                       ) : (
                         <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
                           {name?.charAt(0) || 'M'}
