@@ -221,10 +221,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <Logo size="lg" className="group-hover:scale-110 transition-all duration-300" />
-            <span className="text-xl font-bold text-primary-600 dark:text-primary-400 group-hover:text-primary-500 transition-colors duration-300">
-              {environment.APP_NAME}
-            </span>
+            <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-9 w-auto group-hover:scale-110 transition-all duration-300" />
           </Link>
           
           <button

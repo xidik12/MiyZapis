@@ -339,10 +339,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 window.scrollTo(0, 0);
               }}
             >
-              <Logo size="md" className="group-hover:scale-105 transition-all duration-300" />
-              <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
-                МійЗапис
-              </span>
+              <img src="/miyzapis-logo-full.png" alt="MiyZapis" className="h-8 w-auto group-hover:scale-105 transition-all duration-300" />
               <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
                 Pro
               </span>

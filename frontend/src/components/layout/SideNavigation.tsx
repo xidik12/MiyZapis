@@ -137,10 +137,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">
         {!isCollapsed && (
           <Link to="/" className="flex items-center space-x-2 group">
-            <Logo size="md" className="group-hover:scale-110 transition-all duration-300" />
-            <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
-              {environment.APP_NAME}
-            </span>
+            <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-8 w-auto group-hover:scale-110 transition-all duration-300" />
           </Link>
         )}
         
