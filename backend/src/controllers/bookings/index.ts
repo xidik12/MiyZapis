@@ -464,6 +464,25 @@ export class BookingController {
         delete updateData.totalAmount;
       }
 
+      // A status change to CANCELLED must run the full cancellation path
+      // (refund + emails + in-app/push notifications + cancelledBy) — the generic
+      // field update only stamps cancelledAt, which is why the specialist's
+      // status-dropdown cancel sent no notice to either party.
+      if (updateData.status === 'CANCELLED') {
+        const cancelled = await BookingService.cancelBooking(
+          bookingId,
+          req.user.id,
+          updateData.cancellationReason || updateData.reason
+        );
+        const isSpecialistCanceller = existingBooking.specialistId === req.user.id;
+        res.json(
+          createSuccessResponse({
+            booking: isSpecialistCanceller ? cancelled : stripBookingSpecialistFields(cancelled),
+          })
+        );
+        return;
+      }
+
       const booking = await BookingService.updateBooking(bookingId, updateData);
 
       // Specialists see full data; customers see stripped data for non-confirmed bookings
