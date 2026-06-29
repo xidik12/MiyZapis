@@ -9,7 +9,7 @@
 // honour late-injected meta, so link unfurls + AI ingestion work in practice.
 // True SSR/prerender would close the gap but is out of scope here.
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 export interface PublicSeoProps {
@@ -35,6 +35,14 @@ const PublicSeo: React.FC<PublicSeoProps> = ({
 }) => {
   const img = image || DEFAULT_IMAGE;
   const hasLd = jsonLd && Object.keys(jsonLd).length > 0;
+
+  // Signal the prerenderer that the page's real OG meta is now applied, so the
+  // headless snapshot captures these tags (not the static index.html defaults).
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { prerenderReady?: boolean }).prerenderReady = true;
+    }
+  });
 
   return (
     <Helmet prioritizeSeoTags>

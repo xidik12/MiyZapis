@@ -95,12 +95,18 @@ async function render(targetUrl) {
     await page
       .waitForFunction(
         () => {
+          // Data-driven pages (service/specialist/post) set window.prerenderReady
+          // = false on mount and true once their dynamic OG meta is applied — wait
+          // for that so the snapshot includes the right tags. Pages that don't use
+          // it fall back to a "substantial content" check.
+          const w = /** @type {any} */ (window);
+          if (w.prerenderReady === true) return true;
+          if (w.prerenderReady === false) return false;
           const root = document.getElementById('root');
           const txt = root && root.innerText ? root.innerText.trim() : '';
-          // The loading shell is tiny ("Loading…"); a rendered page is large.
           return txt.length > 400;
         },
-        { timeout: 9000, polling: 300 }
+        { timeout: 9000, polling: 250 }
       )
       .catch(() => {});
     // Small settle for late JSON-LD injection (react-helmet-async).

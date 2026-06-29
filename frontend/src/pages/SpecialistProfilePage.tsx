@@ -31,6 +31,10 @@ import InstagramShowcase from '../components/specialist/InstagramShowcase';
 
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId: paramSpecialistId, slug } = useParams();
+  // Prerender: wait for this page's OG meta before snapshotting (PublicSeo sets true).
+  if (typeof window !== 'undefined' && (window as unknown as { prerenderReady?: boolean }).prerenderReady !== true) {
+    (window as unknown as { prerenderReady?: boolean }).prerenderReady = false;
+  }
   const [resolvedSpecialistId, setResolvedSpecialistId] = useState<string | undefined>(paramSpecialistId);
   const specialistId = resolvedSpecialistId;
   const { t, language } = useLanguage();

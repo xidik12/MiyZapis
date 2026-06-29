@@ -93,6 +93,10 @@ const LightboxOverlay: React.FC<LightboxOverlayProps> = ({ images, index, onClos
 
 const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
+  // Prerender: wait for this post's OG meta before snapshotting (PublicSeo sets true).
+  if (typeof window !== 'undefined' && (window as unknown as { prerenderReady?: boolean }).prerenderReady !== true) {
+    (window as unknown as { prerenderReady?: boolean }).prerenderReady = false;
+  }
   const navigate = useNavigate();
   const { t } = useLanguage();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);

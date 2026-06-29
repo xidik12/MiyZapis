@@ -17,6 +17,11 @@ import { StarIcon, ClockIcon, MapPinIcon } from '@/components/icons';
  */
 const ServicePublicPage: React.FC = () => {
   const { serviceId } = useParams();
+  // Prerender: hold the headless snapshot until this page's OG meta is applied
+  // (PublicSeo flips prerenderReady to true once the service data has loaded).
+  if (typeof window !== 'undefined' && (window as unknown as { prerenderReady?: boolean }).prerenderReady !== true) {
+    (window as unknown as { prerenderReady?: boolean }).prerenderReady = false;
+  }
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [service, setService] = useState<any>(null);
