@@ -774,6 +774,8 @@ const en: Record<string, string> = {
   'profileComplete.businessName': 'Business name',
   'profileComplete.contact': 'Phone or WhatsApp',
   'profileComplete.location': 'Address',
+  'notifications.profileIncomplete.title': 'Complete your profile to appear in search',
+  'notifications.profileIncomplete.message': 'Add your business name, a contact (phone or WhatsApp) and an address so clients can find and book you.',
   'dashboard.thisWeek': 'This Week',
   'dashboard.thisMonth': 'This Month',
   'dashboard.overview': 'Overview',

@@ -774,6 +774,8 @@ const uk: Record<string, string> = {
   'profileComplete.businessName': 'Назва бізнесу',
   'profileComplete.contact': 'Телефон або WhatsApp',
   'profileComplete.location': 'Адреса',
+  'notifications.profileIncomplete.title': 'Заповніть профіль, щоб з’являтися в пошуку',
+  'notifications.profileIncomplete.message': 'Додайте назву бізнесу, контакт (телефон або WhatsApp) та адресу, щоб клієнти могли вас знайти та забронювати.',
   'dashboard.thisWeek': 'Цього тижня',
   'dashboard.thisMonth': 'Цього місяця',
   'dashboard.overview': 'Огляд',

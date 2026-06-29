@@ -34,6 +34,7 @@ import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { startBookingLifecycleWorker } from '@/workers/bookingLifecycleWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 import { startMarketingWorker } from '@/workers/marketing.worker';
+import { startProfileReminderWorker } from '@/workers/profileReminderWorker';
 import { initializeVapid } from '@/services/push';
 import { SpecialistService } from '@/services/specialist';
 
@@ -489,6 +490,15 @@ const startServer = async () => {
         logger.info('⏰ Booking reminder worker started');
       } catch (e) {
         logger.warn('Failed to start booking reminder worker', { error: (e as Error)?.message });
+      }
+
+      // Profile-completion reminders: nudge specialists with incomplete profiles
+      // (bell + push) so they fill in what's needed to appear in search.
+      try {
+        startProfileReminderWorker();
+        logger.info('📣 Profile reminder worker started');
+      } catch (e) {
+        logger.warn('Failed to start profile reminder worker', { error: (e as Error)?.message });
       }
 
       // Booking lifecycle worker: 30-min reminders, PENDING SLA cancels,

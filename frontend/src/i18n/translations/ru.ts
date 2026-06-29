@@ -774,6 +774,8 @@ const ru: Record<string, string> = {
   'profileComplete.businessName': 'Название бизнеса',
   'profileComplete.contact': 'Телефон или WhatsApp',
   'profileComplete.location': 'Адрес',
+  'notifications.profileIncomplete.title': 'Заполните профиль, чтобы появляться в поиске',
+  'notifications.profileIncomplete.message': 'Добавьте название бизнеса, контакт (телефон или WhatsApp) и адрес, чтобы клиенты могли вас найти и забронировать.',
   'dashboard.thisWeek': 'На этой неделе',
   'dashboard.thisMonth': 'В этом месяце',
   'dashboard.overview': 'Обзор',
