@@ -8,6 +8,8 @@ import { communityService, Comment, Post } from '@/services';
 import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { formatDateRelative } from '@/utils/dateUtils';
+import PublicSeo from '@/components/common/PublicSeo';
+import { ShareButton } from '@/components/common/ShareButton';
 import {
   HeartIcon,
   ChatCircleIcon as ChatBubbleLeftIcon,
@@ -448,8 +450,51 @@ const PostDetailPage: React.FC = () => {
     );
   }
 
+  // Shareable rich-preview metadata (OG/Twitter + JSON-LD) for SEO/GEO/AEO.
+  const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/community/post/${post.id}`;
+  const ogImage = post.images && post.images.length > 0 ? getAbsoluteImageUrl(post.images[0]) : undefined;
+  const metaDesc = (post.content || post.title || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  const isListing = post.type === 'SALE' || post.type === 'RENT';
+  const soldOut = post.listingStatus === 'SOLD' || post.listingStatus === 'RENTED';
+  const postJsonLd = isListing
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: post.title,
+        description: metaDesc,
+        ...(ogImage ? { image: ogImage } : {}),
+        ...(post.price != null
+          ? {
+              offers: {
+                '@type': 'Offer',
+                price: post.price,
+                priceCurrency: post.currency || 'UAH',
+                availability: soldOut ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+                url: shareUrl,
+              },
+            }
+          : {}),
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: metaDesc,
+        ...(ogImage ? { image: ogImage } : {}),
+        datePublished: post.createdAt,
+        author: { '@type': 'Person', name: `${post.author.firstName} ${post.author.lastName || ''}`.trim() },
+      };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PublicSeo
+        title={`${post.title} — MiyZapis`}
+        description={metaDesc}
+        image={ogImage}
+        url={shareUrl}
+        type="article"
+        jsonLd={postJsonLd}
+      />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link to="/community" className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-500 mb-6">
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -659,6 +704,13 @@ const PostDetailPage: React.FC = () => {
                 {t('community.report') || 'Report'}
               </button>
             )}
+            <ShareButton
+              url={shareUrl}
+              title={post.title}
+              text={metaDesc}
+              variant="button"
+              className="!py-1.5 ml-auto"
+            />
           </div>
         </div>
 

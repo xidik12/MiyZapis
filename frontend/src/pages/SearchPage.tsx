@@ -6,6 +6,7 @@ import { serviceService } from '../services';
 import { locationService, CityData } from '../services/location.service';
 import { searchService, Suggestion } from '../services/search.service';
 import PublicSeo from '@/components/common/PublicSeo';
+import { ShareButton } from '@/components/common/ShareButton';
 import { buildBreadcrumbJsonLd, buildItemListJsonLd } from '@/utils/structuredData';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
@@ -758,14 +759,14 @@ const SearchPage: React.FC = () => {
           <div className="flex flex-row flex-wrap gap-2 sm:gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
+              className="flex-1 min-w-[140px] whitespace-nowrap bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className="flex-1 text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
+                className="flex-1 min-w-[110px] whitespace-nowrap text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -774,7 +775,7 @@ const SearchPage: React.FC = () => {
               <Link
                 /* Marketplace acquisition: booked from search = DISCOVERY source */
                 to={`/booking/${service.id}?source=DISCOVERY`}
-                className={`flex-1 text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
+                className={`flex-1 min-w-[110px] whitespace-nowrap text-white text-center h-11 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
                   service.isAvailable
                     ? 'bg-primary-600 hover:bg-primary-700'
                     : 'bg-gray-400 cursor-not-allowed'
@@ -817,6 +818,13 @@ const SearchPage: React.FC = () => {
                 </div>
               );
             })()}
+            <ShareButton
+              url={`${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/specialist/${service.specialist.id}`}
+              title={(service as any).name || service.specialist?.businessName || 'MiyZapis'}
+              text={service.specialist?.businessName || ''}
+              variant="icon"
+              className="self-center border border-gray-200 dark:border-gray-700"
+            />
           </div>
         </div>
       </div>
