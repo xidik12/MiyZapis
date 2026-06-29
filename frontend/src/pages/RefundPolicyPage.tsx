@@ -207,12 +207,12 @@ const en: PolicyContent = {
             <p className="mb-2">
               <strong>Email:</strong>{' '}
               <a
-                href="mailto:support@miyzapis.com"
+                href="mailto:info@incognitogeneration.com"
                 className="text-blue-600 dark:text-blue-400 underline underline-offset-2
                            transition-all duration-150 hover:text-blue-700 dark:hover:text-blue-300
                            active:scale-[0.96] inline-block"
               >
-                support@miyzapis.com
+                info@incognitogeneration.com
               </a>
             </p>
             <p className="mb-0 text-sm text-gray-600 dark:text-gray-400">
@@ -431,12 +431,12 @@ const uk: PolicyContent = {
             <p className="mb-2">
               <strong>Email:</strong>{' '}
               <a
-                href="mailto:support@miyzapis.com"
+                href="mailto:info@incognitogeneration.com"
                 className="text-blue-600 dark:text-blue-400 underline underline-offset-2
                            transition-all duration-150 hover:text-blue-700 dark:hover:text-blue-300
                            active:scale-[0.96] inline-block"
               >
-                support@miyzapis.com
+                info@incognitogeneration.com
               </a>
             </p>
             <p className="mb-0 text-sm text-gray-600 dark:text-gray-400">
@@ -655,12 +655,12 @@ const ru: PolicyContent = {
             <p className="mb-2">
               <strong>Email:</strong>{' '}
               <a
-                href="mailto:support@miyzapis.com"
+                href="mailto:info@incognitogeneration.com"
                 className="text-blue-600 dark:text-blue-400 underline underline-offset-2
                            transition-all duration-150 hover:text-blue-700 dark:hover:text-blue-300
                            active:scale-[0.96] inline-block"
               >
-                support@miyzapis.com
+                info@incognitogeneration.com
               </a>
             </p>
             <p className="mb-0 text-sm text-gray-600 dark:text-gray-400">
@@ -747,13 +747,13 @@ const RefundPolicyPage: React.FC = () => {
               {content.contactBoxLabel}
             </p>
             <a
-              href="mailto:support@miyzapis.com"
+              href="mailto:info@incognitogeneration.com"
               className="text-blue-600 dark:text-blue-400 underline underline-offset-2
                          font-medium transition-all duration-150
                          hover:text-blue-700 dark:hover:text-blue-300
                          active:scale-[0.96] inline-block"
             >
-              support@miyzapis.com
+              info@incognitogeneration.com
             </a>
           </div>
 
