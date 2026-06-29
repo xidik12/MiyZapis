@@ -718,9 +718,10 @@ export class ServiceService {
           user: {
             isActive: true,
           },
-          // Only list specialists with a usable profile: a business name, at least
-          // one reachable contact (business phone or WhatsApp) and a location.
-          // Incomplete profiles stay hidden from search until they're filled in.
+          // Only list specialists with a complete public profile: a business name,
+          // at least one reachable contact (business phone or WhatsApp) and a
+          // location. Incomplete specialists are nudged (dashboard banner) to fill
+          // these in so they appear in search.
           AND: [
             { businessName: { not: null } },
             { businessName: { not: '' } },

@@ -118,6 +118,7 @@ const SpecialistDashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [specialistSlug, setSpecialistSlug] = useState<string>('');
+  const [missingProfile, setMissingProfile] = useState<string[]>([]);
   // Removed sidebarOpen state - layout is handled by SpecialistLayout
 
   // Check if specialist needs onboarding (no services created yet)
@@ -422,6 +423,14 @@ const SpecialistDashboard: React.FC = () => {
         if (profileData.status === 'fulfilled' && profileData.value) {
           const prof = profileData.value as any;
           setSpecialistSlug(prof.slug || prof.id || '');
+
+          // Profile completeness — these are required to appear in search.
+          const nonEmpty = (v: any) => typeof v === 'string' && v.trim().length > 0;
+          const missing: string[] = [];
+          if (!nonEmpty(prof.businessName)) missing.push(t('profileComplete.businessName') || 'Business name');
+          if (!nonEmpty(prof.businessPhone) && !nonEmpty(prof.whatsappNumber)) missing.push(t('profileComplete.contact') || 'Phone or WhatsApp');
+          if (!nonEmpty(prof.preciseAddress) && !nonEmpty(prof.address)) missing.push(t('profileComplete.location') || 'Address');
+          setMissingProfile(missing);
         }
 
         // Process bookings data correctly: completed for recent, upcoming for appointments
@@ -638,6 +647,26 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {/* Profile-completeness nudge — services only appear in search once these are filled. */}
+      {missingProfile.length > 0 && (
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-semibold text-amber-900 dark:text-amber-200">
+              {t('profileComplete.title') || 'Complete your profile to appear in search'}
+            </p>
+            <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">
+              {(t('profileComplete.missing') || 'Still missing:')} {missingProfile.join(', ')}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/specialist/settings')}
+            className="flex-shrink-0 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold whitespace-nowrap transition-colors"
+          >
+            {t('profileComplete.cta') || 'Complete profile'}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
