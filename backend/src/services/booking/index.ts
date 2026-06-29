@@ -1319,6 +1319,46 @@ export class BookingService {
         return booking;
       });
 
+      // In-app + push notifications for the cancellation (emails are sent separately below).
+      try {
+        const cancelInterp = {
+          serviceName: updatedBooking.service.name,
+          date: new Date(updatedBooking.scheduledAt).toISOString(),
+        };
+        const customerName = `${updatedBooking.customer?.firstName ?? ''} ${updatedBooking.customer?.lastName ?? ''}`.trim();
+        if (isSpecialistCancellation) {
+          // Specialist cancelled → notify the customer, and confirm to the specialist.
+          await BookingService.notificationService.sendNotification(updatedBooking.customerId, {
+            type: 'BOOKING_CANCELLED',
+            title: 'notifications.booking.cancelledBySpecialist.customer.title',
+            message: 'notifications.booking.cancelledBySpecialist.customer.message',
+            data: { bookingId: updatedBooking.id, serviceName: updatedBooking.service.name, scheduledAt: updatedBooking.scheduledAt, status: 'CANCELLED', _interpolate: cancelInterp },
+          });
+          await BookingService.notificationService.sendNotification(updatedBooking.specialistId, {
+            type: 'BOOKING_CANCELLED',
+            title: 'notifications.booking.cancelledBySpecialist.specialist.title',
+            message: 'notifications.booking.cancelledBySpecialist.specialist.message',
+            data: { bookingId: updatedBooking.id, serviceName: updatedBooking.service.name, scheduledAt: updatedBooking.scheduledAt, status: 'CANCELLED', _interpolate: cancelInterp },
+          });
+        } else {
+          // Customer cancelled → notify the specialist, and confirm to the customer.
+          await BookingService.notificationService.sendNotification(updatedBooking.specialistId, {
+            type: 'BOOKING_CANCELLED',
+            title: 'notifications.booking.cancelledByCustomer.specialist.title',
+            message: 'notifications.booking.cancelledByCustomer.specialist.message',
+            data: { bookingId: updatedBooking.id, serviceName: updatedBooking.service.name, scheduledAt: updatedBooking.scheduledAt, status: 'CANCELLED', _interpolate: { ...cancelInterp, customerName } },
+          });
+          await BookingService.notificationService.sendNotification(updatedBooking.customerId, {
+            type: 'BOOKING_CANCELLED',
+            title: 'notifications.booking.cancelledByCustomer.customer.title',
+            message: 'notifications.booking.cancelledByCustomer.customer.message',
+            data: { bookingId: updatedBooking.id, serviceName: updatedBooking.service.name, scheduledAt: updatedBooking.scheduledAt, status: 'CANCELLED', _interpolate: cancelInterp },
+          });
+        }
+      } catch (e) {
+        logger.error('Failed to send cancellation notifications', { bookingId, error: e });
+      }
+
       // Send localized emails for cancellation
       try {
         const langCustomer = resolveLanguage(updatedBooking.customer?.language, undefined);
