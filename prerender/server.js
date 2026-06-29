@@ -9,6 +9,71 @@ const puppeteer = require('puppeteer');
 const PORT = process.env.PORT || 3000;
 const ALLOWED_HOSTS = new Set(['miyzapis.com', 'www.miyzapis.com']);
 const ORIGIN = 'https://miyzapis.com';
+const API = process.env.API_URL || 'https://api.miyzapis.com/api/v1';
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Replace (or insert) a single meta/link/title tag in the HTML head.
+function setTag(html, matcher, replacement) {
+  if (matcher.test(html)) return html.replace(matcher, replacement);
+  return html.replace('</head>', `${replacement}</head>`);
+}
+
+function applyMeta(html, { title, description, image, canonical }) {
+  if (title) {
+    html = setTag(html, /<title>[^<]*<\/title>/i, `<title>${esc(title)}</title>`);
+    html = setTag(html, /<meta property="og:title"[^>]*>/i, `<meta property="og:title" content="${esc(title)}">`);
+    html = setTag(html, /<meta name="twitter:title"[^>]*>/i, `<meta name="twitter:title" content="${esc(title)}">`);
+  }
+  if (description) {
+    html = setTag(html, /<meta name="description"[^>]*>/i, `<meta name="description" content="${esc(description)}">`);
+    html = setTag(html, /<meta property="og:description"[^>]*>/i, `<meta property="og:description" content="${esc(description)}">`);
+    html = setTag(html, /<meta name="twitter:description"[^>]*>/i, `<meta name="twitter:description" content="${esc(description)}">`);
+  }
+  if (image) {
+    html = setTag(html, /<meta property="og:image"[^>]*>/i, `<meta property="og:image" content="${esc(image)}">`);
+    html = setTag(html, /<meta name="twitter:image"[^>]*>/i, `<meta name="twitter:image" content="${esc(image)}">`);
+    html = setTag(html, /<meta name="twitter:card"[^>]*>/i, `<meta name="twitter:card" content="summary_large_image">`);
+  }
+  if (canonical) {
+    html = setTag(html, /<link rel="canonical"[^>]*>/i, `<link rel="canonical" href="${esc(canonical)}">`);
+    html = setTag(html, /<meta property="og:url"[^>]*>/i, `<meta property="og:url" content="${esc(canonical)}">`);
+  }
+  return html;
+}
+
+// For entity routes, fetch the entity and inject correct share meta server-side
+// (guarantees the right card regardless of client-side render timing).
+async function injectEntityMeta(pathname, html) {
+  try {
+    const svc = pathname.match(/^\/service\/([^/?#]+)/);
+    if (svc) {
+      const id = decodeURIComponent(svc[1]);
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(`${API}/services/${id}`, { signal: ctrl.signal });
+      clearTimeout(to);
+      if (!res.ok) return html;
+      const body = await res.json();
+      const s = (body && body.data && body.data.service) || body.service || body.data || body;
+      if (!s || !s.name) return html;
+      const sp = s.specialist || {};
+      const biz = sp.businessName || `${sp.user?.firstName || ''} ${sp.user?.lastName || ''}`.trim() || 'MiyZapis';
+      const desc = String(s.description || `${s.name} — ${biz}`).replace(/\s+/g, ' ').trim().slice(0, 200);
+      return applyMeta(html, {
+        title: `${s.name} — ${biz} | MiyZapis`,
+        description: desc,
+        image: `${API}/services/${id}/og.png`,
+        canonical: `${ORIGIN}/service/${id}`,
+      });
+    }
+  } catch (_) { /* fall through to unmodified html */ }
+  return html;
+}
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 const CACHE_MAX = 1000;
 const NAV_TIMEOUT = 15000;
@@ -152,7 +217,8 @@ app.get(/.*/, async (req, res) => {
   }
 
   try {
-    const html = await render(url);
+    let html = await render(url);
+    html = await injectEntityMeta(parsed.pathname, html);
     cacheSet(url, html);
     res.set('X-Prerender-Cache', 'MISS');
     res.set('Content-Type', 'text/html; charset=utf-8');
