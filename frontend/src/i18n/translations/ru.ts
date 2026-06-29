@@ -970,7 +970,7 @@ const ru: Record<string, string> = {
   'billing.annual': '1 год',
   'billing.year': 'год',
   'billing.featUnlimited': 'Неограниченные записи',
-  'billing.featNoFee': '0% комиссии за бронирование',
+  'billing.featNoFee': 'Без комиссии с выручки',
   'billing.featAutoRenew': 'Автопродление ежемесячно, отмена в любой момент',
   'billing.subscribeStars': 'Подписаться звёздами Telegram',
   'billing.cardTitle': 'Начните бесплатно — карта',

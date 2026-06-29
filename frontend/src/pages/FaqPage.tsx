@@ -91,11 +91,11 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'What does it cost after the trial?',
-            a: 'After the trial you choose a model that fits you:\n• Subscription via Telegram Stars — monthly or annual (annual is ~18 months for the price of 12).\n• Pay-per-booking — ₴20 per confirmed booking, no monthly fee.\nThere is no commission on your service revenue.',
+            a: 'After the trial, subscribe via Telegram Stars — monthly or annual (annual is ~18 months for the price of 12). There is no commission on your service revenue.',
           },
           {
             q: 'Does MiyZapis take a commission on my earnings?',
-            a: 'No. MiyZapis earns from subscriptions or per-booking fees — not from a percentage of your service prices. The money your clients pay you is entirely yours.',
+            a: 'No. MiyZapis earns from subscriptions only — not from a percentage of your service prices. The money your clients pay you is entirely yours.',
           },
           {
             q: 'How do clients find me?',
@@ -209,11 +209,11 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'Скільки коштує після пробного періоду?',
-            a: 'Після пробного ви обираєте зручну модель:\n• Підписка через Telegram Stars — щомісячна або річна (річна ≈ 18 місяців за ціною 12).\n• Оплата за запис — ₴20 за кожен підтверджений запис, без щомісячної плати.\nКомісія від вашої виручки не береться.',
+            a: 'Після пробного — підписка через Telegram Stars: щомісячна або річна (річна ≈ 18 місяців за ціною 12). Комісія від вашої виручки не береться.',
           },
           {
             q: 'Чи бере МійЗапис комісію з моїх доходів?',
-            a: 'Ні. МійЗапис заробляє на підписках або платі за запис — не на відсотку від вартості ваших послуг. Гроші, які платять вам клієнти, залишаються повністю вашими.',
+            a: 'Ні. МійЗапис заробляє лише на підписках — не на відсотку від вартості ваших послуг. Гроші, які платять вам клієнти, залишаються повністю вашими.',
           },
           {
             q: 'Як клієнти мене знаходять?',
@@ -327,11 +327,11 @@ const CONTENT: Record<Lang, FaqContent> = {
           },
           {
             q: 'Сколько стоит после пробного периода?',
-            a: 'После пробного вы выбираете удобную модель:\n• Подписка через Telegram Stars — ежемесячная или годовая (годовая ≈ 18 месяцев по цене 12).\n• Оплата за запись — ₴20 за каждую подтверждённую запись, без ежемесячной платы.\nКомиссия с вашей выручки не берётся.',
+            a: 'После пробного — подписка через Telegram Stars: ежемесячная или годовая (годовая ≈ 18 месяцев по цене 12). Комиссия с вашей выручки не берётся.',
           },
           {
             q: 'Берёт ли МийЗапис комиссию с моих доходов?',
-            a: 'Нет. МийЗапис зарабатывает на подписках или плате за запись — не на проценте от стоимости ваших услуг. Деньги, которые платят вам клиенты, остаются полностью вашими.',
+            a: 'Нет. МийЗапис зарабатывает только на подписках — не на проценте от стоимости ваших услуг. Деньги, которые платят вам клиенты, остаются полностью вашими.',
           },
           {
             q: 'Как клиенты меня находят?',

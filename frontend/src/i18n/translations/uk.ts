@@ -970,7 +970,7 @@ const uk: Record<string, string> = {
   'billing.annual': '1 рік',
   'billing.year': 'рік',
   'billing.featUnlimited': 'Необмежені записи',
-  'billing.featNoFee': '0% комісії за бронювання',
+  'billing.featNoFee': 'Без комісії з виручки',
   'billing.featAutoRenew': 'Автопродовження щомісяця, скасування будь-коли',
   'billing.subscribeStars': 'Підписатися зірками Telegram',
   'billing.cardTitle': 'Почніть безкоштовно — картка',

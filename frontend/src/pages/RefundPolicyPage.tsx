@@ -52,8 +52,7 @@ const en: PolicyContent = {
             </li>
             <li>
               <strong>Specialist / business subscriptions</strong> — when a specialist or business
-              pays for a MiyZapis subscription plan (billed via Telegram Stars) or uses
-              pay-per-booking billing (₴<Num>20</Num>/booking).
+              pays for a MiyZapis subscription plan (billed via Telegram Stars).
             </li>
           </ol>
           <p>
@@ -159,10 +158,6 @@ const en: PolicyContent = {
           <ul className="list-disc pl-6 space-y-1">
             <li>
               <strong>Subscription plans (monthly / annual)</strong> — paid via Telegram Stars.
-            </li>
-            <li>
-              <strong>Pay-per-booking</strong> — ₴<Num>20</Num> charged per completed booking
-              confirmation; no upfront subscription required.
             </li>
           </ul>
 
@@ -279,8 +274,7 @@ const uk: PolicyContent = {
             </li>
             <li>
               <strong>Підписки спеціалістів / бізнесів</strong> — коли спеціаліст або бізнес
-              оплачує тарифний план МійЗапис (через Telegram Stars) або використовує оплату за
-              кожне бронювання (₴<Num>20</Num>/бронювання).
+              оплачує тарифний план МійЗапис (через Telegram Stars).
             </li>
           </ol>
           <p>
@@ -387,10 +381,6 @@ const uk: PolicyContent = {
           <ul className="list-disc pl-6 space-y-1">
             <li>
               <strong>Тарифні плани (місячний / річний)</strong> — оплата через Telegram Stars.
-            </li>
-            <li>
-              <strong>Оплата за бронювання</strong> — ₴<Num>20</Num> за кожне підтверджене
-              бронювання; передплата не потрібна.
             </li>
           </ul>
 
@@ -508,8 +498,7 @@ const ru: PolicyContent = {
             </li>
             <li>
               <strong>Подписки специалистов / бизнесов</strong> — когда специалист или бизнес
-              оплачивает тарифный план МийЗапис (через Telegram Stars) или использует оплату за
-              каждое бронирование (₴<Num>20</Num>/бронирование).
+              оплачивает тарифный план МийЗапис (через Telegram Stars).
             </li>
           </ol>
           <p>
@@ -616,10 +605,6 @@ const ru: PolicyContent = {
             <li>
               <strong>Тарифные планы (ежемесячный / годовой)</strong> — оплата через Telegram
               Stars.
-            </li>
-            <li>
-              <strong>Оплата за бронирование</strong> — ₴<Num>20</Num> за каждое подтверждённое
-              бронирование; предоплата не требуется.
             </li>
           </ul>
 

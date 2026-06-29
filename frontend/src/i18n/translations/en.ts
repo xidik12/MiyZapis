@@ -969,7 +969,7 @@ const en: Record<string, string> = {
   'billing.annual': '1 year',
   'billing.year': 'year',
   'billing.featUnlimited': 'Unlimited bookings',
-  'billing.featNoFee': '0% per-booking fee',
+  'billing.featNoFee': 'No commission on service revenue',
   'billing.featAutoRenew': 'Auto-renews monthly, cancel anytime',
   'billing.subscribeStars': 'Subscribe with Telegram Stars',
   'billing.cardTitle': 'Start free — card on file',
