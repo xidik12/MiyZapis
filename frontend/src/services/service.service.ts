@@ -105,10 +105,14 @@ export class ServiceService {
 
   // Get similar services
   async getSimilarServices(serviceId: string, limit: number = 5): Promise<Service[]> {
-    const response = await apiClient.get<{ services: Service[] }>(`/services/${serviceId}/similar?limit=${limit}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get similar services');
-    }
+    // The /similar route may not be present; suppress the global error toast and
+    // degrade gracefully (the "similar services" section just stays empty) so it
+    // never throws a "resource not found" toast over the booking-success screen.
+    const response = await apiClient.get<{ services: Service[] }>(
+      `/services/${serviceId}/similar?limit=${limit}`,
+      { skipToast: true } as never
+    );
+    if (!response.success || !response.data) return [];
     return response.data.services || [];
   }
 

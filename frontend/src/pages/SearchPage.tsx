@@ -1535,8 +1535,8 @@ const SearchPage: React.FC = () => {
             <div className="absolute right-0 top-0 h-full w-full max-w-[calc(100vw-2rem)] sm:max-w-md bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 shadow-2xl animate-slide-in-right flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
-                <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white min-w-0 truncate">{t('search.filters') || 'Filters'}</h3>
+                <div className="flex items-center gap-3 flex-shrink-0">
                   {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || nearMeActive || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                     <button
                       onClick={clearFilters}

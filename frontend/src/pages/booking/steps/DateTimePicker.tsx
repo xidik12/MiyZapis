@@ -156,8 +156,22 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 const afternoon: any[] = [];
                 const evening: any[] = [];
 
+                // Hide slots earlier than now for the current day — a past time
+                // fails the backend's "must be in the future" check (caused
+                // "Invalid request data" when a past slot was picked).
+                const now = new Date();
+                const isToday = selectedDate ? selectedDate.toDateString() === now.toDateString() : false;
+                const isPastSlot = (time: string) => {
+                  if (!isToday || !selectedDate) return false;
+                  const [h, m] = time.split(':').map(Number);
+                  const slotDt = new Date(selectedDate);
+                  slotDt.setHours(h, m, 0, 0);
+                  return slotDt.getTime() <= now.getTime();
+                };
+
                 availableSlots.forEach((slot: string | Record<string, unknown>) => {
                   const time = (typeof slot === 'string' ? slot : slot.time) as string;
+                  if (isPastSlot(time)) return;
                   const hour = parseInt(time.split(':')[0], 10);
                   if (hour < 12) morning.push(slot);
                   else if (hour < 17) afternoon.push(slot);
