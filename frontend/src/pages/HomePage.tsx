@@ -459,7 +459,7 @@ const HomePage: React.FC = () => {
                     // Contained inside the photo (bottom band) — never clipped.
                     <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
                       {(sp.user?.avatar || sp.avatar) ? (
-                        <img src={getAbsoluteImageUrl((sp.user?.avatar || sp.avatar) as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                        <img src={getAbsoluteImageUrl((sp.user?.avatar || sp.avatar) as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.onerror = null; el.src = '/miyzapis_logo.png'; }} />
                       ) : (
                         <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
                           {name?.charAt(0) || 'M'}
@@ -841,11 +841,12 @@ const HomePage: React.FC = () => {
                   >
                     {/* Avatar + identity (compact — looks intentional with or without a photo) */}
                     <div className="flex items-center gap-4">
-                      {specialist.avatar ? (
+                      {(specialist.user?.avatar || specialist.avatar) ? (
                         <img
-                          src={specialist.avatar as string}
+                          src={getAbsoluteImageUrl((specialist.user?.avatar || specialist.avatar) as string)}
                           alt={displayName}
                           className="h-16 w-16 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10"
+                          onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.onerror = null; el.src = '/miyzapis_logo.png'; }}
                         />
                       ) : (
                         <span className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center text-xl font-semibold flex-shrink-0">

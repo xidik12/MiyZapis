@@ -101,13 +101,11 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <Logo size="md" className="transition-transform duration-200 group-hover:scale-105" />
-              <div className="flex items-center space-x-2">
-                <span className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white hidden xs:block transition-colors duration-200">
-                  {environment.APP_NAME}
-                </span>
-                {/* <UkrainianFlag className="hidden sm:block" animated /> */}
-              </div>
+              <img
+                src="/miyzapis-logo-full.png"
+                alt={environment.APP_NAME}
+                className="h-8 sm:h-9 w-auto transition-transform duration-200 group-hover:scale-105"
+              />
             </Link>
           </div>
 

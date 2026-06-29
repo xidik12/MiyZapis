@@ -18,14 +18,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       {/* Logo section - responsive sizing */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/" className="flex justify-center mb-6">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 sm:w-8 sm:h-8 bg-primary-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-base sm:text-sm">M</span>
-            </div>
-            <span className="text-2xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {environment.APP_NAME}
-            </span>
-          </div>
+          <img
+            src="/miyzapis-logo-full.png"
+            alt={environment.APP_NAME}
+            className="h-12 w-auto"
+          />
         </Link>
       </div>
 
