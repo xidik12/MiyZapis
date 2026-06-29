@@ -90,9 +90,9 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="w-full !max-w-7xl mx-auto mobile-container prevent-overflow">
-        <div className="flex flex-col">
-          {/* Logo on its own row (centered) */}
-          <div className="flex items-center justify-center py-3">
+        <div className="flex justify-between items-center gap-3 h-16 sm:h-20">
+          {/* Logo and brand */}
+          <div className="flex items-center flex-shrink-0">
             <Link 
               to="/" 
               className="flex items-center space-x-2 group hover:opacity-90 transition-all duration-300"
@@ -104,13 +104,11 @@ export const Header: React.FC = () => {
               <img
                 src="/miyzapis-logo-full.png"
                 alt={environment.APP_NAME}
-                className="h-14 sm:h-20 w-auto transition-transform duration-200 group-hover:scale-105"
+                className="h-11 sm:h-14 w-auto transition-transform duration-200 group-hover:scale-105"
               />
             </Link>
           </div>
 
-          {/* Second row: nav + actions */}
-          <div className="flex justify-between items-center gap-3 h-14 border-t border-gray-200/60 dark:border-gray-800">
           {/* Desktop navigation */}
           <nav className="hidden sm:flex items-center gap-1 lg:gap-2">
             {navigationItems.map((item) => {
@@ -262,7 +260,6 @@ export const Header: React.FC = () => {
                 </svg>
               )}
             </button>
-          </div>
           </div>
         </div>
       </div>
