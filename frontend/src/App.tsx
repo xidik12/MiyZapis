@@ -20,7 +20,6 @@ import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
 import { SocketProvider } from './providers/SocketProvider';
 
 // Lazy load pages for better performance
-const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
 const SpecialistProfilePage = React.lazy(() => import('./pages/SpecialistProfilePage'));
 const ServicePublicPage = React.lazy(() => import('./pages/ServicePublicPage'));
 const InviteAcceptPage = React.lazy(() => import('./pages/InviteAcceptPage'));
@@ -895,13 +894,6 @@ function App() {
                 </Suspense>
               </ConditionalLayout>
             </ProtectedRoute>
-          } />
-          <Route path="/service/:serviceId" element={
-            <ConditionalLayout>
-              <Suspense fallback={<SuspenseLoader />}>
-                <ServiceDetailPage />
-              </Suspense>
-            </ConditionalLayout>
           } />
           <Route
             path="/specialist/:specialistId"
