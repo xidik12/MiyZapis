@@ -819,7 +819,7 @@ const SearchPage: React.FC = () => {
               );
             })()}
             <ShareButton
-              url={`${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/specialist/${service.specialist.id}`}
+              url={`${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/service/${service.id}`}
               title={(service as any).name || service.specialist?.businessName || 'MiyZapis'}
               text={service.specialist?.businessName || ''}
               variant="icon"

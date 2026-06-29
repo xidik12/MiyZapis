@@ -30,8 +30,9 @@ RUN npm ci --only=production && npm cache clean --force
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init and OpenSSL for Prisma compatibility
-RUN apk add --no-cache dumb-init openssl-dev openssl
+# Install dumb-init, OpenSSL (Prisma), and Noto fonts + fontconfig so sharp/librsvg
+# can render Cyrillic (and Khmer) text in generated share cards.
+RUN apk add --no-cache dumb-init openssl-dev openssl fontconfig font-noto font-noto-extra && fc-cache -f
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs && \

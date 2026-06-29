@@ -6,8 +6,23 @@ import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { stripPrivateSpecialistFields } from '@/services/specialist';
 import { prisma } from '@/config/database';
+import { generateServiceOgCard } from '@/services/og';
 
 export class ServiceController {
+  // Branded share-card image (1200x630 PNG) for a service — used as og:image.
+  static async getServiceOgCard(req: Request, res: Response): Promise<void> {
+    try {
+      const { serviceId } = req.params;
+      const png = await generateServiceOgCard(serviceId);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+      res.end(png);
+    } catch (error) {
+      logger.error('Failed to generate service OG card', { error });
+      res.status(404).end();
+    }
+  }
+
   // Create a new service (specialist only)
   static async createService(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {

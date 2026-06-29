@@ -22,6 +22,7 @@ import { SocketProvider } from './providers/SocketProvider';
 // Lazy load pages for better performance
 const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
 const SpecialistProfilePage = React.lazy(() => import('./pages/SpecialistProfilePage'));
+const ServicePublicPage = React.lazy(() => import('./pages/ServicePublicPage'));
 const InviteAcceptPage = React.lazy(() => import('./pages/InviteAcceptPage'));
 const EmbedBookingPage = React.lazy(() => import('./pages/EmbedBookingPage'));
 const CommunityPage = React.lazy(() => import('./pages/community/CommunityPage'));
@@ -908,6 +909,16 @@ function App() {
               <ConditionalLayout>
                 <Suspense fallback={<SuspenseLoader />}>
                   <SpecialistProfilePage />
+                </Suspense>
+              </ConditionalLayout>
+            }
+          />
+          <Route
+            path="/service/:serviceId"
+            element={
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <ServicePublicPage />
                 </Suspense>
               </ConditionalLayout>
             }
