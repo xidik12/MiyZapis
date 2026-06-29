@@ -3007,6 +3007,8 @@ const ru: Record<string, string> = {
   'bookings.phone': 'Телефон',
   'bookings.whatsapp': 'WhatsApp',
   'bookings.contactInfoNote': 'Контактная информация видна после подтверждения бронирования',
+  'bookings.contactInfoPrivate': 'Пожалуйста, сохраняйте эти контактные данные конфиденциальными и используйте только для этой записи.',
+  'bookings.contactInfoEmpty': 'Специалист ещё не добавил контактные данные — воспользуйтесь кнопкой «Сообщение» ниже, чтобы связаться.',
   'bookings.specialistNotes': 'Примечания специалиста',
   'bookings.locationNotes': 'Примечания о месте',
   'bookings.parking': 'Парковка',

@@ -3006,6 +3006,8 @@ const en: Record<string, string> = {
   'bookings.phone': 'Phone',
   'bookings.whatsapp': 'WhatsApp',
   'bookings.contactInfoNote': 'Contact information is visible after booking is confirmed',
+  'bookings.contactInfoPrivate': 'Please keep these contact details private and use them only for this appointment.',
+  'bookings.contactInfoEmpty': "The specialist hasn't added contact details yet — use the Message button below to reach them.",
   'bookings.specialistNotes': 'Specialist Notes',
   'bookings.locationNotes': 'Location Notes',
   'bookings.parking': 'Parking',

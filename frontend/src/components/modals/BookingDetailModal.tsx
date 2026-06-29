@@ -245,6 +245,14 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               accessInstructions: specProfile.accessInstructions,
             } : (booking.specialist as any)?.location;
             if (!specLoc) return null;
+            const hasContact = !!(
+              specLoc.preciseAddress ||
+              specLoc.businessPhone ||
+              specLoc.whatsappNumber ||
+              specLoc.locationNotes ||
+              specLoc.parkingInfo ||
+              specLoc.accessInstructions
+            );
             return (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 sm:p-4">
               <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2 sm:mb-3 text-sm sm:text-base flex items-center">
@@ -347,7 +355,9 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
                 <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-700">
                   <p className="text-xs text-blue-700 dark:text-blue-300 italic">
-                    ℹ️ {t('bookings.contactInfoNote')}
+                    {hasContact
+                      ? `🔒 ${t('bookings.contactInfoPrivate')}`
+                      : `ℹ️ ${t('bookings.contactInfoEmpty')}`}
                   </p>
                 </div>
               </div>

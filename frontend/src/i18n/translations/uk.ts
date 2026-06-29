@@ -3007,6 +3007,8 @@ const uk: Record<string, string> = {
   'bookings.phone': 'Телефон',
   'bookings.whatsapp': 'WhatsApp',
   'bookings.contactInfoNote': 'Контактна інформація видима після підтвердження бронювання',
+  'bookings.contactInfoPrivate': 'Будь ласка, зберігайте ці контактні дані конфіденційними та використовуйте лише для цього запису.',
+  'bookings.contactInfoEmpty': 'Спеціаліст ще не додав контактні дані — скористайтеся кнопкою «Повідомлення» нижче, щоб зв’язатися.',
   'bookings.specialistNotes': 'Примітки спеціаліста',
   'bookings.locationNotes': 'Примітки про місце',
   'bookings.parking': 'Парковка',
