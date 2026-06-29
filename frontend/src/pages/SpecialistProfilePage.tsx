@@ -70,6 +70,19 @@ const SpecialistProfilePage: React.FC = () => {
   const sellerUserId: string | undefined =
     specialist?.userId || specialist?.user?.id || specialistId;
 
+  // Arriving from a shared service link (/specialist/:id?service=<id>): scroll to
+  // and briefly highlight that service so the visitor lands right where they book it.
+  useEffect(() => {
+    const sid = new URLSearchParams(window.location.search).get('service');
+    if (!sid || services.length === 0) return;
+    const el = document.getElementById(`service-${sid}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('ring-2', 'ring-primary-400');
+    const tmo = setTimeout(() => el.classList.remove('ring-2', 'ring-primary-400'), 2600);
+    return () => clearTimeout(tmo);
+  }, [services]);
+
   const addToCart = (product: StorefrontProduct) => {
     setOrderPlaced(null);
     setCart((prev) => {
@@ -843,7 +856,8 @@ const SpecialistProfilePage: React.FC = () => {
                   {services.map((service: any) => (
                     <div
                       key={service.id}
-                      className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-all duration-200 hover-lift"
+                      id={`service-${service.id}`}
+                      className="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-all duration-200 hover-lift scroll-mt-24 target:ring-2 target:ring-primary-400"
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="flex-1">
