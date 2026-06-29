@@ -21,7 +21,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <img
             src="/miyzapis-logo-full.png"
             alt={environment.APP_NAME}
-            className="h-12 w-auto"
+            className="h-16 sm:h-20 w-auto"
           />
         </Link>
       </div>
