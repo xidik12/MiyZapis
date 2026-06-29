@@ -3,6 +3,7 @@ import { prisma } from '@/config/database';
 import { createSuccessResponse, createErrorResponse, calculatePaginationOffset, createPaginationMeta } from '@/utils/response';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
+import { generatePostOgCard } from '@/services/og';
 
 // Types
 export interface CreatePostData {
@@ -42,6 +43,19 @@ export interface PostFilters {
 }
 
 export class CommunityController {
+  // Branded share-card image (1200x630 PNG) for a post — used as og:image.
+  static async getOgCard(req: Request, res: Response): Promise<void> {
+    try {
+      const png = await generatePostOgCard(req.params.id);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+      res.end(png);
+    } catch (error) {
+      logger.error('Failed to generate post OG card', { error });
+      res.status(404).end();
+    }
+  }
+
   /**
    * Get posts preview for landing page (public)
    * GET /community/posts/preview

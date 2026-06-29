@@ -7,6 +7,7 @@ import { ErrorCodes, AuthenticatedRequest, ValidatorError } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
 import { invalidateUserCache } from '@/middleware/auth/jwt';
+import { generateSpecialistOgCard } from '@/services/og';
 
 /**
  * Strip private fields from a specialist AND from any nested service objects.
@@ -25,6 +26,19 @@ function stripForPublicResponse(specialist: any) {
 }
 
 export class SpecialistController {
+  // Branded share-card image (1200x630 PNG) for a specialist — used as og:image.
+  static async getOgCard(req: Request, res: Response): Promise<void> {
+    try {
+      const png = await generateSpecialistOgCard(req.params.specialistId);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+      res.end(png);
+    } catch (error) {
+      logger.error('Failed to generate specialist OG card', { error });
+      res.status(404).end();
+    }
+  }
+
   // Create specialist profile
   static async createProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {

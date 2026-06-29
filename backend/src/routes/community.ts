@@ -19,6 +19,7 @@ router.get('/posts', authenticateTokenOptional, CommunityController.getPosts);
 router.get('/posts/bookmarked', authenticateToken, CommunityController.getBookmarkedPosts);
 
 // Get single post (public, optional auth for full content)
+router.get('/posts/:id/og.png', CommunityController.getOgCard); // Branded share card (image/png)
 router.get('/posts/:id', authenticateTokenOptional, CommunityController.getPostById);
 
 // Get post comments (public, optional auth for like status)

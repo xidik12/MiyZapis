@@ -201,6 +201,7 @@ router.put('/:specialistId/verification', authenticateToken, requireAdmin, Speci
 // optionalAuth on profile routes lets us skip stripping when the specialist views their own profile
 router.get('/', cacheMiddleware(120, 'specialists'), SpecialistController.searchSpecialists);
 router.get('/:specialistId', optionalAuth, cacheMiddleware(300, 'specialist'), SpecialistController.getProfile);
+router.get('/:specialistId/og.png', SpecialistController.getOgCard); // Branded share card (image/png)
 router.get('/:specialistId/public', optionalAuth, cacheMiddleware(300, 'specialist-pub'), SpecialistController.getPublicProfile);
 router.get('/:specialistId/services', cacheMiddleware(300, 'specialist-svc'), SpecialistController.getSpecialistServices);
 router.get('/:specialistId/before-after', cacheMiddleware(300, 'specialist-ba'), SpecialistController.getPublicBeforeAfterPhotos);

@@ -71,6 +71,47 @@ async function injectEntityMeta(pathname, html) {
         canonical: `${ORIGIN}/service/${id}`,
       });
     }
+
+    const spec = pathname.match(/^\/specialist\/([^/?#]+)/);
+    if (spec) {
+      const id = decodeURIComponent(spec[1]);
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(`${API}/specialists/${id}/public`, { signal: ctrl.signal });
+      clearTimeout(to);
+      if (!res.ok) return html;
+      const body = await res.json();
+      const s = (body && body.data && body.data.specialist) || body.specialist || body.data || body;
+      if (!s) return html;
+      const biz = s.businessName || `${s.user?.firstName || ''} ${s.user?.lastName || ''}`.trim() || 'MiyZapis';
+      const desc = String(s.bio || `Book ${biz} on MiyZapis.`).replace(/\s+/g, ' ').trim().slice(0, 200);
+      return applyMeta(html, {
+        title: `${biz} — MiyZapis`,
+        description: desc,
+        image: `${API}/specialists/${id}/og.png`,
+        canonical: `${ORIGIN}/specialist/${id}`,
+      });
+    }
+
+    const post = pathname.match(/^\/community\/post\/([^/?#]+)/);
+    if (post) {
+      const id = decodeURIComponent(post[1]);
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(`${API}/community/posts/${id}`, { signal: ctrl.signal });
+      clearTimeout(to);
+      if (!res.ok) return html;
+      const body = await res.json();
+      const p = (body && body.data && body.data.post) || body.post || body.data || body;
+      if (!p || !p.title) return html;
+      const desc = String(p.content || p.title).replace(/\s+/g, ' ').trim().slice(0, 200);
+      return applyMeta(html, {
+        title: `${p.title} — MiyZapis`,
+        description: desc,
+        image: `${API}/community/posts/${id}/og.png`,
+        canonical: `${ORIGIN}/community/post/${id}`,
+      });
+    }
   } catch (_) { /* fall through to unmodified html */ }
   return html;
 }
