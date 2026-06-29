@@ -1352,7 +1352,8 @@ const CustomerSettings: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Danger Zone */}
+      {/* Danger Zone — only in the Account section */}
+      {activeSection === 'account' && (
       <div className="max-w-3xl mx-auto mt-6 mb-4 px-1 sm:px-2">
         <div className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-5">
           <h3 className="text-base font-semibold text-red-700 dark:text-red-400">
@@ -1369,6 +1370,7 @@ const CustomerSettings: React.FC = () => {
           </button>
         </div>
       </div>
+      )}
 
       <DeleteAccountModal
         isOpen={showDeleteAccountModal}

@@ -1242,7 +1242,8 @@ const SpecialistSettings: React.FC = () => {
             </div>
         </div>
 
-        {/* Danger Zone */}
+        {/* Danger Zone — only in the Account section */}
+        {activeTab === 'account' && (
         <div className="mt-6 mb-4">
           <div className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-5">
             <h3 className="text-base font-semibold text-red-700 dark:text-red-400">
@@ -1259,6 +1260,7 @@ const SpecialistSettings: React.FC = () => {
             </button>
           </div>
         </div>
+        )}
 
         <DeleteAccountModal
           isOpen={showDeleteAccountModal}
