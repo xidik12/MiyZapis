@@ -278,6 +278,14 @@ const HomePage: React.FC = () => {
     [s.firstName, s.lastName].filter(Boolean).join(' ') ||
     'New Specialist';
 
+  // Olivochka (featured studio): use their brand logo as avatar and studio photos
+  // as the hero image, since their uploaded avatar was lost before persistent storage.
+  const isOlivochka = (s: any) =>
+    !!s && `${s?.businessName || ''} ${s?.firstName || ''} ${s?.lastName || ''} ${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`
+      .toLowerCase().includes('oliv');
+  const olivochkaAvatar = '/olivochka-avatar.png';
+  const olivochkaStudio = '/olivochka-studio.jpg';
+
   return (
     <div
       className="min-h-screen w-full prevent-overflow"
@@ -439,7 +447,9 @@ const HomePage: React.FC = () => {
             <div className="relative hidden lg:block">
               <div className="relative aspect-[4/5] max-h-[480px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
                 <img
-                  src={(topSpecialists[0]?.user?.avatar || topSpecialists[0]?.avatar)
+                  src={isOlivochka(topSpecialists[0])
+                    ? olivochkaStudio
+                    : (topSpecialists[0]?.user?.avatar || topSpecialists[0]?.avatar)
                     ? getAbsoluteImageUrl((topSpecialists[0].user?.avatar || topSpecialists[0].avatar) as string)
                     : 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80'}
                   alt={t('hero.title1')}
@@ -458,7 +468,9 @@ const HomePage: React.FC = () => {
                   return (
                     // Contained inside the photo (bottom band) — never clipped.
                     <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-[0_16px_40px_-12px_rgba(15,23,42,0.35)] p-3 flex items-center gap-3">
-                      {(sp.user?.avatar || sp.avatar) ? (
+                      {isOlivochka(sp) ? (
+                        <img src={olivochkaAvatar} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" />
+                      ) : (sp.user?.avatar || sp.avatar) ? (
                         <img src={getAbsoluteImageUrl((sp.user?.avatar || sp.avatar) as string)} alt={name} className="h-11 w-11 rounded-full object-cover flex-shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10" onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.onerror = null; el.src = '/miyzapis_logo.png'; }} />
                       ) : (
                         <span className="h-11 w-11 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0">
