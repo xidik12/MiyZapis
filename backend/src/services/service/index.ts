@@ -493,6 +493,64 @@ export class ServiceService {
     }
   }
 
+  // Get other active services in the same category (for "similar services").
+  static async getSimilarServices(serviceId: string, limit: number = 5): Promise<ServiceWithDetails[]> {
+    try {
+      const source = await prisma.service.findUnique({
+        where: { id: serviceId },
+        select: { category: true },
+      });
+      if (!source) return [];
+
+      const services = await prisma.service.findMany({
+        where: {
+          id: { not: serviceId },
+          category: source.category,
+          isActive: true,
+          isDeleted: false,
+          specialist: { user: { isActive: true } },
+        },
+        include: {
+          specialist: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  userType: true,
+                  phoneNumber: true,
+                  isEmailVerified: true,
+                  isPhoneVerified: true,
+                  isActive: true,
+                  loyaltyPoints: true,
+                  language: true,
+                  currency: true,
+                  timezone: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: [
+          { specialist: { rating: 'desc' } },
+          { specialist: { reviewCount: 'desc' } },
+          { createdAt: 'desc' },
+        ],
+        take: limit,
+      });
+
+      return services as ServiceWithDetails[];
+    } catch (error) {
+      logger.error('Error getting similar services:', error);
+      return [];
+    }
+  }
+
   // Get specialist's services by user ID
   static async getSpecialistServices(
     specialistUserId: string,

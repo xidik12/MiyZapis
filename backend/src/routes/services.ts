@@ -12,6 +12,7 @@ router.get('/location', cacheMiddleware(120, 'services-location'), ServiceContro
 router.get('/categories', cacheMiddleware(1800, 'categories'), ServiceController.getCategories);
 router.get('/popular', cacheMiddleware(120, 'popular'), ServiceController.getPopularServices);
 router.get('/loyalty-points', cacheMiddleware(300, 'loyalty-services'), ServiceController.getLoyaltyPointsServices);
+router.get('/:serviceId/similar', cacheMiddleware(300, 'service-similar'), ServiceController.getSimilarServices);
 router.get('/:serviceId', cacheMiddleware(300, 'service'), ServiceController.getService);
 
 // Protected routes - require authentication

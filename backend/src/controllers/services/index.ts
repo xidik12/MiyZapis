@@ -356,6 +356,65 @@ export class ServiceController {
     }
   }
 
+  // Get similar services (same category, excluding the given service)
+  static async getSimilarServices(req: Request, res: Response): Promise<void> {
+    try {
+      const { serviceId } = req.params;
+      const { limit = 5 } = req.query;
+
+      if (!serviceId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Service ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const services = await ServiceService.getSimilarServices(serviceId, parseInt(limit as string, 10) || 5);
+
+      res.json(
+        createSuccessResponse({
+          services: services.map(service => ({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            category: service.category,
+            basePrice: service.basePrice,
+            price: service.basePrice,
+            currency: service.currency,
+            duration: service.duration,
+            images: service.images ? JSON.parse(service.images) : [],
+            specialistId: service.specialist.id,
+            specialist: {
+              id: service.specialist.id,
+              businessName: service.specialist.businessName,
+              rating: service.specialist.rating,
+              reviewCount: service.specialist.reviewCount,
+              isVerified: service.specialist.isVerified,
+              user: {
+                firstName: service.specialist.user.firstName,
+                lastName: service.specialist.user.lastName,
+                avatar: service.specialist.user.avatar,
+              },
+            },
+          })),
+        })
+      );
+    } catch (error: unknown) {
+      logger.error('Get similar services error:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get similar services',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Get specialist's services
   static async getSpecialistServices(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
