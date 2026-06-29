@@ -90,7 +90,7 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="w-full !max-w-6xl mx-auto mobile-container prevent-overflow">
-        <div className="flex justify-between items-center gap-3 h-16 sm:h-24">
+        <div className="flex justify-between items-center gap-3 h-20 sm:h-28">
           {/* Logo and brand */}
           <div className="flex items-center flex-shrink-0">
             <Link 
@@ -104,7 +104,7 @@ export const Header: React.FC = () => {
               <img
                 src="/miyzapis-logo-full.png"
                 alt={environment.APP_NAME}
-                className="h-12 sm:h-20 w-auto transition-transform duration-200 group-hover:scale-105"
+                className="h-14 sm:h-24 w-auto transition-transform duration-200 group-hover:scale-105"
               />
             </Link>
           </div>
