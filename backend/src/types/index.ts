@@ -250,7 +250,7 @@ export const ErrorCodes = {
 // Rate limit configurations
 export const RateLimitConfigs = {
   DEFAULT: { windowMs: 15 * 60 * 1000, max: 100 }, // 100 requests per 15 minutes
-  AUTH: { windowMs: 15 * 60 * 1000, max: 5 }, // 5 requests per 15 minutes
+  AUTH: { windowMs: 15 * 60 * 1000, max: 15 }, // 15 FAILED auth attempts per 15 minutes (successes are skipped)
   BOOKINGS: { windowMs: 60 * 1000, max: 10 }, // 10 requests per minute
   PAYMENTS: { windowMs: 60 * 1000, max: 3 }, // 3 requests per minute
   SEARCH: { windowMs: 60 * 1000, max: 30 }, // 30 requests per minute

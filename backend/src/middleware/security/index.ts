@@ -220,6 +220,8 @@ export const defaultRateLimit = createRateLimiter(RateLimitConfigs.DEFAULT);
 // Authentication rate limiter
 export const authRateLimit = createRateLimiter({
   ...RateLimitConfigs.AUTH,
+  // Only count failed attempts — a successful login/OAuth shouldn't burn the budget.
+  skipSuccessfulRequests: true,
   keyGenerator: (req: Request) => {
     const email = req.body?.email;
     return email ? `auth:${email}` : `auth:${req.ip}`;
