@@ -85,7 +85,7 @@ const CONTENT: Record<Lang, {
   en: {
     badge: 'Ukraine · Kyiv',
     heroTitle: 'How MiyZapis works',
-    heroSub: 'A Ukrainian marketplace connecting customers with specialists across any city. No commissions. No online payments. Just bookings that work.',
+    heroSub: 'A Ukrainian marketplace connecting customers with specialists across any city. No commissions. Just bookings that work.',
     tabCustomer: 'For Customers',
     tabSpecialist: 'For Specialists',
     customerTrackTitle: 'Book a specialist in minutes',
@@ -138,7 +138,7 @@ const CONTENT: Record<Lang, {
   uk: {
     badge: 'Україна · Київ',
     heroTitle: 'Як працює МійЗапис',
-    heroSub: 'Українська платформа, що з\'єднує клієнтів і спеціалістів по всій країні. Без комісій. Без онлайн-оплати. Тільки записи, що справді працюють.',
+    heroSub: 'Українська платформа, що з\'єднує клієнтів і спеціалістів по всій країні. Без комісій. Тільки записи, що справді працюють.',
     tabCustomer: 'Для клієнтів',
     tabSpecialist: 'Для спеціалістів',
     customerTrackTitle: 'Запишіться до спеціаліста за хвилину',
@@ -191,7 +191,7 @@ const CONTENT: Record<Lang, {
   ru: {
     badge: 'Украина · Киев',
     heroTitle: 'Как работает МийЗапис',
-    heroSub: 'Украинский маркетплейс, объединяющий клиентов и специалистов по всей стране. Без комиссий. Без онлайн-оплаты. Только записи, которые работают.',
+    heroSub: 'Украинский маркетплейс, объединяющий клиентов и специалистов по всей стране. Без комиссий. Только записи, которые работают.',
     tabCustomer: 'Для клиентов',
     tabSpecialist: 'Для специалистов',
     customerTrackTitle: 'Запишитесь к специалисту за минуту',
@@ -511,9 +511,7 @@ const HowItWorksPage: React.FC = () => {
                   {[
                     { text: c.pricingTrial, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-100 dark:border-emerald-800/40' },
                     { text: c.pricingMonthly, color: 'text-primary-700 dark:text-primary-300', bg: 'bg-primary-50 dark:bg-primary-900/20', border: 'border-primary-100 dark:border-primary-800/40' },
-                    { text: c.pricingAnnual, color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50 dark:bg-violet-900/20', border: 'border-violet-100 dark:border-violet-800/40' },
-                    { text: c.pricingPpu, color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-100 dark:border-amber-800/40' },
-                  ].map((item, i) => (
+                    { text: c.pricingAnnual, color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50 dark:bg-violet-900/20', border: 'border-violet-100 dark:border-violet-800/40' },                  ].map((item, i) => (
                     <li
                       key={i}
                       className={`flex items-start gap-3 rounded-xl ${item.bg} border ${item.border} px-4 py-3`}

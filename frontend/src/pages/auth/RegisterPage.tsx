@@ -375,7 +375,7 @@ const RegisterPage: React.FC = () => {
           {(watchUserType === 'specialist' || watchUserType === 'business') && (
             <div className="mt-3 rounded-xl bg-primary-50/70 dark:bg-primary-900/15 border border-primary-200/60 dark:border-primary-500/25 p-3 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
               🎁 {t('auth.register.trialDisclosure') ||
-                'You get 2 months free. After that, a subscription auto-renews (or switch to pay-per-use). Pay for a year now and get 18 months total (12 + 4 bonus + 2 free).'}
+                'You get 2 months free, then the subscription auto-renews. Pay 6 months and get 7, or a year and get 15 (3 free).'}
             </div>
           )}
 

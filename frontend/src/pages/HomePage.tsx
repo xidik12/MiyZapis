@@ -7,6 +7,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { translateProfession } from '@/utils/profession';
+import { SERVICE_CATEGORIES } from '@/data/serviceCategories';
 import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { locationService, CityData } from '@/services/location.service';
 import PublicSeo from '@/components/common/PublicSeo';
@@ -35,6 +36,21 @@ const ICON_KEYWORDS: Array<[RegExp, React.ComponentType<{ className?: string }>]
   [/tech|app|software|\bit\b|web|develop|comput|digital|data|code/i, RobotIcon],
   [/beauty|hair|manicure|pedicure|nail|makeup|barber|styl|cosmet|skin|lash|brow/i, SparklesIcon],
 ];
+// Flat slug → localized names map (top-level categories + their subcategories),
+// so the homepage category cards show translated names instead of English slugs.
+const CATEGORY_NAMES: Record<string, { en: string; uk: string; ru: string }> = {};
+SERVICE_CATEGORIES.forEach((c) => {
+  CATEGORY_NAMES[c.id] = { en: c.nameEn, uk: c.nameUk, ru: c.nameRu };
+  c.subcategories?.forEach((s) => {
+    CATEGORY_NAMES[s.id] = { en: s.nameEn, uk: s.nameUk, ru: s.nameRu };
+  });
+});
+const localizedCategoryName = (slug: string, language: string, fallback: string): string => {
+  const e = CATEGORY_NAMES[slug];
+  if (!e) return fallback;
+  return language === 'uk' ? e.uk : language === 'ru' ? e.ru : e.en;
+};
+
 const resolveCategoryIcon = (slug: string, name?: string) => {
   if (categoryIcons[slug]) return categoryIcons[slug];
   const hay = `${slug} ${name || ''}`;
@@ -127,7 +143,7 @@ const HomePage: React.FC = () => {
   const [promoted, setPromoted] = useState<ShowcaseItem[]>([]);
   const [cities, setCities] = useState<CityData[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(true);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const howItWorksSteps = getHowItWorksSteps(t);
@@ -189,7 +205,7 @@ const HomePage: React.FC = () => {
       try {
         setSpecialistsLoading(true);
         const result = await specialistService.searchSpecialists('', {
-          rating: 4,
+          minRating: 4,
           limit: 3,
         });
         if (isMounted) setTopSpecialists(result.specialists || []);
@@ -544,7 +560,7 @@ const HomePage: React.FC = () => {
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
                         </div>
                         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          {category.name as string}
+                          {localizedCategoryName(slug, language, category.name as string)}
                         </h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed min-h-[2.5rem]">
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}
@@ -575,7 +591,7 @@ const HomePage: React.FC = () => {
                           <CategoryIcon className={`w-6 h-6 ${accent.icon}`} />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          {category.name as string}
+                          {localizedCategoryName(slug, language, category.name as string)}
                         </h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed line-clamp-2 min-h-[2.5rem]">
                           {((category.description as string) || t('categories.exploreServices') || 'Explore trusted local professionals')}

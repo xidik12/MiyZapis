@@ -493,6 +493,7 @@ export class SpecialistService {
     location?: string;
     experience?: number;
     rating?: number;
+    minRating?: number;
     page?: number;
     limit?: number;
   } = {}): Promise<{
