@@ -606,7 +606,7 @@ const PostDetailPage: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-6 mt-6 text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 mt-6 text-gray-500 dark:text-gray-400">
             <button
               onClick={handlePostLike}
               className={`cursor-pointer flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-all duration-200 ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
