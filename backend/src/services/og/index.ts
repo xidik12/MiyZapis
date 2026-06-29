@@ -76,6 +76,27 @@ async function loadImageBuffer(img?: string): Promise<Buffer | null> {
   }
 }
 
+// Cached, height-normalised brand logo (full lockup) for the card.
+let _logoCache: { buffer: Buffer; width: number; height: number } | null = null;
+const LOGO_H = 50;
+async function loadBrandLogo(): Promise<{ buffer: Buffer; width: number; height: number } | null> {
+  if (_logoCache) return _logoCache;
+  try {
+    const base = (process.env.FRONTEND_URL || 'https://miyzapis.com').replace(/\/$/, '');
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 5000);
+    const res = await fetch(`${base}/miyzapis-logo-full.png`, { signal: ctrl.signal });
+    clearTimeout(to);
+    if (!res.ok) return null;
+    const resized = await sharp(Buffer.from(await res.arrayBuffer())).resize({ height: LOGO_H }).png().toBuffer();
+    const meta = await sharp(resized).metadata();
+    _logoCache = { buffer: resized, width: meta.width || 95, height: meta.height || LOGO_H };
+    return _logoCache;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Generate a 1200×630 branded share card (PNG) for a service.
  * Used as og:image so shared links render a beautiful card on any platform.
@@ -99,6 +120,19 @@ export async function generateServiceOgCard(serviceId: string): Promise<Buffer> 
   const priceLabel = price != null
     ? (price === 0 ? '' : `${price.toLocaleString('en-US')} ${currency}`)
     : '';
+
+  // Brand logo (full lockup) on a white chip so it stays legible on any backdrop.
+  const logo = await loadBrandLogo();
+  const chipPadX = 18;
+  const chipPadY = 12;
+  const chipX = 48;
+  const chipY = 32;
+  const logoW = logo?.width || 95;
+  const logoH = logo?.height || LOGO_H;
+  const chipW = logoW + chipPadX * 2;
+  const chipH = logoH + chipPadY * 2;
+  const logoLeft = chipX + chipPadX;
+  const logoTop = chipY + chipPadY;
 
   // ── Background: service photo (cover + darkened) or a brand gradient ──
   const photo = await loadImageBuffer(images[0]);
@@ -131,9 +165,10 @@ export async function generateServiceOgCard(serviceId: string): Promise<Buffer> 
       </linearGradient>
     </defs>
     <rect width="${W}" height="${H}" fill="url(#scrim)"/>
-    <!-- brand wordmark -->
-    <circle cx="76" cy="70" r="16" fill="${BRAND_YELLOW}"/>
-    <text x="102" y="80" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="34" font-weight="800" fill="#ffffff">MiyZapis</text>
+    <!-- brand logo chip (logo image composited on top) / wordmark fallback -->
+    ${logo
+      ? `<rect x="${chipX}" y="${chipY}" rx="16" ry="16" width="${chipW}" height="${chipH}" fill="#ffffff"/>`
+      : `<circle cx="76" cy="70" r="16" fill="${BRAND_YELLOW}"/><text x="102" y="80" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="34" font-weight="800" fill="#ffffff">MiyZapis</text>`}
     ${priceLabel ? `
     <rect x="${W - 64 - (priceLabel.length * 22 + 48)}" y="44" rx="22" ry="22" width="${priceLabel.length * 22 + 48}" height="56" fill="${BRAND_YELLOW}"/>
     <text x="${W - 64 - 24}" y="82" text-anchor="end" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="32" font-weight="800" fill="#1e293b">${escapeXml(priceLabel)}</text>` : ''}
@@ -145,16 +180,17 @@ export async function generateServiceOgCard(serviceId: string): Promise<Buffer> 
     <text x="64" y="586" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="26" font-weight="600" fill="${BRAND_YELLOW}">Book on miyzapis.com</text>
   </svg>`;
 
+  const layers: sharp.OverlayOptions[] = [
+    { input: Buffer.from(overlay), top: 0, left: 0 },
+    ...(logo ? [{ input: logo.buffer, top: logoTop, left: logoLeft }] : []),
+  ];
   try {
-    return await base
-      .composite([{ input: Buffer.from(overlay), top: 0, left: 0 }])
-      .png()
-      .toBuffer();
+    return await base.composite(layers).png().toBuffer();
   } catch (e) {
     logger.error('OG card composite failed', { serviceId, error: e });
     // Last-resort: just the overlay on a plain brand background.
     return await sharp({ create: { width: W, height: H, channels: 4, background: BRAND_BLUE } })
-      .composite([{ input: Buffer.from(overlay), top: 0, left: 0 }])
+      .composite(layers)
       .png()
       .toBuffer();
   }
