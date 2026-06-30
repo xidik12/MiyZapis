@@ -26,6 +26,15 @@ const validateBulkNotification = [
 // requireAuth guarantees req.user exists, so controllers don't need `if (!req.user)` checks.
 router.use(authenticateToken, requireAuth);
 
+// Native push device tokens (Capacitor apps)
+router.post('/device-token', [
+  body('token').notEmpty().withMessage('token is required'),
+  body('platform').optional().isIn(['ios', 'android', 'web']).withMessage('invalid platform'),
+], NotificationController.registerDeviceToken);
+router.delete('/device-token', [
+  body('token').notEmpty().withMessage('token is required'),
+], NotificationController.unregisterDeviceToken);
+
 // Get user notifications
 router.get('/', NotificationController.getNotifications);
 

@@ -11,6 +11,39 @@ const prisma = new PrismaClient();
 export class NotificationController {
   private static notificationService = new NotificationService(prisma);
 
+  /** Register a native push device token for the current user. POST /notifications/device-token */
+  static async registerDeviceToken(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json(createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'Invalid request data', req.headers['x-request-id'] as string));
+      return;
+    }
+    try {
+      const { token, platform } = req.body as { token: string; platform?: string };
+      await prisma.deviceToken.upsert({
+        where: { token },
+        update: { userId: req.user.id, platform: platform || 'web', updatedAt: new Date() },
+        create: { userId: req.user.id, token, platform: platform || 'web' },
+      });
+      res.json(createSuccessResponse({ registered: true }));
+    } catch (error) {
+      logger.error('registerDeviceToken failed', { error });
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to register device token', req.headers['x-request-id'] as string));
+    }
+  }
+
+  /** Remove a native push device token. DELETE /notifications/device-token */
+  static async unregisterDeviceToken(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { token } = req.body as { token: string };
+      if (token) await prisma.deviceToken.deleteMany({ where: { token, userId: req.user.id } });
+      res.json(createSuccessResponse({ unregistered: true }));
+    } catch (error) {
+      logger.error('unregisterDeviceToken failed', { error });
+      res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to unregister device token', req.headers['x-request-id'] as string));
+    }
+  }
+
   /**
    * Get user notifications
    * GET /notifications

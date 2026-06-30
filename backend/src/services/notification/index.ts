@@ -724,8 +724,27 @@ export class NotificationService {
         logger.warn('Web Push delivery error (non-fatal):', webPushError);
       }
 
+      // Native push (Capacitor apps) via FCM/APNs — gated on FIREBASE_SERVICE_ACCOUNT.
+      let nativePushSent = false;
+      try {
+        const { sendNativePushToUser } = await import('@/services/push/native');
+        const userLang = user.language || 'en';
+        const interpolateVars = data.data?._interpolate || {};
+        const resolvedTitle = this.resolveNotificationText(data.title, userLang, interpolateVars);
+        const resolvedBody = this.resolveNotificationText(data.message, userLang, interpolateVars);
+        const result = await sendNativePushToUser(this.prisma, user.id as string, resolvedTitle, resolvedBody, {
+          type: data.type,
+          notificationId,
+          ...data.data,
+        });
+        nativePushSent = result.sent > 0;
+        if (result.sent || result.failed) logger.info('Native push result', { userId: user.id, sent: result.sent, failed: result.failed });
+      } catch (nativeErr) {
+        logger.warn('Native push delivery error (non-fatal):', nativeErr);
+      }
+
       // Only mark pushSent:true when at least one push was actually delivered
-      if (webPushSent) {
+      if (webPushSent || nativePushSent) {
         await this.prisma.notification.update({
           where: { id: notificationId },
           data: { pushSent: true }

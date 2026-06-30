@@ -49,8 +49,43 @@ export function useCapacitorShell(): void {
         const { SplashScreen } = await import('@capacitor/splash-screen');
         await SplashScreen.hide();
       } catch { /* ignore */ }
+
+      // Register for native push (no-op on web/Telegram).
+      registerPush((path) => navigate(path));
     })();
 
     return () => { removeBack?.(); };
   }, [navigate]);
+}
+
+/**
+ * Register the device for native push notifications and sync the FCM/APNs token
+ * to the backend. No-op off-native. Safe to call repeatedly (e.g. after login) —
+ * the token is upserted server-side. Tapping a push navigates to data.url.
+ */
+export async function registerPush(navigate?: (path: string) => void): Promise<void> {
+  if (!isNativeApp()) return;
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+
+    let perm = await PushNotifications.checkPermissions();
+    if (perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale') {
+      perm = await PushNotifications.requestPermissions();
+    }
+    if (perm.receive !== 'granted') return;
+
+    await PushNotifications.addListener('registration', async (token: { value: string }) => {
+      try {
+        const { apiClient } = await import('@/services/api');
+        await apiClient.post('/notifications/device-token', { token: token.value, platform: nativePlatform() });
+      } catch { /* not signed in yet — re-registers on next launch */ }
+    });
+
+    await PushNotifications.addListener('pushNotificationActionPerformed', (action: any) => {
+      const url = action?.notification?.data?.url;
+      if (url && navigate) navigate(String(url));
+    });
+
+    await PushNotifications.register();
+  } catch { /* plugin unavailable */ }
 }
