@@ -14,6 +14,7 @@ import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 import TelegramMiniAppLogin from '@/components/auth/TelegramMiniAppLogin';
 import { isTelegram } from '@/lib/telegram';
+import { openNativeAuth, isNativeAuthFlow, shouldUseNativeAuth, returnTokensToApp } from '@/lib/nativeAuth';
 
 interface LoginFormData {
   email: string;
@@ -125,9 +126,11 @@ const LoginPage: React.FC = () => {
     };
   }, [dispatch, error]);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated. In the native-auth browser leg, hand the
+  // tokens back to the app via the deep link instead of navigating in-browser.
   useEffect(() => {
     if (isAuthenticated) {
+      if (isNativeAuthFlow() && returnTokensToApp()) return;
       navigate(returnUrl, { replace: true });
     }
   }, [isAuthenticated, navigate, returnUrl]);
@@ -157,6 +160,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleSocialLoginSuccess = () => {
+    if (isNativeAuthFlow() && returnTokensToApp()) return;
     navigate(returnUrl, { replace: true });
   };
 
@@ -336,6 +340,16 @@ const LoginPage: React.FC = () => {
                   onError={handleSocialLoginError}
                   disabled={isLoading}
                 />
+              ) : shouldUseNativeAuth() ? (
+                /* Native app: Google/Telegram OAuth is blocked in the app webview,
+                   so sign in via the system browser and return through a deep link. */
+                <button
+                  type="button"
+                  onClick={() => openNativeAuth('login')}
+                  className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {t('auth.continueWithBrowser') || 'Sign in with Google or Telegram'}
+                </button>
               ) : (
                 <>
                   {import.meta.env.VITE_GOOGLE_CLIENT_ID && (

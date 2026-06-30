@@ -596,6 +596,7 @@ const en: Record<string, string> = {
   'auth.login.signingIn': 'Signing in...',
   'auth.login.signIn': 'Sign in',
   'auth.login.orContinueWith': 'Or continue with',
+  'auth.continueWithBrowser': 'Sign in with Google or Telegram',
   'auth.login.googleComingSoon': 'Google (Coming Soon)',
   'auth.register.title': 'Create your account',
   'auth.register.subtitle': 'Already have an account?',

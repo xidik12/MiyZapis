@@ -53,5 +53,16 @@
 	<string>MiyZapis needs photo access so you can upload images for your profile, portfolio and service listings.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>MiyZapis saves images you choose to your photo library.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.miyzapis.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.miyzapis.app</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

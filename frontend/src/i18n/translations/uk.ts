@@ -596,6 +596,7 @@ const uk: Record<string, string> = {
   'auth.login.signingIn': 'Вхід...',
   'auth.login.signIn': 'Увійти',
   'auth.login.orContinueWith': 'Або продовжити з',
+  'auth.continueWithBrowser': 'Увійти через Google або Telegram',
   'auth.login.googleComingSoon': 'Google (Незабаром)',
   'auth.register.title': 'Створіть свій обліковий запис',
   'auth.register.subtitle': 'Вже маєте обліковий запис?',

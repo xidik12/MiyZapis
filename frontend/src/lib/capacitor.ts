@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/hooks/redux';
+import { setTokens, getCurrentUser } from '@/store/slices/authSlice';
+import { setAuthTokens } from '@/services/api';
 
 // ---------------------------------------------------------------------------
 // Capacitor native-shell glue. The iOS/Android apps load the live web app
@@ -21,10 +24,12 @@ export const nativePlatform = (): string => cap()?.getPlatform?.() ?? 'web';
  */
 export function useCapacitorShell(): void {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!isNativeApp()) return;
     let removeBack: (() => void) | undefined;
+    let removeUrlOpen: (() => void) | undefined;
 
     (async () => {
       // Android hardware back button → in-app back, or exit at the root.
@@ -35,6 +40,25 @@ export function useCapacitorShell(): void {
           else App.exitApp();
         });
         removeBack = () => { try { sub.remove(); } catch { /* noop */ } };
+      } catch { /* plugin unavailable */ }
+
+      // Deep link: native social login (system browser) returns tokens here.
+      try {
+        const { App } = await import('@capacitor/app');
+        const sub = await App.addListener('appUrlOpen', async ({ url }: any) => {
+          if (!url || url.indexOf('://auth') === -1) return;
+          const qs = url.split('?')[1] || '';
+          const params = new URLSearchParams(qs);
+          const access = params.get('access');
+          const refresh = params.get('refresh');
+          if (!access || !refresh) return;
+          setAuthTokens({ accessToken: access, refreshToken: refresh });
+          dispatch(setTokens({ accessToken: access, refreshToken: refresh } as any));
+          try { const { Browser } = await import('@capacitor/browser'); await Browser.close(); } catch { /* */ }
+          try { await (dispatch(getCurrentUser() as any) as any); } catch { /* */ }
+          navigate('/', { replace: true });
+        });
+        removeUrlOpen = () => { try { sub.remove(); } catch { /* noop */ } };
       } catch { /* plugin unavailable */ }
 
       // Status bar: match the app theme (dark icons on light, light on dark).
@@ -54,8 +78,8 @@ export function useCapacitorShell(): void {
       registerPush((path) => navigate(path));
     })();
 
-    return () => { removeBack?.(); };
-  }, [navigate]);
+    return () => { removeBack?.(); removeUrlOpen?.(); };
+  }, [navigate, dispatch]);
 }
 
 /**

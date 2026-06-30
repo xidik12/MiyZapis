@@ -596,6 +596,7 @@ const ru: Record<string, string> = {
   'auth.login.signingIn': 'Вход...',
   'auth.login.signIn': 'Войти',
   'auth.login.orContinueWith': 'Или продолжить с',
+  'auth.continueWithBrowser': 'Войти через Google или Telegram',
   'auth.login.googleComingSoon': 'Google (Скоро)',
   'auth.register.title': 'Создайте свой аккаунт',
   'auth.register.subtitle': 'Уже есть аккаунт?',
