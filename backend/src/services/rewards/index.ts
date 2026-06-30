@@ -467,13 +467,17 @@ export class RewardsService {
 
       // Create redemption and update user points
       const result = await prisma.$transaction(async (prisma) => {
-        // Deduct points from user
-        await prisma.user.update({
-          where: { id: data.userId },
+        // Deduct points — guarded compare-and-set so two concurrent redemptions
+        // can't both pass the stale pre-check above and overdraw into negative.
+        const deducted = await prisma.user.updateMany({
+          where: { id: data.userId, loyaltyPoints: { gte: reward.pointsRequired } },
           data: {
             loyaltyPoints: { decrement: reward.pointsRequired }
           }
         });
+        if (deducted.count === 0) {
+          throw new Error('Insufficient points to redeem this reward');
+        }
 
         // Create loyalty transaction
         await prisma.loyaltyTransaction.create({

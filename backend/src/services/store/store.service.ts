@@ -283,15 +283,17 @@ export class StoreService {
           const product = await tx.product.findFirst({ where: { id: item.productId, ownerId } });
           if (!product) continue;
           const qty = toNumber(item.quantity);
-          if (toNumber(product.stockQty) - qty < 0) {
+          // Guarded decrement (compare-and-set) instead of read-check-then-write,
+          // so concurrent fulfilment can't oversell into negative stock.
+          const res = await tx.product.updateMany({
+            where: { id: item.productId, stockQty: { gte: qty } },
+            data: { stockQty: { decrement: qty } },
+          });
+          if (res.count === 0) {
             throw new Error('Insufficient stock to fulfil this order');
           }
           await tx.stockMovement.create({
             data: { productId: item.productId, delta: -qty, reason: 'SALE', reference: order.id, createdById: ownerId },
-          });
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stockQty: { decrement: qty } },
           });
         }
       }
@@ -473,16 +475,21 @@ export class StoreService {
         include: { items: true },
       });
 
-      // Atomically redeem gift card balance inside the same transaction.
+      // Atomically redeem gift card balance inside the same transaction. Guarded
+      // decrement (balance fetched before the tx is stale under concurrency) so two
+      // concurrent sales can't over-redeem the same card into a negative balance.
       if (giftCard && giftCardAmount > 0) {
-        const newBalance = giftCard.balance - giftCardAmount;
-        await tx.giftCard.update({
-          where: { id: giftCard.id },
-          data: {
-            balance: newBalance,
-            status: newBalance <= 0 ? 'REDEEMED' : 'ACTIVE',
-          },
+        const res = await tx.giftCard.updateMany({
+          where: { id: giftCard.id, status: 'ACTIVE', balance: { gte: giftCardAmount } },
+          data: { balance: { decrement: giftCardAmount } },
         });
+        if (res.count === 0) {
+          throw new StoreServiceError('GIFT_CARD_CHANGED', 'Gift card balance changed; please retry');
+        }
+        const after = await tx.giftCard.findUnique({ where: { id: giftCard.id } });
+        if (after && num(after.balance) <= 0 && after.status !== 'REDEEMED') {
+          await tx.giftCard.update({ where: { id: giftCard.id }, data: { status: 'REDEEMED' } });
+        }
         await tx.giftCardTransaction.create({
           data: {
             giftCardId: giftCard.id,
@@ -496,12 +503,18 @@ export class StoreService {
       // redemption and stock movements all commit or roll back together (was a
       // post-transaction loop that could partially deduct if one item failed).
       for (const li of lineItems) {
+        // Guarded decrement: only sell if stock still covers it. The pre-tx check
+        // (above) is stale under concurrency; this prevents two concurrent sales of
+        // the last unit from both decrementing into negative stock (oversell).
+        const res = await tx.product.updateMany({
+          where: { id: li.productId, stockQty: { gte: li.quantity } },
+          data: { stockQty: { decrement: li.quantity } },
+        });
+        if (res.count === 0) {
+          throw new StoreServiceError('INSUFFICIENT_STOCK', `Not enough stock for "${li.name}"`);
+        }
         await tx.stockMovement.create({
           data: { productId: li.productId, delta: -li.quantity, reason: 'SALE', reference: created.id, createdById: ownerId },
-        });
-        await tx.product.update({
-          where: { id: li.productId },
-          data: { stockQty: { decrement: li.quantity } },
         });
       }
 

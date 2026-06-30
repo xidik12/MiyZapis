@@ -253,16 +253,24 @@ export class SalesService {
       throw new SalesServiceError('INSUFFICIENT_BALANCE', 'Redeem amount exceeds remaining balance');
     }
 
-    const newBalance = balance - amount;
-
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.giftCard.update({
-        where: { id },
-        data: {
-          balance: { decrement: amount },
-          status: newBalance <= 0 ? 'REDEEMED' : 'ACTIVE',
-        },
+      // Atomic, race-safe redeem: only decrement if the card is still ACTIVE and
+      // the balance still covers it. The pre-tx checks above are fast-fail; THIS
+      // is the authoritative guard (two concurrent redeems can't both pass a stale
+      // read-check and over-redeem into a negative balance).
+      const res = await tx.giftCard.updateMany({
+        where: { id, status: 'ACTIVE', balance: { gte: amount } },
+        data: { balance: { decrement: amount } },
       });
+      if (res.count === 0) {
+        throw new SalesServiceError('INSUFFICIENT_BALANCE', 'Redeem amount exceeds remaining balance');
+      }
+
+      // Flip to REDEEMED once the balance reaches 0.
+      const after = await tx.giftCard.findUnique({ where: { id } });
+      if (after && toNumber(after.balance) <= 0 && after.status !== 'REDEEMED') {
+        await tx.giftCard.update({ where: { id }, data: { status: 'REDEEMED' } });
+      }
 
       const transaction = await tx.giftCardTransaction.create({
         data: {
@@ -273,6 +281,7 @@ export class SalesService {
         },
       });
 
+      const updated = await tx.giftCard.findUnique({ where: { id } });
       return { card: updated, transaction };
     });
   }

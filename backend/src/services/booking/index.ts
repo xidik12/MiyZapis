@@ -294,6 +294,27 @@ export class BookingService {
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(${specialistKey}::int, ${m}::int)`;
         }
 
+        // For group sessions, re-check capacity INSIDE the transaction under an
+        // advisory lock keyed on the session. The pre-tx canAccommodateParticipants
+        // check (above) is racy — two concurrent bookings could both pass it and
+        // oversell past maxParticipants. The lock serializes bookings for the same
+        // session so the second sees the first's committed count.
+        if (isGroupSession && groupSessionId && service.maxParticipants) {
+          const gsKey = hash32(groupSessionId);
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(${gsKey}::int, 7::int)`;
+          const existing = await tx.booking.findMany({
+            where: {
+              groupSessionId,
+              status: { in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] },
+            },
+            select: { participantCount: true },
+          });
+          const currentCount = existing.reduce((sum, b) => sum + (b.participantCount || 1), 0);
+          if (currentCount + participantCount > service.maxParticipants) {
+            throw new Error('GROUP_SESSION_FULL');
+          }
+        }
+
         // For group sessions, skip conflict check (multiple bookings allowed)
         // For individual sessions, check for conflicts
         if (!isGroupSession) {

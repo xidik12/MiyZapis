@@ -179,6 +179,18 @@ export class LoyaltyService {
       }
       
       await prisma.$transaction(async (tx) => {
+        // Authoritative guarded decrement (compare-and-set): the pre-check above is
+        // a stale read; without this, two concurrent redemptions both pass it and
+        // both decrement → negative balance. Throw to roll back if it no longer
+        // covers (caught below → returns false).
+        const res = await tx.user.updateMany({
+          where: { id: userId, loyaltyPoints: { gte: points } },
+          data: { loyaltyPoints: { decrement: points } }
+        });
+        if (res.count === 0) {
+          throw new Error('INSUFFICIENT_POINTS');
+        }
+
         // Create redemption transaction
         await tx.loyaltyTransaction.create({
           data: {
@@ -190,17 +202,7 @@ export class LoyaltyService {
             referenceId
           }
         });
-        
-        // Update user's total loyalty points
-        await tx.user.update({
-          where: { id: userId },
-          data: {
-            loyaltyPoints: {
-              decrement: points
-            }
-          }
-        });
-        
+
         // Create points redemption record if it's a booking-related redemption
         if (bookingId) {
           await tx.pointsRedemption.create({
@@ -238,7 +240,18 @@ export class LoyaltyService {
         logger.warn('Booking not found for loyalty processing', { bookingId });
         return;
       }
-      
+
+      // Idempotency: completion can fire from multiple paths (status update, payment
+      // capture, lifecycle worker). Award points at most once per booking.
+      const alreadyAwarded = await prisma.loyaltyTransaction.findFirst({
+        where: { userId: booking.customerId, referenceId: bookingId, reason: 'BOOKING_COMPLETED' },
+        select: { id: true },
+      });
+      if (alreadyAwarded) {
+        logger.info('Loyalty already awarded for booking — skipping', { bookingId });
+        return;
+      }
+
       // Calculate points based on USD-equivalent spend (1 USD = 10 points)
       // Conversion uses simple heuristics aligned with frontend context (UAH:USD ~ 41, EUR:UAH ~ 40)
       const currency = booking.service?.currency || 'USD';

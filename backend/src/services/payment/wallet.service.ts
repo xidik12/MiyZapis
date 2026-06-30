@@ -54,10 +54,16 @@ export class WalletService {
         throw new Error('User not found');
       }
 
-      // walletBalance is a Prisma Decimal (valueOf() is a STRING) — coerce or
-      // `+` concatenates ("100" + 50 → "10050") instead of adding.
-      const balanceBefore = Number(user.walletBalance);
-      const newBalance = balanceBefore + Number(data.amount);
+      // Atomic credit: increment so two concurrent top-ups can't lose one via an
+      // absolute read-then-write. walletBalance is a Prisma Decimal — coerce with
+      // Number() for the ledger snapshot or `+` concatenates.
+      const updated = await tx.user.update({
+        where: { id: data.userId },
+        data: { walletBalance: { increment: Number(data.amount) } },
+        select: { walletBalance: true },
+      });
+      const newBalance = Number(updated.walletBalance);
+      const balanceBefore = newBalance - Number(data.amount);
 
       // Create wallet transaction
       const transaction = await tx.walletTransaction.create({
@@ -76,12 +82,6 @@ export class WalletService {
           status: 'COMPLETED',
           processedAt: new Date(),
         },
-      });
-
-      // Update user balance
-      await tx.user.update({
-        where: { id: data.userId },
-        data: { walletBalance: newBalance },
       });
 
       logger.info('Wallet funds added', {
@@ -109,23 +109,31 @@ export class WalletService {
     }
 
     return await prisma.$transaction(async (tx) => {
-      // Get current balance
+      // Atomic, race-safe debit: decrement ONLY if the balance still covers it.
+      // A read-then-write let two concurrent debits both pass the check and both
+      // write an absolute balance → lost debit / negative balance. The guard in
+      // the WHERE makes this a compare-and-set under a row lock.
+      const result = await tx.user.updateMany({
+        where: { id: data.userId, walletBalance: { gte: data.amount } },
+        data: { walletBalance: { decrement: data.amount } },
+      });
+
+      if (result.count === 0) {
+        const exists = await tx.user.findUnique({
+          where: { id: data.userId },
+          select: { id: true },
+        });
+        throw new Error(exists ? 'Insufficient wallet balance' : 'User not found');
+      }
+
+      // Re-read the post-decrement balance for the ledger snapshot.
+      // walletBalance is a Prisma Decimal — coerce with Number() or `+` concatenates.
       const user = await tx.user.findUnique({
         where: { id: data.userId },
         select: { walletBalance: true, walletCurrency: true },
       });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const balanceBefore = user.walletBalance;
-
-      if (balanceBefore < data.amount) {
-        throw new Error('Insufficient wallet balance');
-      }
-
-      const newBalance = balanceBefore - data.amount;
+      const newBalance = Number(user!.walletBalance);
+      const balanceBefore = newBalance + Number(data.amount);
 
       // Create wallet transaction
       const transaction = await tx.walletTransaction.create({
@@ -144,12 +152,6 @@ export class WalletService {
           status: 'COMPLETED',
           processedAt: new Date(),
         },
-      });
-
-      // Update user balance
-      await tx.user.update({
-        where: { id: data.userId },
-        data: { walletBalance: newBalance },
       });
 
       logger.info('Wallet funds deducted', {
