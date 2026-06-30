@@ -14,7 +14,10 @@ const config: CapacitorConfig = {
   },
   backgroundColor: '#ffffff',
   ios: {
-    contentInset: 'always',
+    // The web app handles safe areas itself (viewport-fit=cover + env(safe-area-inset)),
+    // so 'never' lets the WebView fill the screen and render exactly like mobile Safari —
+    // 'always' double-inset the content and made the app look off vs the website.
+    contentInset: 'never',
     backgroundColor: '#ffffff',
     limitsNavigationsToAppBoundDomains: false,
   },
