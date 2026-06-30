@@ -17,31 +17,31 @@ function esc(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// Replace (or insert) a single meta/link/title tag in the HTML head.
-function setTag(html, matcher, replacement) {
-  if (matcher.test(html)) return html.replace(matcher, replacement);
-  return html.replace('</head>', `${replacement}</head>`);
-}
-
 function applyMeta(html, { title, description, image, canonical }) {
+  // Remove ALL existing occurrences (incl. client-rendered react-helmet data-rh
+  // duplicates) then insert exactly one — so crawlers can't pick a stale/wrong tag.
+  const set = (re, rep) => {
+    html = html.replace(re, '');
+    html = html.replace('</head>', `${rep}\n</head>`);
+  };
   if (title) {
-    html = setTag(html, /<title>[^<]*<\/title>/i, `<title>${esc(title)}</title>`);
-    html = setTag(html, /<meta property="og:title"[^>]*>/i, `<meta property="og:title" content="${esc(title)}">`);
-    html = setTag(html, /<meta name="twitter:title"[^>]*>/i, `<meta name="twitter:title" content="${esc(title)}">`);
+    set(/<title>[^<]*<\/title>/gi, `<title>${esc(title)}</title>`);
+    set(/<meta property="og:title"[^>]*>/gi, `<meta property="og:title" content="${esc(title)}">`);
+    set(/<meta name="twitter:title"[^>]*>/gi, `<meta name="twitter:title" content="${esc(title)}">`);
   }
   if (description) {
-    html = setTag(html, /<meta name="description"[^>]*>/i, `<meta name="description" content="${esc(description)}">`);
-    html = setTag(html, /<meta property="og:description"[^>]*>/i, `<meta property="og:description" content="${esc(description)}">`);
-    html = setTag(html, /<meta name="twitter:description"[^>]*>/i, `<meta name="twitter:description" content="${esc(description)}">`);
+    set(/<meta name="description"[^>]*>/gi, `<meta name="description" content="${esc(description)}">`);
+    set(/<meta property="og:description"[^>]*>/gi, `<meta property="og:description" content="${esc(description)}">`);
+    set(/<meta name="twitter:description"[^>]*>/gi, `<meta name="twitter:description" content="${esc(description)}">`);
   }
   if (image) {
-    html = setTag(html, /<meta property="og:image"[^>]*>/i, `<meta property="og:image" content="${esc(image)}">`);
-    html = setTag(html, /<meta name="twitter:image"[^>]*>/i, `<meta name="twitter:image" content="${esc(image)}">`);
-    html = setTag(html, /<meta name="twitter:card"[^>]*>/i, `<meta name="twitter:card" content="summary_large_image">`);
+    set(/<meta property="og:image"[^>]*>/gi, `<meta property="og:image" content="${esc(image)}">`);
+    set(/<meta name="twitter:image"[^>]*>/gi, `<meta name="twitter:image" content="${esc(image)}">`);
+    set(/<meta name="twitter:card"[^>]*>/gi, `<meta name="twitter:card" content="summary_large_image">`);
   }
   if (canonical) {
-    html = setTag(html, /<link rel="canonical"[^>]*>/i, `<link rel="canonical" href="${esc(canonical)}">`);
-    html = setTag(html, /<meta property="og:url"[^>]*>/i, `<meta property="og:url" content="${esc(canonical)}">`);
+    set(/<link rel="canonical"[^>]*>/gi, `<link rel="canonical" href="${esc(canonical)}">`);
+    set(/<meta property="og:url"[^>]*>/gi, `<meta property="og:url" content="${esc(canonical)}">`);
   }
   return html;
 }

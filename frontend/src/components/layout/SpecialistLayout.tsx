@@ -524,9 +524,8 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         {/* Top bar */}
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           {/* Mobile brand (sidebar is hidden on mobile; bottom nav handles navigation) */}
-          <Link to="/" className="flex items-center space-x-2 lg:hidden">
-            <Logo size="sm" />
-            <span className="text-base font-bold text-gray-900 dark:text-white">МійЗапис</span>
+          <Link to="/" className="flex items-center lg:hidden">
+            <img src="/miyzapis-logo-full.png" alt="MiyZapis" className="h-9 w-auto" />
           </Link>
           <div className="hidden lg:block" />
 

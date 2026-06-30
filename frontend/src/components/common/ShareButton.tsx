@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { ShareIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { isTelegram } from '@/lib/telegram';
 
 interface ShareButtonProps {
   url: string;
@@ -47,7 +48,9 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
         // fall through to web paths
       }
     }
-    if (navigator.share) {
+    // Telegram mini-app: navigator.share is unreliable in its webview — go
+    // straight to our menu (copy link / Telegram / WhatsApp).
+    if (!isTelegram() && navigator.share) {
       try {
         await navigator.share(shareData);
         return;

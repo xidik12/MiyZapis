@@ -582,7 +582,6 @@ const SpecialistProfilePage: React.FC = () => {
                     <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
                   )}
                   <span className="hidden sm:inline">{isFavorite ? t('actions.unfavorite') : t('actions.favorite')}</span>
-                  <span className="sm:hidden">{isFavorite ? '♥' : '♡'}</span>
                 </button>
               )}
 
@@ -591,7 +590,7 @@ const SpecialistProfilePage: React.FC = () => {
                 variant="icon"
                 className="border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                 url={`${window.location.origin}/s/${specialist.slug || specialist.id}`}
-                title={`${specialist.user?.firstName} ${specialist.user?.lastName} — MiyZapys`}
+                title={`${specialist.user?.firstName} ${specialist.user?.lastName} — MiyZapis`}
                 text={`${t('share.tellFriend')}: ${specialist.user?.firstName} ${specialist.user?.lastName}`}
               />
 
