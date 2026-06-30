@@ -114,11 +114,8 @@ export const Footer: React.FC = () => {
         {/* Brand and social */}
         <div className="mt-6 xs:mt-8 sm:mt-12 pt-4 xs:pt-6 sm:pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-6 h-6 xs:w-8 xs:h-8 bg-primary-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xs xs:text-sm">М</span>
-              </div>
-              <span className="text-lg xs:text-xl font-bold">{environment.APP_NAME}</span>
+            <div className="flex items-center mb-4 md:mb-0">
+              <img src="/miyzapis-logo-full.png" alt={environment.APP_NAME} className="h-9 xs:h-10 w-auto" />
             </div>
 
             {/* Social links - add URLs when social accounts are created */}
