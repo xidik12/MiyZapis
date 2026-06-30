@@ -1,4 +1,4 @@
 
-# Capacitor native projects (regenerable via: npx cap add ios && npx cap add android && npx cap sync)
-/ios
-/android
+# Capacitor native projects ARE committed (so Info.plist perms, push entitlements and
+# other native config persist). Build artifacts + the synced web bundle are excluded by
+# ios/.gitignore and android/.gitignore.

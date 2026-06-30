@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MiyZapis</string>
+    <string name="title_activity_main">MiyZapis</string>
+    <string name="package_name">com.miyzapis.app</string>
+    <string name="custom_url_scheme">com.miyzapis.app</string>
+</resources>
