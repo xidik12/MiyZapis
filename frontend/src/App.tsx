@@ -84,6 +84,7 @@ const SpecialistCrmCampaigns = React.lazy(() => import('./pages/specialist/CrmCa
 const SpecialistCrmTasks = React.lazy(() => import('./pages/specialist/CrmTasks'));
 const SpecialistCrmLeads = React.lazy(() => import('./pages/specialist/CrmLeads'));
 const SpecialistOnboarding = React.lazy(() => import('./pages/specialist/Onboarding'));
+const SpecialistCompleteProfile = React.lazy(() => import('./pages/specialist/CompleteProfile'));
 
 // Customer pages (continued)
 const CustomerReviews = React.lazy(() => import('./pages/customer/Reviews'));
@@ -258,6 +259,16 @@ function App() {
               <ProtectedRoute requiredUserType="specialist">
                 <Suspense fallback={<SuspenseLoader />}>
                   <SpecialistOnboarding />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/complete-profile"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistCompleteProfile />
                 </Suspense>
               </ProtectedRoute>
             }

@@ -498,13 +498,33 @@ export class AuthController {
       // calls /auth/me) matches login/refresh — otherwise an onboarded
       // specialist gets bounced back into onboarding on every reload/return.
       let profileComplete = true;
+      // requiresProfileCompletion: an already-onboarded specialist who is still
+      // missing the search-gate fields (business name + a contact + a location).
+      // These specialists predate the gate being collected during onboarding, so
+      // force them through a lightweight completion step on next login.
+      let requiresProfileCompletion = false;
+      let missingProfileFields: string[] = [];
       if ((user.userType as string) === 'SPECIALIST') {
-        const spec = (user as { specialist?: { onboardingCompleted?: boolean } }).specialist
-          ?? await prisma.specialist.findUnique({
-            where: { userId: user.id },
-            select: { onboardingCompleted: true },
-          });
+        const spec = await prisma.specialist.findUnique({
+          where: { userId: user.id },
+          select: {
+            onboardingCompleted: true,
+            businessName: true,
+            businessPhone: true,
+            whatsappNumber: true,
+            address: true,
+            preciseAddress: true,
+          },
+        });
         profileComplete = spec?.onboardingCompleted ?? false;
+
+        const nonEmpty = (v?: string | null) => !!v && v.trim() !== '';
+        if (!nonEmpty(spec?.businessName)) missingProfileFields.push('businessName');
+        if (!nonEmpty(spec?.businessPhone) && !nonEmpty(spec?.whatsappNumber)) missingProfileFields.push('contact');
+        if (!nonEmpty(spec?.address) && !nonEmpty(spec?.preciseAddress)) missingProfileFields.push('location');
+        // Only force completion once onboarding is finished — otherwise the
+        // onboarding wizard (which now collects these) handles it.
+        requiresProfileCompletion = profileComplete && missingProfileFields.length > 0;
       }
 
       // Add hasPassword flag so frontend knows whether to show Set vs Change password.
@@ -520,6 +540,8 @@ export class AuthController {
         hasPassword: !!pwRow?.password,
         passwordLastChanged: pwRow?.passwordLastChanged ?? null,
         profileComplete,
+        requiresProfileCompletion,
+        missingProfileFields,
       };
       // Never send the actual password hash to the frontend
       delete (userResponse as Record<string, unknown>).password;

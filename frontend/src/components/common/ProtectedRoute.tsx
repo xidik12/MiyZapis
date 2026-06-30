@@ -59,5 +59,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/specialist/onboarding" replace />;
   }
 
+  // Force already-onboarded specialists who are missing the search-gate fields
+  // (business name + contact + location) through a lightweight completion step,
+  // so existing incomplete profiles become discoverable on next login.
+  if (
+    user?.userType === 'specialist' &&
+    (user as { requiresProfileCompletion?: boolean })?.requiresProfileCompletion === true &&
+    location.pathname !== '/specialist/complete-profile' &&
+    location.pathname !== '/specialist/onboarding'
+  ) {
+    return <Navigate to="/specialist/complete-profile" replace />;
+  }
+
   return <>{children}</>;
 };
