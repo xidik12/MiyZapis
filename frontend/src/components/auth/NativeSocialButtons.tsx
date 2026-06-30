@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppDispatch } from '@/hooks/redux';
+import { googleLogin } from '@/store/slices/authSlice';
 import { openNativeAuth } from '@/lib/nativeAuth';
+import { isNativeGoogleConfigured, nativeGoogleSignIn } from '@/lib/nativeGoogle';
 
 // Native-app social sign-in. OAuth (Google/Telegram widgets) is blocked inside
 // the app webview, so each button opens the system browser to the web login —
@@ -30,12 +35,40 @@ const TelegramIcon: React.FC = () => (
 
 export const NativeSocialButtons: React.FC<Props> = ({ mode, disabled }) => {
   const { t } = useLanguage();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+
+  // Native account picker when configured; otherwise hand off to the browser flow.
+  const handleGoogle = async () => {
+    if (!isNativeGoogleConfigured()) {
+      openNativeAuth(mode, 'google');
+      return;
+    }
+    setBusy(true);
+    try {
+      const idToken = await nativeGoogleSignIn();
+      if (!idToken) { setBusy(false); return; } // cancelled
+      const result: any = await dispatch(googleLogin({ credential: idToken }) as any).unwrap();
+      if (result?.requiresUserTypeSelection) {
+        // New account needs a role — let the full web UI handle it in the browser.
+        openNativeAuth(mode, 'google');
+        return;
+      }
+      navigate('/', { replace: true });
+    } catch (e: any) {
+      toast.error(e?.message || (t('auth.googleSignInFailed') || 'Google sign-in failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <button
         type="button"
-        disabled={disabled}
-        onClick={() => openNativeAuth(mode, 'google')}
+        disabled={disabled || busy}
+        onClick={handleGoogle}
         className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <GoogleIcon />
@@ -43,7 +76,7 @@ export const NativeSocialButtons: React.FC<Props> = ({ mode, disabled }) => {
       </button>
       <button
         type="button"
-        disabled={disabled}
+        disabled={disabled || busy}
         onClick={() => openNativeAuth(mode, 'telegram')}
         className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#54a9eb] hover:bg-[#4398da] text-white font-medium shadow-sm transition-colors active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
       >

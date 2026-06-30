@@ -267,10 +267,17 @@ router.post('/google', authRateLimit, validateGoogleAuth, async (req, res) => {
 
     const { credential, userType, businessName } = req.body;
 
-    // Verify Google credential
+    // Verify Google credential. Native (Capacitor) Google Sign-In issues ID
+    // tokens whose audience is the iOS/Android OAuth client ID, not the web one,
+    // so accept any of our configured client IDs.
+    const googleAudiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_IOS_CLIENT_ID,
+      process.env.GOOGLE_ANDROID_CLIENT_ID,
+    ].filter(Boolean) as string[];
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: googleAudiences,
     });
 
     const payload = ticket.getPayload();
