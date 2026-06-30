@@ -93,6 +93,28 @@ async function injectEntityMeta(pathname, html) {
       });
     }
 
+    // Specialist by public slug (/s/:slug — used by Share / "Tell a Friend").
+    const slugM = pathname.match(/^\/s\/([^/?#]+)/);
+    if (slugM) {
+      const slug = decodeURIComponent(slugM[1]);
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(`${API}/specialists/by-slug/${slug}`, { signal: ctrl.signal });
+      clearTimeout(to);
+      if (!res.ok) return html;
+      const body = await res.json();
+      const s = (body && body.data && body.data.specialist) || body.specialist || body.data || body;
+      if (!s || !s.id) return html;
+      const biz = s.businessName || `${s.user?.firstName || ''} ${s.user?.lastName || ''}`.trim() || 'MiyZapis';
+      const desc = String(s.bio || `Book ${biz} on MiyZapis.`).replace(/\s+/g, ' ').trim().slice(0, 200);
+      return applyMeta(html, {
+        title: `${biz} — MiyZapis`,
+        description: desc,
+        image: `${API}/specialists/${s.id}/og.png`,
+        canonical: `${ORIGIN}/s/${slug}`,
+      });
+    }
+
     const post = pathname.match(/^\/community\/post\/([^/?#]+)/);
     if (post) {
       const id = decodeURIComponent(post[1]);
