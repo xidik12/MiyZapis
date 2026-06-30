@@ -125,9 +125,8 @@ ssl/
 # Docker
 .dockerignore
 
-# Prisma
-prisma/migrations/*
-!prisma/migrations/.gitkeep
+# Prisma — migrations MUST be version-controlled (were ignored → no migration
+# history in the repo, schema applied by hand, migrate deploy impossible).
 
 # Test files
 coverage/
