@@ -273,6 +273,24 @@ export class CoinbaseCommerceService {
       chargeCode: charge.code,
     });
 
+    // Idempotency: providers retry webhooks (and the same event can be redelivered).
+    // The PaymentWebhook table has a unique eventId but was only ever written, never
+    // read — so a retry would re-confirm a charge / re-confirm a booking. Skip if
+    // this event was already processed.
+    if (event.event.id) {
+      const seen = await prisma.paymentWebhook.findUnique({
+        where: { eventId: event.event.id },
+        select: { status: true },
+      });
+      if (seen && seen.status === 'PROCESSED') {
+        logger.info('Coinbase webhook already processed — skipping (idempotent)', {
+          eventId: event.event.id,
+          eventType: type,
+        });
+        return;
+      }
+    }
+
     try {
       // Find the corresponding crypto payment record
       const cryptoPayment = await prisma.cryptoPayment.findUnique({
@@ -386,6 +404,27 @@ export class CoinbaseCommerceService {
 
     if (!cryptoPayment) {
       throw new Error('Crypto payment not found');
+    }
+
+    // Amount/currency validation: the confirmed charge's local price MUST match the
+    // amount we recorded. Defends against a webhook referencing a tampered/mismatched
+    // charge being accepted as payment for this record.
+    const local = charge.pricing?.local;
+    if (local) {
+      const paidAmount = parseFloat(local.amount);
+      const expectedAmount = Number(cryptoPayment.amount);
+      if (
+        (local.currency || '').toUpperCase() !== (cryptoPayment.currency || '').toUpperCase() ||
+        Math.abs(paidAmount - expectedAmount) > 0.01
+      ) {
+        logger.error('Coinbase amount/currency mismatch — refusing to confirm', {
+          cryptoPaymentId,
+          chargeId: charge.id,
+          expected: `${expectedAmount} ${cryptoPayment.currency}`,
+          paid: `${local.amount} ${local.currency}`,
+        });
+        throw new Error('WEBHOOK_AMOUNT_MISMATCH');
+      }
     }
 
     // Update crypto payment status

@@ -492,6 +492,26 @@ export class PayPalController {
               break;
             }
 
+            // Amount/currency validation: the captured amount MUST match the expected
+            // payment record before we create a paid booking. (Dedup is handled by the
+            // status:'PENDING' filter above — a retry finds the row already SUCCEEDED.)
+            const captured = event.resource?.amount;
+            if (captured) {
+              const paidAmount = parseFloat(captured.value);
+              const expectedAmount = Number(paymentRecord.amount);
+              if (
+                Math.abs(paidAmount - expectedAmount) > 0.01 ||
+                (captured.currency_code || '').toUpperCase() !== (paymentRecord.currency || '').toUpperCase()
+              ) {
+                logger.error('[PayPal] amount/currency mismatch — refusing to confirm', {
+                  orderId,
+                  expected: `${expectedAmount} ${paymentRecord.currency}`,
+                  paid: `${captured.value} ${captured.currency_code}`,
+                });
+                break;
+              }
+            }
+
             // Create the booking
             const { BookingService } = await import('@/services/booking');
             const booking = await BookingService.createBooking({

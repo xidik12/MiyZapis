@@ -1413,6 +1413,38 @@ export class PaymentController {
       if (bookingId) {
         // Update booking payment status based on transaction status
         if (result.transactionStatus === 'Approved') {
+          // Look up the payment record (no status filter) for dedup + amount checks.
+          const expectedPayment = await prisma.payment.findFirst({
+            where: { stripePaymentIntentId: result.orderReference, paymentMethodType: 'wayforpay' },
+          });
+
+          // Idempotency: ignore retries/replays of an already-succeeded payment.
+          if (expectedPayment && expectedPayment.status === 'SUCCEEDED') {
+            logger.info('[WayForPay] Payment already succeeded — skipping (idempotent)', {
+              orderReference: result.orderReference,
+            });
+            res.status(200).json({ received: true });
+            return;
+          }
+
+          // Amount/currency validation: the signed payload's amount MUST match what
+          // we recorded — never confirm a booking for a different/partial amount.
+          if (expectedPayment) {
+            const expectedAmount = Number(expectedPayment.amount);
+            if (
+              Math.abs(Number(result.amount) - expectedAmount) > 0.01 ||
+              (result.currency || '').toUpperCase() !== (expectedPayment.currency || '').toUpperCase()
+            ) {
+              logger.error('[WayForPay] amount/currency mismatch — refusing to confirm', {
+                orderReference: result.orderReference,
+                expected: `${expectedAmount} ${expectedPayment.currency}`,
+                paid: `${result.amount} ${result.currency}`,
+              });
+              res.status(400).json({ error: 'Amount mismatch' });
+              return;
+            }
+          }
+
           await prisma.booking.update({
             where: { id: bookingId },
             data: {
