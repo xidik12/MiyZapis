@@ -14,6 +14,7 @@ import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 import TelegramMiniAppLogin from '@/components/auth/TelegramMiniAppLogin';
 import { isTelegram } from '@/lib/telegram';
+import { openNativeAuth, isNativeAuthFlow, shouldUseNativeAuth, returnTokensToApp } from '@/lib/nativeAuth';
 import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 
 interface RegisterFormData {
@@ -122,6 +123,7 @@ const RegisterPage: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
+      if (isNativeAuthFlow() && returnTokensToApp()) return;
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
@@ -166,6 +168,7 @@ const RegisterPage: React.FC = () => {
   };
 
   const handleSocialLoginSuccess = () => {
+    if (isNativeAuthFlow() && returnTokensToApp()) return;
     navigate('/', { replace: true });
   };
 
@@ -211,6 +214,15 @@ const RegisterPage: React.FC = () => {
                 onError={handleSocialLoginError}
                 disabled={isLoading}
               />
+            ) : shouldUseNativeAuth() ? (
+              /* Native app: sign up via the system browser, return via deep link. */
+              <button
+                type="button"
+                onClick={() => openNativeAuth('register')}
+                className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {t('auth.continueWithBrowser') || 'Sign up with Google or Telegram'}
+              </button>
             ) : (
               <>
                 <EnhancedGoogleSignIn
