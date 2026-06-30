@@ -522,14 +522,14 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
-        <header className="h-16 box-content lg:box-border bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6 pt-[env(safe-area-inset-top)] lg:pt-0">
-          {/* Mobile brand (sidebar is hidden on mobile; bottom nav handles navigation) */}
-          <Link to="/" className="flex items-center lg:hidden">
-            <img src="/miyzapis-logo-full.png" alt="MiyZapis" className="h-9 w-auto" />
+        <header className="relative h-16 box-content lg:box-border bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6 pt-[env(safe-area-inset-top)] lg:pt-0">
+          {/* Mobile brand — centered & enlarged for prominence (sidebar handles nav on desktop) */}
+          <Link to="/" className="lg:hidden absolute left-1/2 -translate-x-1/2 top-[env(safe-area-inset-top)] h-16 flex items-center">
+            <img src="/miyzapis-logo-full.png" alt="MiyZapis" className="h-12 w-auto" />
           </Link>
           <div className="hidden lg:block" />
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-auto">
             {/* Notifications — Settings lives in the nav menu, so it's not duplicated here */}
             <NotificationBell />
           </div>

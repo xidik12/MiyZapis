@@ -1266,29 +1266,29 @@ const SpecialistBookings: React.FC = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6 md:mb-8">
-          {/* Quick Stats */}
-          <div className="mt-4 lg:mt-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
+          {/* Quick Stats — compact box cards (2×2 on mobile, row of 4 on desktop) */}
+          <div className="mt-4 lg:mt-0 w-full lg:w-auto grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2.5 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">{filteredAndSortedBookings.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('bookings.total')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
-              <p className="text-xl font-bold text-green-600">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2.5 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+              <p className="text-2xl font-bold text-green-600 tabular-nums leading-none">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('bookings.confirmed')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
-              <p className="text-xl font-bold text-yellow-600">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2.5 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+              <p className="text-2xl font-bold text-yellow-600 tabular-nums leading-none">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('bookings.pending')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
-              <p className="text-xl font-bold text-blue-600">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-3 py-2.5 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+              <p className="text-2xl font-bold text-blue-600 tabular-nums leading-none">
                 {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('bookings.completed')}</p>
             </div>
           </div>
         </div>

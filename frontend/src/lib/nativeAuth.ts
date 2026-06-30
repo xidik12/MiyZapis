@@ -10,14 +10,20 @@ import { isNativeApp } from './capacitor';
 
 export const NATIVE_AUTH_SCHEME = 'com.miyzapis.app';
 
-/** Open the web login/register in the system browser for native social sign-in. */
-export async function openNativeAuth(mode: 'login' | 'register' = 'login'): Promise<void> {
+/** Open the web login/register in the system browser for native social sign-in.
+ *  An optional provider hint is forwarded so the browser leg can highlight/auto
+ *  the chosen method; both providers remain available there regardless. */
+export async function openNativeAuth(
+  mode: 'login' | 'register' = 'login',
+  provider?: 'google' | 'telegram',
+): Promise<void> {
   try {
     const { Browser } = await import('@capacitor/browser');
     const base = (typeof window !== 'undefined' && window.location.origin.startsWith('http'))
       ? window.location.origin
       : 'https://miyzapis.com';
-    await Browser.open({ url: `${base}/auth/${mode}?native=1`, presentationStyle: 'popover' });
+    const q = `native=1${provider ? `&provider=${provider}` : ''}`;
+    await Browser.open({ url: `${base}/auth/${mode}?${q}`, presentationStyle: 'popover' });
   } catch {
     /* plugin unavailable — no-op */
   }

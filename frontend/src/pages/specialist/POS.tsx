@@ -251,7 +251,7 @@ const POS: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 pb-28">
+    <div className="p-4 sm:p-6 pb-48 lg:pb-28">
       <div className="flex items-center gap-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white min-w-0 truncate">{t('pos.title') || 'Point of Sale'}</h1>
         <HelpTip title={t('pos.title') || 'Point of Sale'} content={h.overview} />
@@ -335,7 +335,7 @@ const POS: React.FC = () => {
           initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-          className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4"
+          className="fixed left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4 bottom-[calc(5rem_+_env(safe-area-inset-bottom))] lg:bottom-0"
         >
           <div className="max-w-3xl mx-auto flex items-center gap-3">
             <button onClick={() => { setCart([]); setAppliedGiftCard(null); setGcInput(''); setDiscountInput(''); }} className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 px-2 transition active:scale-[0.96]">{t('pos.clear') || 'Clear'}</button>

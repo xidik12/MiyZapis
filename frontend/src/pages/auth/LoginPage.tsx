@@ -14,7 +14,8 @@ import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 import TelegramMiniAppLogin from '@/components/auth/TelegramMiniAppLogin';
 import { isTelegram } from '@/lib/telegram';
-import { openNativeAuth, isNativeAuthFlow, shouldUseNativeAuth, returnTokensToApp } from '@/lib/nativeAuth';
+import { isNativeAuthFlow, shouldUseNativeAuth, returnTokensToApp } from '@/lib/nativeAuth';
+import NativeSocialButtons from '@/components/auth/NativeSocialButtons';
 
 interface LoginFormData {
   email: string;
@@ -342,14 +343,9 @@ const LoginPage: React.FC = () => {
                 />
               ) : shouldUseNativeAuth() ? (
                 /* Native app: Google/Telegram OAuth is blocked in the app webview,
-                   so sign in via the system browser and return through a deep link. */
-                <button
-                  type="button"
-                  onClick={() => openNativeAuth('login')}
-                  className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  {t('auth.continueWithBrowser') || 'Sign in with Google or Telegram'}
-                </button>
+                   so sign in via the system browser and return through a deep link.
+                   Branded buttons mirror the website so it doesn't look stripped. */
+                <NativeSocialButtons mode="login" disabled={isLoading} />
               ) : (
                 <>
                   {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
