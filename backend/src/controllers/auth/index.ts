@@ -507,8 +507,20 @@ export class AuthController {
         profileComplete = spec?.onboardingCompleted ?? false;
       }
 
-      // Add hasPassword flag so frontend knows whether to show Set vs Change password
-      const userResponse = { ...user, hasPassword: !!user.password, profileComplete };
+      // Add hasPassword flag so frontend knows whether to show Set vs Change password.
+      // The auth middleware's USER_SELECT deliberately omits the password hash, so
+      // user.password is always undefined here — query it explicitly (like the
+      // Google-auth path does) or "Set Password" wrongly persists after one is set.
+      const pwRow = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { password: true, passwordLastChanged: true },
+      });
+      const userResponse = {
+        ...user,
+        hasPassword: !!pwRow?.password,
+        passwordLastChanged: pwRow?.passwordLastChanged ?? null,
+        profileComplete,
+      };
       // Never send the actual password hash to the frontend
       delete (userResponse as Record<string, unknown>).password;
 

@@ -13,16 +13,28 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { InlineLoader } from '@/components/ui';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
+import { LocationPicker } from '../../components/LocationPicker';
 import { logger } from '@/utils/logger';
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface BasicInfoData {
+  businessName: string;
   profession: string;
   customProfession: string;
   bio: string;
   phone: string;
+}
+
+interface LocationData {
+  address: string;
+  city: string;
+  region: string;
+  country: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface ServiceData {
@@ -86,10 +98,17 @@ const SpecialistOnboarding: React.FC = () => {
 
   // ------ Step 1: Basic Info ------
   const [basicInfo, setBasicInfo] = useState<BasicInfoData>({
+    businessName: '',
     profession: '',
     customProfession: '',
     bio: '',
     phone: user?.phoneNumber || '',
+  });
+  // Location is required so the finished profile passes the search gate
+  // (specialists are only listed once they have a business name, a contact,
+  // and a location). Collected here, up front, instead of silently hidden later.
+  const [location, setLocation] = useState<LocationData>({
+    address: '', city: '', region: '', country: '',
   });
   const [basicErrors, setBasicErrors] = useState<Record<string, string>>({});
 
@@ -189,6 +208,9 @@ const SpecialistOnboarding: React.FC = () => {
 
   const validateBasicInfo = (): boolean => {
     const errors: Record<string, string> = {};
+    if (!basicInfo.businessName.trim() || basicInfo.businessName.trim().length < 2) {
+      errors.businessName = t('onboarding.businessNameRequired') || 'Please enter your business or display name';
+    }
     const profession = basicInfo.customProfession || basicInfo.profession;
     if (!profession.trim()) {
       errors.profession = t('onboarding.professionRequired') || 'Please select or enter your profession';
@@ -198,6 +220,9 @@ const SpecialistOnboarding: React.FC = () => {
     }
     if (!basicInfo.phone.trim()) {
       errors.phone = t('onboarding.phoneRequired') || 'Phone number is required';
+    }
+    if (!location.address.trim() && !location.city.trim()) {
+      errors.location = t('onboarding.locationRequired') || 'Please set your location so clients can find you in search';
     }
     setBasicErrors(errors);
     return Object.keys(errors).length === 0;
@@ -250,9 +275,20 @@ const SpecialistOnboarding: React.FC = () => {
 
       if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
         await specialistService.updateProfile({
+          businessName: basicInfo.businessName.trim(),
           profession,
           bio: basicInfo.bio,
           phone: basicInfo.phone,
+          // Reuse the entered phone as the business contact so the profile
+          // satisfies the search gate (businessName + contact + location).
+          businessPhone: basicInfo.phone,
+          address: location.address || undefined,
+          city: location.city || undefined,
+          region: location.region || undefined,
+          country: location.country || undefined,
+          preciseAddress: location.address || undefined,
+          latitude: location.latitude,
+          longitude: location.longitude,
         } as any);
       }
 
@@ -565,6 +601,28 @@ const SpecialistOnboarding: React.FC = () => {
         </p>
       </div>
 
+      {/* Business / Display name */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {t('onboarding.businessName') || 'Business / Display Name'} *
+        </label>
+        <input
+          type="text"
+          value={basicInfo.businessName}
+          onChange={(e) => {
+            setBasicInfo((prev) => ({ ...prev, businessName: e.target.value }));
+            if (e.target.value.trim().length >= 2) {
+              setBasicErrors((prev) => { const er = { ...prev }; delete er.businessName; return er; });
+            }
+          }}
+          placeholder={t('onboarding.businessNamePlaceholder') || 'e.g., Olivochka Beauty Studio'}
+          className={`w-full px-4 py-3 rounded-xl border ${
+            basicErrors.businessName ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
+        />
+        {basicErrors.businessName && <p className="mt-1 text-sm text-red-500">{basicErrors.businessName}</p>}
+      </div>
+
       {/* Profession */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -633,6 +691,26 @@ const SpecialistOnboarding: React.FC = () => {
           } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
         />
         {basicErrors.phone && <p className="mt-1 text-sm text-red-500">{basicErrors.phone}</p>}
+      </div>
+
+      {/* Location — required so the profile is discoverable in search */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {t('onboarding.location') || 'Location'} *
+        </label>
+        <LocationPicker
+          location={location}
+          onLocationChange={(loc) => {
+            setLocation(loc);
+            if (loc.address?.trim() || loc.city?.trim()) {
+              setBasicErrors((prev) => { const er = { ...prev }; delete er.location; return er; });
+            }
+          }}
+        />
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          {t('onboarding.locationHint') || 'Clients search by location — this is required to appear in search results.'}
+        </p>
+        {basicErrors.location && <p className="mt-1 text-sm text-red-500">{basicErrors.location}</p>}
       </div>
     </div>
   );
