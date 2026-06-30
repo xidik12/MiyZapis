@@ -35,9 +35,22 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
   const shareData = { title, text: text || title, url };
 
   const handleShare = async () => {
+    // Native app (Capacitor): use the OS share sheet — navigator.share isn't
+    // available in the Android WebView, which left a clipped fallback dropdown.
+    const isNative = !!(window as any)?.Capacitor?.isNativePlatform?.();
+    if (isNative) {
+      try {
+        const { Share } = await import('@capacitor/share');
+        await Share.share({ title, text: text || title, url, dialogTitle: title });
+        return;
+      } catch {
+        // fall through to web paths
+      }
+    }
     if (navigator.share) {
       try {
         await navigator.share(shareData);
+        return;
       } catch {
         // User cancelled or share failed — ignore
       }
@@ -84,7 +97,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+        <div className="fixed inset-x-4 bottom-24 z-[70] mx-auto w-auto max-w-xs sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:mt-2 sm:mx-0 sm:max-w-none sm:w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1">
           <button
             onClick={copyLink}
             className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
