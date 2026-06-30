@@ -1204,7 +1204,11 @@ export class SpecialistService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         }),
-        // All time bookings for trends and averages
+        // Recent bookings for trends/averages/service performance. Capped + most-
+        // recent-first so a specialist with years of history can't pull their whole
+        // booking table into Node memory on every analytics view (OOM risk on the
+        // shared VPS). 5000 covers all real accounts today; full lifetime scalars
+        // should move to groupBy/_sum aggregates in a later pass.
         prisma.booking.findMany({
           where: {
             specialistId: specialist.userId,
@@ -1222,6 +1226,8 @@ export class SpecialistService {
               },
             },
           },
+          orderBy: { createdAt: 'desc' },
+          take: 5000,
         }),
         // Reviews for rating analysis
         prisma.review.findMany({
@@ -1391,40 +1397,33 @@ export class SpecialistService {
         });
       }
 
-      // Service performance
-      const servicePerformance = await Promise.all(
-        services.map(async (service) => {
-          const serviceBookings = await prisma.booking.findMany({
-            where: {
-              serviceId: service.id,
-            },
-            select: {
-              status: true,
-              totalAmount: true,
-              service: {
-                select: {
-                  currency: true,
-                },
-              },
-            },
-          });
-          
-          const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
-          const revenue = completed.reduce((sum, b) => {
-            const serviceCurrency = b.service?.currency || 'UAH';
-            const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
-            return sum + convertedAmount;
-          }, 0);
-          
-          return {
-            serviceName: service.name,
-            totalBookings: serviceBookings.length,
-            completedBookings: completed.length,
-            revenue,
-            completionRate: serviceBookings.length > 0 ? (completed.length / serviceBookings.length) * 100 : 0,
-          };
-        })
-      );
+      // Service performance — computed in-memory from allTimeBookings (already
+      // fetched) instead of one booking query per service (was an N+1: 10 services
+      // = 10 serial queries on every analytics view).
+      const bookingsByService = new Map<string, typeof allTimeBookings>();
+      for (const b of allTimeBookings) {
+        if (!b.serviceId) continue;
+        const arr = bookingsByService.get(b.serviceId) || [];
+        arr.push(b);
+        bookingsByService.set(b.serviceId, arr);
+      }
+      const servicePerformance = services.map((service) => {
+        const serviceBookings = bookingsByService.get(service.id) || [];
+        const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
+        const revenue = completed.reduce((sum, b) => {
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(Number(b.totalAmount), serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
+
+        return {
+          serviceName: service.name,
+          totalBookings: serviceBookings.length,
+          completedBookings: completed.length,
+          revenue,
+          completionRate: serviceBookings.length > 0 ? (completed.length / serviceBookings.length) * 100 : 0,
+        };
+      });
 
       // Revenue by service
       const revenueByService = servicePerformance.map(sp => ({

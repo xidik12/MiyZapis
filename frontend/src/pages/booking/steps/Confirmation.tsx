@@ -181,7 +181,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
         )}
 
         {/* Loyalty Points Earned Notification — only when payments are enabled */}
-        {environment.PAYMENTS_ENABLED && loyaltyData && pointsToEarn > 0 && isAutoBooked && (
+        {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
           <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-center space-x-3 mb-2">
               <div className="h-10 w-10 bg-indigo-500 rounded-full flex items-center justify-center">

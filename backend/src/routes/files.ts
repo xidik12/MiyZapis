@@ -440,9 +440,19 @@ if (useS3Storage) {
 // Proxy S3 images to handle CORS issues
 router.get('/s3-proxy/*', async (req, res) => {
   try {
-    const s3Path = req.params[0]; // Gets everything after /s3-proxy/
+    const s3Path = req.params[0] || ''; // Gets everything after /s3-proxy/
+
+    // Only proxy publicly-displayable image prefixes (avatars, portfolio, service
+    // images). Never expose `document/`, `certificate/`, or arbitrary keys — this
+    // endpoint is unauthenticated by design (public profile images), so it must
+    // not be a read-any-object gateway into the bucket.
+    const ALLOWED_PREFIXES = ['avatar/', 'portfolio/', 'service/'];
+    if (s3Path.includes('..') || !ALLOWED_PREFIXES.some((p) => s3Path.startsWith(p))) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
     const s3Url = `https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/${s3Path}`;
-    
+
     logger.debug(`🔄 Proxying S3 request: ${s3Path}`);
     
     const response = await fetch(s3Url);
@@ -461,7 +471,7 @@ router.get('/s3-proxy/*', async (req, res) => {
     const contentLength = response.headers.get('content-length');
     
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'https://miyzapis.com');
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
     
     if (contentLength) {

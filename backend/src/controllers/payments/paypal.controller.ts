@@ -363,31 +363,32 @@ export class PayPalController {
         hasRawBody: !!(req as Request & { rawBody?: string }).rawBody
       });
 
-      // For development/testing: Allow webhooks without signature verification
-      // In production, you should always verify webhooks
-      if (signature && webhookId) {
-        // Verify webhook signature
-        const isValid = await paypalService.verifyWebhookSignature(
-          req.headers as Record<string, string>,
-          rawBody,
-          webhookId
-        );
-
-        if (!isValid) {
-          logger.warn('[PayPal] Invalid webhook signature', {
-            eventType: req.body.event_type,
-            webhookId,
-          });
-          res.status(401).json({
-            error: 'Invalid webhook signature'
-          });
-          return;
-        }
-      } else {
-        logger.warn('[PayPal] Webhook received without signature - processing anyway for testing', {
+      // Fail CLOSED: webhooks must be signed and verifiable. An unsigned or
+      // unverified event must never be processed — otherwise a forged request
+      // can mint bookings + SUCCEEDED payments. (Was: "process anyway for testing".)
+      if (!signature || !webhookId) {
+        logger.warn('[PayPal] Rejected unsigned webhook', {
+          eventType: req.body.event_type,
           hasSignature: !!signature,
           hasWebhookId: !!webhookId,
         });
+        res.status(401).json({ error: 'Missing webhook signature' });
+        return;
+      }
+
+      const isValid = await paypalService.verifyWebhookSignature(
+        req.headers as Record<string, string>,
+        rawBody,
+        webhookId
+      );
+
+      if (!isValid) {
+        logger.warn('[PayPal] Invalid webhook signature', {
+          eventType: req.body.event_type,
+          webhookId,
+        });
+        res.status(401).json({ error: 'Invalid webhook signature' });
+        return;
       }
 
       const event = req.body;

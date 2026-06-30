@@ -1,8 +1,11 @@
-import React, { useState, useRef, KeyboardEvent } from 'react';
+import React, { useState, useRef, KeyboardEvent, Suspense, lazy } from 'react';
 import { PaperAirplaneIcon, PaperClipIcon } from '@/components/icons';
 import { Smile } from 'lucide-react';
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import type { EmojiClickData } from 'emoji-picker-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+// ~800KB — load only when the picker is opened, not in the messages chunk.
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 
 interface MessageInputProps {
   value: string;
@@ -81,11 +84,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             >
               ×
             </button>
-            <EmojiPicker
-              onEmojiClick={handleEmojiClick}
-              width={320}
-              height={400}
-            />
+            <Suspense fallback={<div className="w-[320px] h-[400px] grid place-items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-gray-400">…</div>}>
+              <EmojiPicker
+                onEmojiClick={handleEmojiClick}
+                width={320}
+                height={400}
+              />
+            </Suspense>
           </div>
         </div>
       )}
