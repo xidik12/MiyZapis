@@ -53,6 +53,9 @@ USER nextjs
 # Expose port
 EXPOSE 3000
 
-# Start the application
+# Start: apply any pending migrations, then run the server. The DB is baselined
+# (migrate status = up to date on all envs), so this is a no-op today and only
+# applies genuinely NEW migrations on future deploys. A failing migration fails
+# the boot by design (fail-fast) rather than running against a half-migrated DB.
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
