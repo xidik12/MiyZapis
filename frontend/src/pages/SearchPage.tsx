@@ -692,6 +692,13 @@ const SearchPage: React.FC = () => {
               <span className="text-sm text-gray-600 dark:text-gray-400 ml-1 tabular-nums">
                 {(service.rating ?? 0).toFixed(1)} ({service.reviewCount ?? 0})
               </span>
+              <ShareButton
+                url={`${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/service/${service.id}`}
+                title={(service as any).name || service.specialist?.businessName || 'MiyZapis'}
+                text={service.specialist?.businessName || ''}
+                variant="icon"
+                className="ml-1 border border-gray-200 dark:border-gray-700"
+              />
             </div>
           </div>
 
@@ -818,13 +825,6 @@ const SearchPage: React.FC = () => {
                 </div>
               );
             })()}
-            <ShareButton
-              url={`${typeof window !== 'undefined' ? window.location.origin : 'https://miyzapis.com'}/service/${service.id}`}
-              title={(service as any).name || service.specialist?.businessName || 'MiyZapis'}
-              text={service.specialist?.businessName || ''}
-              variant="icon"
-              className="self-center border border-gray-200 dark:border-gray-700"
-            />
           </div>
         </div>
       </div>
