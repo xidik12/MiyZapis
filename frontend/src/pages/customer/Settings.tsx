@@ -1036,9 +1036,91 @@ const CustomerSettings: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">
                     {t('customer.settings.privacy')}
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('customer.settings.privacyNoBackend')}
-                  </p>
+
+                  <div className="space-y-4">
+                    {/* What specialists can see */}
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                        {language === 'uk' ? 'Що бачать фахівці' : language === 'ru' ? 'Что видят специалисты' : 'What specialists can see'}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {language === 'uk'
+                          ? 'Коли ви бронюєте запис, фахівець отримує ваше ім’я, номер телефону та email, щоб зв’язатися з вами щодо запису. Ваші контакти передаються лише тим фахівцям, до яких ви записуєтесь.'
+                          : language === 'ru'
+                          ? 'Когда вы бронируете запись, специалист получает ваше имя, номер телефона и email, чтобы связаться с вами по поводу записи. Ваши контакты передаются только тем специалистам, к которым вы записываетесь.'
+                          : 'When you book an appointment, the specialist receives your name, phone number, and email so they can contact you about the booking. Your details are shared only with the specialists you book with.'}
+                      </p>
+                    </div>
+
+                    {/* Profile visibility */}
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                        {language === 'uk' ? 'Видимість профілю' : language === 'ru' ? 'Видимость профиля' : 'Profile visibility'}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {language === 'uk'
+                          ? 'Ваш профіль клієнта приватний — вас немає у публічному пошуку. Лише фахівці, з якими ви взаємодієте, бачать деталі ваших записів.'
+                          : language === 'ru'
+                          ? 'Ваш профиль клиента приватный — вас нет в публичном поиске. Только специалисты, с которыми вы взаимодействуете, видят детали ваших записей.'
+                          : 'Your customer profile is private — you are not listed in public search. Only specialists you interact with can see your booking details.'}
+                      </p>
+                    </div>
+
+                    {/* Communication preferences → Notifications */}
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                          {language === 'uk' ? 'Налаштування сповіщень' : language === 'ru' ? 'Настройки уведомлений' : 'Communication preferences'}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'uk'
+                            ? 'Керуйте тим, які листи та сповіщення ви отримуєте, у розділі «Сповіщення».'
+                            : language === 'ru'
+                            ? 'Управляйте тем, какие письма и уведомления вы получаете, в разделе «Уведомления».'
+                            : 'Control which emails and notifications you receive in the Notifications section.'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => { setActiveSection('notifications'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="shrink-0 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                      >
+                        {language === 'uk' ? 'Відкрити' : language === 'ru' ? 'Открыть' : 'Open'}
+                      </button>
+                    </div>
+
+                    {/* Data rights */}
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        {language === 'uk' ? 'Ваші права на дані' : language === 'ru' ? 'Ваши права на данные' : 'Your data rights'}
+                      </h3>
+                      <ul className="space-y-2 text-sm">
+                        <li>
+                          <a
+                            href="mailto:info@incognitogeneration.com?subject=Data%20export%20request"
+                            className="text-primary-600 dark:text-primary-400 hover:underline"
+                          >
+                            {language === 'uk' ? 'Запросити копію моїх даних' : language === 'ru' ? 'Запросить копию моих данных' : 'Request a copy of my data'}
+                          </a>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => { setActiveSection('account'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            {language === 'uk' ? 'Видалити мій акаунт' : language === 'ru' ? 'Удалить мой аккаунт' : 'Delete my account'}
+                          </button>
+                        </li>
+                        <li>
+                          <Link
+                            to="/privacy"
+                            className="text-primary-600 dark:text-primary-400 hover:underline"
+                          >
+                            {language === 'uk' ? 'Політика конфіденційності' : language === 'ru' ? 'Политика конфиденциальности' : 'Privacy Policy'}
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               )}
 

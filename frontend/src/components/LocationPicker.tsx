@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { MapPinIcon as MapPin, XIcon as X, MagnifyingGlassIcon as Search } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { InlineLoader, ContentLoader } from '@/components/ui';
@@ -108,6 +109,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       }
     };
   }, []);
+
+  // Lock background scroll while the map modal is open (prevents the long-scroll feel).
+  useEffect(() => {
+    if (!isMapOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isMapOpen]);
 
   const initializeMap = () => {
     if (!(window as any).google || !(window as any).google.maps || !mapRef.current) return;
@@ -405,9 +414,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <span className="text-blue-600 dark:text-blue-400 text-sm">Change</span>
       </button>
 
-      {/* Map Modal */}
-      {isMapOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      {/* Map Modal — portaled to <body> so a transformed/animated ancestor can't
+          re-anchor `position: fixed` (which made it render inline at the page bottom). */}
+      {isMapOpen && createPortal(
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-end sm:items-center justify-center z-[120] p-0 sm:p-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="bg-white dark:bg-gray-800 rounded-t-lg sm:rounded-xl shadow-xl w-full sm:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10 rounded-t-lg sm:rounded-none">
@@ -557,7 +567,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

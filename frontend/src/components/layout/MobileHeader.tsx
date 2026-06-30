@@ -11,7 +11,7 @@ interface MobileHeaderProps {
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
   return (
-    <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200/20 dark:border-gray-700/20">
+    <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200/20 dark:border-gray-700/20 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between h-16 px-4">
         {/* Logo */}
         <Link

@@ -522,7 +522,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
-        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 box-content lg:box-border bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6 pt-[env(safe-area-inset-top)] lg:pt-0">
           {/* Mobile brand (sidebar is hidden on mobile; bottom nav handles navigation) */}
           <Link to="/" className="flex items-center lg:hidden">
             <img src="/miyzapis-logo-full.png" alt="MiyZapis" className="h-9 w-auto" />
