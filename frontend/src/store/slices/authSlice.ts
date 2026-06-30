@@ -10,6 +10,19 @@ import {
   TelegramAuthRequest,
 } from '../../types';
 
+// Normalize the server user before it enters the store. The DB enum + the
+// Telegram webapp/mini-app auth return an UPPERCASE userType ('SPECIALIST'),
+// while ~22 components and the route guards compare against lowercase. Without
+// this, a specialist signing in via the Telegram mini app loops forever on
+// "Redirecting to your dashboard…". Lowercasing once at the write boundary keeps
+// the whole app consistent regardless of which auth path produced the user.
+const normalizeUser = <T extends { userType?: unknown } | null | undefined>(u: T): T => {
+  if (u && typeof (u as { userType?: unknown }).userType === 'string') {
+    return { ...(u as object), userType: ((u as { userType: string }).userType).toLowerCase() } as T;
+  }
+  return u;
+};
+
 // Initial state
 const initialState: AuthState = {
   user: null,
@@ -252,7 +265,7 @@ const authSlice = createSlice({
       state.user = null;
     },
     setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+      state.user = normalizeUser(action.payload);
       state.isAuthenticated = true;
     },
     updateLoyaltyPoints: (state, action: PayloadAction<number>) => {
@@ -275,7 +288,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
+        state.user = normalizeUser(action.payload.user);
         state.tokens = action.payload.tokens;
         state.isAuthenticated = true;
         state.error = null;
@@ -294,7 +307,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
+        state.user = normalizeUser(action.payload.user);
         
         // Only authenticate if tokens are provided (no email verification required)
         if (action.payload.tokens) {
@@ -324,7 +337,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         // Only set user and tokens if they exist (not in requiresUserTypeSelection response)
         if ('user' in action.payload && 'tokens' in action.payload) {
-          state.user = action.payload.user;
+          state.user = normalizeUser(action.payload.user);
           state.tokens = action.payload.tokens;
           state.isAuthenticated = true;
         }
@@ -345,7 +358,7 @@ const authSlice = createSlice({
       })
       .addCase(telegramLogin.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
+        state.user = normalizeUser(action.payload.user);
         state.tokens = action.payload.tokens;
         state.isAuthenticated = true;
         state.error = null;
@@ -364,7 +377,7 @@ const authSlice = createSlice({
       })
       .addCase(telegramAuth.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
+        state.user = normalizeUser(action.payload.user);
         state.tokens = action.payload.tokens;
         state.isAuthenticated = true;
         state.error = null;
@@ -382,7 +395,7 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        state.user = normalizeUser(action.payload);
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -402,7 +415,7 @@ const authSlice = createSlice({
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        state.user = normalizeUser(action.payload);
         state.error = null;
       })
       .addCase(updateProfile.rejected, (state, action) => {

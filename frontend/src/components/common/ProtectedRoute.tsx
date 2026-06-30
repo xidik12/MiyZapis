@@ -29,12 +29,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // Compare case-insensitively: the Telegram webapp auth returns an UPPERCASE
+  // userType ('SPECIALIST') while web login returns lowercase. A case-sensitive
+  // check bounced mini-app specialists off /specialist/dashboard into an infinite
+  // redirect loop (stuck on "Redirecting to your dashboard…").
+  const role = (user?.userType || '').toLowerCase();
+
   // If user type is required and doesn't match, redirect appropriately
-  if (requiredUserType && user?.userType !== requiredUserType) {
+  if (requiredUserType && role !== String(requiredUserType).toLowerCase()) {
     // Redirect to appropriate dashboard based on user type
     let defaultRedirect = '/dashboard';
-    
-    switch (user?.userType) {
+
+    switch (role) {
       case 'specialist':
         defaultRedirect = '/specialist/dashboard';
         break;
@@ -46,13 +52,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         defaultRedirect = '/dashboard';
         break;
     }
-    
+
     return <Navigate to={defaultRedirect} replace />;
   }
 
   // Force specialists who haven't completed onboarding to the onboarding page
   if (
-    user?.userType === 'specialist' &&
+    role === 'specialist' &&
     user?.profileComplete === false &&
     location.pathname !== '/specialist/onboarding'
   ) {
@@ -63,7 +69,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // (business name + contact + location) through a lightweight completion step,
   // so existing incomplete profiles become discoverable on next login.
   if (
-    user?.userType === 'specialist' &&
+    role === 'specialist' &&
     (user as { requiresProfileCompletion?: boolean })?.requiresProfileCompletion === true &&
     location.pathname !== '/specialist/complete-profile' &&
     location.pathname !== '/specialist/onboarding'
