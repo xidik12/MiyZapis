@@ -30,6 +30,7 @@ const CreatePostPage = React.lazy(() => import('./pages/community/CreatePostPage
 
 // Authentication pages
 const LoginPage = React.lazy(() => import('./pages/auth/LoginPage'));
+const TelegramReturnPage = React.lazy(() => import('./pages/auth/TelegramReturnPage'));
 const RegisterPage = React.lazy(() => import('./pages/auth/RegisterPage'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('./pages/auth/ResetPasswordPage'));
@@ -245,6 +246,7 @@ function App() {
                     <Route path="verify-email" element={<VerifyEmailPage />} />
                     <Route path="callback" element={<AuthCallbackPage />} />
                     <Route path="telegram-callback" element={<AuthCallbackPage />} />
+                    <Route path="telegram-return" element={<TelegramReturnPage />} />
                     <Route path="*" element={<Navigate to="/auth/login" replace />} />
                   </Routes>
                 </Suspense>

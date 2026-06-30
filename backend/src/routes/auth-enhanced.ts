@@ -40,6 +40,15 @@ const oauthCorsOptions = {
 // Apply enhanced CORS to all auth-enhanced routes
 router.use(cors(oauthCorsOptions));
 
+// Public: numeric Telegram bot id (the part before ':' in the bot token), needed
+// by the native app to open oauth.telegram.org directly (skip the in-app login
+// page). The bot id is public (it's embedded in the Login Widget); the token is not.
+router.get('/telegram/bot-id', (_req, res) => {
+  const token = config.telegram.botToken || '';
+  const botId = token.includes(':') ? token.split(':')[0] : '';
+  res.json(createSuccessResponse({ botId }));
+});
+
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,

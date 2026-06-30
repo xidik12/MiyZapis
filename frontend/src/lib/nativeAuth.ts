@@ -29,6 +29,30 @@ export async function openNativeAuth(
   }
 }
 
+/** Open Telegram's OAuth directly (skips the in-app login page). Falls back to
+ *  the generic browser login if the bot id can't be resolved. */
+export async function openNativeTelegram(mode: 'login' | 'register' = 'login'): Promise<void> {
+  try {
+    const base = (typeof window !== 'undefined' && window.location.origin.startsWith('http'))
+      ? window.location.origin
+      : 'https://miyzapis.com';
+    let botId = '';
+    try {
+      const { apiClient } = await import('@/services/api');
+      const r: any = await apiClient.get('/auth-enhanced/telegram/bot-id');
+      botId = r?.botId || r?.data?.botId || '';
+    } catch { /* ignore */ }
+    if (!botId) { await openNativeAuth(mode, 'telegram'); return; }
+    const returnTo = `${base}/auth/telegram-return?native=1`;
+    const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botId)}`
+      + `&origin=${encodeURIComponent(base)}&request_access=write&return_to=${encodeURIComponent(returnTo)}`;
+    const { Browser } = await import('@capacitor/browser');
+    await Browser.open({ url, presentationStyle: 'popover' });
+  } catch {
+    await openNativeAuth(mode, 'telegram');
+  }
+}
+
 /** True when this page is the system-browser leg of the native auth flow. */
 export function isNativeAuthFlow(): boolean {
   if (typeof window === 'undefined') return false;

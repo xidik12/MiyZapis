@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppDispatch } from '@/hooks/redux';
 import { googleLogin } from '@/store/slices/authSlice';
-import { openNativeAuth } from '@/lib/nativeAuth';
+import { openNativeAuth, openNativeTelegram } from '@/lib/nativeAuth';
 import { isNativeGoogleConfigured, nativeGoogleSignIn } from '@/lib/nativeGoogle';
 
 // Native-app social sign-in. OAuth (Google/Telegram widgets) is blocked inside
@@ -77,7 +77,7 @@ export const NativeSocialButtons: React.FC<Props> = ({ mode, disabled }) => {
       <button
         type="button"
         disabled={disabled || busy}
-        onClick={() => openNativeAuth(mode, 'telegram')}
+        onClick={() => openNativeTelegram(mode)}
         className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#54a9eb] hover:bg-[#4398da] text-white font-medium shadow-sm transition-colors active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <TelegramIcon />
