@@ -71,6 +71,16 @@ export class NotificationService {
 
   // Notification-specific translations for i18n keys used by booking service
   private static readonly notificationTranslations: Record<string, Record<string, string>> = {
+    'notifications.profileIncomplete.title': {
+      en: 'Complete your profile to appear in search',
+      uk: 'Заповніть профіль, щоб з’являтися в пошуку',
+      ru: 'Заполните профиль, чтобы появляться в поиске',
+    },
+    'notifications.profileIncomplete.message': {
+      en: 'Your profile is missing a few details, so clients can’t find you in search yet. Add your business name, a contact and your location to get listed.',
+      uk: 'У вашому профілі бракує кількох деталей, тому клієнти поки не можуть знайти вас у пошуку. Додайте назву бізнесу, контакт і місцезнаходження, щоб потрапити до списку.',
+      ru: 'В вашем профиле не хватает нескольких данных, поэтому клиенты пока не могут найти вас в поиске. Добавьте название бизнеса, контакт и местоположение, чтобы попасть в список.',
+    },
     'notifications.booking.confirmed.customer.title': {
       en: 'Booking Confirmed', uk: 'Бронювання підтверджено', ru: 'Бронирование подтверждено'
     },
