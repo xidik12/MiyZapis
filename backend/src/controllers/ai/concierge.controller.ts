@@ -47,10 +47,15 @@ export async function conciergeHandler(req: Request, res: Response): Promise<voi
     return;
   }
 
+  // Auth first: an unauthenticated caller needs a login prompt, not the paywall.
+  const uid = (req as { user?: { id?: string } }).user?.id;
+  if (!uid) {
+    res.status(401).json({ success: false, error: 'Sign in required.' });
+    return;
+  }
   // Paywall: the AI concierge is a paid (Premium) feature. Access only while the
   // user's aiAccessUntil is in the future.
-  const uid = (req as { user?: { id?: string } }).user?.id;
-  const user = uid ? await prisma.user.findUnique({ where: { id: uid }, select: { aiAccessUntil: true } }) : null;
+  const user = await prisma.user.findUnique({ where: { id: uid }, select: { aiAccessUntil: true } });
   const entitled = !!user?.aiAccessUntil && new Date(user.aiAccessUntil) > new Date();
   if (!entitled) {
     res.status(402).json({ success: false, code: 'AI_PREMIUM_REQUIRED', error: 'The AI concierge is a Premium feature. Upgrade to use it.' });
