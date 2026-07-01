@@ -151,6 +151,7 @@ export class ConsumablesService {
    * failures are logged and swallowed.
    */
   static async deductForBooking(bookingId: string): Promise<void> {
+    let claimed = false;
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
@@ -184,6 +185,19 @@ export class ConsumablesService {
         return;
       }
 
+      // Atomically CLAIM the deduction before any stock writes. Marking the flag
+      // only at the END (previously) left the whole write-off racy — two concurrent
+      // completions both read the flag false and both deducted (double write-off).
+      // If another call already claimed it, count===0 → no-op.
+      const claim = await prisma.booking.updateMany({
+        where: { id: bookingId, consumablesDeducted: false },
+        data: { consumablesDeducted: true },
+      });
+      if (claim.count === 0) {
+        return; // already deducted / being deducted by a concurrent call
+      }
+      claimed = true;
+
       const consumables = await prisma.serviceConsumable.findMany({
         where: { serviceId: booking.serviceId },
       });
@@ -211,12 +225,7 @@ export class ConsumablesService {
         }
       }
 
-      // Mark as deducted so re-completion (or a retry) doesn't double-write.
-      await prisma.booking.update({
-        where: { id: bookingId },
-        data: { consumablesDeducted: true },
-      });
-
+      // Flag already set atomically by the claim above.
       logger.info('Consumables deducted for completed booking', {
         bookingId,
         count: consumables.length,
@@ -227,6 +236,13 @@ export class ConsumablesService {
         bookingId,
         error: error instanceof Error ? error.message : String(error),
       });
+      // If we claimed but the write-off failed, release the claim so it can retry
+      // (better a retry than silently never deducting).
+      if (claimed) {
+        await prisma.booking
+          .update({ where: { id: bookingId }, data: { consumablesDeducted: false } })
+          .catch(() => { /* best effort */ });
+      }
     }
   }
 }
