@@ -1,0 +1,167 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { apiClient } from '@/services/api';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+interface Option {
+  serviceId: string;
+  serviceName: string;
+  price: number;
+  currency: string;
+  durationMinutes: number;
+  businessName: string;
+  address: string | null;
+  city: string | null;
+  distanceKm?: number;
+  etaMinutes?: number;
+  navUrl?: string;
+  bookUrl: string;
+}
+interface Turn { role: 'user' | 'model'; text: string; options?: Option[] }
+
+const money = (n: number, c: string) =>
+  new Intl.NumberFormat(undefined, { style: 'currency', currency: c === 'UAH' ? 'UAH' : c }).format(n);
+
+const ConciergePage: React.FC = () => {
+  const { language } = useLanguage();
+  const tr = (uk: string, ru: string, en: string) => (language === 'uk' ? uk : language === 'ru' ? ru : en);
+
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    navigator.geolocation?.getCurrentPosition(
+      (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => { /* no location — concierge still works, just no distances */ },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
+  }, []);
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [turns, busy]);
+
+  const send = async () => {
+    const msg = input.trim();
+    if (!msg || busy) return;
+    setInput('');
+    const history = turns.map((t) => ({ role: t.role, text: t.text }));
+    setTurns((prev) => [...prev, { role: 'user', text: msg }]);
+    setBusy(true);
+    try {
+      const res: any = await apiClient.post('/ai/concierge', { message: msg, history, lat: coords?.lat, lng: coords?.lng });
+      const data = res?.data ?? res;
+      setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [] }]);
+    } catch (e: any) {
+      const m = e?.response?.status === 503
+        ? tr('Асистент ще недоступний.', 'Ассистент пока недоступен.', 'The concierge isn’t available yet.')
+        : tr('Вибачте, сталася помилка. Спробуйте ще раз.', 'Извините, произошла ошибка. Попробуйте ещё раз.', 'Sorry — something went wrong. Please try again.');
+      setTurns((prev) => [...prev, { role: 'model', text: m }]);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const suggestions = [
+    tr('Хочу стрижку поруч сьогодні', 'Хочу стрижку рядом сегодня', 'I want a haircut near me today'),
+    tr('Манікюр до 300 грн', 'Маникюр до 300 грн', 'Manicure under 300'),
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <header className="flex items-center gap-3 px-4 h-14 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
+        <Link to="/" className="text-gray-500 dark:text-gray-400 text-xl leading-none">←</Link>
+        <div className="flex items-center gap-2">
+          <span className="grid place-items-center h-8 w-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white text-sm font-bold">✦</span>
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white leading-tight">{tr('AI Консьєрж', 'AI Консьерж', 'AI Concierge')}</p>
+            <p className="text-[11px] text-gray-400 leading-tight">{coords ? tr('Місце визначено', 'Местоположение определено', 'Location on') : tr('Місце вимкнено', 'Местоположение выключено', 'Location off')}</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {turns.length === 0 && (
+          <div className="mt-8 text-center">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              {tr('Опишіть, що вам потрібно — я знайду майстра поруч, час і маршрут.',
+                  'Опишите, что вам нужно — я найду мастера рядом, время и маршрут.',
+                  'Tell me what you need — I’ll find a specialist near you, a time, and the route.')}
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {suggestions.map((s) => (
+                <button key={s} onClick={() => setInput(s)} className="px-3 py-1.5 text-sm rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {turns.map((t, i) => (
+          <div key={i} className={t.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+            <div className={`max-w-[85%] ${t.role === 'user' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700'} rounded-2xl px-4 py-2.5`}>
+              <p className="whitespace-pre-wrap text-sm">{t.text}</p>
+              {t.options && t.options.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {t.options.slice(0, 5).map((o) => (
+                    <div key={o.serviceId} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">{o.serviceName}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{o.businessName}{o.city ? ` · ${o.city}` : ''}</p>
+                          {o.address && <p className="text-xs text-gray-400 truncate">{o.address}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold text-primary-600 dark:text-primary-400 tabular-nums">{money(o.price, o.currency)}</p>
+                          {typeof o.distanceKm === 'number' && (
+                            <p className="text-[11px] text-gray-400 tabular-nums">{o.distanceKm} km · ~{o.etaMinutes} min</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        {o.navUrl && (
+                          <a href={o.navUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-center text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                            {tr('Маршрут', 'Маршрут', 'Navigate')}
+                          </a>
+                        )}
+                        <Link to={o.bookUrl} className="flex-1 text-center text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700">
+                          {tr('Забронювати', 'Забронировать', 'Book')}
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        {busy && (
+          <div className="flex justify-start">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-2.5 text-sm text-gray-400">…</div>
+          </div>
+        )}
+        <div ref={endRef} />
+      </div>
+
+      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+        <div className="flex items-end gap-2 max-w-2xl mx-auto">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            rows={1}
+            placeholder={tr('Напишіть повідомлення…', 'Напишите сообщение…', 'Type a message…')}
+            className="flex-1 resize-none rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 max-h-32"
+          />
+          <button onClick={send} disabled={busy || !input.trim()} className="shrink-0 h-11 px-4 rounded-2xl bg-primary-600 text-white font-medium disabled:opacity-50">
+            {tr('Надіслати', 'Отправить', 'Send')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ConciergePage;
