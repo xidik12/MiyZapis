@@ -13,6 +13,7 @@ import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon, CalendarIcon, XIcon, ArrowPathIcon } from '@/components/icons';
 import { HelpTip } from '@/components/common/HelpTip';
+import { SearchAiToggle } from '@/components/common/SearchAiToggle';
 import { EmptyState } from '@/components/common/EmptyState';
 import PromotedListingCard from '@/components/common/PromotedListingCard';
 import { promoteService, type ShowcaseItem } from '@/services/promote.service';
@@ -954,6 +955,9 @@ const SearchPage: React.FC = () => {
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('search.subtitle')}
           </p>
+          <div className="mt-4">
+            <SearchAiToggle active="search" />
+          </div>
         </div>
 
         {/* Search Form */}

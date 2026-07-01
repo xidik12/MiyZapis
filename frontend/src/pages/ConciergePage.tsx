@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '@/services/api';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SearchAiToggle } from '@/components/common/SearchAiToggle';
 
 interface Option {
   serviceId: string;
@@ -94,6 +95,10 @@ const ConciergePage: React.FC = () => {
           </div>
         </div>
       </header>
+
+      <div className="flex justify-center pt-3">
+        <SearchAiToggle active="ai" />
+      </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {turns.length === 0 && (

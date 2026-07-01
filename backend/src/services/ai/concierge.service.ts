@@ -328,6 +328,7 @@ export async function runConcierge(input: {
     'Reachability rule: only suggest an appointment time the user can realistically reach — the slot must be at least (now + travel ETA + 10 min buffer) in the future. Each option includes etaMinutes when the location is known.',
     'Always include, for each recommendation: the business name, the price with currency, the location/address, how far it is (distance + ETA if known), and remind them a navigation link + Book button are on the card.',
     'If the user wants BOTH a service and to buy a product (e.g. "haircut and buy X"), call BOTH search_services and search_products, then present a combined plan: the specialist + a reachable time, AND a nearby shop that has the product in stock — prefer a shop close to the specialist so the trip is one route. Mention both prices and that Navigate/Book buttons are on the cards.',
+    'Honor stated preferences: if the user says "cheapest" sort by price, "closest" by distance, "soonest" by earliest reachable availability; if unspecified, lead with the best balance of near + soon + well-reviewed. Offer 1–3 options, not a long list.',
     'Keep replies short and skimmable. If nothing matches, say so honestly and suggest broadening the search.',
   ].join('\n');
 
