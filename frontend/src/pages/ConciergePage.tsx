@@ -70,7 +70,12 @@ const ConciergePage: React.FC = () => {
       const data = res?.data ?? res;
       setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [], products: data.products || [] }]);
     } catch (e: any) {
-      const m = e?.response?.status === 503
+      const status = e?.response?.status;
+      const m = status === 402
+        ? tr('AI-консьєрж — преміум-функція. Оформіть підписку, щоб користуватися.',
+             'AI-консьерж — премиум-функция. Оформите подписку, чтобы пользоваться.',
+             'The AI concierge is a Premium feature. Upgrade to use it.')
+        : status === 503
         ? tr('Асистент ще недоступний.', 'Ассистент пока недоступен.', 'The concierge isn’t available yet.')
         : tr('Вибачте, сталася помилка. Спробуйте ще раз.', 'Извините, произошла ошибка. Попробуйте ещё раз.', 'Sorry — something went wrong. Please try again.');
       setTurns((prev) => [...prev, { role: 'model', text: m }]);

@@ -60,6 +60,10 @@ model User {
   subscriptionValidUntil    DateTime?
   subscriptionEffectiveDate DateTime?
 
+  // AI Concierge entitlement (customer AI/Premium plan). Access while this is in
+  // the future; null/past = no access.
+  aiAccessUntil             DateTime?
+
   // Free trial period (3 months for both users and specialists)
   trialStartDate DateTime? // When trial started
   trialEndDate   DateTime? // When trial ends (3 months from start)
@@ -2894,4 +2898,23 @@ model GuestOtp {
 
   @@index([email])
   @@map("guest_otps")
+}
+
+// AI Concierge conversation log — every prompt, reply, tool call and returned
+// options/products, for review + analytics.
+model ConciergeLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  message   String
+  reply     String
+  toolCalls String   @default("[]") // JSON: [{name, args, ok}]
+  options   String   @default("[]") // JSON of returned service options
+  products  String   @default("[]") // JSON of returned product options
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("concierge_logs")
 }

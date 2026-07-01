@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { runConcierge, isConciergeEnabled, type ConciergeTurn } from '@/services/ai/concierge.service';
+import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 
 const numOrUndef = (v: unknown): number | undefined => {
@@ -19,6 +20,17 @@ export async function conciergeHandler(req: Request, res: Response): Promise<voi
     res.status(400).json({ success: false, error: 'A message is required.' });
     return;
   }
+
+  // Paywall: the AI concierge is a paid (Premium) feature. Access only while the
+  // user's aiAccessUntil is in the future.
+  const uid = (req as { user?: { id?: string } }).user?.id;
+  const user = uid ? await prisma.user.findUnique({ where: { id: uid }, select: { aiAccessUntil: true } }) : null;
+  const entitled = !!user?.aiAccessUntil && new Date(user.aiAccessUntil) > new Date();
+  if (!entitled) {
+    res.status(402).json({ success: false, code: 'AI_PREMIUM_REQUIRED', error: 'The AI concierge is a Premium feature. Upgrade to use it.' });
+    return;
+  }
+
   try {
     const result = await runConcierge({
       message: message.slice(0, 2000),
@@ -28,6 +40,7 @@ export async function conciergeHandler(req: Request, res: Response): Promise<voi
       lat: numOrUndef(lat),
       lng: numOrUndef(lng),
       city: typeof city === 'string' ? city : undefined,
+      userId: (req as { user?: { id?: string } }).user?.id,
     });
     res.json({ success: true, data: result });
   } catch (e) {

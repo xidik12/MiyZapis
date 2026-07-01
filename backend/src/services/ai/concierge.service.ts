@@ -60,7 +60,7 @@ async function travelMatrix(
     // retired. Needs the Routes API enabled AND allowed on the key's API restrictions.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
-    let rows: any[];
+    let rows: any;
     try {
       const res = await fetch('https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix', {
         method: 'POST',
@@ -293,6 +293,29 @@ async function searchServicesTool(
   return { options };
 }
 
+// ── Tool: book an appointment for the current user ──────────────────────────
+async function bookTool(args: { serviceId: string; startTime: string }, userId?: string): Promise<any> {
+  if (!userId) return { error: 'not_signed_in' };
+  try {
+    const svc = await prisma.service.findUnique({ where: { id: args.serviceId }, select: { duration: true, name: true, isActive: true } });
+    if (!svc || !svc.isActive) return { error: 'service_unavailable' };
+    const when = new Date(args.startTime);
+    if (isNaN(when.getTime()) || when <= new Date()) return { error: 'invalid_or_past_time' };
+    const { BookingService } = await import('@/services/booking');
+    const booking = await BookingService.createBooking({
+      customerId: userId,
+      serviceId: args.serviceId,
+      scheduledAt: when,
+      duration: svc.duration,
+      loyaltyPointsUsed: 0,
+    });
+    return { success: true, bookingId: booking.id, status: booking.status, scheduledAt: when.toISOString(), serviceName: svc.name };
+  } catch (e) {
+    // Surface actionable failures (e.g. missing contact details, slot taken).
+    return { error: e instanceof Error ? e.message : 'booking_failed' };
+  }
+}
+
 // ── Tool: soonest availability for a specialist ─────────────────────────────
 async function availabilityTool(args: { specialistId: string }): Promise<{ slots: string[] }> {
   const now = new Date();
@@ -354,6 +377,18 @@ const tools: FunctionDeclarationsTool[] = [
         },
       },
       {
+        name: 'book_appointment',
+        description: 'Book an appointment for the CURRENT signed-in user. Call this ONLY after the user has explicitly confirmed a specific service AND a specific start time (e.g. they said "yes, book it"). Returns the booking status.',
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            serviceId: { type: SchemaType.STRING, description: 'The service id from search_services' },
+            startTime: { type: SchemaType.STRING, description: 'ISO 8601 start datetime, from get_availability' },
+          },
+          required: ['serviceId', 'startTime'],
+        },
+      },
+      {
         name: 'search_products',
         description: 'Find real, in-stock RETAIL products for sale across shops (e.g. "shampoo", "hair wax", a brand/SKU). Returns the shop, price, stock, location and a navigation link. Use when the user wants to BUY a physical product.',
         parameters: {
@@ -381,6 +416,7 @@ export async function runConcierge(input: {
   lat?: number;
   lng?: number;
   city?: string;
+  userId?: string;
 }): Promise<{ reply: string; options: ConciergeOption[]; products: ConciergeProduct[] }> {
   const apiKey = process.env.GEMINI_API_KEY!;
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -393,6 +429,7 @@ export async function runConcierge(input: {
     `The current time is ${nowIso}. The user's location is ${input.lat != null ? `${input.lat},${input.lng}` : 'unknown'}.`,
     'Reachability rule: only suggest an appointment time the user can realistically reach — the slot must be at least (now + travel ETA + 10 min buffer) in the future. Each option includes etaMinutes when the location is known.',
     'Always include, for each recommendation: the business name, the price with currency, the location/address, how far it is (distance + ETA if known), and remind them a navigation link + Book button are on the card.',
+    'You CAN book on the user\'s behalf: once they pick a specific service and time, ASK them to confirm ("Shall I book <service> at <business> for <time>?"). Only after they clearly say yes, call book_appointment with that serviceId + startTime, then tell them the result (booked/pending confirmation) or the reason it failed (e.g. they need to add a phone number in settings). Never book without an explicit confirmation.',
     'If the user wants BOTH a service and to buy a product (e.g. "haircut and buy X"), call BOTH search_services and search_products, then present a combined plan: the specialist + a reachable time, AND a nearby shop that has the product in stock — prefer a shop close to the specialist so the trip is one route. Mention both prices and that Navigate/Book buttons are on the cards.',
     'Honor stated preferences: if the user says "cheapest" sort by price, "closest" by distance, "soonest" by earliest reachable availability; if unspecified, lead with the best balance of near + soon + well-reviewed. Offer 1–3 options, not a long list.',
     'Keep replies short and skimmable. If nothing matches, say so honestly and suggest broadening the search.',
@@ -405,6 +442,7 @@ export async function runConcierge(input: {
 
   const collectedOptions: ConciergeOption[] = [];
   const collectedProducts: ConciergeProduct[] = [];
+  const toolCallLog: Array<{ name: string; args: unknown; ok: boolean }> = [];
   let result = await chat.sendMessage(input.message);
 
   for (let i = 0; i < 5; i++) {
@@ -425,11 +463,14 @@ export async function runConcierge(input: {
           out = r;
         } else if (call.name === 'get_availability') {
           out = await availabilityTool(call.args as any);
+        } else if (call.name === 'book_appointment') {
+          out = await bookTool(call.args as any, input.userId);
         }
       } catch (e) {
         logger.warn('Concierge tool failed', { tool: call.name, error: e instanceof Error ? e.message : e });
         out = { error: 'tool_failed' };
       }
+      toolCallLog.push({ name: call.name, args: call.args, ok: !(out && (out as { error?: unknown }).error) });
       responses.push({ functionResponse: { name: call.name, response: out as object } });
     }
     result = await chat.sendMessage(responses);
@@ -441,5 +482,26 @@ export async function runConcierge(input: {
   const seenP = new Set<string>();
   const products = collectedProducts.filter((p) => (seenP.has(p.productId) ? false : (seenP.add(p.productId), true)));
 
-  return { reply: result.response.text(), options, products };
+  const reply = result.response.text();
+
+  // Persist the whole exchange (prompt, reply, tool calls, results) for review.
+  try {
+    const cap = (v: unknown) => JSON.stringify(v).slice(0, 12000);
+    await prisma.conciergeLog.create({
+      data: {
+        userId: input.userId || null,
+        message: input.message.slice(0, 4000),
+        reply: reply.slice(0, 8000),
+        toolCalls: cap(toolCallLog),
+        options: cap(options),
+        products: cap(products),
+        lat: input.lat ?? null,
+        lng: input.lng ?? null,
+      },
+    });
+  } catch (e) {
+    logger.warn('Concierge log write failed', { error: e instanceof Error ? e.message : e });
+  }
+
+  return { reply, options, products };
 }
