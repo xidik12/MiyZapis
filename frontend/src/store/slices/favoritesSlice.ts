@@ -2,6 +2,17 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { favoritesService, FavoriteSpecialist, FavoriteService, FavoritesCount } from '@/services/favorites.service';
 import { Pagination } from '@/types';
 
+// Backend returns { page, total, hasNextPage, hasPreviousPage }; the UI's Pagination
+// type uses { currentPage, totalItems, hasNext, hasPrev }. Normalise here.
+const mapPagination = (p: any): Pagination => ({
+  currentPage: p?.page ?? p?.currentPage ?? 1,
+  limit: p?.limit ?? 12,
+  totalItems: p?.total ?? p?.totalItems ?? 0,
+  totalPages: p?.totalPages ?? 1,
+  hasNext: p?.hasNextPage ?? p?.hasNext ?? false,
+  hasPrev: p?.hasPreviousPage ?? p?.hasPrev ?? false,
+} as Pagination);
+
 export interface FavoritesState {
   specialists: FavoriteSpecialist[];
   services: FavoriteService[];
@@ -163,7 +174,7 @@ const favoritesSlice = createSlice({
       .addCase(fetchFavoriteSpecialists.fulfilled, (state, action) => {
         state.isLoading = false;
         state.specialists = action.payload.specialists;
-        state.specialistsPagination = action.payload.pagination;
+        state.specialistsPagination = mapPagination(action.payload.pagination);
         
         // Update cache with current favorites
         action.payload.specialists.forEach(fav => {
@@ -183,7 +194,7 @@ const favoritesSlice = createSlice({
       .addCase(fetchFavoriteServices.fulfilled, (state, action) => {
         state.isLoading = false;
         state.services = action.payload.services;
-        state.servicesPagination = action.payload.pagination;
+        state.servicesPagination = mapPagination(action.payload.pagination);
         
         // Update cache with current favorites
         action.payload.services.forEach(fav => {

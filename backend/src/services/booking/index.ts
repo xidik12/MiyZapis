@@ -917,9 +917,11 @@ export class BookingService {
 
         // Define valid status transitions
         const validTransitions: Record<string, string[]> = {
-          'PENDING': ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED', 'REJECTED'],
+          // COMPLETED is reachable directly from PENDING/CONFIRMED: completeBookingWithPayment
+          // treats those as an implicit confirm+complete (walk-ins / no formal "start").
+          'PENDING': ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED'],
           'PENDING_PAYMENT': ['CONFIRMED', 'CANCELLED'],
-          'CONFIRMED': ['IN_PROGRESS', 'CANCELLED', 'NO_SHOW'],
+          'CONFIRMED': ['IN_PROGRESS', 'CANCELLED', 'NO_SHOW', 'COMPLETED'],
           'IN_PROGRESS': ['COMPLETED', 'CANCELLED'],
           'COMPLETED': [], // Final state
           'CANCELLED': [], // Final state

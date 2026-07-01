@@ -151,6 +151,17 @@ export class BookingController {
         return;
       }
 
+      if (err.message === 'GROUP_SESSION_FULL') {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.BOOKING_CONFLICT,
+            'This group session is full',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (err.message === 'INSUFFICIENT_LOYALTY_POINTS') {
         res.status(400).json(
           createErrorResponse(

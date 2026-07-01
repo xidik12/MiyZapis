@@ -65,7 +65,9 @@ const RegisterPage: React.FC = () => {
     return errorMessage;
   };
 
-  const defaultUserType = (searchParams.get('type') as UserType) || 'customer';
+  // Business invites are for staff → default them to specialist (else they register
+  // as customers and get 403'd from every employer tool).
+  const defaultUserType = (searchParams.get('type') as UserType) || (searchParams.get('invite') ? 'specialist' : 'customer');
   const referralCode = searchParams.get('ref') || searchParams.get('referralCode') || undefined;
   const inviteToken = searchParams.get('invite') || undefined;
 

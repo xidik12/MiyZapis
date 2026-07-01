@@ -225,8 +225,17 @@ export class AuthService {
               },
             });
             // Mirror the invite() denormalisation so dashboard scoping is fast.
+            // If they registered as a customer (invite links default to that),
+            // promote them to SPECIALIST + ensure a specialist row exists — else
+            // every employer tool (HR/POS/Inventory/Payroll) 403s.
             if (invite.role === 'SPECIALIST') {
-              await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+              const existingSpec = await prisma.specialist.findUnique({ where: { userId: user.id }, select: { id: true } });
+              if (existingSpec) {
+                await prisma.specialist.update({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+              } else {
+                await prisma.specialist.create({ data: { userId: user.id, businessId: invite.businessId, businessName: '', bio: '', specialties: '[]', city: '', state: '', country: '', workingHours: '{}' } });
+              }
+              await prisma.user.update({ where: { id: user.id }, data: { userType: 'SPECIALIST' } });
             }
           }
           await prisma.businessInvite.update({ where: { id: invite.id }, data: { acceptedAt: now } });
@@ -261,7 +270,13 @@ export class AuthService {
                 },
               });
               if (invite.role === 'SPECIALIST') {
-                await prisma.specialist.updateMany({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+                const existingSpec = await prisma.specialist.findUnique({ where: { userId: user.id }, select: { id: true } });
+                if (existingSpec) {
+                  await prisma.specialist.update({ where: { userId: user.id }, data: { businessId: invite.businessId } });
+                } else {
+                  await prisma.specialist.create({ data: { userId: user.id, businessId: invite.businessId, businessName: '', bio: '', specialties: '[]', city: '', state: '', country: '', workingHours: '{}' } });
+                }
+                await prisma.user.update({ where: { id: user.id }, data: { userType: 'SPECIALIST' } });
               }
               await prisma.businessInvite.update({ where: { id: invite.id }, data: { acceptedAt: now } });
               logger.info('Consumed business invite by token during registration', {
