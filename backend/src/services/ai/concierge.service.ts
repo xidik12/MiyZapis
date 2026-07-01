@@ -61,6 +61,97 @@ export interface ConciergeOption {
   bookUrl: string;
 }
 
+export interface ConciergeProduct {
+  productId: string;
+  productName: string;
+  price: number;
+  currency: string;
+  inStock: number;
+  shopName: string;
+  address: string | null;
+  city: string | null;
+  lat: number | null;
+  lng: number | null;
+  distanceKm?: number;
+  etaMinutes?: number;
+  navUrl?: string;
+  shopUrl: string;
+}
+
+// ── Tool: search products across shops (RETAIL, in stock, gated shops only) ──
+async function searchProductsTool(
+  args: { query: string; city?: string; maxPrice?: number },
+  ctx: { lat?: number; lng?: number },
+): Promise<{ products: ConciergeProduct[] }> {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      type: 'RETAIL',
+      stockQty: { gt: 0 },
+      salePrice: { not: null },
+      ...(typeof args.maxPrice === 'number' ? { salePrice: { lte: args.maxPrice, not: null } } : {}),
+      OR: [
+        { name: { contains: args.query, mode: 'insensitive' } },
+        { sku: { contains: args.query, mode: 'insensitive' } },
+        { barcode: { contains: args.query, mode: 'insensitive' } },
+        { description: { contains: args.query, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true, name: true, salePrice: true, currency: true, stockQty: true, ownerId: true },
+    take: 15,
+  });
+  if (products.length === 0) return { products: [] };
+
+  // Resolve the owning shop's public profile + location (products.ownerId = the
+  // specialist's userId). Only surface shops that pass the same completeness gate
+  // as search (business name + a contact + a location).
+  const ownerIds = [...new Set(products.map((p) => p.ownerId))];
+  const shops = await prisma.specialist.findMany({
+    where: {
+      userId: { in: ownerIds },
+      user: { isActive: true },
+      businessName: { not: null },
+      AND: [
+        { businessName: { not: '' } },
+        { OR: [{ businessPhone: { not: null } }, { whatsappNumber: { not: null } }] },
+        { OR: [{ preciseAddress: { not: null } }, { address: { not: null } }] },
+      ],
+      ...(args.city ? { city: { contains: args.city, mode: 'insensitive' } } : {}),
+    },
+    select: { userId: true, slug: true, id: true, businessName: true, address: true, preciseAddress: true, city: true, latitude: true, longitude: true },
+  });
+  const byOwner = new Map(shops.map((s) => [s.userId, s]));
+
+  const out: ConciergeProduct[] = [];
+  for (const p of products) {
+    const shop = byOwner.get(p.ownerId);
+    if (!shop) continue; // shop not public/complete → skip
+    const item: ConciergeProduct = {
+      productId: p.id,
+      productName: p.name,
+      price: Number(p.salePrice),
+      currency: p.currency || 'UAH',
+      inStock: Number(p.stockQty),
+      shopName: shop.businessName || 'Shop',
+      address: shop.preciseAddress || shop.address || null,
+      city: shop.city || null,
+      lat: shop.latitude ?? null,
+      lng: shop.longitude ?? null,
+      shopUrl: `/specialist/${shop.slug || shop.id}`,
+    };
+    if (item.lat != null && item.lng != null) {
+      item.navUrl = directionsUrl(item.lat, item.lng, ctx.lat != null && ctx.lng != null ? { lat: ctx.lat, lng: ctx.lng } : undefined);
+      if (ctx.lat != null && ctx.lng != null) {
+        item.distanceKm = Math.round(haversineKm(ctx.lat, ctx.lng, item.lat, item.lng) * 10) / 10;
+        item.etaMinutes = etaMinutes(item.distanceKm);
+      }
+    }
+    out.push(item);
+  }
+  if (ctx.lat != null && ctx.lng != null) out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+  return { products: out.slice(0, 8) };
+}
+
 // ── Tool: search services (mirrors the marketplace "complete profile" gate) ──
 async function searchServicesTool(
   args: { query?: string; city?: string; maxPrice?: number },
@@ -196,6 +287,19 @@ const tools: FunctionDeclarationsTool[] = [
           required: ['specialistId'],
         },
       },
+      {
+        name: 'search_products',
+        description: 'Find real, in-stock RETAIL products for sale across shops (e.g. "shampoo", "hair wax", a brand/SKU). Returns the shop, price, stock, location and a navigation link. Use when the user wants to BUY a physical product.',
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            query: { type: SchemaType.STRING, description: 'Product name, brand, or SKU/barcode' },
+            city: { type: SchemaType.STRING, description: 'Optional city to narrow results' },
+            maxPrice: { type: SchemaType.NUMBER, description: 'Optional maximum price' },
+          },
+          required: ['query'],
+        },
+      },
     ],
   },
 ];
@@ -211,7 +315,7 @@ export async function runConcierge(input: {
   lat?: number;
   lng?: number;
   city?: string;
-}): Promise<{ reply: string; options: ConciergeOption[] }> {
+}): Promise<{ reply: string; options: ConciergeOption[]; products: ConciergeProduct[] }> {
   const apiKey = process.env.GEMINI_API_KEY!;
   const genAI = new GoogleGenerativeAI(apiKey);
   const nowIso = new Date().toISOString();
@@ -223,6 +327,7 @@ export async function runConcierge(input: {
     `The current time is ${nowIso}. The user's location is ${input.lat != null ? `${input.lat},${input.lng}` : 'unknown'}.`,
     'Reachability rule: only suggest an appointment time the user can realistically reach — the slot must be at least (now + travel ETA + 10 min buffer) in the future. Each option includes etaMinutes when the location is known.',
     'Always include, for each recommendation: the business name, the price with currency, the location/address, how far it is (distance + ETA if known), and remind them a navigation link + Book button are on the card.',
+    'If the user wants BOTH a service and to buy a product (e.g. "haircut and buy X"), call BOTH search_services and search_products, then present a combined plan: the specialist + a reachable time, AND a nearby shop that has the product in stock — prefer a shop close to the specialist so the trip is one route. Mention both prices and that Navigate/Book buttons are on the cards.',
     'Keep replies short and skimmable. If nothing matches, say so honestly and suggest broadening the search.',
   ].join('\n');
 
@@ -232,6 +337,7 @@ export async function runConcierge(input: {
   });
 
   const collectedOptions: ConciergeOption[] = [];
+  const collectedProducts: ConciergeProduct[] = [];
   let result = await chat.sendMessage(input.message);
 
   for (let i = 0; i < 5; i++) {
@@ -246,6 +352,10 @@ export async function runConcierge(input: {
           const r = await searchServicesTool(call.args as any, { lat: input.lat, lng: input.lng });
           collectedOptions.push(...r.options);
           out = r;
+        } else if (call.name === 'search_products') {
+          const r = await searchProductsTool(call.args as any, { lat: input.lat, lng: input.lng });
+          collectedProducts.push(...r.products);
+          out = r;
         } else if (call.name === 'get_availability') {
           out = await availabilityTool(call.args as any);
         }
@@ -258,9 +368,11 @@ export async function runConcierge(input: {
     result = await chat.sendMessage(responses);
   }
 
-  // De-dupe options by serviceId, keep the order the model saw.
+  // De-dupe by id, keep the order the model saw.
   const seen = new Set<string>();
   const options = collectedOptions.filter((o) => (seen.has(o.serviceId) ? false : (seen.add(o.serviceId), true)));
+  const seenP = new Set<string>();
+  const products = collectedProducts.filter((p) => (seenP.has(p.productId) ? false : (seenP.add(p.productId), true)));
 
-  return { reply: result.response.text(), options };
+  return { reply: result.response.text(), options, products };
 }

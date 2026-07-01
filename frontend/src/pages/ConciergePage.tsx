@@ -17,7 +17,21 @@ interface Option {
   navUrl?: string;
   bookUrl: string;
 }
-interface Turn { role: 'user' | 'model'; text: string; options?: Option[] }
+interface Product {
+  productId: string;
+  productName: string;
+  price: number;
+  currency: string;
+  inStock: number;
+  shopName: string;
+  address: string | null;
+  city: string | null;
+  distanceKm?: number;
+  etaMinutes?: number;
+  navUrl?: string;
+  shopUrl: string;
+}
+interface Turn { role: 'user' | 'model'; text: string; options?: Option[]; products?: Product[] }
 
 const money = (n: number, c: string) =>
   new Intl.NumberFormat(undefined, { style: 'currency', currency: c === 'UAH' ? 'UAH' : c }).format(n);
@@ -52,7 +66,7 @@ const ConciergePage: React.FC = () => {
     try {
       const res: any = await apiClient.post('/ai/concierge', { message: msg, history, lat: coords?.lat, lng: coords?.lng });
       const data = res?.data ?? res;
-      setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [] }]);
+      setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [], products: data.products || [] }]);
     } catch (e: any) {
       const m = e?.response?.status === 503
         ? tr('Асистент ще недоступний.', 'Ассистент пока недоступен.', 'The concierge isn’t available yet.')
@@ -128,6 +142,38 @@ const ConciergePage: React.FC = () => {
                         )}
                         <Link to={o.bookUrl} className="flex-1 text-center text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700">
                           {tr('Забронювати', 'Забронировать', 'Book')}
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {t.products && t.products.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {t.products.slice(0, 5).map((p) => (
+                    <div key={p.productId} className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-900/10 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">🛍 {p.productName}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{p.shopName}{p.city ? ` · ${p.city}` : ''}</p>
+                          {p.address && <p className="text-xs text-gray-400 truncate">{p.address}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold text-amber-700 dark:text-amber-400 tabular-nums">{money(p.price, p.currency)}</p>
+                          <p className="text-[11px] text-gray-400">{tr('в наявності', 'в наличии', 'in stock')}: {p.inStock}</p>
+                          {typeof p.distanceKm === 'number' && (
+                            <p className="text-[11px] text-gray-400 tabular-nums">{p.distanceKm} km · ~{p.etaMinutes} min</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        {p.navUrl && (
+                          <a href={p.navUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-center text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                            {tr('Маршрут', 'Маршрут', 'Navigate')}
+                          </a>
+                        )}
+                        <Link to={p.shopUrl} className="flex-1 text-center text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-700">
+                          {tr('Магазин', 'Магазин', 'View shop')}
                         </Link>
                       </div>
                     </div>
