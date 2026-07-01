@@ -27,6 +27,7 @@ const en: Record<string, string> = {
   'hero.title1': 'Book Professional Services',
   'hero.title2': 'Made Simple',
   'hero.subtitle': 'Connect with verified specialists, schedule appointments instantly, and get the professional services you need - all in one platform.',
+  'hero.askAi': 'Ask AI — describe what you need',
   'hero.searchPlaceholder': 'What service are you looking for? (e.g., haircut, personal training, tutoring)',
   'hero.badge': 'Made in Ukraine. For Ukraine.',
   'hero.featuredSpecialist': 'Featured specialist',

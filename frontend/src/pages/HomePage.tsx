@@ -439,6 +439,17 @@ const HomePage: React.FC = () => {
                   onSearch={handleSearch}
                   className="text-base"
                 />
+                {/* AI concierge entry — describe a need in plain words. */}
+                <button
+                  type="button"
+                  onClick={() => navigate('/concierge')}
+                  className="mt-3 group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-sm font-medium hover:bg-primary-100 dark:hover:bg-primary-900/40 transition active:scale-[0.98]"
+                >
+                  <span aria-hidden>✦</span>
+                  {t('hero.askAi') || 'Ask AI — describe what you need'}
+                  <span className="text-[9px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+                  <ArrowRightIcon className="w-4 h-4 opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                </button>
               </div>
 
             </div>

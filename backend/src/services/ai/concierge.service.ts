@@ -43,6 +43,63 @@ function directionsUrl(destLat: number, destLng: number, origin?: { lat: number;
   return `https://www.google.com/maps/dir/?api=1${o}&destination=${destLat},${destLng}`;
 }
 
+// Real drive-time via Google Distance Matrix when a server Maps key is configured
+// (GOOGLE_MAPS_API_KEY), else Haversine estimate. Batched: one request per tool.
+async function travelMatrix(
+  origin: { lat: number; lng: number },
+  dests: Array<{ lat: number; lng: number }>,
+): Promise<Array<{ km: number; min: number }>> {
+  const fallback = () => dests.map((d) => {
+    const km = Math.round(haversineKm(origin.lat, origin.lng, d.lat, d.lng) * 10) / 10;
+    return { km, min: etaMinutes(km) };
+  });
+  const key = process.env.GOOGLE_MAPS_API_KEY;
+  if (!key || dests.length === 0) return fallback();
+  try {
+    const { Client } = await import('@googlemaps/google-maps-services-js');
+    const client = new Client({});
+    const res = await client.distancematrix({
+      params: {
+        origins: [{ lat: origin.lat, lng: origin.lng }],
+        destinations: dests.map((d) => ({ lat: d.lat, lng: d.lng })),
+        mode: 'driving' as any,
+        key,
+      },
+      timeout: 5000,
+    });
+    const els = res.data.rows?.[0]?.elements || [];
+    return dests.map((d, i) => {
+      const e: any = els[i];
+      if (e && e.status === 'OK' && e.distance && e.duration) {
+        return { km: Math.round(e.distance.value / 100) / 10, min: Math.max(1, Math.round(e.duration.value / 60)) };
+      }
+      const km = Math.round(haversineKm(origin.lat, origin.lng, d.lat, d.lng) * 10) / 10;
+      return { km, min: etaMinutes(km) };
+    });
+  } catch (e) {
+    logger.warn('Distance Matrix failed, using Haversine', { error: e instanceof Error ? e.message : e });
+    return fallback();
+  }
+}
+
+// Set navUrl for every located item, and distance/ETA (real or estimated) when we
+// know the user's origin. Works for both service options and product items.
+async function assignTravel<T extends { lat: number | null; lng: number | null; navUrl?: string; distanceKm?: number; etaMinutes?: number }>(
+  items: T[],
+  origin?: { lat?: number; lng?: number },
+): Promise<void> {
+  const hasOrigin = origin?.lat != null && origin?.lng != null;
+  for (const it of items) {
+    if (it.lat != null && it.lng != null) {
+      it.navUrl = directionsUrl(it.lat, it.lng, hasOrigin ? { lat: origin!.lat!, lng: origin!.lng! } : undefined);
+    }
+  }
+  if (!hasOrigin) return;
+  const located = items.filter((it) => it.lat != null && it.lng != null);
+  const travel = await travelMatrix({ lat: origin!.lat!, lng: origin!.lng! }, located.map((it) => ({ lat: it.lat!, lng: it.lng! })));
+  located.forEach((it, i) => { it.distanceKm = travel[i].km; it.etaMinutes = travel[i].min; });
+}
+
 export interface ConciergeOption {
   serviceId: string;
   serviceName: string;
@@ -139,15 +196,9 @@ async function searchProductsTool(
       lng: shop.longitude ?? null,
       shopUrl: `/specialist/${shop.slug || shop.id}`,
     };
-    if (item.lat != null && item.lng != null) {
-      item.navUrl = directionsUrl(item.lat, item.lng, ctx.lat != null && ctx.lng != null ? { lat: ctx.lat, lng: ctx.lng } : undefined);
-      if (ctx.lat != null && ctx.lng != null) {
-        item.distanceKm = Math.round(haversineKm(ctx.lat, ctx.lng, item.lat, item.lng) * 10) / 10;
-        item.etaMinutes = etaMinutes(item.distanceKm);
-      }
-    }
     out.push(item);
   }
+  await assignTravel(out, ctx);
   if (ctx.lat != null && ctx.lng != null) out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
   return { products: out.slice(0, 8) };
 }
@@ -210,16 +261,10 @@ async function searchServicesTool(
       lng: sp.longitude ?? null,
       bookUrl: `/specialist/${sp.slug || sp.id}?service=${s.id}`,
     };
-    if (opt.lat != null && opt.lng != null) {
-      opt.navUrl = directionsUrl(opt.lat, opt.lng, ctx.lat != null && ctx.lng != null ? { lat: ctx.lat, lng: ctx.lng } : undefined);
-      if (ctx.lat != null && ctx.lng != null) {
-        opt.distanceKm = Math.round(haversineKm(ctx.lat, ctx.lng, opt.lat, opt.lng) * 10) / 10;
-        opt.etaMinutes = etaMinutes(opt.distanceKm);
-      }
-    }
     return opt;
   });
 
+  await assignTravel(options, ctx);
   // Sort by distance when we know where the user is.
   if (ctx.lat != null && ctx.lng != null) {
     options.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
