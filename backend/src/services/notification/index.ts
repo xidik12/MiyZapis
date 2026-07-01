@@ -97,6 +97,39 @@ export class NotificationService {
       uk: 'Бронювання послуги "{{serviceName}}" з {{customerName}} підтверджено.',
       ru: 'Бронирование услуги "{{serviceName}}" с {{customerName}} подтверждено.'
     },
+    // ── Cancellations ────────────────────────────────────────────────────────
+    'notifications.booking.cancelledBySpecialist.customer.title': {
+      en: 'Booking Cancelled', uk: 'Бронювання скасовано', ru: 'Бронирование отменено'
+    },
+    'notifications.booking.cancelledBySpecialist.customer.message': {
+      en: 'Your booking for {{serviceName}} on {{date}} was cancelled by the specialist.',
+      uk: 'Ваше бронювання послуги "{{serviceName}}" на {{date}} скасовано майстром.',
+      ru: 'Ваше бронирование услуги "{{serviceName}}" на {{date}} отменено мастером.'
+    },
+    'notifications.booking.cancelledBySpecialist.specialist.title': {
+      en: 'Booking Cancelled', uk: 'Бронювання скасовано', ru: 'Бронирование отменено'
+    },
+    'notifications.booking.cancelledBySpecialist.specialist.message': {
+      en: 'You cancelled the booking for {{serviceName}} on {{date}}.',
+      uk: 'Ви скасували бронювання послуги "{{serviceName}}" на {{date}}.',
+      ru: 'Вы отменили бронирование услуги "{{serviceName}}" на {{date}}.'
+    },
+    'notifications.booking.cancelledByCustomer.specialist.title': {
+      en: 'Booking Cancelled', uk: 'Бронювання скасовано', ru: 'Бронирование отменено'
+    },
+    'notifications.booking.cancelledByCustomer.specialist.message': {
+      en: '{{customerName}} cancelled their booking for {{serviceName}} on {{date}}.',
+      uk: '{{customerName}} скасував(-ла) бронювання послуги "{{serviceName}}" на {{date}}.',
+      ru: '{{customerName}} отменил(-а) бронирование услуги "{{serviceName}}" на {{date}}.'
+    },
+    'notifications.booking.cancelledByCustomer.customer.title': {
+      en: 'Booking Cancelled', uk: 'Бронювання скасовано', ru: 'Бронирование отменено'
+    },
+    'notifications.booking.cancelledByCustomer.customer.message': {
+      en: 'Your booking for {{serviceName}} on {{date}} has been cancelled.',
+      uk: 'Ваше бронювання послуги "{{serviceName}}" на {{date}} скасовано.',
+      ru: 'Ваше бронирование услуги "{{serviceName}}" на {{date}} отменено.'
+    },
     'notifications.booking.awaitingReview.customer.title': {
       en: 'How did your appointment go?', uk: 'Як пройшов ваш запис?', ru: 'Как прошла ваша запись?'
     },

@@ -37,8 +37,8 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth-enhanced/login',
     REGISTER: '/auth-enhanced/register',
-    REFRESH: '/auth-enhanced/refresh',
-    LOGOUT: '/auth-enhanced/logout',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
     FORGOT_PASSWORD: '/auth/request-password-reset',
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth-enhanced/verify-email',

@@ -7,12 +7,14 @@ const validateCUIDQuery = () => query().isLength({ min: 20, max: 30 }).matches(/
 
 // Booking statuses
 const BOOKING_STATUSES = [
-  'PENDING', 
-  'PENDING_PAYMENT', 
-  'CONFIRMED', 
-  'IN_PROGRESS', 
-  'COMPLETED', 
-  'CANCELLED', 
+  'PENDING',
+  'PENDING_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CANCELLED',
+  'REJECTED',
+  'NO_SHOW',
   'REFUNDED'
 ] as const;
 

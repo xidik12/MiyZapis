@@ -504,9 +504,7 @@ export class ServiceController {
   static async searchServices(req: Request, res: Response): Promise<void> {
     try {
       const {
-        query,
         category,
-        city,
         minPrice,
         maxPrice,
         sortBy = 'newest',
@@ -514,6 +512,9 @@ export class ServiceController {
         limit = 20,
         availableWithin,
       } = req.query;
+      // Frontend sends `search`/`location`; accept the legacy `query`/`city` too.
+      const query = (req.query.search ?? req.query.query) as string | undefined;
+      const city = (req.query.city ?? req.query.location) as string | undefined;
 
       const result = await ServiceService.searchServices(
         query as string,
