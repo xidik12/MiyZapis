@@ -564,6 +564,7 @@ const specialistBottomNavItems: TabItem[] = [
 const specialistSections: TabSection[] = [
   { title: 'nav.section.work', items: [
     { nameKey: 'dashboard.nav.find services', fallback: 'Find Services', href: '/search', icon: MagnifyingGlassIcon },
+    { nameKey: 'nav.askAi', fallback: 'Ask AI', href: '/concierge', icon: SparklesIcon },
     { nameKey: 'dashboard.nav.services', fallback: 'Services', href: '/specialist/services', icon: BriefcaseIcon },
     { nameKey: 'dashboard.nav.clients', fallback: 'Clients', href: '/specialist/clients', icon: UsersIcon },
     { nameKey: 'dashboard.nav.tasks', fallback: 'Tasks', href: '/specialist/tasks', icon: CheckCircleIcon },
