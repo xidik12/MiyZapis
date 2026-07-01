@@ -56,28 +56,47 @@ async function travelMatrix(
   const key = process.env.GOOGLE_MAPS_API_KEY;
   if (!key || dests.length === 0) return fallback();
   try {
-    const { Client } = await import('@googlemaps/google-maps-services-js');
-    const client = new Client({});
-    const res = await client.distancematrix({
-      params: {
-        origins: [{ lat: origin.lat, lng: origin.lng }],
-        destinations: dests.map((d) => ({ lat: d.lat, lng: d.lng })),
-        mode: 'driving' as any,
-        key,
-      },
-      timeout: 5000,
-    });
-    const els = res.data.rows?.[0]?.elements || [];
-    return dests.map((d, i) => {
-      const e: any = els[i];
-      if (e && e.status === 'OK' && e.distance && e.duration) {
-        return { km: Math.round(e.distance.value / 100) / 10, min: Math.max(1, Math.round(e.duration.value / 60)) };
-      }
+    // Google Routes API (Compute Route Matrix) — the legacy Distance Matrix API is
+    // retired. Needs the Routes API enabled AND allowed on the key's API restrictions.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    let rows: any[];
+    try {
+      const res = await fetch('https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': key,
+          'X-Goog-FieldMask': 'originIndex,destinationIndex,duration,distanceMeters,condition',
+        },
+        body: JSON.stringify({
+          origins: [{ waypoint: { location: { latLng: { latitude: origin.lat, longitude: origin.lng } } } }],
+          destinations: dests.map((d) => ({ waypoint: { location: { latLng: { latitude: d.lat, longitude: d.lng } } } })),
+          travelMode: 'DRIVE',
+        }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`routes ${res.status}`);
+      rows = await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+    // Start from Haversine, upgrade any pair the Routes API resolved.
+    const out = dests.map((d) => {
       const km = Math.round(haversineKm(origin.lat, origin.lng, d.lat, d.lng) * 10) / 10;
       return { km, min: etaMinutes(km) };
     });
+    for (const r of Array.isArray(rows) ? rows : []) {
+      const i = r?.destinationIndex;
+      if (typeof i === 'number' && r?.condition === 'ROUTE_EXISTS' && r.distanceMeters != null && r.duration) {
+        const km = Math.round(Number(r.distanceMeters) / 100) / 10;
+        const secs = parseInt(String(r.duration).replace('s', ''), 10);
+        out[i] = { km, min: Math.max(1, Math.round((Number.isFinite(secs) ? secs : 0) / 60)) };
+      }
+    }
+    return out;
   } catch (e) {
-    logger.warn('Distance Matrix failed, using Haversine', { error: e instanceof Error ? e.message : e });
+    logger.warn('Routes API failed, using Haversine', { error: e instanceof Error ? e.message : e });
     return fallback();
   }
 }
