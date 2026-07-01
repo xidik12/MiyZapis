@@ -2,6 +2,7 @@
 // All queries scope to the calling specialist's own data.
 
 import { prisma } from '@/config/database';
+import { convertCurrency } from '@/utils/currency';
 import { computeTax, type TaxComputation, type TaxPeriodSummary } from './tax-regimes';
 
 export interface PeriodRange {
@@ -92,65 +93,55 @@ export class AccountingService {
     // business rollup the owner is the caller; for self it's just the caller.
     const ownerIds = userIds;
 
-    // Income side: completed bookings + fulfilled retail/POS sales in the period.
-    const [completedAgg, pendingAgg, paidInvoiceAgg, retailAgg, refundedOrdersAgg, refundedBookingsAgg] = await Promise.all([
-      prisma.booking.aggregate({
-        where: {
-          specialistId: { in: userIds },
-          status: 'COMPLETED',
-          completedAt: { gte: from, lte: to },
-        },
-        _sum: { totalAmount: true },
-        _count: true,
+    // Income side. IMPORTANT: amounts live in mixed currencies (a UAH service and a
+    // USD service both contribute), so every source is converted to the report
+    // `currency` before summing — a raw _sum would add 100 UAH + 30 USD = 130.
+    // Bookings carry their currency on the related service; invoices/orders have a
+    // `currency` column (grouped so each currency converts once).
+    const bookingSelect = { totalAmount: true, service: { select: { currency: true } } } as const;
+    const [completedBookings, pendingBookings, refundedBookings, paidInvoiceGroups, retailGroups, refundedOrderGroups] = await Promise.all([
+      prisma.booking.findMany({
+        where: { specialistId: { in: userIds }, status: 'COMPLETED', completedAt: { gte: from, lte: to } },
+        select: bookingSelect,
       }),
-      prisma.booking.aggregate({
-        where: {
-          specialistId: { in: userIds },
-          status: { in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] },
-          scheduledAt: { gte: from, lte: to },
-        },
-        _sum: { totalAmount: true },
+      prisma.booking.findMany({
+        where: { specialistId: { in: userIds }, status: { in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] }, scheduledAt: { gte: from, lte: to } },
+        select: bookingSelect,
       }),
-      prisma.invoice.aggregate({
-        where: {
-          specialistId: { in: userIds },
-          status: 'PAID',
-          paidAt: { gte: from, lte: to },
-        },
+      prisma.booking.findMany({
+        where: { specialistId: { in: userIds }, status: 'REFUNDED', updatedAt: { gte: from, lte: to } },
+        select: bookingSelect,
+      }),
+      prisma.invoice.groupBy({
+        by: ['currency'],
+        where: { specialistId: { in: userIds }, status: 'PAID', paidAt: { gte: from, lte: to } },
         _sum: { total: true },
         _count: true,
       }),
       // Retail / POS sales = fulfilled product orders (fulfilled at = updatedAt).
-      prisma.productOrder.aggregate({
-        where: {
-          ownerId: { in: ownerIds },
-          status: 'FULFILLED',
-          updatedAt: { gte: from, lte: to },
-        },
+      prisma.productOrder.groupBy({
+        by: ['currency'],
+        where: { ownerId: { in: ownerIds }, status: 'FULFILLED', updatedAt: { gte: from, lte: to } },
         _sum: { total: true },
         _count: true,
       }),
       // Refunded product orders in the period (by updatedAt, same as fulfilled).
-      prisma.productOrder.aggregate({
-        where: {
-          ownerId: { in: ownerIds },
-          status: 'REFUNDED',
-          updatedAt: { gte: from, lte: to },
-        },
+      prisma.productOrder.groupBy({
+        by: ['currency'],
+        where: { ownerId: { in: ownerIds }, status: 'REFUNDED', updatedAt: { gte: from, lte: to } },
         _sum: { total: true },
         _count: true,
       }),
-      // Refunded bookings in the period (by updatedAt as proxy for refund date).
-      prisma.booking.aggregate({
-        where: {
-          specialistId: { in: userIds },
-          status: 'REFUNDED',
-          updatedAt: { gte: from, lte: to },
-        },
-        _sum: { totalAmount: true },
-        _count: true,
-      }),
     ]);
+
+    // Convert a set of bookings (currency = service.currency) to the report currency.
+    const sumBookings = (rows: Array<{ totalAmount: unknown; service: { currency: string | null } | null }>): number =>
+      rows.reduce((acc, b) => acc + convertCurrency(Number(b.totalAmount), b.service?.currency || currency, currency), 0);
+    // Convert a currency-grouped result to the report currency.
+    const sumGroups = (rows: Array<{ currency: string | null; _sum: { total: unknown } }>): number =>
+      rows.reduce((acc, r) => acc + convertCurrency(Number(r._sum.total ?? 0), r.currency || currency, currency), 0);
+    const countGroups = (rows: Array<{ _count: number }>): number =>
+      rows.reduce((acc, r) => acc + (typeof r._count === 'number' ? r._count : 0), 0);
 
     // Expense side: manual expenses, payroll cost, and purchases in the period.
     const [expenses, payrollRecords, purchaseOrders] = await Promise.all([
@@ -159,7 +150,7 @@ export class AccountingService {
           specialistId: { in: userIds },
           date: { gte: from, lte: to },
         },
-        select: { category: true, amount: true, isTaxDeductible: true, vatAmount: true },
+        select: { category: true, amount: true, currency: true, isTaxDeductible: true, vatAmount: true },
       }),
       // Payroll cost = total employer outlay (netPay + taxAmount). Include
       // APPROVED + PAID (exclude DRAFT). "In period" = the pay-run period
@@ -171,7 +162,7 @@ export class AccountingService {
           periodStart: { lte: to },
           periodEnd: { gte: from },
         },
-        select: { netPay: true, taxAmount: true },
+        select: { netPay: true, taxAmount: true, currency: true },
       }),
       // Purchases / stock = total of received POs. RECEIVED uses receivedAt;
       // PARTIAL POs may not have receivedAt set yet, so fall back to createdAt
@@ -185,7 +176,7 @@ export class AccountingService {
             { status: 'PARTIAL', receivedAt: null, createdAt: { gte: from, lte: to } },
           ],
         },
-        select: { total: true },
+        select: { total: true, currency: true },
       }),
     ]);
 
@@ -204,8 +195,8 @@ export class AccountingService {
     };
 
     for (const e of expenses) {
-      const amt = Number(e.amount);
-      if (e.vatAmount) totalVat += Number(e.vatAmount);
+      const amt = convertCurrency(Number(e.amount), e.currency || currency, currency);
+      if (e.vatAmount) totalVat += convertCurrency(Number(e.vatAmount), e.currency || currency, currency);
       addCategory(e.category, amt, e.isTaxDeductible ? amt : 0);
     }
 
@@ -216,7 +207,7 @@ export class AccountingService {
     // v1; de-dup is a future refinement.
     let payrollCost = 0;
     for (const p of payrollRecords) {
-      payrollCost += Number(p.netPay) + Number(p.taxAmount);
+      payrollCost += convertCurrency(Number(p.netPay) + Number(p.taxAmount), p.currency || currency, currency);
     }
     if (payrollCost !== 0 || payrollRecords.length > 0) {
       addCategory('PAYROLL', payrollCost, payrollCost);
@@ -226,30 +217,30 @@ export class AccountingService {
     // Fully tax-deductible.
     let purchasesCost = 0;
     for (const po of purchaseOrders) {
-      purchasesCost += Number(po.total);
+      purchasesCost += convertCurrency(Number(po.total), po.currency || currency, currency);
     }
     if (purchasesCost !== 0 || purchaseOrders.length > 0) {
       addCategory('PURCHASES', purchasesCost, purchasesCost);
     }
 
-    const completedRevenue = Number(completedAgg._sum.totalAmount ?? 0);
-    const pendingRevenue = Number(pendingAgg._sum.totalAmount ?? 0);
-    const paidInvoiceRevenue = Number(paidInvoiceAgg._sum.total ?? 0);
-    const retailRevenue = Number(retailAgg._sum.total ?? 0);
-    const refundsTotal = Number(refundedOrdersAgg._sum.total ?? 0) + Number(refundedBookingsAgg._sum.totalAmount ?? 0);
-    const refundsCount = refundedOrdersAgg._count + refundedBookingsAgg._count;
+    const completedRevenue = sumBookings(completedBookings);
+    const pendingRevenue = sumBookings(pendingBookings);
+    const paidInvoiceRevenue = sumGroups(paidInvoiceGroups);
+    const retailRevenue = sumGroups(retailGroups);
+    const refundsTotal = sumGroups(refundedOrderGroups) + sumBookings(refundedBookings);
+    const refundsCount = countGroups(refundedOrderGroups) + refundedBookings.length;
     const grossIncome = completedRevenue + paidInvoiceRevenue + retailRevenue;
 
     return {
       period: { from: from.toISOString(), to: to.toISOString() },
       currency,
       income: {
-        completedBookings: completedAgg._count,
+        completedBookings: completedBookings.length,
         completedBookingsRevenue: completedRevenue,
         pendingBookingsRevenue: pendingRevenue,
-        invoicesPaid: paidInvoiceAgg._count,
+        invoicesPaid: countGroups(paidInvoiceGroups),
         invoicesPaidRevenue: paidInvoiceRevenue,
-        retailSales: retailAgg._count,
+        retailSales: countGroups(retailGroups),
         retailSalesRevenue: retailRevenue,
         refundsCount,
         refundsTotal,
@@ -306,8 +297,10 @@ export class AccountingService {
     const { from, to } = range;
     const userIds = await this.resolveScopedUserIds(specialistId, scope);
 
-    const [invoiceVatAgg, purchaseOrders] = await Promise.all([
-      prisma.invoice.aggregate({
+    const [invoiceVatGroups, purchaseOrders] = await Promise.all([
+      // Group by currency so mixed-currency VAT converts correctly to the report currency.
+      prisma.invoice.groupBy({
+        by: ['currency'],
         where: {
           specialistId: { in: userIds },
           status: 'PAID',
@@ -324,13 +317,16 @@ export class AccountingService {
             { status: 'PARTIAL', receivedAt: null, createdAt: { gte: from, lte: to } },
           ],
         },
-        select: { taxAmount: true },
+        select: { taxAmount: true, currency: true },
       }),
     ]);
 
-    const vatCollected = Number(invoiceVatAgg._sum.taxAmount ?? 0);
+    let vatCollected = 0;
+    for (const g of invoiceVatGroups) {
+      vatCollected += convertCurrency(Number(g._sum.taxAmount ?? 0), g.currency || currency, currency);
+    }
     let vatPaid = 0;
-    for (const po of purchaseOrders) vatPaid += Number(po.taxAmount);
+    for (const po of purchaseOrders) vatPaid += convertCurrency(Number(po.taxAmount), po.currency || currency, currency);
 
     return {
       period: { from: from.toISOString(), to: to.toISOString() },

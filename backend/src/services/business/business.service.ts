@@ -10,6 +10,7 @@
 
 import crypto from 'crypto';
 import { prisma } from '@/config/database';
+import { convertCurrency } from '@/utils/currency';
 import type { Prisma } from '@prisma/client';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
@@ -300,16 +301,18 @@ export class BusinessService {
     });
     const specialistUserIds = memberUserIds.filter((m) => m.role !== 'MANAGER').map((m) => m.userId);
 
-    const [bookingAgg, completedAgg, recentBookings, services] = await Promise.all([
-      prisma.booking.aggregate({
+    // Revenue is summed across a business's specialists, whose services may be in
+    // different currencies — convert each booking to the base (UAH) before summing
+    // (a raw _sum would add mixed currencies). Currency lives on the service.
+    const revSelect = { totalAmount: true, service: { select: { currency: true } } } as const;
+    const [allBookings, completedBookingsList, recentBookings, services] = await Promise.all([
+      prisma.booking.findMany({
         where: { specialistId: { in: specialistUserIds }, createdAt: { gte: from, lte: to } },
-        _count: true,
-        _sum: { totalAmount: true },
+        select: revSelect,
       }),
-      prisma.booking.aggregate({
+      prisma.booking.findMany({
         where: { specialistId: { in: specialistUserIds }, status: 'COMPLETED', completedAt: { gte: from, lte: to } },
-        _count: true,
-        _sum: { totalAmount: true },
+        select: revSelect,
       }),
       prisma.booking.findMany({
         where: { specialistId: { in: specialistUserIds }, createdAt: { gte: from, lte: to } },
@@ -331,10 +334,10 @@ export class BusinessService {
       services,
       range: { from: from.toISOString(), to: to.toISOString() },
       bookings: {
-        total: bookingAgg._count,
-        totalRevenue: Number(bookingAgg._sum.totalAmount ?? 0),
-        completed: completedAgg._count,
-        completedRevenue: Number(completedAgg._sum.totalAmount ?? 0),
+        total: allBookings.length,
+        totalRevenue: allBookings.reduce((a, b) => a + convertCurrency(Number(b.totalAmount), b.service?.currency || 'UAH', 'UAH'), 0),
+        completed: completedBookingsList.length,
+        completedRevenue: completedBookingsList.reduce((a, b) => a + convertCurrency(Number(b.totalAmount), b.service?.currency || 'UAH', 'UAH'), 0),
       },
       recentBookings,
     };
