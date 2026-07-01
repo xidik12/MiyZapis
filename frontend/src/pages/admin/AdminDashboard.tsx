@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   ChartBarIcon,
@@ -92,7 +93,10 @@ const AdminDashboard: React.FC = () => {
                 {t('admin.dashboard.subtitle')}
               </p>
             </div>
-            <div className="mt-4 sm:mt-0">
+            <div className="mt-4 sm:mt-0 flex items-center gap-2">
+              <Link to="/admin/concierge-logs" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                ✦ AI Logs
+              </Link>
               <PeriodSelector
                 selected={period}
                 onChange={(newPeriod) => setPeriod(newPeriod)}

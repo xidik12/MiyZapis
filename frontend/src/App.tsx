@@ -96,6 +96,7 @@ const SpecialistNotifications = React.lazy(() => import('./pages/specialist/Noti
 
 // Admin pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const ConciergeLogs = React.lazy(() => import('./pages/admin/ConciergeLogs'));
 
 // Routing
 const SearchPageRouter = React.lazy(() => import('./components/routing/SearchPageRouter'));
@@ -1050,6 +1051,15 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<SuspenseLoader />}>
                   <AdminDashboard />
+                </Suspense>
+              </MainLayout>
+            </AdminRoute>
+          } />
+          <Route path="/admin/concierge-logs" element={
+            <AdminRoute>
+              <MainLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <ConciergeLogs />
                 </Suspense>
               </MainLayout>
             </AdminRoute>

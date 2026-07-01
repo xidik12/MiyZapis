@@ -28,6 +28,8 @@ const PAYLOAD_MONTHLY = 'sub:'; // recurring monthly → `sub:<specialist User.i
 const PAYLOAD_SIXMONTH = 'sub6:'; // one-time 6-month → `sub6:<specialist User.id>`
 const PAYLOAD_ANNUAL = 'subyr:'; // one-time annual → `subyr:<specialist User.id>`
 const PAYLOAD_BOOST = 'boost:'; // one-time boost → `boost:<days>:<specialist User.id>`
+const PAYLOAD_AI = 'ai:'; // recurring monthly AI Premium → `ai:<User.id>` (any user)
+const AI_PREMIUM_ACCESS_DAYS = 31; // grant per payment (slight overlap so no gap between cycles)
 const BOOST_VALID_DAYS = [7, 30, 90] as const;
 type BoostDays = (typeof BOOST_VALID_DAYS)[number];
 const SUBSCRIPTION_PERIOD_SECONDS = 2592000; // 30 days — the only value Telegram allows
@@ -54,6 +56,12 @@ function annualStars(): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : monthlyStars() * 12; // pay 12, get 15
 }
 
+// AI Concierge Premium — customer-facing. Default 150 Stars/mo (~$3).
+function aiPremiumStars(): number {
+  const n = Number(process.env.TELEGRAM_STARS_AI);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 150;
+}
+
 export function starsPricing() {
   return {
     monthly: monthlyStars(),
@@ -61,6 +69,8 @@ export function starsPricing() {
     annual: annualStars(),
     sixMonthAccessMonths: SIXMONTH_ACCESS_MONTHS,
     annualAccessMonths: ANNUAL_ACCESS_MONTHS,
+    aiPremium: aiPremiumStars(),
+    aiPremiumDays: AI_PREMIUM_ACCESS_DAYS,
   };
 }
 
@@ -113,6 +123,22 @@ export class TelegramStarsService {
     } as unknown as Parameters<Telegraf['telegram']['createInvoiceLink']>[0]);
 
     logger.info('Telegram Stars monthly invoice link created', { specialistUserId, stars });
+    return link;
+  }
+
+  /** Recurring monthly AI Concierge Premium invoice link (by User.id, any user). */
+  async createAiPremiumInvoiceLink(userId: string): Promise<string> {
+    const stars = aiPremiumStars();
+    const link = await this.tg.createInvoiceLink({
+      title: 'MiyZapis — AI Concierge Premium',
+      description: 'Unlimited AI concierge: find services & products near you, availability, routes, and one-tap booking. Renews monthly, cancel anytime.',
+      payload: `${PAYLOAD_AI}${userId}`,
+      provider_token: '',
+      currency: 'XTR',
+      prices: [{ label: 'AI Premium (monthly)', amount: stars }],
+      subscription_period: SUBSCRIPTION_PERIOD_SECONDS,
+    } as unknown as Parameters<Telegraf['telegram']['createInvoiceLink']>[0]);
+    logger.info('Telegram Stars AI Premium invoice link created', { userId, stars });
     return link;
   }
 
@@ -204,7 +230,8 @@ export class TelegramStarsService {
     // 1) pre_checkout_query — must be answered within 10s, else payment fails.
     const parsePayload = (
       payload: string,
-    ): { kind: 'monthly' | 'sixmonth' | 'annual'; userId: string } | { kind: 'boost'; days: number; userId: string } | null => {
+    ): { kind: 'monthly' | 'sixmonth' | 'annual' | 'ai'; userId: string } | { kind: 'boost'; days: number; userId: string } | null => {
+      if (payload.startsWith(PAYLOAD_AI)) return { kind: 'ai', userId: payload.slice(PAYLOAD_AI.length) };
       // Check the longer 6-month prefix before the monthly prefix (both start with "sub").
       if (payload.startsWith(PAYLOAD_SIXMONTH)) return { kind: 'sixmonth', userId: payload.slice(PAYLOAD_SIXMONTH.length) };
       if (payload.startsWith(PAYLOAD_ANNUAL)) return { kind: 'annual', userId: payload.slice(PAYLOAD_ANNUAL.length) };
@@ -225,12 +252,23 @@ export class TelegramStarsService {
     bot.on('pre_checkout_query', async (ctx) => {
       try {
         const parsed = parsePayload(ctx.preCheckoutQuery?.invoice_payload || '');
-        const specialist = parsed?.userId
-          ? await prisma.specialist.findUnique({ where: { userId: parsed.userId }, select: { id: true } })
-          : null;
-        if (!specialist) {
-          await ctx.answerPreCheckoutQuery(false, 'Subscription account not found.');
+        if (!parsed) {
+          await ctx.answerPreCheckoutQuery(false, 'Invalid payment.');
           return;
+        }
+        // AI Premium is for any user; other kinds require a specialist account.
+        if (parsed.kind === 'ai') {
+          const user = await prisma.user.findUnique({ where: { id: parsed.userId }, select: { id: true } });
+          if (!user) {
+            await ctx.answerPreCheckoutQuery(false, 'Account not found.');
+            return;
+          }
+        } else {
+          const specialist = await prisma.specialist.findUnique({ where: { userId: parsed.userId }, select: { id: true } });
+          if (!specialist) {
+            await ctx.answerPreCheckoutQuery(false, 'Subscription account not found.');
+            return;
+          }
         }
         await ctx.answerPreCheckoutQuery(true);
       } catch (err) {
@@ -269,7 +307,19 @@ export class TelegramStarsService {
           }
         }
 
-        if (kind === 'boost') {
+        if (kind === 'ai') {
+          // Extend AI Premium: from the later of now / current access + one cycle.
+          try {
+            const u = await prisma.user.findUnique({ where: { id: specialistUserId }, select: { aiAccessUntil: true } });
+            const base = u?.aiAccessUntil && u.aiAccessUntil > new Date() ? u.aiAccessUntil : new Date();
+            const next = new Date(base.getTime() + AI_PREMIUM_ACCESS_DAYS * 24 * 3600 * 1000);
+            await prisma.user.update({ where: { id: specialistUserId }, data: { aiAccessUntil: next } });
+            await ctx.reply('✨ AI Concierge Premium is active! Ask me to find services & products near you, check availability, and book — right from chat.');
+          } catch (aiErr) {
+            logger.error('AI Premium activation failed after successful_payment', { userId: specialistUserId, aiErr });
+            await ctx.reply('✨ Payment received. Your AI Premium will be activated shortly.');
+          }
+        } else if (kind === 'boost') {
           const days = (parsed as { kind: 'boost'; days: number; userId: string }).days;
           try {
             await PromoteService.activatePaidBoost(specialistUserId, days);

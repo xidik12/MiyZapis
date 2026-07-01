@@ -8,12 +8,35 @@ import { CommunityController } from '@/controllers/community';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
+import { prisma } from '@/config/database';
 
 const router = Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticateToken);
 router.use(requireAdmin);
+
+// AI Concierge conversation logs (prompt, reply, tool calls, results), paginated.
+router.get('/concierge-logs', async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit || '25'), 10) || 25));
+    const [rows, total] = await Promise.all([
+      prisma.conciergeLog.findMany({ orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }),
+      prisma.conciergeLog.count(),
+    ]);
+    const userIds = [...new Set(rows.map((r) => r.userId).filter(Boolean) as string[])];
+    const users = userIds.length
+      ? await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, email: true } })
+      : [];
+    const emailById = new Map(users.map((u) => [u.id, u.email]));
+    const items = rows.map((r) => ({ ...r, userEmail: r.userId ? emailById.get(r.userId) || null : null }));
+    res.json(createSuccessResponse({ items, total, page, totalPages: Math.ceil(total / limit) }));
+  } catch (e) {
+    logger.error('Failed to load concierge logs', { error: e instanceof Error ? e.message : e });
+    res.status(500).json(createErrorResponse(ErrorCodes.INTERNAL_SERVER_ERROR, 'Failed to load logs', req.headers['x-request-id'] as string));
+  }
+});
 
 // Dashboard and analytics routes
 router.get('/dashboard/stats', AdminController.getDashboardStats);

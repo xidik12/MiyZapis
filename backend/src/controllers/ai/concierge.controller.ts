@@ -1,7 +1,33 @@
 import { Request, Response } from 'express';
 import { runConcierge, isConciergeEnabled, type ConciergeTurn } from '@/services/ai/concierge.service';
 import { prisma } from '@/config/database';
+import { telegramStarsService, starsPricing } from '@/services/payment/telegram-stars.service';
 import { logger } from '@/utils/logger';
+
+/** Current user's AI Premium entitlement + price. */
+export async function aiPremiumStatusHandler(req: Request, res: Response): Promise<void> {
+  const uid = (req as { user?: { id?: string } }).user?.id;
+  const user = uid ? await prisma.user.findUnique({ where: { id: uid }, select: { aiAccessUntil: true } }) : null;
+  const until = user?.aiAccessUntil ?? null;
+  const entitled = !!until && new Date(until) > new Date();
+  res.json({ success: true, data: { entitled, until, stars: starsPricing().aiPremium } });
+}
+
+/** Create a Telegram Stars invoice link for AI Premium (recurring monthly). */
+export async function aiPremiumInvoiceHandler(req: Request, res: Response): Promise<void> {
+  const uid = (req as { user?: { id?: string } }).user?.id;
+  if (!uid) {
+    res.status(401).json({ success: false, error: 'Sign in required.' });
+    return;
+  }
+  try {
+    const link = await telegramStarsService.createAiPremiumInvoiceLink(uid);
+    res.json({ success: true, data: { link, stars: starsPricing().aiPremium } });
+  } catch (e) {
+    logger.error('AI premium invoice link failed', { error: e instanceof Error ? e.message : e });
+    res.status(500).json({ success: false, error: 'Could not create the payment link. Please try again.' });
+  }
+}
 
 const numOrUndef = (v: unknown): number | undefined => {
   const n = typeof v === 'string' ? parseFloat(v) : (v as number);

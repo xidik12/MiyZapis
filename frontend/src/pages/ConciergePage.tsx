@@ -46,6 +46,8 @@ const ConciergePage: React.FC = () => {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [premium, setPremium] = useState<{ entitled: boolean; until: string | null; stars: number } | null>(null);
+  const [buying, setBuying] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,6 +57,35 @@ const ConciergePage: React.FC = () => {
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
     );
   }, []);
+
+  const loadPremium = async () => {
+    try {
+      const res: any = await apiClient.get('/ai/premium/status');
+      setPremium(res?.data ?? res);
+    } catch { /* ignore */ }
+  };
+  useEffect(() => { loadPremium(); }, []);
+
+  const buyPremium = async () => {
+    if (buying) return;
+    setBuying(true);
+    try {
+      const res: any = await apiClient.post('/ai/premium/invoice', {});
+      const link = (res?.data ?? res)?.link as string | undefined;
+      if (!link) throw new Error('no link');
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg?.openInvoice) {
+        tg.openInvoice(link, (status: string) => {
+          if (status === 'paid') { setTimeout(loadPremium, 1500); }
+        });
+      } else {
+        // Outside Telegram: Stars checkout only works in the Telegram app.
+        window.open(link, '_blank');
+      }
+    } catch {
+      setTurns((prev) => [...prev, { role: 'model', text: tr('Не вдалося відкрити оплату. Спробуйте в застосунку Telegram.', 'Не удалось открыть оплату. Попробуйте в приложении Telegram.', 'Couldn’t open checkout. Please try inside the Telegram app.') }]);
+    } finally { setBuying(false); }
+  };
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [turns, busy]);
 
@@ -71,6 +102,7 @@ const ConciergePage: React.FC = () => {
       setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [], products: data.products || [] }]);
     } catch (e: any) {
       const status = e?.response?.status;
+      if (status === 402) loadPremium();
       const m = status === 402
         ? tr('AI-консьєрж — преміум-функція. Оформіть підписку, щоб користуватися.',
              'AI-консьерж — премиум-функция. Оформите подписку, чтобы пользоваться.',
@@ -108,6 +140,19 @@ const ConciergePage: React.FC = () => {
 
         {/* Chat card — sits inside the app chrome (sidebar/menu stays visible) */}
         <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden h-[calc(100vh-15rem)] min-h-[400px]">
+          {premium && !premium.entitled && (
+            <div className="m-3 mb-0 rounded-xl border border-primary-200 dark:border-primary-800/50 bg-primary-50 dark:bg-primary-900/20 p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">✨ {tr('AI Premium', 'AI Premium', 'AI Premium')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {tr('Розблокуйте AI-консьєрж', 'Разблокируйте AI-консьерж', 'Unlock the AI concierge')} · {premium.stars} ⭐ / {tr('міс', 'мес', 'mo')}
+                </p>
+              </div>
+              <button onClick={buyPremium} disabled={buying} className="shrink-0 px-3 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
+                {buying ? '…' : tr('Оформити', 'Оформить', 'Upgrade')}
+              </button>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gray-50/60 dark:bg-gray-900/30">
         {turns.length === 0 && (
           <div className="mt-8 text-center">
