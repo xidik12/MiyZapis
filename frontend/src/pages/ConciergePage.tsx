@@ -21,6 +21,7 @@ interface Option {
 interface Product {
   productId: string;
   productName: string;
+  imageUrl?: string | null;
   price: number;
   currency: string;
   inStock: number;
@@ -160,10 +161,15 @@ const ConciergePage: React.FC = () => {
                   {t.products.slice(0, 5).map((p) => (
                     <div key={p.productId} className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-900/10 p-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white truncate">🛍 {p.productName}</p>
+                        <div className="min-w-0 flex items-start gap-2.5">
+                          {p.imageUrl && (
+                            <img src={p.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover shrink-0 ring-1 ring-inset ring-black/5 dark:ring-white/10" />
+                          )}
+                          <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">{p.imageUrl ? '' : '🛍 '}{p.productName}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{p.shopName}{p.city ? ` · ${p.city}` : ''}</p>
                           {p.address && <p className="text-xs text-gray-400 truncate">{p.address}</p>}
+                          </div>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-semibold text-amber-700 dark:text-amber-400 tabular-nums">{money(p.price, p.currency)}</p>

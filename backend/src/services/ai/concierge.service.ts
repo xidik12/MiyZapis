@@ -121,6 +121,7 @@ export interface ConciergeOption {
 export interface ConciergeProduct {
   productId: string;
   productName: string;
+  imageUrl: string | null;
   price: number;
   currency: string;
   inStock: number;
@@ -154,7 +155,7 @@ async function searchProductsTool(
         { description: { contains: args.query, mode: 'insensitive' } },
       ],
     },
-    select: { id: true, name: true, salePrice: true, currency: true, stockQty: true, ownerId: true },
+    select: { id: true, name: true, salePrice: true, currency: true, stockQty: true, ownerId: true, imageUrl: true },
     take: 15,
   });
   if (products.length === 0) return { products: [] };
@@ -186,6 +187,7 @@ async function searchProductsTool(
     const item: ConciergeProduct = {
       productId: p.id,
       productName: p.name,
+      imageUrl: p.imageUrl || null,
       price: Number(p.salePrice),
       currency: p.currency || 'UAH',
       inStock: Number(p.stockQty),
