@@ -280,9 +280,11 @@ function App() {
             path="/concierge"
             element={
               <ProtectedRoute>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <ConciergePage />
-                </Suspense>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <ConciergePage />
+                  </Suspense>
+                </ConditionalLayout>
               </ProtectedRoute>
             }
           />

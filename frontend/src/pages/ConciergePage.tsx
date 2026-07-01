@@ -84,23 +84,25 @@ const ConciergePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <header className="flex items-center gap-3 px-4 h-14 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
-        <Link to="/" className="text-gray-500 dark:text-gray-400 text-xl leading-none">←</Link>
-        <div className="flex items-center gap-2">
-          <span className="grid place-items-center h-8 w-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white text-sm font-bold">✦</span>
-          <div>
-            <p className="font-semibold text-gray-900 dark:text-white leading-tight">{tr('AI Консьєрж', 'AI Консьерж', 'AI Concierge')}</p>
-            <p className="text-[11px] text-gray-400 leading-tight">{coords ? tr('Місце визначено', 'Местоположение определено', 'Location on') : tr('Місце вимкнено', 'Местоположение выключено', 'Location off')}</p>
+    <div className="p-3 sm:p-6">
+      <div className="max-w-3xl mx-auto">
+        {/* Title row + Search/Ask AI toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-base shadow-sm">✦</span>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white leading-tight">{tr('AI Консьєрж', 'AI Консьерж', 'AI Concierge')}</h1>
+              <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+                {coords ? tr('Місце визначено', 'Местоположение определено', 'Location on') : tr('Місце вимкнено', 'Местоположение выключено', 'Location off')}
+              </p>
+            </div>
           </div>
+          <SearchAiToggle active="ai" className="self-start sm:self-auto" />
         </div>
-      </header>
 
-      <div className="flex justify-center pt-3">
-        <SearchAiToggle active="ai" />
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Chat card — sits inside the app chrome (sidebar/menu stays visible) */}
+        <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden h-[calc(100vh-15rem)] min-h-[400px]">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gray-50/60 dark:bg-gray-900/30">
         {turns.length === 0 && (
           <div className="mt-8 text-center">
             <p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -193,22 +195,25 @@ const ConciergePage: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-2.5 text-sm text-gray-400">…</div>
           </div>
         )}
-        <div ref={endRef} />
-      </div>
+            <div ref={endRef} />
+          </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
-        <div className="flex items-end gap-2 max-w-2xl mx-auto">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            rows={1}
-            placeholder={tr('Напишіть повідомлення…', 'Напишите сообщение…', 'Type a message…')}
-            className="flex-1 resize-none rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 max-h-32"
-          />
-          <button onClick={send} disabled={busy || !input.trim()} className="shrink-0 h-11 px-4 rounded-2xl bg-primary-600 text-white font-medium disabled:opacity-50">
-            {tr('Надіслати', 'Отправить', 'Send')}
-          </button>
+          {/* Input bar (inside the card) */}
+          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+            <div className="flex items-end gap-2">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                rows={1}
+                placeholder={tr('Напишіть повідомлення…', 'Напишите сообщение…', 'Type a message…')}
+                className="flex-1 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 max-h-32"
+              />
+              <button onClick={send} disabled={busy || !input.trim()} className="shrink-0 h-11 px-4 rounded-xl bg-primary-600 text-white font-medium hover:bg-primary-700 disabled:opacity-50 transition active:scale-[0.98]">
+                {tr('Надіслати', 'Отправить', 'Send')}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
