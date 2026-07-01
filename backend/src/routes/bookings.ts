@@ -28,6 +28,53 @@ router.post('/with-payment', bookingRateLimit, BookingController.createBookingWi
 router.post('/recurring', bookingRateLimit, BookingController.createRecurringBooking);
 router.get('/', validateGetBookings, BookingController.getUserBookings);
 router.get('/stats', BookingController.getSpecialistBookingStats);
+
+// Pre-booking conflict check. Static route — MUST precede GET /:bookingId, else it
+// gets captured as bookingId="check-conflicts".
+router.get('/check-conflicts', async (req: Request, res: Response) => {
+  try {
+    const specialistId = req.query.specialistId as string;
+    const scheduledAt = req.query.scheduledAt as string;
+    const duration = parseInt(req.query.duration as string, 10);
+    const excludeBookingId = req.query.excludeBookingId as string | undefined;
+    if (!specialistId || !scheduledAt || !Number.isFinite(duration)) {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'specialistId, scheduledAt and duration are required', req.id));
+    }
+    const start = new Date(scheduledAt);
+    if (isNaN(start.getTime())) {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Invalid scheduledAt', req.id));
+    }
+    const end = new Date(start.getTime() + duration * 60 * 1000);
+    const { prisma } = await import('@/config/database');
+    const candidates = await prisma.booking.findMany({
+      where: {
+        specialistId,
+        ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+        status: { in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] },
+        scheduledAt: {
+          gte: new Date(start.getTime() - (duration + 60) * 60 * 1000),
+          lte: new Date(end.getTime() + 60 * 60 * 1000),
+        },
+      },
+      select: { id: true, scheduledAt: true, duration: true },
+    });
+    const conflicts = candidates
+      .filter((b) => {
+        const es = new Date(b.scheduledAt);
+        const ee = new Date(es.getTime() + b.duration * 60 * 1000);
+        return start < ee && es < end;
+      })
+      .map((b) => {
+        const es = new Date(b.scheduledAt);
+        return { bookingId: b.id, startTime: es.toISOString(), endTime: new Date(es.getTime() + b.duration * 60000).toISOString() };
+      });
+    return res.json(createSuccessResponse({ hasConflicts: conflicts.length > 0, conflicts }));
+  } catch (err) {
+    logger.error('check-conflicts failed', { error: err instanceof Error ? err.message : err });
+    return res.status(500).json(createErrorResponse('CONFLICT_CHECK_FAILED', 'Failed to check conflicts', req.id));
+  }
+});
+
 router.get('/:bookingId', validateBookingId, BookingController.getBooking);
 router.put('/:bookingId', validateBookingId, validateUpdateBookingStatus, BookingController.updateBooking);
 router.put('/:bookingId/confirm', validateConfirmBooking, BookingController.confirmBooking);

@@ -130,6 +130,24 @@ export class NotificationService {
       uk: 'Ваше бронювання послуги "{{serviceName}}" на {{date}} скасовано.',
       ru: 'Ваше бронирование услуги "{{serviceName}}" на {{date}} отменено.'
     },
+    // ── Waitlist ─────────────────────────────────────────────────────────────
+    'notifications.waitlist.slotAvailable.title': {
+      en: 'A slot has opened up!', uk: 'З’явилося вільне місце!', ru: 'Освободилось место!'
+    },
+    'notifications.waitlist.slotAvailable.message': {
+      en: 'A time slot for {{serviceName}} on {{date}} just opened up. Book now before it fills up!',
+      uk: 'Звільнився час для послуги "{{serviceName}}" на {{date}}. Бронюйте, поки місце вільне!',
+      ru: 'Освободилось время для услуги "{{serviceName}}" на {{date}}. Бронируйте, пока место свободно!'
+    },
+    // ── Store ────────────────────────────────────────────────────────────────
+    'notifications.store.productOrder.title': {
+      en: 'New product order', uk: 'Нове замовлення товару', ru: 'Новый заказ товара'
+    },
+    'notifications.store.productOrder.message': {
+      en: 'New order {{orderNumber}} for {{total}} {{currency}}.',
+      uk: 'Нове замовлення {{orderNumber}} на суму {{total}} {{currency}}.',
+      ru: 'Новый заказ {{orderNumber}} на сумму {{total}} {{currency}}.'
+    },
     'notifications.booking.awaitingReview.customer.title': {
       en: 'How did your appointment go?', uk: 'Як пройшов ваш запис?', ru: 'Как прошла ваша запись?'
     },

@@ -807,10 +807,10 @@ export class StoreService {
       const notificationService = new NotificationService(prisma);
       await notificationService.sendNotification(ownerId, {
         type: 'PRODUCT_ORDER',
-        title: 'New product order',
-        message: `New order ${orderNumber} for ${total} ${currency}.`,
+        title: 'notifications.store.productOrder.title',
+        message: 'notifications.store.productOrder.message',
         priority: 'NORMAL',
-        data: { orderNumber, total, currency },
+        data: { orderNumber, total, currency, _interpolate: { orderNumber, total: String(total), currency } },
       });
     } catch (error) {
       // Notifications are best-effort — never let them break order placement.

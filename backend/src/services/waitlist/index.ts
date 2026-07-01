@@ -358,13 +358,17 @@ export class WaitlistService {
       try {
         await WaitlistService.notificationService.sendNotification(entry.userId, {
           type: 'WAITLIST_SLOT_AVAILABLE',
-          title: 'A slot has opened up!',
-          message: `A time slot has become available for ${entry.service.name} on ${new Date(entry.preferredDate).toLocaleDateString()}. Book now before it fills up!`,
+          title: 'notifications.waitlist.slotAvailable.title',
+          message: 'notifications.waitlist.slotAvailable.message',
           data: {
             waitlistId: entry.id,
             serviceId: entry.serviceId,
             specialistId: entry.specialistId,
             preferredDate: entry.preferredDate,
+            _interpolate: {
+              serviceName: entry.service.name,
+              date: new Date(entry.preferredDate).toLocaleDateString(),
+            },
           },
           priority: 'HIGH',
         });
