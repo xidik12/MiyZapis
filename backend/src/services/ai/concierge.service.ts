@@ -16,7 +16,7 @@ import {
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 export function isConciergeEnabled(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
