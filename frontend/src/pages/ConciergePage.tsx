@@ -33,7 +33,15 @@ interface Product {
   navUrl?: string;
   shopUrl: string;
 }
-interface Turn { role: 'user' | 'model'; text: string; options?: Option[]; products?: Product[] }
+interface BookingResult {
+  success: boolean;
+  bookingId?: string;
+  status?: string;
+  scheduledAt?: string;
+  serviceName?: string;
+  error?: string;
+}
+interface Turn { role: 'user' | 'model'; text: string; options?: Option[]; products?: Product[]; bookingResult?: BookingResult | null }
 
 const money = (n: number, c: string) =>
   new Intl.NumberFormat(undefined, { style: 'currency', currency: c === 'UAH' ? 'UAH' : c }).format(n);
@@ -99,7 +107,7 @@ const ConciergePage: React.FC = () => {
     try {
       const res: any = await apiClient.post('/ai/concierge', { message: msg, history, lat: coords?.lat, lng: coords?.lng });
       const data = res?.data ?? res;
-      setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [], products: data.products || [] }]);
+      setTurns((prev) => [...prev, { role: 'model', text: data.reply || '…', options: data.options || [], products: data.products || [], bookingResult: data.bookingResult || null }]);
     } catch (e: any) {
       const status = e?.response?.status;
       if (status === 402) loadPremium();
@@ -241,6 +249,32 @@ const ConciergePage: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {t.bookingResult && (
+                <div className={`mt-3 rounded-xl border p-3 text-sm ${t.bookingResult.success ? 'border-green-300 dark:border-green-800/60 bg-green-50 dark:bg-green-900/15' : 'border-red-300 dark:border-red-800/60 bg-red-50 dark:bg-red-900/15'}`}>
+                  {t.bookingResult.success ? (
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600 dark:text-green-400 text-base leading-none">✓</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {tr('Бронювання створено', 'Бронирование создано', 'Booking created')}{t.bookingResult.serviceName ? ` — ${t.bookingResult.serviceName}` : ''}
+                        </p>
+                        {t.bookingResult.scheduledAt && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(t.bookingResult.scheduledAt).toLocaleString()}</p>
+                        )}
+                        <p className="text-[11px] text-gray-400">{tr('Статус', 'Статус', 'Status')}: {t.bookingResult.status}</p>
+                        <Link to="/customer/bookings" className="inline-block mt-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">
+                          {tr('Мої бронювання', 'Мои бронирования', 'My bookings')}
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-2">
+                      <span className="text-red-600 dark:text-red-400 text-base leading-none">!</span>
+                      <p className="text-gray-700 dark:text-gray-200">{tr('Бронювання не завершено — деталі вище.', 'Бронирование не завершено — детали выше.', 'Booking not completed — see the note above.')}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

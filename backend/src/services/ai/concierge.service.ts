@@ -137,6 +137,15 @@ export interface ConciergeOption {
   bookUrl: string;
 }
 
+export interface ConciergeBookingResult {
+  success: boolean;
+  bookingId?: string;
+  status?: string;
+  scheduledAt?: string;
+  serviceName?: string;
+  error?: string;
+}
+
 export interface ConciergeProduct {
   productId: string;
   productName: string;
@@ -417,7 +426,7 @@ export async function runConcierge(input: {
   lng?: number;
   city?: string;
   userId?: string;
-}): Promise<{ reply: string; options: ConciergeOption[]; products: ConciergeProduct[] }> {
+}): Promise<{ reply: string; options: ConciergeOption[]; products: ConciergeProduct[]; bookingResult: ConciergeBookingResult | null }> {
   const apiKey = process.env.GEMINI_API_KEY!;
   const genAI = new GoogleGenerativeAI(apiKey);
   const nowIso = new Date().toISOString();
@@ -443,6 +452,7 @@ export async function runConcierge(input: {
   const collectedOptions: ConciergeOption[] = [];
   const collectedProducts: ConciergeProduct[] = [];
   const toolCallLog: Array<{ name: string; args: unknown; ok: boolean }> = [];
+  let bookingResult: ConciergeBookingResult | null = null;
   let result = await chat.sendMessage(input.message);
 
   for (let i = 0; i < 5; i++) {
@@ -465,6 +475,10 @@ export async function runConcierge(input: {
           out = await availabilityTool(call.args as any);
         } else if (call.name === 'book_appointment') {
           out = await bookTool(call.args as any, input.userId);
+          const b = out as { success?: boolean; bookingId?: string; status?: string; scheduledAt?: string; serviceName?: string; error?: string };
+          bookingResult = b.success
+            ? { success: true, bookingId: b.bookingId!, status: b.status || 'PENDING', scheduledAt: b.scheduledAt, serviceName: b.serviceName }
+            : { success: false, error: b.error || 'booking_failed' };
         }
       } catch (e) {
         logger.warn('Concierge tool failed', { tool: call.name, error: e instanceof Error ? e.message : e });
@@ -503,5 +517,5 @@ export async function runConcierge(input: {
     logger.warn('Concierge log write failed', { error: e instanceof Error ? e.message : e });
   }
 
-  return { reply, options, products };
+  return { reply, options, products, bookingResult };
 }
