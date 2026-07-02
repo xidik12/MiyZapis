@@ -241,26 +241,24 @@ export class MessagingService {
     });
 
     try {
-      // Emit message to conversation room via Socket.IO
-      if (this.io) {
-        this.io.to(`conversation:${conversationId}`).emit('new_message', {
-          message,
-          conversationId
-        });
-        
-        // Also emit to receiver specifically if they're not in the room
-        const receiverSocketId = await redis?.hget(
-          `conversation:${conversationId}:participants`,
-          receiverId
-        );
-        
-        if (receiverSocketId) {
-          this.io.to(receiverSocketId).emit('new_message', {
-            message,
-            conversationId
-          });
-        }
-        
+      // Emit to the conversation room AND the receiver's user room. Use the shared
+      // WebSocketManager (the REST controller constructs this service without `io`,
+      // so `this.io` is null on the main send path). Event name + parsed attachments
+      // match what the frontend listens for ('message:new').
+      const parsedMessage = {
+        ...message,
+        attachments: (() => { try { return JSON.parse((message as { attachments?: string }).attachments || '[]'); } catch { return []; } })(),
+      };
+      let io = this.io;
+      if (!io) {
+        try {
+          const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
+          if (WebSocketManager.isInitialized()) io = WebSocketManager.getInstance().getIO();
+        } catch { /* ws not available */ }
+      }
+      if (io) {
+        io.to(`conversation:${conversationId}`).emit('message:new', { message: parsedMessage, conversationId });
+        io.to(`user:${receiverId}`).emit('message:new', { message: parsedMessage, conversationId });
         logger.info('Message emitted via socket', {
           messageId: message.id,
           conversationId,
@@ -553,8 +551,18 @@ export class MessagingService {
     // Mark messages as read
     await this.markConversationAsRead(conversationId, userId);
 
+    // `attachments` is stored as a JSON string — parse to string[] (the API type)
+    // so the client can render image messages and doesn't crash on `.map`.
+    const parsedMessages = messages.reverse().map((m) => ({
+      ...m,
+      attachments: (() => {
+        try { return typeof m.attachments === 'string' ? JSON.parse(m.attachments) : (m.attachments || []); }
+        catch { return []; }
+      })(),
+    }));
+
     return {
-      messages: messages.reverse(), // Return in chronological order
+      messages: parsedMessages, // Return in chronological order
       pagination: {
         page,
         limit,

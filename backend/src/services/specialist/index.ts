@@ -82,6 +82,7 @@ interface UpdateSpecialistData {
   listedInSearch?: boolean;
   requireVerifiedCustomer?: boolean;
   cancellationWindowHours?: number;
+  allowPayAtVenue?: boolean;
 }
 
 interface SpecialistWithUser extends Specialist {
@@ -561,6 +562,7 @@ export class SpecialistService {
           ...(data.listedInSearch !== undefined && { listedInSearch: data.listedInSearch }),
           ...(data.requireVerifiedCustomer !== undefined && { requireVerifiedCustomer: data.requireVerifiedCustomer }),
           ...(data.cancellationWindowHours !== undefined && { cancellationWindowHours: data.cancellationWindowHours }),
+          ...(data.allowPayAtVenue !== undefined && { allowPayAtVenue: data.allowPayAtVenue }),
           updatedAt: new Date(),
         },
         include: {

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PaymentController } from '@/controllers/payments';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
+import { requirePaymentsEnabled } from '@/middleware/paymentsEnabled';
 import {
   validateGetPaymentHistory,
   validateEarningsTrends,
@@ -11,8 +12,8 @@ import {
 const router = Router();
 
 // Protected routes - require authentication
-router.post('/intent', authenticateToken, PaymentController.createPaymentIntent);
-router.post('/confirm', authenticateToken, PaymentController.confirmPayment);
+router.post('/intent', requirePaymentsEnabled, authenticateToken, PaymentController.createPaymentIntent);
+router.post('/confirm', requirePaymentsEnabled, authenticateToken, PaymentController.confirmPayment);
 router.get('/my', authenticateToken, PaymentController.getUserPayments);
 router.get('/history', authenticateToken, validateGetPaymentHistory, PaymentController.getPaymentHistory);
 router.get('/:paymentId/status', authenticateToken, PaymentController.getPaymentStatus);
@@ -40,31 +41,31 @@ router.get('/wallet/balance', authenticateToken, PaymentController.getWalletBala
 router.get('/wallet/transactions', authenticateToken, PaymentController.getWalletTransactions);
 
 // PayPal routes
-router.post('/paypal/create-order', authenticateToken, PaymentController.createPayPalOrder);
-router.post('/paypal/capture-order', authenticateToken, PaymentController.capturePayPalOrder);
+router.post('/paypal/create-order', requirePaymentsEnabled, authenticateToken, PaymentController.createPayPalOrder);
+router.post('/paypal/capture-order', requirePaymentsEnabled, authenticateToken, PaymentController.capturePayPalOrder);
 router.get('/paypal/order/:orderId', authenticateToken, PaymentController.getPayPalOrderDetails);
-router.post('/paypal/refund', authenticateToken, PaymentController.refundPayPalPayment);
+router.post('/paypal/refund', requirePaymentsEnabled, authenticateToken, PaymentController.refundPayPalPayment);
 
 // PayPal webhook (no authentication required)
-router.post('/webhooks/paypal', PaymentController.handlePayPalWebhook);
+router.post('/webhooks/paypal', requirePaymentsEnabled, PaymentController.handlePayPalWebhook);
 
 // WayForPay routes
-router.post('/wayforpay/create-invoice', authenticateToken, PaymentController.createWayForPayInvoice);
+router.post('/wayforpay/create-invoice', requirePaymentsEnabled, authenticateToken, PaymentController.createWayForPayInvoice);
 router.get('/wayforpay/status/:orderReference', authenticateToken, PaymentController.getWayForPayPaymentStatus);
 
 // WayForPay webhook (no authentication required)
-router.post('/webhooks/wayforpay', PaymentController.handleWayForPayWebhook);
+router.post('/webhooks/wayforpay', requirePaymentsEnabled, PaymentController.handleWayForPayWebhook);
 
 // Coinbase Commerce routes
-router.post('/coinbase/create-charge', authenticateToken, PaymentController.createCoinbaseCharge);
+router.post('/coinbase/create-charge', requirePaymentsEnabled, authenticateToken, PaymentController.createCoinbaseCharge);
 router.get('/coinbase/charge/:chargeCode', authenticateToken, PaymentController.getCoinbaseChargeDetails);
 
 // Coinbase Commerce webhook (no authentication required)
-router.post('/webhooks/coinbase', PaymentController.handleCoinbaseWebhook);
+router.post('/webhooks/coinbase', requirePaymentsEnabled, PaymentController.handleCoinbaseWebhook);
 
 // Development routes (for testing payments without Stripe) — disabled in production
 if (process.env.NODE_ENV !== 'production') {
-  router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
+  router.post('/mock/success', requirePaymentsEnabled, authenticateToken, PaymentController.mockPaymentSuccess);
 }
 
 export default router;

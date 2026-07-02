@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { paymentController } from '@/controllers/payment.controller';
 import { authenticateToken } from '@/middleware/auth/jwt';
+import { requirePaymentsEnabled } from '@/middleware/paymentsEnabled';
 import { validateRequest } from '@/middleware/validation';
 import { prisma } from '@/config/database';
 import { AuthenticatedRequest } from '@/types';
@@ -55,6 +56,11 @@ router.post('/telegram-stars/cancel', authenticateToken, async (req: Request, re
     res.status(400).json({ success: false, error: { message: msg } });
   }
 });
+
+// Everything below is card/crypto/wallet/onramp payment machinery. Telegram Stars
+// (above) is the only live rail; block the rest until PAYMENTS_ENABLED=true so the
+// weak/forgeable provider + webhook handlers aren't reachable.
+router.use(requirePaymentsEnabled);
 
 // Payment Intent Routes (for payment-first booking flow)
 router.post(
