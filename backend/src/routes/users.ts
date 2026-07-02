@@ -19,6 +19,7 @@ import { createSuccessResponse, createErrorResponse, calculatePaginationOffset, 
 import { logger } from '@/utils/logger';
 import bcrypt from 'bcryptjs';
 import { generateLinkCode } from '@/utils/telegram-link-codes';
+import { verifyTelegramInitData } from '@/utils/telegramWebApp';
 
 const router = Router();
 
@@ -430,22 +431,24 @@ router.post('/telegram/generate-link-code', authenticateToken, async (req: Authe
 });
 
 // Link Telegram account
-router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/telegram/link', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(
-        createErrorResponse(
-          ErrorCodes.VALIDATION_ERROR,
-          'Invalid Telegram data',
-          req.headers['x-request-id'] as string,
-          formatValidationErrors(errors.array())
-        )
+    const userId = req.userId;
+    // SECURITY: derive the Telegram identity from a verified initData signature —
+    // never trust a client-supplied telegramId. Trusting the body let anyone link an
+    // arbitrary Telegram account and then flip isPhoneVerified for any number.
+    let tgUser;
+    try {
+      tgUser = verifyTelegramInitData(req.body?.initData);
+    } catch {
+      return res.status(403).json(
+        createErrorResponse(ErrorCodes.ACCESS_DENIED, 'Invalid or missing Telegram session', req.headers['x-request-id'] as string)
       );
     }
-
-    const userId = req.userId;
-    const { telegramId, firstName, lastName, username } = req.body;
+    const telegramId = tgUser.id;
+    const firstName = tgUser.first_name;
+    const lastName = tgUser.last_name;
+    const username = tgUser.username;
 
     // Check if Telegram ID is already linked to another account
     const existingTelegramUser = await prisma.user.findFirst({
@@ -516,14 +519,25 @@ router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (re
 router.post('/phone/verify-telegram', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { phoneNumber, telegramUserId } = req.body ?? {};
-    if (!phoneNumber || !telegramUserId) {
+    const { phoneNumber, initData } = req.body ?? {};
+    if (!phoneNumber) {
       return res.status(400).json(
-        createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'phoneNumber and telegramUserId are required', req.headers['x-request-id'] as string)
+        createErrorResponse(ErrorCodes.VALIDATION_ERROR, 'phoneNumber is required', req.headers['x-request-id'] as string)
+      );
+    }
+    // SECURITY: the Telegram identity must come from a verified initData signature,
+    // not a client-supplied telegramUserId — otherwise isPhoneVerified could be set
+    // for an arbitrary account/number.
+    let tgUser;
+    try {
+      tgUser = verifyTelegramInitData(initData);
+    } catch {
+      return res.status(403).json(
+        createErrorResponse(ErrorCodes.ACCESS_DENIED, 'Invalid or missing Telegram session', req.headers['x-request-id'] as string)
       );
     }
     const me = await prisma.user.findUnique({ where: { id: userId }, select: { telegramId: true } });
-    if (!me?.telegramId || me.telegramId !== String(telegramUserId)) {
+    if (!me?.telegramId || me.telegramId !== tgUser.id) {
       return res.status(403).json(
         createErrorResponse(ErrorCodes.ACCESS_DENIED, 'Shared contact does not match your Telegram account', req.headers['x-request-id'] as string)
       );

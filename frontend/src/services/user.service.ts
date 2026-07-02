@@ -147,8 +147,10 @@ export class UserService {
     }
   }
 
-  // Link Telegram account
-  async linkTelegram(data: { telegramId: string; firstName: string; lastName?: string; username?: string; authDate: number; hash: string }): Promise<any> {
+  // Link Telegram account. The backend verifies the signed Mini App initData —
+  // pass the raw initData string (window.Telegram.WebApp.initData), never a
+  // client-supplied telegramId.
+  async linkTelegram(data: { initData: string }): Promise<any> {
     try {
       const response = await apiClient.post<any>(API_ENDPOINTS.USERS.TELEGRAM_LINK, data);
       if (!response.success) {

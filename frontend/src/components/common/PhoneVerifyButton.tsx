@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { getCurrentUser } from '@/store/slices/authSlice';
 import { apiClient } from '@/services/api';
-import { isTelegram, requestTelegramContact, haptic } from '@/lib/telegram';
+import { isTelegram, requestTelegramContact, haptic, tgWebApp } from '@/lib/telegram';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CheckCircleIcon } from '@/components/icons';
 import { toast } from 'react-toastify';
@@ -39,9 +39,11 @@ const PhoneVerifyButton: React.FC<{ isVerified?: boolean }> = ({ isVerified }) =
     try {
       const contact = await requestTelegramContact();
       if (!contact?.phone_number) { setBusy(false); return; }
+      // Send the signed initData so the backend verifies the Telegram identity
+      // (it no longer trusts a client-supplied telegramUserId).
       const res = await apiClient.post('/users/phone/verify-telegram', {
         phoneNumber: contact.phone_number,
-        telegramUserId: contact.user_id,
+        initData: tgWebApp()?.initData,
       });
       if (res.success) {
         haptic.notify('success');
