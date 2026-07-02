@@ -308,6 +308,7 @@ export class HrService {
   ) {
     const shift = await prisma.staffShift.findUnique({ where: { id: shiftId } });
     if (!shift) throw new Error('Shift not found');
+    if (!(await this.isEmployer(actorId))) throw new Error('Only the business owner can edit shifts');
     await this.assertInScope(actorId, shift.staffUserId);
     const startTime = input.startTime ?? shift.startTime;
     const endTime = input.endTime ?? shift.endTime;
@@ -321,6 +322,7 @@ export class HrService {
   static async deleteShift(actorId: string, shiftId: string) {
     const shift = await prisma.staffShift.findUnique({ where: { id: shiftId } });
     if (!shift) throw new Error('Shift not found');
+    if (!(await this.isEmployer(actorId))) throw new Error('Only the business owner can delete shifts');
     await this.assertInScope(actorId, shift.staffUserId);
     await prisma.staffShift.delete({ where: { id: shiftId } });
   }

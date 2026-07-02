@@ -473,17 +473,19 @@ export class BookingController {
         return;
       }
 
-      const updateData = req.body;
-      if (updateData.scheduledAt) {
-        updateData.scheduledAt = new Date(updateData.scheduledAt);
+      // SECURITY: whitelist updatable fields — NEVER spread raw req.body, which let
+      // a customer reassign specialistId or forge depositStatus/refundAmount/
+      // noShowFeeStatus/etc. (all real Booking columns) via mass-assignment.
+      const isSpecialistOrAdmin = existingBooking.specialistId === req.user.id || req.user.userType === 'ADMIN';
+      const CUSTOMER_FIELDS = ['status', 'scheduledAt', 'duration', 'customerNotes', 'cancellationReason', 'reason'];
+      const SPECIALIST_FIELDS = ['specialistNotes', 'preparationNotes', 'completionNotes', 'totalAmount'];
+      const allowedFields = isSpecialistOrAdmin ? [...CUSTOMER_FIELDS, ...SPECIALIST_FIELDS] : CUSTOMER_FIELDS;
+      const updateData: Record<string, unknown> = {};
+      for (const k of allowedFields) {
+        if (req.body[k] !== undefined) updateData[k] = req.body[k];
       }
-
-      // Only the booking's specialist (or an admin) may set the actual amount
-      // charged at completion — a customer must never be able to change it.
-      if (updateData.totalAmount !== undefined
-          && existingBooking.specialistId !== req.user.id
-          && req.user.userType !== 'ADMIN') {
-        delete updateData.totalAmount;
+      if (updateData.scheduledAt) {
+        updateData.scheduledAt = new Date(updateData.scheduledAt as string);
       }
 
       // A status change to CANCELLED must run the full cancellation path
@@ -494,7 +496,7 @@ export class BookingController {
         const cancelled = await BookingService.cancelBooking(
           bookingId,
           req.user.id,
-          updateData.cancellationReason || updateData.reason
+          (updateData.cancellationReason || updateData.reason) as string | undefined
         );
         const isSpecialistCanceller = existingBooking.specialistId === req.user.id;
         res.json(

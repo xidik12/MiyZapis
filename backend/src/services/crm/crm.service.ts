@@ -341,9 +341,14 @@ export class CrmService {
     const specialistId = await getSpecialistId(ownerId);
     const existing = await prisma.customerTag.findFirst({ where: { id: tagId, specialistId } });
     if (!existing) throw new CrmServiceError('TAG_NOT_FOUND', 'Tag not found');
+    // SECURITY: whitelist columns — the route passes raw req.body, so `specialistId`
+    // could otherwise be reassigned to another tenant (cross-tenant hijack).
+    const data: { name?: string; color?: string } = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.color !== undefined) data.color = patch.color;
     const tag = await prisma.customerTag.update({
       where: { id: tagId },
-      data: patch,
+      data,
       include: { _count: { select: { assignments: true } } },
     });
     return { id: tag.id, name: tag.name, color: tag.color, count: tag._count.assignments, createdAt: tag.createdAt.toISOString() };

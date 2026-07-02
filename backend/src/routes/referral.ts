@@ -382,7 +382,10 @@ router.post('/process', authenticateToken, processReferralValidation, async (req
       );
     }
 
-    const processData: ProcessReferralData = req.body;
+    // SECURITY: the referred user is ALWAYS the authenticated caller — never trust a
+    // client-supplied referredUserId (else anyone could mint referral rewards to any account).
+    const authUserId = (req as unknown as { user?: { id?: string } }).user?.id;
+    const processData: ProcessReferralData = { ...req.body, referredUserId: authUserId };
 
     const result = await ReferralService.processReferralCompletion(processData);
 
