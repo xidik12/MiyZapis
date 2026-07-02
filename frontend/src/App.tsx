@@ -911,21 +911,25 @@ function App() {
           <Route
             path="/specialist/:specialistId"
             element={
-              <ConditionalLayout>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <SpecialistProfilePage />
-                </Suspense>
-              </ConditionalLayout>
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistProfilePage />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/service/:serviceId"
             element={
-              <ConditionalLayout>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <ServicePublicPage />
-                </Suspense>
-              </ConditionalLayout>
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <ServicePublicPage />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
             }
           />
           <Route
@@ -939,11 +943,13 @@ function App() {
           <Route
             path="/s/:slug"
             element={
-              <ConditionalLayout>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <SpecialistProfilePage />
-                </Suspense>
-              </ConditionalLayout>
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistProfilePage />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
             }
           />
           {/* Chrome-less embeddable booking widget — NO layout, public, iframe-friendly */}
@@ -1018,11 +1024,13 @@ function App() {
           <Route
             path="/booking/:serviceId"
             element={
-              <ConditionalLayout>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <BookingRouter />
-                </Suspense>
-              </ConditionalLayout>
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <BookingRouter />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
             }
           />
           <Route path="/payment/:bookingId" element={
