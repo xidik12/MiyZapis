@@ -391,6 +391,26 @@ export class NotificationService {
         type: data.type
       });
 
+      // Realtime: push to the in-app bell over WebSocket (best-effort). Previously
+      // sendNotification never touched the ws layer, so the bell only updated on
+      // page load.
+      try {
+        const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
+        if (WebSocketManager.isInitialized()) {
+          await WebSocketManager.getInstance().sendNotification(userId, {
+            id: notification.id,
+            type: notification.type,
+            title: data.title,
+            message: data.message,
+            data: data.data ?? null,
+            isRead: false,
+            createdAt: notification.createdAt,
+          });
+        }
+      } catch (wsErr) {
+        logger.warn('WS notification emit failed', { error: wsErr instanceof Error ? wsErr.message : wsErr });
+      }
+
       // Send via different channels based on user preferences
       const promises = [];
 
@@ -914,6 +934,16 @@ export class NotificationService {
 
       const total = await this.prisma.notification.count({ where });
 
+      // `data` is stored as a JSON string — parse it so the frontend can read
+      // fields like serviceName/date (otherwise notification text renders blank).
+      const parsedNotifications = notifications.map((n) => ({
+        ...n,
+        data: (() => {
+          try { return typeof n.data === 'string' ? JSON.parse(n.data) : n.data; }
+          catch { return n.data; }
+        })(),
+      }));
+
       logger.info('User notifications fetched successfully', {
         userId,
         notificationsCount: notifications.length,
@@ -929,7 +959,7 @@ export class NotificationService {
       });
 
       return {
-        notifications,
+        notifications: parsedNotifications,
         unreadCount,
         pagination: {
           page,

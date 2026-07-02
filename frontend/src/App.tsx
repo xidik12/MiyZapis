@@ -1054,7 +1054,7 @@ function App() {
             }
           />
           <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-          <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+          <Route path="/register" element={<Navigate to={`/auth/register${window.location.search}`} replace />} />
 
           {/* 404 page */}
           <Route path="*" element={

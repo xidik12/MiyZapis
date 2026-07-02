@@ -539,7 +539,15 @@ export class WebSocketService {
    * Send notification to user
    */
   async sendNotification(userId: string, notification: Record<string, unknown>) {
-    this.io.to(`user:${userId}`).emit('notification', notification);
+    // Frontend (SocketProvider) listens for 'notification:new' and reads
+    // event.data.notification — align the name + shape so notifications arrive live.
+    this.io.to(`user:${userId}`).emit('notification:new', { data: { notification } });
+  }
+
+  /** Underlying Socket.IO server — for callers (e.g. REST controllers) that need
+   *  to emit but weren't constructed with `io`. Reach via WebSocketManager. */
+  getIO() {
+    return this.io;
   }
 
   /**
