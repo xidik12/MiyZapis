@@ -87,6 +87,7 @@ export function useCapacitorShell(): void {
  * to the backend. No-op off-native. Safe to call repeatedly (e.g. after login) —
  * the token is upserted server-side. Tapping a push navigates to data.url.
  */
+let pushListenersAdded = false;
 export async function registerPush(navigate?: (path: string) => void): Promise<void> {
   if (!isNativeApp()) return;
   try {
@@ -98,17 +99,22 @@ export async function registerPush(navigate?: (path: string) => void): Promise<v
     }
     if (perm.receive !== 'granted') return;
 
-    await PushNotifications.addListener('registration', async (token: { value: string }) => {
-      try {
-        const { apiClient } = await import('@/services/api');
-        await apiClient.post('/notifications/device-token', { token: token.value, platform: nativePlatform() });
-      } catch { /* not signed in yet — re-registers on next launch */ }
-    });
-
-    await PushNotifications.addListener('pushNotificationActionPerformed', (action: any) => {
-      const url = action?.notification?.data?.url;
-      if (url && navigate) navigate(String(url));
-    });
+    // Add listeners once; re-calling registerPush (e.g. after login) just re-runs
+    // register() → re-fires 'registration' → re-POSTs the token (now authenticated),
+    // without stacking duplicate listeners.
+    if (!pushListenersAdded) {
+      await PushNotifications.addListener('registration', async (token: { value: string }) => {
+        try {
+          const { apiClient } = await import('@/services/api');
+          await apiClient.post('/notifications/device-token', { token: token.value, platform: nativePlatform() });
+        } catch { /* not signed in yet — re-registers after login */ }
+      });
+      await PushNotifications.addListener('pushNotificationActionPerformed', (action: any) => {
+        const url = action?.notification?.data?.url;
+        if (url && navigate) navigate(String(url));
+      });
+      pushListenersAdded = true;
+    }
 
     await PushNotifications.register();
   } catch { /* plugin unavailable */ }

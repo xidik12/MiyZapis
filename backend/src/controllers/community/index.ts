@@ -208,6 +208,10 @@ export class CommunityController {
             where: { userId: req.user.id },
             select: { id: true },
           } : false,
+          bookmarks: req.user ? {
+            where: { userId: req.user.id },
+            select: { id: true },
+          } : false,
         },
         orderBy: [
           { isPinned: 'desc' },
@@ -245,7 +249,7 @@ export class CommunityController {
         commentCount: post.commentCount,
         isPinned: post.isPinned,
         isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
-        isBookmarked: false, // Will be set by frontend from bookmarks list
+        isBookmarked: req.user ? (((post as any).bookmarks?.length ?? 0) > 0) : false,
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
@@ -301,6 +305,10 @@ export class CommunityController {
             where: { userId: req.user.id },
             select: { id: true },
           } : false,
+          bookmarks: req.user ? {
+            where: { userId: req.user.id },
+            select: { id: true },
+          } : false,
         },
       });
 
@@ -349,7 +357,7 @@ export class CommunityController {
         commentCount: post.commentCount,
         isPinned: post.isPinned,
         isLiked: req.user ? (post.likes as unknown[]).length > 0 : false,
-        isBookmarked: false, // Will be set by frontend from bookmarks list
+        isBookmarked: req.user ? (((post as any).bookmarks?.length ?? 0) > 0) : false,
         isPreview: !showFullContent,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,

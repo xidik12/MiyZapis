@@ -270,7 +270,9 @@ export const requireOwnership = (resourceIdParam: string) => {
         return;
       }
 
-      const resourceId = req.params[resourceIdParam];
+      // Fall back to :id — several routes declare `/:id` but pass a typed param name
+      // (e.g. requireOwnership('reviewId')) for the ownership branch below.
+      const resourceId = req.params[resourceIdParam] || req.params.id;
       if (!resourceId) {
         res.status(400).json(
           createErrorResponse(

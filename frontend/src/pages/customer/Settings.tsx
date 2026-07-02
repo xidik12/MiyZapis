@@ -178,6 +178,24 @@ const CustomerSettings: React.FC = () => {
     }
   }, [currentUser]);
 
+  // Hydrate notification toggles from the server on mount (backend stores 2 master
+  // flags: email + push). Without this the toggles reset to defaults every reload.
+  useEffect(() => {
+    userService.getPreferences().then((res: any) => {
+      const n = res?.preferences?.notifications;
+      if (!n) return;
+      setNotifications((prev) => ({
+        ...prev,
+        emailBookingConfirmation: n.email ?? prev.emailBookingConfirmation,
+        emailReminders: n.email ?? prev.emailReminders,
+        emailPromotions: n.email ?? prev.emailPromotions,
+        pushBookingConfirmation: n.push ?? prev.pushBookingConfirmation,
+        pushReminders: n.push ?? prev.pushReminders,
+        pushPromotions: n.push ?? prev.pushPromotions,
+      }));
+    }).catch(() => { /* preferences fetch is best-effort */ });
+  }, []);
+
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({
       ...prev,
@@ -588,9 +606,12 @@ const CustomerSettings: React.FC = () => {
                       <input
                         type="email"
                         value={user.email}
-                        onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-all duration-200"
+                        readOnly
+                        disabled
+                        title={t('profile.emailReadOnly') || 'Email cannot be changed here'}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 text-gray-500 rounded-xl shadow-sm cursor-not-allowed opacity-80"
                       />
+                      <p className="mt-1 text-xs text-gray-400">{t('profile.emailReadOnly') || 'Email cannot be changed here.'}</p>
                     </div>
                     <div>
                       <label className="flex items-center justify-between gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
