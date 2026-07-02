@@ -134,8 +134,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.2 }}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectConversation(conversation)}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition active:scale-[0.96] ${
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectConversation(conversation); } }}
+                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition active:scale-[0.96] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset ${
                     isSelected
                       ? 'bg-primary-50 dark:bg-primary-900/20'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-l-4 border-l-transparent'

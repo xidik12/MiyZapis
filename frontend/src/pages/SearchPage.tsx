@@ -635,7 +635,7 @@ const SearchPage: React.FC = () => {
             lazy={true}
           />
           {service.specialist?.user?.isVerified && (
-            <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
+            <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white dark:bg-gray-800 rounded-full" />
           )}
           {service.specialist?.isOnline && (
             <>

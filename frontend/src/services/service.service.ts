@@ -18,7 +18,8 @@ export class ServiceService {
     if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
     if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
     if (filters.rating) params.append('rating', filters.rating.toString());
-    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    // Backend expects 'price' (asc) / 'priceDesc'; the UI selects use 'priceAsc'.
+    if (filters.sortBy) params.append('sortBy', filters.sortBy === 'priceAsc' ? 'price' : filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());

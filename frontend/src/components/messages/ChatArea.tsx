@@ -42,6 +42,7 @@ interface ChatAreaProps {
   onFileSelect?: (file: File) => void;
   onBack?: () => void;
   isTyping?: boolean;
+  sending?: boolean;
   userRole?: 'customer' | 'specialist';
 }
 
@@ -55,6 +56,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onFileSelect,
   onBack,
   isTyping = false,
+  sending = false,
   userRole = 'customer'
 }) => {
   const { t } = useLanguage();
@@ -210,7 +212,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   message={message}
                   isOwnMessage={isOwnMessage}
                   showAvatar={showAvatar}
-                  avatarUrl={!isOwnMessage ? otherParty?.avatar : undefined}
+                  avatarUrl={!isOwnMessage && otherParty?.avatar ? getAbsoluteImageUrl(otherParty.avatar) : undefined}
                   senderName={!isOwnMessage ? otherParty?.name : undefined}
                 />
               </div>
@@ -234,6 +236,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         onSubmit={onSendMessage}
         onFileSelect={onFileSelect}
         placeholder={t('messages.typeMessage')}
+        disabled={sending}
       />
     </div>
   );

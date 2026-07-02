@@ -178,7 +178,7 @@ const initializeApp = () => {
                   pauseOnHover
                   theme={"auto" as any}
                   toastClassName="custom-toast"
-                  style={{ zIndex: 9999 }}
+                  style={{ zIndex: 9999, top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
                 />
             </BrowserRouter>
             </TelegramProvider>
