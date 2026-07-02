@@ -58,7 +58,7 @@ console.log('5. Run the script again and compare signatures');
 console.log('\n---\n');
 
 // Test with the actual secret you provided earlier
-const providedSecret = 'bmH6oZ9tnRe6LeucqN9k0AacudflPHs33d7i4H2RLih7IBWTswg6KlUiEgbx3hErFWFffWpezynkr50s6gwsTA==';
+const providedSecret = process.env.COINBASE_COMMERCE_WEBHOOK_SECRET || process.argv[2] || ''; // SECURITY: never hardcode secrets
 console.log('🔍 Testing with the secret you mentioned earlier:');
 console.log('Secret:', providedSecret);
 

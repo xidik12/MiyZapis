@@ -30,7 +30,7 @@ async function verifyAdmin() {
     console.log('Has Password:', !!admin.password);
 
     // Test password
-    const testPassword = 'Admin123!@#';
+    const testPassword = process.env.ADMIN_TEST_PASSWORD || process.argv[2]; if (!testPassword) { console.error('Set ADMIN_TEST_PASSWORD'); process.exit(1); }
     const passwordMatch = await bcrypt.compare(testPassword, admin.password);
 
     console.log('\n🔐 Password Test:');

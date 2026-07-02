@@ -24,7 +24,7 @@ import { cacheUtils } from '@/config/redis';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { emailService } from '@/services/email';
-import { authRateLimit } from '@/middleware/security';
+import { authRateLimit, emailActionRateLimit } from '@/middleware/security';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { ErrorCodes } from '@/types';
 import jwt, { SignOptions } from 'jsonwebtoken';
@@ -119,7 +119,7 @@ const validateVerifyCode = [
 
 router.post(
   '/request-code',
-  authRateLimit,        // 5 req / 15 min per email — same guard as auth routes
+  emailActionRateLimit, // 5 req / 15 min per email — counts successes too (anti email-bomb)
   validateRequestCode,
   async (req: Request, res: Response) => {
     const errors = validationResult(req);

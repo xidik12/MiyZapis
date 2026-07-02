@@ -925,25 +925,21 @@ function App() {
           <Route
             path="/specialist/:specialistId"
             element={
-              <ProtectedRoute>
-                <ConditionalLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <SpecialistProfilePage />
-                  </Suspense>
-                </ConditionalLayout>
-              </ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistProfilePage />
+                </Suspense>
+              </ConditionalLayout>
             }
           />
           <Route
             path="/service/:serviceId"
             element={
-              <ProtectedRoute>
-                <ConditionalLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <ServicePublicPage />
-                  </Suspense>
-                </ConditionalLayout>
-              </ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <ServicePublicPage />
+                </Suspense>
+              </ConditionalLayout>
             }
           />
           <Route
@@ -957,13 +953,11 @@ function App() {
           <Route
             path="/s/:slug"
             element={
-              <ProtectedRoute>
-                <ConditionalLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <SpecialistProfilePage />
-                  </Suspense>
-                </ConditionalLayout>
-              </ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistProfilePage />
+                </Suspense>
+              </ConditionalLayout>
             }
           />
           {/* Chrome-less embeddable booking widget — NO layout, public, iframe-friendly */}

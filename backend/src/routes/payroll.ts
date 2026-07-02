@@ -9,12 +9,13 @@ import {
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { authenticateToken, requireSpecialist } from '@/middleware/auth/jwt';
+import { requireBusinessOwner } from '@/middleware/requireBusinessOwner';
 import { AuthenticatedRequest } from '@/types';
 
 const router = Router();
 
 // All payroll routes require authentication and specialist role.
-router.use(authenticateToken, requireSpecialist);
+router.use(authenticateToken, requireSpecialist, requireBusinessOwner);
 
 // The logged-in user is the employer (payroll owner).
 const ownerIdOf = (req: Request): string =>

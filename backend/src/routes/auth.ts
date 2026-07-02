@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '@/controllers/auth';
 import { authenticateToken } from '@/middleware/auth/jwt';
-import { authRateLimit } from '@/middleware/security';
+import { authRateLimit, emailActionRateLimit } from '@/middleware/security';
 import { logger } from '@/utils/logger';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import {
@@ -72,7 +72,7 @@ router.post('/logout', AuthController.logout);
 router.post('/verify-email', validateEmailVerification, AuthController.verifyEmail);
 
 // Resend verification email (rate-limited to prevent abuse)
-router.post('/resend-verification', authRateLimit, async (req, res) => {
+router.post('/resend-verification', emailActionRateLimit, authRateLimit, async (req, res) => {
   try {
     const { email } = req.body ?? {};
     if (!email || typeof email !== 'string') {
@@ -91,7 +91,7 @@ router.post('/resend-verification', authRateLimit, async (req, res) => {
 });
 
 // Password reset (rate limited)
-router.post('/request-password-reset', authRateLimit, validatePasswordResetRequest, AuthController.requestPasswordReset);
+router.post('/request-password-reset', emailActionRateLimit, authRateLimit, validatePasswordResetRequest, AuthController.requestPasswordReset);
 router.post('/reset-password', authRateLimit, validatePasswordReset, AuthController.resetPassword);
 
 // Password management (authenticated routes)

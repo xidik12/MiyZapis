@@ -228,6 +228,20 @@ export const authRateLimit = createRateLimiter({
   },
 });
 
+// Email-action limiter for endpoints that SEND an email/OTP on success (password
+// reset, verification resend, guest code). authRateLimit skips successful requests,
+// so it never throttles these (they return 200) → email-bombing. Count ALL requests,
+// keyed by target email so one address can't be flooded.
+export const emailActionRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 5,
+  skipSuccessfulRequests: false,
+  keyGenerator: (req: Request) => {
+    const email = req.body?.email;
+    return email ? `email-action:${email}` : `email-action:${req.ip}`;
+  },
+});
+
 // Booking rate limiter
 export const bookingRateLimit = createRateLimiter({
   ...RateLimitConfigs.BOOKINGS,

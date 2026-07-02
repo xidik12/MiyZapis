@@ -179,3 +179,7 @@ docs/
 # Claude Code skill tooling (not project code)
 .agents/
 skills-lock.json
+
+# ops scripts with sensitive defaults — do not commit
+backend/verify-admin.js
+backend/verify-coinbase-signature.js

@@ -131,6 +131,23 @@ export interface SpecialistProfile {
 
 const DEFAULT_DAY = { isOpen: false, startTime: '09:00', endTime: '17:00' };
 
+// Accept both the UI schema ({isOpen,startTime,endTime}) and the legacy
+// ({isWorking,start,end}) written by staff/telegram flows, and return the UI shape.
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+function normalizeBusinessHours(raw: unknown): BusinessHours {
+  const r = (raw || {}) as Record<string, any>;
+  const out: Record<string, { isOpen: boolean; startTime: string; endTime: string }> = {};
+  for (const d of DAY_KEYS) {
+    const v = r[d] || {};
+    out[d] = {
+      isOpen: v.isOpen ?? v.isWorking ?? false,
+      startTime: v.startTime ?? v.start ?? '09:00',
+      endTime: v.endTime ?? v.end ?? '17:00',
+    };
+  }
+  return out as BusinessHours;
+}
+
 export const getEmptyProfile = (): SpecialistProfile => ({
   id: '1',
   firstName: '',
@@ -322,16 +339,16 @@ export const mergeProfileData = (apiData: Record<string, unknown>): SpecialistPr
       ? specialist.portfolio
       : (parseJsonField(specialist?.portfolioImages, []) as PortfolioItem[]),
 
-    // Parse business hours — prefer workingHours key (backend convention)
+    // Parse business hours — prefer workingHours key (backend convention).
+    // Normalize both schemas: {isOpen,startTime,endTime} (UI) and the legacy
+    // {isWorking,start,end} (staff/telegram/getDefaultWorkingHours) → UI shape,
+    // else legacy-saved hours render every day as "Closed".
     businessHours: specialist?.workingHours
-      ? (parseJsonField(specialist.workingHours, defaultProfile.businessHours) as BusinessHours)
+      ? normalizeBusinessHours(parseJsonField(specialist.workingHours, defaultProfile.businessHours))
       : specialist?.businessHours
         ? typeof specialist.businessHours === 'string'
-          ? (parseJsonField(specialist.businessHours, defaultProfile.businessHours) as BusinessHours)
-          : {
-              ...defaultProfile.businessHours,
-              ...(specialist.businessHours as Partial<BusinessHours>),
-            }
+          ? normalizeBusinessHours(parseJsonField(specialist.businessHours, defaultProfile.businessHours))
+          : normalizeBusinessHours({ ...defaultProfile.businessHours, ...(specialist.businessHours as Partial<BusinessHours>) })
         : defaultProfile.businessHours,
 
     // Parse service area from JSON string

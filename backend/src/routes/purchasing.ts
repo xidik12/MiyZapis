@@ -9,12 +9,13 @@ import {
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { authenticateToken, requireSpecialist } from '@/middleware/auth/jwt';
+import { requireBusinessOwner } from '@/middleware/requireBusinessOwner';
 import { AuthenticatedRequest } from '@/types';
 
 const router = Router();
 
 // All purchasing routes require authentication and specialist role
-router.use(authenticateToken, requireSpecialist);
+router.use(authenticateToken, requireSpecialist, requireBusinessOwner);
 
 // The logged-in user is the purchasing owner (solo specialist or business owner).
 const ownerIdOf = (req: Request): string =>

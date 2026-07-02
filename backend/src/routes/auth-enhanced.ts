@@ -8,7 +8,7 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { ValidatorError } from '@/types';
-import { authRateLimit } from '@/middleware/security';
+import { authRateLimit, emailActionRateLimit } from '@/middleware/security';
 
 const router = express.Router();
 
@@ -229,7 +229,7 @@ router.post('/verify-email', validateEmailVerification, async (req, res) => {
 });
 
 // Resend verification email
-router.post('/resend-verification', async (req, res) => {
+router.post('/resend-verification', emailActionRateLimit, async (req, res) => {
   try {
     const { email } = req.body;
 

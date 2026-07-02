@@ -491,8 +491,22 @@ export class MessagingService {
       }
     });
 
+    // Map to what the frontend expects: a single `unreadCount` for the viewer's side
+    // and a `lastMessage` (the include names the relation `messages`, an array).
+    const mapped = (conversations as any[]).map((c) => {
+      const isCustomer = c.customerId === userId;
+      const last = Array.isArray(c.messages) && c.messages.length ? c.messages[0] : null;
+      return {
+        ...c,
+        unreadCount: isCustomer ? (c.customerUnreadCount ?? 0) : (c.specialistUnreadCount ?? 0),
+        lastMessage: last
+          ? { ...last, attachments: (() => { try { return typeof last.attachments === 'string' ? JSON.parse(last.attachments) : (last.attachments || []); } catch { return []; } })() }
+          : undefined,
+      };
+    });
+
     return {
-      conversations,
+      conversations: mapped,
       pagination: {
         page,
         limit,

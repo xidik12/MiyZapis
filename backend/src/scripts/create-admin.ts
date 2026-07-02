@@ -71,7 +71,7 @@ async function createAdmin(options: CreateAdminOptions) {
 // Default admin configuration
 const DEFAULT_ADMIN = {
   email: 'admin@miyzapis.com',
-  password: 'Admin123!@#',
+  password: process.env.ADMIN_PASSWORD || '', // SECURITY: require ADMIN_PASSWORD; no default
   firstName: 'System',
   lastName: 'Administrator'
 };
