@@ -180,6 +180,10 @@ export class HrService {
     actorId: string,
     input: { staffUserId: string; date: Date; clockIn?: Date | null; clockOut?: Date | null; status?: AttendanceStatus; note?: string | null },
   ) {
+    // Owner-only: staff must not be able to fabricate their own hours (feeds payroll).
+    if (!(await this.isEmployer(actorId))) {
+      throw new Error('Only the business owner can set attendance');
+    }
     await this.assertInScope(actorId, input.staffUserId);
     const date = startOfUtcDay(input.date);
     const minutesWorked = input.clockIn && input.clockOut

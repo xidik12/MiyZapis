@@ -25,6 +25,11 @@ import type { RecurrenceData } from '@/components/modals/RecurringBookingModal';
 // Booking sub-components
 import { useBookingState } from './hooks/useBookingState';
 import type { BookingStep } from './types';
+
+// Local calendar date (YYYY-MM-DD) — NOT toISOString(), which shifts to UTC and
+// picks the wrong day for users east of UTC (e.g. UTC+7 Phnom Penh).
+const toLocalDateStr = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 import BookingProgress from './components/BookingProgress';
 import NavigationButtons from './components/NavigationButtons';
 import WaitlistModal from './components/WaitlistModal';
@@ -352,7 +357,7 @@ const BookingFlow: React.FC = () => {
 
       dispatch({ type: 'SET_SLOTS_LOADING', payload: true });
       try {
-        const dateStr = state.selectedDate.toISOString().split('T')[0];
+        const dateStr = toLocalDateStr(state.selectedDate);
         const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
 
         const serviceDuration = state.service?.duration || 60;
@@ -387,7 +392,7 @@ const BookingFlow: React.FC = () => {
     try {
       const currentSpecialistId = getSpecialistId();
       if (!currentSpecialistId || !state.selectedDate) return;
-      const dateStr = state.selectedDate.toISOString().split('T')[0];
+      const dateStr = toLocalDateStr(state.selectedDate);
       const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
 
       const serviceDuration = state.service?.duration || 60;
