@@ -215,8 +215,12 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     
     // Create unique filename with flat structure
     const timestamp = Date.now();
-    const ext = path.extname(file.originalname) || '.jpg';
-    const filename = `${purpose}_${userId}_${timestamp}${ext}`;
+    // SECURITY: purpose + originalname are client-controlled → sanitize before they
+    // reach the filesystem, else `?purpose=../../..` escapes the uploads dir.
+    const rawExt = path.extname(file.originalname) || '.jpg';
+    const ext = /^\.[a-zA-Z0-9]{1,8}$/.test(rawExt) ? rawExt.toLowerCase() : '.jpg';
+    const safePurpose = String(purpose || 'file').replace(/[^a-zA-Z0-9_-]/g, '') || 'file';
+    const filename = `${safePurpose}_${userId}_${timestamp}${ext}`;
     const filepath = path.join(uploadsDir, filename);
     
     logger.debug('💾 Saving file to:', filepath);
@@ -371,8 +375,11 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     
     // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
-    const ext = path.extname(file.originalname);
-    const filename = `${purpose}-${timestamp}${ext}`;
+    // SECURITY: sanitize client-controlled purpose + extension (path traversal).
+    const rawExt = path.extname(file.originalname) || '.jpg';
+    const ext = /^\.[a-zA-Z0-9]{1,8}$/.test(rawExt) ? rawExt.toLowerCase() : '.jpg';
+    const safePurpose = String(purpose || 'file').replace(/[^a-zA-Z0-9_-]/g, '') || 'file';
+    const filename = `${safePurpose}-${timestamp}${ext}`;
     const filepath = path.join(uploadsDir, filename);
     
     // Write file to disk
@@ -495,9 +502,11 @@ router.get('/s3-proxy/*', async (req, res) => {
 // Serve static uploaded files
 router.get('/uploads/:filename', (req, res) => {
   try {
-    const filename = req.params.filename;
     const path = require('path');
     const fs = require('fs');
+    // SECURITY: strip any directory components — Express decodes %2f, so a raw
+    // param like "..%2f..%2fetc%2fpasswd" would otherwise escape the uploads dir.
+    const filename = path.basename(req.params.filename);
     
     // Use same upload directory logic as upload with fallback
     const isRailwayServe = !!(

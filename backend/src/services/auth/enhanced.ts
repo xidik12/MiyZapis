@@ -134,7 +134,11 @@ export class AuthService {
           firstName: data.firstName,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
-          userType: data.userType,
+          // SECURITY: never trust a client-supplied privileged role. Registration
+          // may only ever create CUSTOMER or SPECIALIST — ADMIN (or anything else)
+          // is coerced to CUSTOMER. (The /auth/register proxy route didn't validate
+          // userType, so this is the authoritative guard.)
+          userType: data.userType === 'SPECIALIST' ? 'SPECIALIST' : 'CUSTOMER',
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
           language: data.language || 'en',

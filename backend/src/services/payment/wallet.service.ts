@@ -286,7 +286,7 @@ export class WalletService {
         }),
         tx.booking.findUnique({
           where: { id: bookingId },
-          select: { depositAmount: true, walletAmountUsed: true },
+          select: { depositAmount: true, walletAmountUsed: true, customerId: true },
         }),
       ]);
 
@@ -295,6 +295,12 @@ export class WalletService {
       }
 
       if (!booking) {
+        throw new Error('Booking not found');
+      }
+
+      // SECURITY: only the booking's own customer may apply their wallet to it —
+      // otherwise anyone could force-confirm a stranger's booking (IDOR).
+      if (booking.customerId !== userId) {
         throw new Error('Booking not found');
       }
 

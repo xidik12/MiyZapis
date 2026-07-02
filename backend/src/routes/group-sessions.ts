@@ -133,6 +133,21 @@ router.get('/participants/:serviceId', authenticateToken, cacheMiddleware(60, 'g
       );
     }
 
+    // SECURITY: the roster exposes other customers' names/avatars (PII). Only the
+    // service's own specialist (or an admin) may view it — was any-authenticated (IDOR).
+    const svc = await prisma.service.findUnique({
+      where: { id: serviceId },
+      select: { specialist: { select: { userId: true } } },
+    });
+    const requester = (req as unknown as { user?: { id?: string; userType?: string } }).user;
+    const isOwner = !!svc?.specialist?.userId && svc.specialist.userId === requester?.id;
+    const isAdmin = requester?.userType === 'ADMIN';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json(
+        createErrorResponse('ACCESS_DENIED', 'Not authorized to view participants', req.headers['x-request-id'] as string)
+      );
+    }
+
     const groupSessionId = generateGroupSessionId(serviceId, scheduledDate);
     const bookings = await getGroupSessionBookings(groupSessionId);
 
