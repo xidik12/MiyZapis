@@ -515,17 +515,23 @@ export class ServiceController {
       // Frontend sends `search`/`location`; accept the legacy `query`/`city` too.
       const query = (req.query.search ?? req.query.query) as string | undefined;
       const city = (req.query.city ?? req.query.location) as string | undefined;
+      // Frontend sends sortBy + sortOrder separately; the service uses a combined
+      // enum (price = asc, priceDesc = desc).
+      const sortOrder = req.query.sortOrder as string | undefined;
+      const effectiveSort = sortBy === 'price' && sortOrder === 'desc' ? 'priceDesc' : sortBy;
+      const verifiedOnly = req.query.verifiedOnly === 'true' || req.query.verifiedOnly === '1';
 
       const result = await ServiceService.searchServices(
         query as string,
         category as string,
         minPrice ? parseFloat(minPrice as string) : undefined,
         maxPrice ? parseFloat(maxPrice as string) : undefined,
-        sortBy as 'price' | 'rating' | 'newest',
+        effectiveSort as 'price' | 'priceDesc' | 'rating' | 'newest' | 'popular',
         parseInt(page as string, 10),
         parseInt(limit as string, 10),
         city as string,
-        availableWithin as string
+        availableWithin as string,
+        verifiedOnly || undefined
       );
 
       // Batch fetch top reviews for specialists
