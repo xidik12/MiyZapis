@@ -588,17 +588,16 @@ export class MessagingService {
       }
     });
 
-    // Reset unread count
+    // Reset unread count — only for a participant. Without this a non-participant
+    // could zero a stranger's unread badge (they'd fall through to the specialist side).
     const conversation = await this.getConversation(conversationId);
     if (conversation) {
       const isCustomer = conversation.customerId === userId;
+      const isSpecialist = conversation.specialistId === userId;
+      if (!isCustomer && !isSpecialist) return;
       await this.prisma.conversation.update({
         where: { id: conversationId },
-        data: {
-          ...(isCustomer 
-            ? { customerUnreadCount: 0 }
-            : { specialistUnreadCount: 0 })
-        }
+        data: isCustomer ? { customerUnreadCount: 0 } : { specialistUnreadCount: 0 },
       });
     }
   }

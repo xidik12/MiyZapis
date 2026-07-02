@@ -40,6 +40,25 @@ export class GoogleCalendarService {
     return new google.auth.OAuth2(config.google.clientId, config.google.clientSecret, this.redirectUri);
   }
 
+  // SECURITY: sign the OAuth state so the callback can't be replayed with a
+  // victim's userId (which would connect the victim's calendar to the attacker).
+  private static signState(userId: string): string {
+    const crypto = require('crypto');
+    const sig = crypto.createHmac('sha256', config.jwt.secret).update(userId).digest('hex').slice(0, 32);
+    return `${userId}.${sig}`;
+  }
+
+  private static verifyState(state: string): string {
+    const crypto = require('crypto');
+    const idx = state.lastIndexOf('.');
+    if (idx < 1) throw new Error('INVALID_OAUTH_STATE');
+    const userId = state.slice(0, idx);
+    const sig = state.slice(idx + 1);
+    const expected = crypto.createHmac('sha256', config.jwt.secret).update(userId).digest('hex').slice(0, 32);
+    if (sig !== expected) throw new Error('INVALID_OAUTH_STATE');
+    return userId;
+  }
+
   /** Returns the URL the user should be redirected to in order to grant calendar access. */
   static async getAuthUrl(userId: string): Promise<string> {
     const client = await this.makeOAuthClient();
@@ -47,12 +66,13 @@ export class GoogleCalendarService {
       access_type: 'offline',
       prompt: 'consent', // force refresh_token issuance every time
       scope: [SCOPE],
-      state: userId, // we trust this since the redirect comes from Google with our own state
+      state: this.signState(userId),
     });
   }
 
   /** Exchange the OAuth code for tokens and persist a CalendarConnection row. */
-  static async handleCallback(code: string, userId: string) {
+  static async handleCallback(code: string, state: string) {
+    const userId = this.verifyState(state);
     const client = await this.makeOAuthClient();
     const { tokens } = await client.getToken(code);
     if (!tokens.access_token) throw new Error('OAUTH_NO_ACCESS_TOKEN');

@@ -49,7 +49,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     (currentStepId === 'payment' && (!paymentResult || ((paymentResult.requiresPayment as boolean) && paymentResult.status !== 'COMPLETED')));
 
   return (
-    <div className="pb-safe-bottom">
+    <div style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       {helperText && (
         <div className="mb-3 text-center">
           <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl inline-block">

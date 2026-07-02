@@ -339,6 +339,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
           newMessage={newMessage}
           onNewMessageChange={setNewMessage}
           onSendMessage={handleSendMessage}
+          sending={_sendingMessage}
           onFileSelect={handleFileSelect}
           onBack={() => setSelectedConversation(null)}
           isTyping={isTyping}
